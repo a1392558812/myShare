@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>bootstrop</title>
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<style type="text/css">
+	.container-fluid,.container{
+		background-color: pink;
+		border: 1px solid black;
+	}
+	.container div{
+		border: 1px solid black;
+	}	
+	</style>
+	<body> 
+		<div class="container-fluid"><!--流体容器-->
+			test1
+		</div>
+		<div class="container"><!--固定容器-->
+			<div class="row">
+				<div class="col-lg-10">col-lg-10</div>
+				<div class="col-lg-2">col-lg-2</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6 col-md-2">col-lg-6</div><!--栅格组合-->
+				<div class="col-lg-6 col-md-10">col-lg-6</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-4">col-lg-4</div>
+				<div class="col-lg-8">col-lg-8</div>
+			</div>
+		</div>
+	</body>
+	<!--容器
+			1.流体容器
+			2.固定容器
+								  -阈值    	            	    width
+							   大于等于1200(lg)，		   	  		1170(1140+槽宽)
+							   大于等于992                       970(940+槽宽)
+							 大于等于768(sm)                   750(720+槽宽)
+							   小于768(xs)                      auto(变成了流体容器)
+					lg代表大屏pc
+					md代表中屏pc
+					sm代表平板
+					xs代表平板
+			   - 媒体查询的顺序不可变
+			   			@media(min-width:@scren-sm-min){
+			   				width:@container-sm;
+			   			}
+			   			@media(min-width:@scren-md-min){
+			   				width:@container-md;
+			   			}
+			   			@media(min-width:@scren-lg-min){
+			   				width:@container-lg;
+			   			}
+			3.栅格系统
+				-移动端优先,优先级(xs>sm>md>lg)
+				-1.行
+					俩侧15px的padding
+					俩侧-15px的margin
+				-2.列
+					公共样式:俩侧15px的padding+相对定位
+					float
+					width:有1~12个级别
+					left,right:有0~12个级别     0级别为auto(cod-xx-push-*或者cod-xx-pull-*)
+					margin:0~12个级别
+			4.列排序，
+				阈值上样式的设置不能跳跃
+	-->
+</html> 

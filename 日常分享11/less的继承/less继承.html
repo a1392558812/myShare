@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>less继承</title>
+		<link rel="stylesheet" type="text/css" href="css/02.css"/>
+	</head>
+	<body>
+		<div id="wrap">
+			<div class="inner">inner1</div>
+			<div class="inner">inner2</div>
+			<!--
+				1.less的继承
+					#test{
+						&:extend(.father);
+					}
+					继承实际上将father选择器和#test组成的一个选择器
+						声明块使用.father的
+					all:继承所有和.father相关的声明块
+					父类不能定义成混合
+				2.less的避免
+					~"不会被编译的内容";
+				
+					
+			-->
+		</div>
+	</body>
+</html>
