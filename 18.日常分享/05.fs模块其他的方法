@@ -1,0 +1,76 @@
+```js
+var fs  = require("fs")
+/*      var isExists = fs.existsSync()检查一个文件是否存在*/
+var isExists =  fs.existsSync("hello.txt")
+console.log(isExists);
+isExists =  fs.existsSync("hello666.txt")
+console.log(isExists);
+/*  fs.statSync(path)
+    fs.stat()
+        -获取文件的状态
+        -会返回一个对象，这个对象包含当前对象的相关信息
+*/
+fs.stat("hello.txt",function (err,stat) {
+        console.log(stat.isDirectory())
+            /*
+            stats对象.size表示文件的大小
+            stats对象.isFile()是否是一个文件
+            stats对象.isDirectory()是否是个文件夹
+            */
+})
+/*  删除文件
+    fs.unlinkSync(path)
+    fs.unlink(path,callback)
+*/
+/*  读取一个目录的目录信息
+    fs.readdir(path,[options],callback)
+                callback参数：err,files(files是一个字符串数组，每一个元素就是一个文件夹或者一个文件)
+
+    fs.readdirSync(path,[options])
+*/
+fs.readdir(".",function (err,files) {
+    if(!err){
+        console.log(files);
+    }
+})
+/*
+    截断文件
+    fs.truncate(path,len,callback)
+    fs.truncateSync(path,len)
+            -将文件修改为指定的大小(len)
+*/
+/*
+    创建文件夹/目录
+    fs.mkdir(path,[mode],callback)
+    fs.mkdirSync(path,[mode])
+                -mode:文件夹的权限
+*/
+/*
+    删除文件夹/目录
+    fs.rmdir(path)
+    fs.rmdirSync(path,callback)
+*/
+/*
+    重命名文件夹或者更改路径
+    fs.rename(oldPath,newPath,callback)
+    fs.renameSync(oldPath,newPath)
+            -oldPath    旧的路径
+            -newPath    新的路径
+*/
+/*
+    监视文件的修改
+    fs.watchFile(filename,[options],listener（curr,prev）)
+        -filename：要监视文件的名字
+        -options：配置选项，{interval:1000}设置监听的间隔，默认5s一次
+        -listener()：回调函数，当文件发生变化时，回调函数会执行
+                            curr    当前文件的状态
+                            prev    修改前文件的状态
+                             curr 与 prev 都是stats对象
+    fs.watchFile("hello.txt",{interval:1000},function（curr,prev）{
+        console.log("修改前的文件大小："+prev.size，"修改后文件的大小："+curr.size)
+    })
+*/
+
+
+
+```
