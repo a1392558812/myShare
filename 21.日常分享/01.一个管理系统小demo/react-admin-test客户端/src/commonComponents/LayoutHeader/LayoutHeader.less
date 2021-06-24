@@ -1,0 +1,72 @@
+.LayoutHeader{
+  color: #000;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  .ant-btn-primary{
+    background-color: #1890FF;
+    border-color: #1890FF;
+  }
+  .LayoutHeader-top{
+    height: 49.5px;
+    padding-right: 30px;
+    display: flex;
+    flex-direction: column;
+    background-color:  #fff;
+    align-items: flex-end;
+    .LayoutHeader-top-content{
+      display: flex;
+      align-items: flex-end;
+      .LayoutHeader-top-content-desc{
+        line-height: 350%;
+        margin-right: 10px;
+      }
+      .LayoutHeader-top-content-logout{
+        color: skyblue;
+      }
+    }
+  }
+  .LayoutHeader-line{
+    height: 1px;
+    background-color: black;
+  }
+  .LayoutHeader-bottom{
+    height: 49.5px;
+    background-color: #fff;
+    line-height: 49.5px;
+    display: flex;
+    padding: 0 30px;
+    flex-direction: row;
+    justify-content: space-between;
+    .LayoutHeader-bottom-content,.LayoutHeader-bottom-title{
+      display: flex;
+      flex-direction: row;
+    }
+    .LayoutHeader-bottom-title{
+      font-size: 30px;
+    }
+    .LayoutHeader-bottom-content{
+      display: flex;
+      .LayoutHeader-bottom-content-time,
+      .LayoutHeader-bottom-content-weather{
+        margin-right: 5px;
+      }
+    }
+  }
+  .LayoutHeader-triangle{
+    height: 40px;
+    padding: 0 30px;
+    position: relative;
+    .anticon-caret-down{
+      position: absolute;
+      top: -19px;
+      left: 30px;
+      width: 60px;
+      height: 60px;
+      font-size: 60px;
+      path{
+        color: #fff;
+      }
+    }
+  }
+}
