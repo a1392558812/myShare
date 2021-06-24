@@ -1,0 +1,1 @@
+window.alert("第三方文件")
