@@ -1,0 +1,20 @@
+var imgData1 = {
+	png:["img/png/karate-block-icon.png",
+		 "img/png/karate-flyingkick-icon.png",
+		 "img/png/karate-highkick-icon.png",
+		 "img/png/karate-punch-icon.png",
+		 "img/png/karate-ready-icon.png"
+	],
+	bg:["img/bgi/01.jpg",
+		"img/bgi/02.jpg",
+		"img/bgi/03.jpg",
+		"img/bgi/04.jpg",
+		"img/bgi/05.jpg",
+		"img/bgi/06.jpg",
+		"img/bgi/07.jpg",
+		"img/bgi/08.jpg",
+		"img/bgi/09.jpg",
+		"img/bgi/10.jpg",
+		"img/bgi/11.jpg"
+	]
+}
