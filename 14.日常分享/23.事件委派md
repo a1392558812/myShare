@@ -1,3 +1,21 @@
+## 事件委托
+* 将多个子元素的事件监听委托到父元素处理
+* 监听回调加在父辈元素上，事件发生在子元素身上
+* 当操作任意一个li时，事件都会冒泡到父辈元素上
+* 父辈元素不会直接处理事件，而是根据event.target得到发生事件的元素，通过这个子元素，调用回调函数
+## jquery的事件委派API
+* 设置事件委派
+    * $("parentSelector").delegate("childSelector","eventName","callbackfunction(){}")
+    * 回到函数中的this是发生事件的子元素本身，并不是父元素
+* 移出事件委托
+    * $("parentSelector").undelegate("eventName")
+## 事件委派的好处
+* 使得新添的子元素，自动拥有事件响应
+* 减少事件监听的绑定* 补充：事件委派方法二，且推荐：
+    * 绑定-$("父元素选择器").on("事件名称","要委托的子元素的选择器",function(){})
+    * 解绑-$("父元素选择器").off("事件名称")
+
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -20,29 +38,6 @@
 					$("ul").append("<li>新增的li</li>")
 				})
 		*/
-				
-				
-				
-				
-		/*  1.事件委托
-				-将多个子元素的事件监听委托到父元素处理
-				-监听回调加在父辈元素上，事件发生在子元素身上
-				-当操作任意一个li时，事件都会冒泡到父辈元素上
-				-父辈元素不会直接处理事件，而是根据event.target得到发生事件的元素，通过这个子元素，调用回调函数
-			2.jquery的事件委派API
-				-设置事件委派
-					-$("parentSelector").delegate("childSelector","eventName","callbackfunction(){}")
-					-回到函数中的this是发生事件的子元素本身，并不是父元素
-				-移出事件委托
-					-$("parentSelector").undelegate("eventName")
-			3.事件委派的好处
-				-使得新添的子元素，自动拥有事件响应
-				-减少事件监听的绑定
-			 补充：事件委派方法二，且推荐：
-					绑定-$("父元素选择器").on("事件名称","要委托的子元素的选择器",function(){})
-					解绑-$("父元素选择器").off("事件名称")
-			*/
-			
 			$("ul").delegate("li","click",function(){
 				console.log(this)
 				$(this).css("background-color","red")
@@ -50,10 +45,6 @@
 			$("#btn01").click(function(){
 					$("ul").append("<li>新增的li</li>")
 				})
-			
-			
-			
-			
 			$("#btn02").click(function(){
 				$("ul").undelegate("click")
 			})
