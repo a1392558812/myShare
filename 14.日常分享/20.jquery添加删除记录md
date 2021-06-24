@@ -1,0 +1,117 @@
+```html
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>jquery添加删除记录</title>
+		<script src="js/jquery-1.12.4.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var fun ={
+				fun1:function(){
+					var $tr = $(this).parent().parent()
+					var name = $tr.children(":first").html()
+					if(confirm("确认删除这个"+name+"信息么？")){
+						$tr.remove()
+					}
+					}
+			}
+			$(function(){
+				$("#sub").click(function(){
+					//收集输入的数据
+					var name = $("#infoName").val()
+					var email = $("#infoEmail").val()
+					var salary = $("#infoSalary").val()
+					var idInfo = Date.now()
+					/*生成对应的<tr>
+								<td></td>
+								<td colspan="2"></td>
+								<td></td>
+								<td></td>
+							</tr>
+					*/
+					$("<tr></tr>")
+						.append("<td>"+name+"</td>")
+						.append("<td colspan='2'>"+email+"</td>")
+						.append("<td>"+salary+"</td>")
+						.append("<td><a href='javascript:;' id="+idInfo+">删除</a></td>")
+						.appendTo("#table tbody")
+						.find("a")
+						.click(fun.fun1)
+					
+					//清除输入
+					$("#infoName").val("")
+					$("#infoEmail").val("")
+					$("#infoSalary").val("") 
+				})
+				$("#table a").click(fun.fun1)
+			})
+		</script>
+		<style type="text/css">
+			*{
+				padding: 0;
+				margin: 0;
+			}
+			table tr,table td{
+				width: 200px;
+				height: 50px;
+				line-height: 50px;
+				text-align: center;
+			}
+			div{
+				position: absolute;
+				padding: 0 20px;
+				border: 1px solid black;
+				margin: 50px 0;
+			}
+			div input{
+				display: block;
+			}
+			div>*{
+				padding: 5px 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<table id="table" border="1px solid black" cellspacing="0" cellpadding="0">
+			<thead>
+				<tr>
+					<td>Name</td>
+					<td colspan="2">Email</td>
+					<td>Salary</td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>AAA</td>
+					<td colspan="2">AAA@AAA</td>
+					<td>1000</td>
+					<td><a href="javascript:;" id="001">删除</a></td>
+				</tr>
+				<tr>
+					<td>BBB</td>
+					<td colspan="2">BBB@BBB</td>
+					<td>1000</td>
+					<td><a href="javascript:;" id="002">删除</a></td>
+				</tr>
+				<tr>
+					<td>CCC</td>
+					<td colspan="2">CCC@CCC</td>
+					<td>1000</td>
+					<td><a href="javascript:;" id="003">删除</a></td>
+				</tr>
+			</tbody>
+		</table>
+		
+			<div id="warp">
+				<h1>添加新员工</h1>
+				name :<input type="text" name="text" id="infoName"/><br />
+				email: <input type="text" name="text" id="infoEmail"/><br />
+				salary: <input type="text" name="text" id="infoSalary"/><br />
+				<button id="sub">提交</button>
+			</div>
+		
+	</body>
+</html>
+
+```
