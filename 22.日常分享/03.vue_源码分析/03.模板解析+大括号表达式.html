@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>大括号表达式</title>
+    <style type="text/css">
+        .testClass01{
+            color: red;
+        }
+        .testClass02{
+            font-size: 80px;
+        }
+    </style>
+</head>
+<body>
+<div id="box01">
+    <div v-model="name" v-on:click="clickIt" style="background: red;width: 300px;height: 100px">{{name}}</div>
+    <div v-text="msg" style="background: orange;width: 300px;height: 100px"></div>
+    <div v-html="msg" style="background: yellow;width: 300px;height: 100px"></div>
+    <div v-class="myClass" class="testClass02" style="background: green;width: 300px;height: 100px">666</div>
+    <!--大括号表达式
+            1.根据正则匹配{{xxxx}}内的表达式字符串
+            2.从data中取出相应的数据
+            3.将属性值设置为文本节点的textContent
+    -->
+    <!--事件指令解析
+            1.从指令名中取出事件名，
+            2.根据指令的值从methods中获得对应的事件处理函数
+            3.给当前元素绑定指定事件类型的指定事件名的事件监听
+            4.指令解析完成后，删除标签内指令属性，在展示的html页面内看不到指令属性
+    -->
+    <!--一般指令解析
+            1.得到指令名与指令值， v-text='value1'    ,v-html='value2'    ,v-class="value3"
+            2.从data属性中根据表达式的值取到对应的值
+            3.根据指令名确定需要操作的元素节点属性
+                    v-text-----操作textContent
+                    v-html------操作innerHtml
+                    v-class-----操作className
+            4.将表达式的值设置到对应的属性上
+            5.移出html页显示的指令属性
+     -->
+</div>
+<script type="text/javascript" src="js/mvvm/compile.js"></script>
+<script type="text/javascript" src="js/mvvm/mvvm.js"></script>
+<script type="text/javascript" src="js/mvvm/observer.js"></script>
+<script type="text/javascript" src="js/mvvm/watcher.js"></script>
+<script type="text/javascript">
+    const vm = new MVVM ({
+        el:'#box01',
+        data: {
+            name: "老八002",
+            msg: "<a href='https://www.baidu.com/'>百度</a>",
+            myClass: 'testClass01',
+        },
+        methods: {
+            clickIt () {
+                console.log("测试代码")
+            },
+            myFun () {
+                console.log("myFun")
+            }
+        }
+
+    })
+
+
+</script>
+</body>
+</html>

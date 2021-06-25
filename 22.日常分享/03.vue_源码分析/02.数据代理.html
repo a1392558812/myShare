@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据代理</title>
+</head>
+<body>
+<div id="box01" @mouseenter="enterIt">666666666666</div>
+
+<!-- vue库数据代理 -->
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript">
+
+    const vm = new Vue ({
+        el:'#box01',
+        data () {
+            return {
+                name: "老八",
+            }
+        },
+        methods: {
+            enterIt () {
+                console.log("222")
+            }
+        }
+    })
+    console.log(vm.name,vm) //vm代理了对data数据的读写操作
+    vm.name = '快乐老八'
+    console.log(vm._data.name)
+    console.log("--------------------------------------------------------------------------------------")
+</script>
+
+<!-- 无vue数据代理 -->
+<script type="text/javascript" src="js/mvvm/compile.js"></script>
+<script type="text/javascript" src="js/mvvm/mvvm.js"></script>
+<script type="text/javascript" src="js/mvvm/observer.js"></script>
+<script type="text/javascript" src="js/mvvm/watcher.js"></script>
+<script type="text/javascript">
+    const vm02 = new MVVM ({
+        el:'#box01',
+        data: {
+          name: "老八002",
+        }
+    })
+    console.log(vm02.name,vm02) //vm代理了对data数据的读写操作
+    vm02.name = '快乐老八002'
+    console.log(vm02.name)
+
+</script>
+</body>
+</html>

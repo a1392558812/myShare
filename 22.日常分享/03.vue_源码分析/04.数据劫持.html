@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据劫持</title>
+</head>
+<body>
+<img src="image/MVVM结构图.png" alt="" style="border: 1px solid black;width: 1000px">
+<!-- 数据绑定，一旦更新了data中的某个数据，所有页面上直接或间接使用此属性的节点也会发生改变（！！自动）
+            在vue中，通过数据劫持技术，实现数据绑定的效果
+            在vue中，通过 （vm.xxx="新属性值"）
+                                     |
+                                   导致
+                                    ↓
+                  （vm中set方法监听到改变，主要实现数据代理）
+                                     |
+                                   导致
+                                    ↓
+                （data中set方法监听vm中set的变化，主要实现数据绑定）
+        -->
+<!--
+源码关键函数分析：
+    1.Dep():他的实例在初始化时给data属性进行数据劫持时创建
+            他的个数与data中的所有属性一一对应
+            Dep的结构：
+                -id：唯一Dep的标识
+                -subs：是一个数组[]，n个相关的watcher的容器
+    2.Watcher()：初始化解构大括号表达式与一般指令时创建
+                 与模板表达式（不包含事件指令）一一对应
+                 Watcher的结构
+                       -this.cb = cb                用于更新界面的回调
+                       -this.vm = vm                vm对象
+                       -this.exp = exp              对应的表达式
+                       -this.depIds = {depid:dep}            相关的n个dep容器对象
+                       -this.value = this.get()     当前表达式对应的value
+分析：
+    1.Dep与Watcher的关系:
+        -建立时间：是在初始化解构模板表达式创建watcher对象时
+        -建立方式：调用data的get()方法时建立的
+
+
+        举例：
+            -1.从Dep的角度触发：
+                    this.name = '老八',一个属性对应一个Dep，但是页面中有多出地方引用this.name，
+                    比如<p>{{name}}</p>，<p v-text="name"></P> ,此时就有2个Watcher
+            -2.从Watcher角度出发：
+                   data:{user = {username:'老八',pwd："666"}}, user.username这一个表达式对应一个Watcher，
+                   但是对应俩个Dep（user一个，username一个）
+    2.更新方式
+    vm.xxxx = "新的属性值"
+            ↓
+    data中的xxxx属性值发生变化
+            ↓
+    xxxx的set方法监听到变化
+            ↓
+    dep监听到变化
+            ↓
+  通知相关的n个watcher发生了变化
+            ↓
+    调用this.cd回调函数更新页面
+            ↓
+    updater函数来更新页面
+-->
+    <div id="box01">
+     <div>{{name}}</div><!--Watcher01---》dep01.....id=0-->
+     <div v-text="name"></div><!--Watcher02---》dep01....id=0-->
+     <div>{{food.firstFood}}</div><!--Watcher03--》｛dep02,dep03｝-->
+     <div>{{food.secondFood}}</div>
+     <div v-text="allFood"></div>
+     <!--
+            dep01--》[Watcher01,Watcher02]
+            dep02--》[Watcher03]
+            deep03--》[Watcher03]
+     -->
+     <button v-on:click="updataClick">更新</button>
+    </div>
+<script type="text/javascript" src="js/mvvm/compile.js"></script>
+<script type="text/javascript" src="js/mvvm/mvvm.js"></script>
+<script type="text/javascript" src="js/mvvm/observer.js"></script>
+<script type="text/javascript" src="js/mvvm/watcher.js"></script>
+<script type="text/javascript">
+    const vm = new MVVM ({
+        el:'#box01',
+        data: {
+            name: "大娃", // dep01~name
+            food: {// dep02~food
+                firstFood:'米饭', // dep03~firstFood
+                secondFood:'馒头',
+            },
+            brothers: [
+                {name:'二娃',theId:'002'},
+                {name:'三娃',theId:'003'},
+                {name:'四娃',theId:'005'},
+                {name:'五娃',theId:'006'},
+            ],
+
+        },
+        methods: {
+            updataClick () {
+                this.name = "蛇精"
+                this.food.firstFood = '臭豆腐'
+            }
+        },
+        computed:{
+            allFood:{
+                //当要读取数据时的回调(初始化显示)
+                get(){
+                    return this.food.firstFood+" "+this.food.secondFood
+                },
+                //当属性值发生改变时回调
+                set(val){//监视当前属性值的变化
+                    const food = val.split(" ")
+                    this.food.firstFood = food[0]
+                    this.food.secondFood = food[1]
+                },
+            }
+        }
+    })
+</script>
+</body>
+</html>

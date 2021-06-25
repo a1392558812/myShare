@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>准备</title>
+</head>
+<body>
+<div id="box01">666</div>
+<ul>
+    <li>4</li>
+    <li>
+        <ul>
+            <li>2</li>
+            <li>2</li>
+            <li>2</li>
+        </ul>
+    </li>
+    <li>5</li>
+</ul>
+<script type="text/javascript">
+    // 1.Array.prototype.slice.call(lis)将伪数组转化为真数组
+    let lis = document.querySelectorAll('li') //lis是伪数组
+    const lis2 = Array.prototype.slice.call(lis)
+    console.log(lis2)
+    // 2.node.nodeType:得到节点类型
+    let elementvNode = document.querySelector('div') // 元素节点
+    let attrNode = elementvNode.getAttributeNode('id') // 属性节点
+    let textNode = elementvNode.firstChild
+    console.log("elementvNode.nodeType",elementvNode.nodeType)
+    console.log("attrNode.nodeType",attrNode.nodeType)
+    console.log("textNode.nodeType",textNode.nodeType)
+    // 3.Object.defineProperty(obj,propertyName,{}):给对象添加属性(指定描述符)
+    /* 1.参数说明：obj要在其上定义属性的对象。
+                propertyName要定义或修改的属性的名称。
+                {}将被定义或修改的属性描述符。
+       2.配置对象属性(属性描述符)
+            i.数据描述符：
+                 configurable：是否可以重新定义
+                 enumerable：是否可以枚举
+                 value：初始值
+                 writable：是否可以修改属性
+            ii.访问描述符：
+                 get：（回调函数）初始动态计算得到当前属性值
+                 set：监视当前属性值的变化，更新相关的属性
+       */
+    const obj = {
+        username: 'a',
+        food: "b"
+    } // 给obj添加iWant属性
+    Object.defineProperty(obj, 'iWant',{
+        get () {
+            return this.username + '-' + this.food
+        },
+        set (value) {
+            const name = value.split('-')
+            this.username = name[0]
+            this.food = name[1]
+        }
+    })
+    console.log(obj,'....',obj.iWant)
+    obj.username = 'c'
+    obj.food = 'd'
+    console.log(obj,'...    .',obj.iWant)
+    obj.iWant = "e-f"
+    console.log(obj)
+    Object.defineProperty (obj, 'iWant02',{
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: "666-777",
+    })
+    console.log(obj.iWant02)
+    obj.iWant02 = '222-333'
+    console.log(obj.iWant02)
+    // 4.Object.keys(obj) 得到对象自身可枚举属性组成的数组
+    const allName = Object.keys(obj)
+    console.log(allName)
+    // 5.obj.hasOwnProperty(prop):判断prop是否是obj自身属性
+    console.log(obj.hasOwnProperty('asdas'),obj.hasOwnProperty('username'))
+    /* 6.DocumentFragment: 文档碎片（高效批量更新多个节点）-内存中保存n个element的容器对象，不与界面页相关联，
+         更新Fragment中的某个元素,页面不会发生改变
+    */
+    /*1.创建Fragment
+      2.取出所有的li保存到fragment中
+      3.更新fragment中所有的li文本内容
+      4.将fragment插入ul
+
+    */
+    const fragment = document.createDocumentFragment() // 第一步
+    const ul = document.querySelector('ul')
+    let child
+    while (child = ul.firstChild) { // 第二步
+        fragment.appendChild(child) // 该行代码实现先将child从ul中移出，然后添加到fragment子节点
+    }
+    Array.prototype.slice.call(fragment.childNodes).forEach(node => { // 第三步
+        if (node.nodeType===1) { // 此时节点为元素节点
+            node.textContent = "奥利给"
+        }
+    })
+    ul.appendChild(fragment)
+</script>
+</body>
+</html>

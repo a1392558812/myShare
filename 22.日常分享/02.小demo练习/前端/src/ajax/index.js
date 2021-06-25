@@ -1,0 +1,32 @@
+import ajax from './ajax'
+
+const BASEURL = '/api'
+export const requestLogin = (username, password) => ajax(`${BASEURL}/login`, {username,password}, 'POST')
+export const requestMenu = () => ajax(`${BASEURL}/menus`, 'GET')
+export const requestUserList = ({query,pagenum,pagesize}) => ajax(`${BASEURL}/users`, {query,pagenum,pagesize}, 'GET')
+export const requestUpdateUser = ({_id,mg_state,email,mobile,role_id}) => ajax(`${BASEURL}/updateusers`, {_id,mg_state,email,mobile,role_id}, 'POST')
+export const requestAddUser = ({username,password,email,mobile}) => ajax(`${BASEURL}/adduser`, {username,password,email,mobile}, 'POST')
+export const requestDeleteUser = ({_id}) => ajax(`${BASEURL}/deleteuser`, {_id}, 'POST')
+export const requestRightsList = () => ajax(`${BASEURL}/rightslist`, {}, 'GET')
+export const requestRights = () => ajax(`${BASEURL}/roles`, {}, 'GET')
+export const requestRoleUpdate = ({_id,role_root,role_name,role_desc}) => ajax(`${BASEURL}/updateroles`, {_id,role_root,role_name,role_desc}, 'POST')
+export const requestAllRoleList = () => ajax(`${BASEURL}/allrolelist`, {}, 'GET')
+export const requestAllRootList = () => ajax(`${BASEURL}/rootlist`, {}, 'GET')
+export const requestProductsCategory = ({pagenum,pagesize}) => ajax(`${BASEURL}/categorylist`, {pagenum,pagesize}, 'GET')
+export const requestAddCategory = ({categoryName,fatherCategoryId,categoryLevel}) => ajax(`${BASEURL}/addcategory`, {categoryName,fatherCategoryId,categoryLevel}, 'POST')
+export const requestUpdateRoot = ({_id,categoryLevel,categoryName,categoryDeleted}) => ajax(`${BASEURL}/updatecategory`, {_id,categoryLevel,categoryName,categoryDeleted}, 'POST')
+export const requestCategoryList = ({categoryId,attrSel}) => ajax(`${BASEURL}/parameterslist`, {categoryId,attrSel}, 'GET')
+export const requestAddParameter = ({categoryId,attrSel,attrName}) => ajax(`${BASEURL}/addparameter`, {categoryId,attrSel,attrName}, 'POST')
+export const requestUpdateParameter = ({_id,attrSel,attrName,attrValues}) => ajax(`${BASEURL}/updateparameter`, {_id,attrSel,attrName,attrValues}, 'POST')
+export const requestDeleteParameter = ({_id,attrSel}) => ajax(`${BASEURL}/deleteparameter`, {_id,attrSel}, 'POST')
+export const requestGoodsList = ({pagenum,pagesize,selectStr}) => ajax(`${BASEURL}/goodslist`, {pagenum,pagesize,selectStr}, 'GET')
+export const requestDeleteGood = ({_id}) => ajax(`${BASEURL}/deletegood`, {_id}, 'POST')
+export const requestSelect = ({level,pagenum,pagesize,fatherCategoryId}) => ajax(`${BASEURL}/getcategorynumber`, {level,pagenum,pagesize,fatherCategoryId}, 'GET')
+export const requestImageDelete = ({name}) => ajax(`${BASEURL}/goodimgdelete`, {name}, 'POST')
+export const requestAddGood = (addForm)=> ajax(`${BASEURL}/addgood`,addForm,'POST')
+export const requestUpdateGoodImage = ({goodsImages,_id})=> ajax(`${BASEURL}/updategoodimage`,{goodsImages,_id},'POST')
+export const requestOrdersList = ({pagenum,pagesize})=> ajax(`${BASEURL}/orderlist`,{pagenum,pagesize},'GET')
+export const requestOrdersPro = ()=> ajax(`${BASEURL}/orderpro`,{},'GET')
+export const requestOrdersKuaidi = ({orderId})=> ajax(`${BASEURL}/kuaidi`,{orderId},'GET')
+
+

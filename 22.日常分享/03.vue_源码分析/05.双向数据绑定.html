@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>双向数据绑定</title>
+</head>
+<body>
+<div id="box01">
+    <input type="text" v-model="msg"/>
+    <p>{{msg}}</p>
+</div>
+
+
+<script type="text/javascript" src="js/mvvm/compile.js"></script>
+<script type="text/javascript" src="js/mvvm/mvvm.js"></script>
+<script type="text/javascript" src="js/mvvm/observer.js"></script>
+<script type="text/javascript" src="js/mvvm/watcher.js"></script>
+<script type="text/javascript">
+    const vm = new MVVM ({
+        el:'#box01',
+        data: {
+            msg: '快乐的老八'
+        },
+    })
+
+
+</script>
+</body>
+</html>

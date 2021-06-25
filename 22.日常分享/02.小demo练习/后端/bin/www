@@ -1,0 +1,108 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+const mongoose = require('mongoose');
+var app = require('../app');
+var debug = require('debug')('admin-server:server');
+var http = require('http');
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '5000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string' ?
+    'Pipe ' + port :
+    'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+function onListening() {
+  console.log('服务器已启动，端口号5000')
+  var addr = server.address();
+  var bind = typeof addr === 'string' ?
+    'pipe ' + addr :
+    'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+const DB_URL = 'mongodb://localhost/vue-OnlineRetailers-DB'
+mongoose.connect(DB_URL, {
+  useNewUrlParser: true,
+  useFindAndModify:false,
+  useUnifiedTopology: true
+})
+const conn = mongoose.connection // 获取连接对象
+conn.on('error', (error) => { // 绑定连接失败的监听
+  console.log('数据库连接失败' + error)
+});
+conn.on('connected', () => { // 绑定连接完成的监听
+  console.log("vue-OnlineRetailers-DB数据库已连接")
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+})
+conn.on('disconnected', () => { // 绑定连接断开的监听
+  console.log('数据库连接已断开');
+});
