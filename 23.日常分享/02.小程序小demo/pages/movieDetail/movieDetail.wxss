@@ -1,0 +1,43 @@
+.movieDetailContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.movie_img{
+  width: 70%;
+  height: 700rpx;
+  margin: 20rpx 0;
+}
+.movie_name{
+  font-size: 40rpx;
+  font-weight: bold;
+  width: 80%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.movie_detail{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  font-size: 32rpx;
+}
+button{
+  width: 50%;
+  height: 80rpx;
+  background: #FB7299;
+  margin-top: 50rpx;
+}
+.casts {
+  width: 70%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.content{
+  width: 90%;
+}
+.items{
+  display: inline-block;
+}

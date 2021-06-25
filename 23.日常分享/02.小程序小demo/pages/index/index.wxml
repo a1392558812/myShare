@@ -1,0 +1,31 @@
+<!--pages/index/index.wxml-->
+<view class="indexContainer">
+  <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
+  <button bindgetuserinfo='callbackHandleUserInfo' style="display: {{ifShow ? 'block' : 'none' }}" class="getUserInfoBtn" open-type="getUserInfo">获取用户登录信息</button>
+  <text class="userNamee">hello {{userInfo.nickName}}</text>
+  <view class="goStudy" bindtap="goToNextPage">
+    <text>开启奥利给美食</text>
+  </view>
+</view>
+<!-- 001
+      小程序
+        -概念：
+          1.压缩包体积不得大于2M，
+          2.小程序特点：体积下，同app进行互补，通过扫一扫或者搜索就能下载
+          3.开发周期短
+        -适配方案：
+          1.viewport适配， width=device-width
+          2.单位： rpx
+          3.在iPhone6下，1rpx = 1物理像素 = 0.5px，   dpr = 物理像素/设备独立像素 = 2
+        -重要的文件
+          1.wxml          view结构、
+          2.wxss          view样式
+          3.js            view行为
+          4.json文件       数据与配置
+        -注册小程序：   App()
+        -注册页面：     Pages：[]
+        -数据绑定：     在data中初始化页面需要的数据，在页面可以直接使用，（对比vue）
+        -事件：   
+          1.冒泡事件：  bind+事件名
+          2.非冒泡事件：  catch+事件名
+     -->

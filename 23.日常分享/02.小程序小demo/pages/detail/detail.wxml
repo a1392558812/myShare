@@ -1,0 +1,38 @@
+<view class="short-essay">
+  <view class="headImages">
+    <image class="headImg" src="{{ifMusic?detailObject.music.coverImgUrl  :detailObject.detail_img}}"></image>
+    <image catchtap="musicPlay" class="musicImg" src="{{ifMusic?'/images/music/music-start.png':'/images/music/music-stop.png'}}"></image>
+  </view>
+  <view class="user">
+    <image src="{{detailObject.avatar}}"></image>
+    <!--    {{detailObject.}}     -->
+    <text>{{detailObject.author}}</text>
+    <text>发布于</text>
+    <text>{{detailObject.date}}</text>
+  </view>
+  <view>
+    <text class="company">{{detailObject.title}}</text>
+  </view>
+  <view class="handle">
+    <view class="line"></view>
+    <view class="collectionAndShare">
+      <image catchtap="toggleShow" src="/images/icon/collection.png" wx:if='{{ifCollection}}'></image>
+      <image catchtap="toggleShow" src="/images/icon/collection-anti.png" wx:if='{{!ifCollection}}'></image>
+      <image src="/images/icon/share.png" catchtap="handleShare"></image>
+    </view>
+  </view>
+  <view>
+    <button open-type="share">转发老八者，得永生</button>
+    <view class="content"> {{detailObject.detail_content}}</view>
+  </view>
+</view>
+<!-- 
+  -本地缓存：
+    setStorage-------→异步缓存
+    serStorageSync---→同步缓存
+        1.缓存的是用户是否收藏了该文章---------→缓存的新数据是在原来的数据基础上进行修改
+        2.缓存之前先要获取之前的本地数据---onload----→如果没有获取到，需要先初始化本地缓存数据状态
+  -音乐播放
+    对音乐播放状态的监视：-----→ （wx.onBackgroundAudioPause，wx.onBackgroundAudioPlay）
+    对用户进入页面后音乐状态的判断 -----→ App（data），监视后台音乐播放状态
+ -->

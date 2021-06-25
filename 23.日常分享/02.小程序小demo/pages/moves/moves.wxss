@@ -1,0 +1,40 @@
+.moveContent{
+  display: flex;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+.moveImg{
+  width: 128rpx;
+  height: 128rpx;
+}
+.moveDetail{
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  margin-left: 20rpx;
+}
+.moveName{
+  width: 70%;
+  font-size: 32rpx;
+  height: 42rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.moveYear{
+  font-size: 22rpx;
+  line-height: 42rpx;
+  height: 42rpx;
+  color: #666;
+  margin: 8rpx 0; 
+}
+.moveDirector{
+  font-size: 22rpx;
+  height: 42rpx;
+  color: #333
+}
+.moveRating{
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #FB7299;
+}

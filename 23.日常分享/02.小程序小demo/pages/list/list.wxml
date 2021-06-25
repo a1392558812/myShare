@@ -1,0 +1,36 @@
+<!--pages/list/list.wxml-->
+<import src="../template/template.wxml"/>
+<view>
+  <swiper catchtap="carouselToDetail" indicator-dots indicator-color='#ffdfe8' indicator-active-color='#FB7299'>
+    <swiper-item>
+      <image data-index='0' src="/images/detail/carousel/02.jpg"></image>
+    </swiper-item>
+    <swiper-item>
+      <image data-index='1' src="/images/detail/carousel/01.jpg"></image>
+    </swiper-item>
+    <swiper-item>
+      <image data-index='2' src="/images/detail/carousel/03.jpg"></image>
+    </swiper-item>
+    <swiper-item>
+      <image data-index='3' src="/images/detail/carousel/04.jpg"></image>
+    </swiper-item>
+  </swiper>
+  <block wx:for='{{listArr}}' wx:key='index'>
+        <!-- 默认遍历的单个项为item，默认的索引为index -->
+   <view catchtap="goToDetail" data-index="{{index}}">
+    <template is="msgItem" data='{{...item}}'></template>
+   </view>
+  </block>
+</view>
+<!-- 
+  模板
+    -定义template  属性name-------唯一标识模板
+    -使用template  属性is---------唯一标识模板
+    -引入模板结构   <import src="../xxx/xxx.wxml"/>
+    -引入样式       @import ‘路径’
+    -传参          <template is="xxx" data='{{...item}}'></template>
+  列表渲染
+    -wx:for←----→wx:key（为每个个体元素进行标记index）
+        遍历的每个个体默认的为item，默认的索引为index
+    
+ -->

@@ -1,0 +1,16 @@
+<view class="movieDetailContainer">
+  <image class="movie_img" src="{{movieDetail.images.large}}"></image>
+  <text class="movie_name">{{movieDetail.original_title}}</text>
+  <view class="movie_detail">
+    <view class="content">
+      <text>评分：{{movieDetail.rating.average}}</text>
+         <text>导演：{{movieDetail.directors[0].name}}</text>
+      <view class='casts'>主演：
+        <view class="items" wx:for='{{movieDetail.casts}}' wx:key='index'>
+          <text decode="{{true}}">{{item.name}} &ensp;</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <button>我要康康</button>
+</view>

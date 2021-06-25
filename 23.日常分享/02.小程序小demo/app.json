@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/list/list",
+    "pages/detail/detail",
+    "pages/moves/moves",
+    "pages/movieDetail/movieDetail"
+    
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#FB7299",
+    "navigationBarTitleText": "美食家老八"
+  },
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "pages/list/list",
+        "text": "好康文章",
+        "iconPath": "/images/tab/yuedu.png",
+        "selectedIconPath": "/images/tab/yuedu_hl.png"
+      },
+      {
+        "pagePath": "pages/moves/moves",
+        "text": "好康电影",
+        "iconPath": "/images/tab/dianying.png",
+        "selectedIconPath": "/images/tab/dianying_hl.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap46.json"
+}

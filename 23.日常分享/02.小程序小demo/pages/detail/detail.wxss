@@ -1,0 +1,69 @@
+.short-essay {
+  display: flex;
+  flex-direction: column;
+}
+.headImg {
+  width: 100%;
+  height: 420rpx;
+}
+.user {
+  padding: 15rpx;
+}
+.user image{
+  width: 64rpx;
+  height: 64rpx;
+  vertical-align: middle;
+}
+.user text{
+  font-size: 28rpx;
+  margin-left: 12rpx;
+}
+.company {
+  font-size: 38rpx;
+  font-weight: bold;
+  margin-left: 12rpx; 
+}
+.handle {
+  position: relative;
+  padding: 0 5% 0 0;
+}
+.line{
+  position: absolute;
+  top: 40rpx;
+  width: 90%;
+  height:1rpx;
+  background: #eee;
+  margin: 0 5%;
+}
+.collectionAndShare {
+  float: right;
+}
+.collectionAndShare image{
+  position: relative;
+   width: 80rpx;
+  height: 80rpx;
+  margin-right: 20rpx;
+}
+button {
+  width: 320rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  font-size: 30rpx;
+}
+.content {
+  margin-top: 32rpx;
+  font-size: 32rpx;
+  text-indent: 2em;
+}
+.headImages{
+  position: relative;
+}
+.musicImg{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -30rpx;
+  margin-top: -30rpx;
+  width: 60rpx;
+  height: 60rpx;
+}
