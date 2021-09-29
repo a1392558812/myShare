@@ -1,4 +1,6 @@
 <template>
+  <test10></test10>
+  <test9></test9>
   <div id="nav">
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link>
@@ -17,7 +19,15 @@ import { inject } from 'vue'
 import test5 from './components/test5'
 import test6 from './components/test6'
 import test8 from './components/test8'
+import test9 from './components/test9'
+import test10 from './components/test10'
 export default {
+  components: {
+    test6,
+    test8,
+    test9,
+    test10
+  },
   setup (props, context) {
     const $mountContent = inject('$mountContent')
     const test = () => {
@@ -73,10 +83,6 @@ export default {
       test3,
       test4
     }
-  },
-  components: {
-    test6,
-    test8
   }
 }
 </script>
