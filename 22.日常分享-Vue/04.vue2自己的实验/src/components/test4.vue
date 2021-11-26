@@ -1,47 +1,22 @@
 <template>
-  <view>
-    <view>
-      <text>单价：</text> <text>{{price}}￥</text>
-    </view>
-    <view>
-      <view @click="handelClick('reduce')">-</view>
-      <text>个数：</text><text>{{total}}</text>
-      <view @click="handelClick('add')">+</view>
-    </view>
-    <view><text>总价：</text><text>{{totalPrice}}￥</text></view>
-  </view>
+  <div>
+    <test5 v-for="item in 10" :key="item">
+      <template v-slot:header>
+        <p>1--{{item}}</p>
+      </template>
+      <template v-slot:content>
+        <p>2--{{item}}</p>
+      </template>
+    </test5>
+  </div>
 </template>
 
 <script>
+  import test5 from "./test5";
   export default {
-    data() {
-      return {
-        total: 1,
-        price: 998
-      }
-    },
-    computed:{
-      totalPrice() {
-        return this.total * this.price
-      }
-    },
-    methods: {
-      handelClick(type) {
-        if (type === 'reduce') {
-          if (this.total === 1) {
-            弹窗提示不能少于1
-          } else {
-            this.total--
-          }
-        } else {
-          if ('判断商品库存') {
-            超出库存提示存量不够
-          } else {
-            this.total++
-          }
-        }
-      }
-    },
+    components: {
+      test5
+    }
   }
 </script>
 
