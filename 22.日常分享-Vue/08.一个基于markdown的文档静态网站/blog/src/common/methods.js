@@ -23,12 +23,20 @@ export const downFileByAxios = (href) => {
     window.URL.revokeObjectURL(blobUrl)
   })
 }
-export const typeCheck = (type) => {
+export const markdownTypeCheck = (type) => {
   return [
     'md',
     'js',
     'ts',
     'jsx',
     'html'
+  ].filter(item => item === type).length
+}
+export const imgTypeCheck = (type) => {
+  return [
+    'jpg',
+    'png',
+    'gif',
+    'jpeg'
   ].filter(item => item === type).length
 }

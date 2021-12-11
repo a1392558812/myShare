@@ -5,6 +5,29 @@ html,body{
 .absolute{
   position: absolute;
 }
+.flex{
+  display: flex;
+}
+
+.flex-direction-row{
+  flex-direction: row;
+}
+.flex-direction-column {
+  flex-direction: column;
+}
+.flex-direction-row-reverse{
+  flex-direction: row-reverse;
+}
+
+.align-items-center{
+  align-items: center;
+}
+.justify-content-center {
+  justify-content: center;
+}
+.justify-content-space-between {
+  justify-content: space-between
+}
 .relative{
   position: relative;
 }
@@ -20,6 +43,6 @@ html,body{
 .bg-white{
   background: #fff;
 }
-.top0{
-  top: 0;
+.cursor-pointer{
+  cursor: pointer;
 }

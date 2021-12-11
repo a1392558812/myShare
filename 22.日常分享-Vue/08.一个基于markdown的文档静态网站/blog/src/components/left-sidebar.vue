@@ -47,22 +47,28 @@ export default {
     }
   },
   render () {
-    const renderFun = ({ item, grade, list, firstLevelIndex, url }) => {
+    const renderFun = ({ item, grade, list, firstLevelIndex, url, indexPage }) => {
       if (item) {
         grade++
         const renderList = item && item.children ? item.children : []
+        // 列表点击
         const listClick = () => {
           item.ifShow = !item.ifShow
-          console.log(this)
           this.nowActive = firstLevelIndex
         }
+        // 子项点击
         const itemClick = () => {
+          console.log('indexPage', indexPage)
           this.nowActive = firstLevelIndex
           list.map(child => {
             child.itemActive = false
             return child
           })
           item.itemActive = true
+          this.$router.push({
+            path: '/',
+            query: { indexPage }
+          })
           if (item.link) {
             this.$emit('linkClick', item.link)
           } else {
@@ -100,6 +106,7 @@ export default {
               list={renderList}
               key={childIndex}
               firstLevelIndex={firstLevelIndex}
+              indexPage={`${indexPage}-${childIndex}`}
               url={[...url, child.name]}
               grade={grade}></renderFun>)
           }) : null }
@@ -121,6 +128,7 @@ export default {
               grade={-1}
               list={this.list}
               url={[item.name]}
+              indexPage={index}
               firstLevelIndex={index}></renderFun>
           })
         }

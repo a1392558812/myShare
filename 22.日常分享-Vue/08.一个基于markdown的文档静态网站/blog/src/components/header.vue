@@ -1,15 +1,22 @@
 <template>
-  <div :style="{padding: ifLarger ? '0 50px' : '0 20px'}" class="layout-header">
-    <div class="popup-wrap">
-      <commonm-btn :wave-active="true" @btnClick="showPopup = !showPopup">通知</commonm-btn>
-      <div v-if="showPopup" class="popup">
-        <div class="popup-inner">
-          <p class="title">{{ noticeTitle }}</p>
-          <p v-for="(item, index) in notice" :key="index" class="cell">{{index + 1}}.{{item}}</p>
+  <div
+    :style="{padding: ifLarger ? '0 50px' : '0 20px'}"
+    class="layout-header flex flex-direction-row-reverse justify-content-space-between align-items-center">
+    <div class="flex align-items-center justify-content-center">
+      <div class="go-home cursor-pointer" @click="goHome">首页</div>
+      <div class="popup-wrap">
+        <commonm-btn :wave-active="true" @btnClick="showPopup = !showPopup">通知</commonm-btn>
+        <!-- 弹出层 -->
+        <div v-if="showPopup" class="popup">
+          <div class="popup-inner flex flex-direction-column">
+            <p class="title flex align-items-center justify-content-center">{{ noticeTitle }}</p>
+            <p v-for="(item, index) in notice" :key="index" class="cell">{{index + 1}}.{{item}}</p>
+          </div>
+          <div class="mask" @click="showPopup = !showPopup"></div>
         </div>
-        <div class="mask" @click="showPopup = !showPopup"></div>
       </div>
     </div>
+    <!-- 移动端显示的切换菜单栏按钮 -->
     <commonm-btn v-if="!ifLarger" :wave-active="true" @btnClick="menuOpen">
       <svg class="icon" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2096"><path d="M170.667 170.667h682.666a42.667 42.667 0 0 1 0 85.333H170.667a42.667 42.667 0 1 1 0-85.333z m0 298.666h682.666a42.667 42.667 0 0 1 0 85.334H170.667a42.667 42.667 0 0 1 0-85.334z m0 298.667h682.666a42.667 42.667 0 0 1 0 85.333H170.667a42.667 42.667 0 0 1 0-85.333z" p-id="2097"></path></svg>
     </commonm-btn>
@@ -43,6 +50,9 @@ export default {
       noticeTitle: ref(noticeTitle),
       menuOpen: () => {
         emit('toggleMenu')
+      },
+      goHome: () => {
+        window.location.href = '/'
       }
     }
   }
@@ -60,11 +70,12 @@ export default {
   width: 100vw;
   height: v-bind(headerH);
   background-color: #fff;
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  justify-content: space-between;
   border-bottom: 1px solid #eee;
+  .go-home{
+    margin-right: 30px;
+    color: #00aa88;
+    text-decoration: none;
+  }
   .popup-wrap{
     position: relative;
     box-sizing: border-box;
@@ -84,16 +95,11 @@ export default {
         z-index: 999;
       }
       .popup-inner{
-        display: flex;
         position: relative;
-        flex-direction: column;
         line-height: 1;
         padding: 0 10px;
         z-index: 10;
         .title{
-          display: flex;
-          align-items: center;
-          justify-content: center;
           line-height: 1;
           padding: 15px 20px;
           font-weight: 600;
