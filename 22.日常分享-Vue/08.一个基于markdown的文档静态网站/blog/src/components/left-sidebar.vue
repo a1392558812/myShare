@@ -1,6 +1,6 @@
 <script>
 import list from '@/static/list.js'
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 
 export default {
   name: 'left-sidebar',
@@ -33,14 +33,14 @@ export default {
     return {
       list: reactive(renderList(list)),
       nowActive: ref(null),
-      sidebarClassName: () => {
+      sidebarClassName: computed(() => {
         let classname = 'left-sidebar'
         if (!props.ifLarger) {
           classname = `${classname} absolute bg-white width-auto ${props.ifShowMenu ? 'translateX-0' : 'translateX-100'}`
         }
         console.log('classname', classname)
         return classname
-      },
+      }),
       handelClick: (index) => {
         console.log(index)
       }
@@ -119,7 +119,7 @@ export default {
     console.log('this.ifLarger', this.ifLarger)
 
     return (
-      <div className={this.sidebarClassName()}>
+      <div className={this.sidebarClassName}>
         {
           this.list.map((item, index) => {
             return <renderFun

@@ -10,6 +10,7 @@
         <div v-if="showPopup" class="popup">
           <div class="popup-inner flex flex-direction-column">
             <p class="title flex align-items-center justify-content-center">{{ noticeTitle }}</p>
+            <p class="cell">如有疑问联系我QQ:1392558812</p>
             <p v-for="(item, index) in notice" :key="index" class="cell">{{index + 1}}.{{item}}</p>
           </div>
           <div class="mask" @click="showPopup = !showPopup"></div>
@@ -24,9 +25,12 @@
 </template>
 
 <script>
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+
 import { notice, noticeTitle } from '@/static/notice'
 import commonmBtn from '@/components/button'
-import { ref, reactive } from 'vue'
+
 export default {
   name: 'header',
   props: {
@@ -44,6 +48,7 @@ export default {
   },
   setup (props, { emit }) {
     const showPopup = ref(false)
+    const router = useRouter()
     return {
       showPopup,
       notice: reactive(notice),
@@ -52,7 +57,8 @@ export default {
         emit('toggleMenu')
       },
       goHome: () => {
-        window.location.href = '/'
+        router.push('/')
+        emit('refreshView')
       }
     }
   }

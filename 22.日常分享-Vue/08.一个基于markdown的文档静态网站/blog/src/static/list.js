@@ -104,9 +104,22 @@ const topList = [
       { name: '69.tailwind-css.md' },
       { name: '70.倒计时相关思考.md' },
       { name: '71.打包压缩下载.md' },
-      { name: '72.YAML相关简介.md' }
+      { name: '72.YAML相关简介.md' },
+      { name: '73.uniapp的px和rpx互相转换.md' },
+      { name: '74.使用 Vue 构建自定义元素.md' },
+      { name: '75.WeakSet和WeakMap的弱引用是什么.md' },
+      { name: '76.截取视频第一帧为封面.md' },
+      { name: '77.计算属性缓存与函数方法.md' },
+      { name: '78.移动端canvas模糊和无损缩放.md' },
+      { name: '79.vue-composable介绍.md' },
+      { name: '80.vue3与ie11.md' },
+      { name: '81.openlayers基本介绍.md' },
+      { name: '82.openlayers切换底图和标记图层.md' },
+      { name: '83.openlayers添加图片或图标.md' },
+      { name: '84.openlayers地图遮罩效果.md' },
+      { name: '85.Puppeteer.md' }
 
-    ]
+    ].reverse()
   }
 ]
 const list = [

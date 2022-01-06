@@ -1,29 +1,32 @@
 <template>
-  <div class="content-inner flex relative flex-direction-row">
+  <div class="content-inner width100 height100 flex relative flex-direction-row">
     <layout-left-sidebar
       :leftSidebarW="leftSidebarW"
       :ifShowMenu="ifShowMenu"
       :ifLarger="ifLarger"
       @linkClick="linkClick"
       @itemClick="itemClick"/>
-    <div class="home">
-      <div class="title flex align-items-center justify-content-center">{{ title }}</div>
+    <div class="home width100 height100">
+      <div class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
       <!-- md格式 -->
-      <div class="markdown" v-if="markdownType()">
+      <div class="markdown" v-if="markdownType">
         <v-md-preview  :text="htmlMD"></v-md-preview>
       </div>
       <!-- 图片格式 -->
-      <div v-else-if="imgType()" class="image">
+      <div v-else-if="imgType" class="image width100">
         <div>预览 / 点击查看详情</div>
         <div class="image-wrap flex">
           <div v-show="!imageLoading" class="image-content" @click="showPopup = true">
-            <img  @load="imageLoading = false" :src="htmlMD" :alt="htmlMD"/>
+            <img  @load="imageLoad" :src="htmlMD" :alt="htmlMD"/>
           </div>
-          <div v-show="imageLoading"> φ(≧ω≦*)♪图片正在努力加载中...</div>
+          <div v-show="imageLoading">
+            <div>github响应有点慢，莫急,已加载{{imageloadingTime}}秒</div>
+            <div class="loading">φ(≧ω≦*)♪图片正在努力加载中</div>
+          </div>
         </div>
       </div>
       <!-- 链接格式,有一些浏览器阻止页面打开新页面 -->
-      <div class="link" v-else-if='linkType()'>
+      <div class="link" v-else-if='linkType'>
         <a :href="htmlMD">链接： {{htmlMD}}</a>
       </div>
       <!-- 其他格式 -->
@@ -43,7 +46,7 @@
 </template>
 
 <script>
-import { ref, watch, nextTick, onBeforeMount } from 'vue'
+import { ref, watch, nextTick, onBeforeMount, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import axios from '@/common/axios.js'
@@ -72,11 +75,19 @@ export default {
     }
   },
   setup () {
+    let timer = null // 定时器
     const htmlMD = ref('')
     const title = ref('ReadMe-前言')
     const type = ref('')
     const downloadName = ref('文件')
     const imageLoading = ref(true)
+    const imageloadingTime = ref(1) // 图片加载了多长时间
+    // markdown类型
+    const markdownType = computed(() => markdownTypeCheck(type.value))
+    // img类型
+    const imgType = computed(() => imgTypeCheck(type.value))
+    // 连接类型
+    const linkType = computed(() => type.value === 'link')
     // 滚动到顶部
     const scrollTop = () => {
       nextTick(() => {
@@ -96,13 +107,14 @@ export default {
       type.value = urlSplitArr[urlSplitArr.length - 1] ? urlSplitArr[urlSplitArr.length - 1] : ''
       const urlLink = `./${url.join('/')}`
       title.value = url.join(' > ')
+      console.log('imgType, markdownType', imgType, markdownType.value)
       // 图片类型
-      if (imgTypeCheck(type.value)) {
+      if (imgType.value) {
         htmlMD.value = urlLink
         return
       }
       // markdown类型
-      if (markdownTypeCheck(type.value)) {
+      if (markdownType.value) {
         return axios.get(urlLink)
           .then((response) => {
             console.log('response', response)
@@ -177,7 +189,7 @@ export default {
 
     // 页面初始化
     onBeforeMount(() => {
-      const { indexPage } = useRouter().currentRoute.value.query
+      const { indexPage } = (() => useRouter().currentRoute.value.query)()
       console.log('indexPage', indexPage)
       // 当前路由携带参数
       if (indexPage) {
@@ -194,26 +206,34 @@ export default {
           imageLoading.value = true
           scrollTop()
         }
+        // 如果是图片类型，显示图片加载了多长时间
+        if (imgType.value) {
+          clearInterval(timer)
+          imageloadingTime.value = 0
+          timer = setInterval(() => {
+            imageloadingTime.value++
+          }, 1000)
+        }
       }
     )
     return {
-      markdownType () {
-        return markdownTypeCheck(type.value)
-      },
-      imgType () {
-        return imgTypeCheck(type.value)
-      },
-      linkType () {
-        return type.value === 'link'
-      },
-      itemClick,
-      linkClick,
+      markdownType,
+      imgType,
+      linkType,
       showPopup: ref(false),
       imageLoading,
       htmlMD,
       title,
       type,
-      downloadName
+      downloadName,
+      imageloadingTime,
+      itemClick,
+      linkClick,
+      imageLoad: () => {
+        clearInterval(timer)
+        imageloadingTime.value = 0
+        imageLoading.value = false
+      }
     }
   }
 
@@ -221,16 +241,11 @@ export default {
 </script>
 <style lang="scss" scoped>
   .content-inner{
-    width: 100%;
-    height: 100%;
     .home{
-      width: 100%;
-      height: 100%;
       overflow: scroll;
       .title{
         box-sizing: border-box;
         padding: 0 30px;
-        width: 100%;
         height: 70px;
         font-size: 18px;
         font-weight: 600;
@@ -240,7 +255,6 @@ export default {
         z-index: 0;
       }
       .image{
-        width: 100%;
         padding-left: 30px;
         box-sizing: border-box;
         .image-wrap{
@@ -288,6 +302,17 @@ export default {
         &-btn{
           margin: 0 10px 10px 0;
         }
+        .loading {
+          &::after {
+            content: "...";
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+            animation: ellipsis-dot 1s infinite .3s;
+            animation-fill-mode: fowards;
+            width: 1.25em;
+          }
+        }
       }
       .other-type{
         padding: 20px;
@@ -323,6 +348,21 @@ export default {
           max-width: 90%;
         }
       }
+    }
+  }
+
+  @keyframes ellipsis-dot {
+    25% {
+      content: "";
+    }
+    50% {
+      content: ".";
+    }
+    75% {
+      content: "..";
+    }
+    100% {
+      content: "...";
     }
   }
   @keyframes rotate {
