@@ -7,3 +7,6 @@
     
 * 为什么在markdown里写代码。emmmmmm理由很简单，为了方便复制粘贴。很多时候大家需要的并不是满满登登的一份文件，往往是里面的某些功能点。所以我将一些讲解直接写到注释里，工作+学习二合一。时间紧迫可以直接粘贴，删掉注释即可。时间充裕点可以仔细的读下注释讲解，加深自己的知识。   
 
+* 个人 [github地址](https://github.com/a1392558812/myShare)： https://github.com/a1392558812/myShare
+* 个人 [gitee地址](https://gitee.com/a1392558812/miscellaneous/tree/master)：https://gitee.com/a1392558812/miscellaneous/tree/master
+
