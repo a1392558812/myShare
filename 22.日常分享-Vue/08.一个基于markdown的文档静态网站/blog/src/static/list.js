@@ -4,24 +4,6 @@ const topList = [
     topping: true, // 是否置顶
     children: [
       {
-        name: 'iamges',
-        children: [
-          { name: 'bg1.png' },
-          { name: 'effect.gif' },
-          { name: 'loading.gif' },
-          { name: 'loading2.gif' },
-          {
-            name: 'Quill基本使用和配置',
-            children: [
-              { name: '1.jpg' },
-              { name: '2.jpg' },
-              { name: '3.gif' },
-              { name: '4.gif' }
-            ]
-          }
-        ]
-      },
-      {
         name: '01.treejs瞎玩',
         link: 'https://github.com/a1392558812/myShare.io/tree/master/26.%E6%97%A5%E5%B8%B8%E5%88%86%E4%BA%AB-%E6%9D%82%E9%A1%B9%E6%95%B4%E7%90%86/01.treejs%E7%9E%8E%E7%8E%A9'
       },
@@ -99,7 +81,7 @@ const topList = [
       { name: '64.Strvejs 一个可以将字符串转换为视图的JS库.md' },
       { name: '65.nuxt使用及注意事项.md' },
       { name: '66.扫码登陆.md' },
-      { name: '68.组件库实现v-model.md' },
+      { name: '67.组件库实现v-model.md' },
       { name: '68.打包配置页面标题.md' },
       { name: '69.tailwind-css.md' },
       { name: '70.倒计时相关思考.md' },
@@ -117,7 +99,11 @@ const topList = [
       { name: '82.openlayers切换底图和标记图层.md' },
       { name: '83.openlayers添加图片或图标.md' },
       { name: '84.openlayers地图遮罩效果.md' },
-      { name: '85.Puppeteer.md' }
+      { name: '85.Puppeteer.md' },
+      { name: '86.Threejs实现3D全景侦探小游戏.md' },
+      { name: '87.Proxy中的target注意点.md' },
+      { name: '88.预加载图片.md' },
+      { name: '89.Vue3中的“keydown.esc”事件失效.md' }
 
     ].reverse()
   }
@@ -956,9 +942,46 @@ const list = [
         ]
       }
     ]
+  },
+  {
+    name: 'image',
+    children: [
+      {
+        name: 'images',
+        children: [
+          { name: 'bg1.png' },
+          { name: 'effect.gif' },
+          { name: 'loading.gif' },
+          { name: 'loading2.gif' },
+          {
+            name: '86',
+            children: [
+              { name: '01.gif' },
+              { name: '01.png' },
+              { name: '02.gif' },
+              { name: '02.png' },
+              { name: '03.png' },
+              { name: '04.png' },
+              { name: '05.png' },
+              { name: '06.png' },
+              { name: '07.png' },
+              { name: 'title.png' }
+            ]
+          },
+          {
+            name: 'Quill基本使用和配置',
+            children: [
+              { name: '1.jpg' },
+              { name: '2.jpg' },
+              { name: '3.gif' },
+              { name: '4.gif' }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]
 
 list.unshift(...topList)
-
 export default list

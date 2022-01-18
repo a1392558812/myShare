@@ -16,7 +16,7 @@
       <div v-else-if="imgType" class="image width100">
         <div>预览 / 点击查看详情</div>
         <div class="image-wrap flex">
-          <div v-show="!imageLoading" class="image-content" @click="showPopup = true">
+          <div v-show="!imageLoading" class="image-content" @click="openPopup">
             <img  @load="imageLoad" :src="htmlMD" :alt="htmlMD"/>
           </div>
           <div v-show="imageLoading">
@@ -38,8 +38,15 @@
         </div>
       </div>
       <!-- 图片大屏展示 -->
-      <div class="popup flex align-items-center justify-content-center" v-if="showPopup" @click="showPopup = false">
+      <div
+        class="popup flex align-items-center justify-content-center relative"
+        v-if="showPopup"
+        @click="showPopup = false">
         <img :src="htmlMD" :alt="htmlMD"/>
+        <button
+          ref="closeModal"
+          @keydown.esc="showPopup = false"
+          class="absolute hide-button"></button>
       </div>
     </div>
   </div>
@@ -76,12 +83,14 @@ export default {
   },
   setup () {
     let timer = null // 定时器
+    const closeModal = ref(null) // closeModal引用
     const htmlMD = ref('')
     const title = ref('ReadMe-前言')
     const type = ref('')
     const downloadName = ref('文件')
     const imageLoading = ref(true)
     const imageloadingTime = ref(1) // 图片加载了多长时间
+    const showPopup = ref(false) // 是否显示大图
     // markdown类型
     const markdownType = computed(() => markdownTypeCheck(type.value))
     // img类型
@@ -107,7 +116,6 @@ export default {
       type.value = urlSplitArr[urlSplitArr.length - 1] ? urlSplitArr[urlSplitArr.length - 1] : ''
       const urlLink = `./${url.join('/')}`
       title.value = url.join(' > ')
-      console.log('imgType, markdownType', imgType, markdownType.value)
       // 图片类型
       if (imgType.value) {
         htmlMD.value = urlLink
@@ -135,8 +143,10 @@ export default {
               return
             }
             htmlMD.value = response.data
-          }).catch(_ => {
-            htmlMD.value = ''
+          })
+          .catch(_ => {
+            htmlMD.value = '寄'
+            type.value = 'md'
           })
       }
       // 其他类型
@@ -183,11 +193,20 @@ export default {
       axios.get(urlLink).then((response) => {
         htmlMD.value = response.data
         type.value = 'md'
-        console.log('type', type)
+      }).catch(_ => {
+        htmlMD.value = '寄'
+        type.value = 'md'
+      })
+    }
+    // 打开图片模态框
+    const openPopup = () => {
+      showPopup.value = true
+      nextTick(() => {
+        closeModal.value.focus()
       })
     }
 
-    // 页面初始化
+    // 页面即将初始化
     onBeforeMount(() => {
       const { indexPage } = (() => useRouter().currentRoute.value.query)()
       console.log('indexPage', indexPage)
@@ -216,11 +235,13 @@ export default {
         }
       }
     )
+
     return {
       markdownType,
       imgType,
       linkType,
-      showPopup: ref(false),
+      showPopup,
+      closeModal,
       imageLoading,
       htmlMD,
       title,
@@ -229,6 +250,7 @@ export default {
       imageloadingTime,
       itemClick,
       linkClick,
+      openPopup,
       imageLoad: () => {
         clearInterval(timer)
         imageloadingTime.value = 0
@@ -346,6 +368,11 @@ export default {
         background-color: rgba(0,0,0,0.7);
         img{
           max-width: 90%;
+        }
+        .hide-button{
+          padding: 0;
+          border: 0;
+          z-index: -1;
         }
       }
     }
