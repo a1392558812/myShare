@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>宏队列与微队列</title>
+</head>
+<body>
+
+<script type="text/javascript">
+    setTimeout(()=>{ // 宏任务
+        console.log('setTimeout的执行')
+    },0)
+    Promise.resolve(1).then( // 微任务
+        value => {console.log('Promise的执行')}
+    )
+</script>
+</body>
+</html>
