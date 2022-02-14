@@ -1,52 +1,59 @@
 <template>
-  <div class="content-inner width100 height100 flex relative flex-direction-row">
+  <div class="content-inner overflow-hidden width100 height100 flex flex-direction-row">
     <layout-left-sidebar
       :leftSidebarW="leftSidebarW"
       :ifShowMenu="ifShowMenu"
       :ifLarger="ifLarger"
+      :headerH="headerH"
+      :toggleMenu="toggleMenu"
       @linkClick="linkClick"
       @itemClick="itemClick"/>
-    <div class="home width100 height100">
-      <div class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
-      <!-- md格式 -->
-      <div class="markdown" v-if="markdownType">
-        <v-md-preview  :text="htmlMD"></v-md-preview>
-      </div>
-      <!-- 图片格式 -->
-      <div v-else-if="imgType" class="image width100">
-        <div>预览 / 点击查看详情</div>
-        <div class="image-wrap flex">
-          <div v-show="!imageLoading" class="image-content" @click="openPopup">
-            <img  @load="imageLoad" :src="htmlMD" :alt="htmlMD"/>
-          </div>
-          <div v-show="imageLoading">
-            <div>github响应有点慢，莫急,已加载{{imageloadingTime}}秒</div>
-            <div class="loading">φ(≧ω≦*)♪图片正在努力加载中</div>
+    <div class="relative width100 height100">
+      <!-- 背景图 -->
+      <div class="bg-image width100 height100 absolute"></div>
+      <div class="home relative width100 height100">
+        <!-- 标题 -->
+        <div class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
+        <!-- md格式 -->
+        <div class="markdown" v-if="markdownType">
+          <v-md-preview  :text="htmlMD"></v-md-preview>
+        </div>
+        <!-- 图片格式 -->
+        <div v-else-if="imgType" class="image width100">
+          <div>预览 / 点击查看详情</div>
+          <div class="image-wrap flex">
+            <div v-show="!imageLoading" class="image-content" @click="openPopup">
+              <img  @load="imageLoad" :src="htmlMD" :alt="htmlMD"/>
+            </div>
+            <div v-show="imageLoading">
+              <div>github响应有点慢，莫急,已加载{{imageloadingTime}}秒</div>
+              <div class="loading">φ(≧ω≦*)♪图片正在努力加载中</div>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- 链接格式,有一些浏览器阻止页面打开新页面 -->
-      <div class="link" v-else-if='linkType'>
-        <a :href="htmlMD">链接： {{htmlMD}}</a>
-      </div>
-      <!-- 其他格式 -->
-      <div v-else class="other-type">
-        <div class="downLoad-cell">链接： {{htmlMD}}</div>
-        <div class="downLoad-cell">文件名： {{downloadName}}</div>
-        <div class="downLoad-cell downLoad-wrap flex">
-          <a class="downLoad" :href="htmlMD" :download="downloadName">下载</a>
+        <!-- 链接格式,有 一些浏览器阻止页面打开新页面 -->
+        <div class="link" v-else-if='linkType'>
+          <a :href="htmlMD">链接： {{htmlMD}}</a>
         </div>
-      </div>
-      <!-- 图片大屏展示 -->
-      <div
-        class="popup flex align-items-center justify-content-center relative"
-        v-if="showPopup"
-        @click="showPopup = false">
-        <img :src="htmlMD" :alt="htmlMD"/>
-        <button
-          ref="closeModal"
-          @keydown.esc="showPopup = false"
-          class="absolute hide-button"></button>
+        <!-- 其他格式 -->
+        <div v-else class="other-type">
+          <div class="downLoad-cell">链接： {{htmlMD}}</div>
+          <div class="downLoad-cell">文件名： {{downloadName}}</div>
+          <div class="downLoad-cell downLoad-wrap flex">
+            <a class="downLoad" :href="htmlMD" :download="downloadName">下载</a>
+          </div>
+        </div>
+        <!-- 图片大屏展示 -->
+        <div
+          class="popup flex align-items-center justify-content-center relative"
+          v-if="showPopup"
+          @click="showPopup = false">
+          <img :src="htmlMD" :alt="htmlMD"/>
+          <button
+            ref="closeModal"
+            @keydown.esc="showPopup = false"
+            class="absolute hide-button"></button>
+        </div>
       </div>
     </div>
   </div>
@@ -59,8 +66,9 @@ import { useRouter } from 'vue-router'
 import axios from '@/common/axios.js'
 import { markdownTypeCheck, imgTypeCheck } from '@/common/methods'
 import list from '@/static/list.js'
+import leftSidebarProps from '@/common/util/left-sidebar-props'
 
-import layoutLeftSidebar from '@/components/left-sidebar'
+import layoutLeftSidebar from '@/components/left-sidebar/left-sidebar'
 
 export default {
   name: 'Home',
@@ -68,20 +76,9 @@ export default {
     layoutLeftSidebar
   },
   props: {
-    leftSidebarW: {
-      type: String,
-      default: '300px'
-    },
-    ifLarger: {
-      type: Boolean,
-      default: true
-    },
-    ifShowMenu: {
-      type: Boolean,
-      default: true
-    }
+    ...leftSidebarProps
   },
-  setup () {
+  setup (props) {
     let timer = null // 定时器
     const closeModal = ref(null) // closeModal引用
     const htmlMD = ref('')
@@ -112,6 +109,7 @@ export default {
     }
     // 项目点击
     const itemClick = (url) => {
+      console.log('url', url)
       const urlSplitArr = url[url.length - 1].split('.')
       type.value = urlSplitArr[urlSplitArr.length - 1] ? urlSplitArr[urlSplitArr.length - 1] : ''
       const urlLink = `./${url.join('/')}`
@@ -194,7 +192,7 @@ export default {
         htmlMD.value = response.data
         type.value = 'md'
       }).catch(_ => {
-        htmlMD.value = '寄'
+        htmlMD.value = '寄拉！'
         type.value = 'md'
       })
     }
@@ -209,6 +207,7 @@ export default {
     // 页面即将初始化
     onBeforeMount(() => {
       const { indexPage } = (() => useRouter().currentRoute.value.query)()
+      props.toggleMenu(false)
       console.log('indexPage', indexPage)
       // 当前路由携带参数
       if (indexPage) {
@@ -263,8 +262,17 @@ export default {
 </script>
 <style lang="scss" scoped>
   .content-inner{
-    .home{
+    .bg-image{
+      background-attachment: fixed;
+      background-image: url("~@/static/image/bingdundun.jpg");
+      background-repeat: no-repeat;
       overflow: scroll;
+      background-position: center center;
+      opacity: 0.15;
+      z-index: 0;
+    }
+    .home{
+      overflow-y: scroll;
       .title{
         box-sizing: border-box;
         padding: 0 30px;
@@ -363,7 +371,7 @@ export default {
         top: 0;
         width: 100vw;
         height: 100vh;
-        overflow: scroll;
+        overflow: auto;
         z-index: 100;
         background-color: rgba(0,0,0,0.7);
         img{

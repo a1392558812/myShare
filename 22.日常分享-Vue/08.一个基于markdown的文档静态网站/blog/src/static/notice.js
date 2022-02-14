@@ -1,7 +1,5 @@
 export const notice = [
   'emmmmm很烦，每周得更新',
-  '增加的对日常分享-杂项中图片显示支持',
-  'ESC可以关闭图片预览',
-  '增加了日常分享-杂项89'
+  '日常分享-杂项更新了！'
 ]
-export const noticeTitle = '2022/1/18更新'
+export const noticeTitle = '2022/2/14更新'

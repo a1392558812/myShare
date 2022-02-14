@@ -3,6 +3,7 @@
     :style="{padding: ifLarger ? '0 50px' : '0 20px'}"
     class="layout-header flex flex-direction-row-reverse justify-content-space-between align-items-center">
     <div class="flex align-items-center justify-content-center">
+      <router-link :to="{path: '/bingDwenDwen'}" class="go-home cursor-pointer">冰墩墩</router-link>
       <div class="go-home cursor-pointer" @click="goHome">首页</div>
       <div class="popup-wrap">
         <commonm-btn :wave-active="true" @btnClick="showPopup = !showPopup">通知</commonm-btn>

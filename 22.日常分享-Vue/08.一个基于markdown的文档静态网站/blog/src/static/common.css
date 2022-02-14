@@ -5,6 +5,9 @@ html,body{
 .overflow-hidden{
   overflow: hidden;
 }
+.flex-1{
+  flex:1;
+}
 .width100{
   width: 100%;
 }
@@ -54,4 +57,17 @@ html,body{
 }
 .cursor-pointer{
   cursor: pointer;
+}
+.align-center{
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.align-center-x{
+  left: 50%;
+  transform: translate(-50%, 0%);
+}
+.align-center-y{
+  top: 50%;
+  transform: translate(0%, -50%);
 }

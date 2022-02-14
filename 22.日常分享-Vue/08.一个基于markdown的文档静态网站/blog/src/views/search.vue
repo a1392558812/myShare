@@ -1,0 +1,86 @@
+<template>
+  <div class="relative width100 height100 flex flex-direction-row">
+    <layout-left-sidebar
+      :leftSidebarW="leftSidebarW"
+      :ifShowMenu="ifShowMenu"
+      :ifLarger="ifLarger"
+      :headerH="headerH"
+      :toggleMenu="toggleMenu"/>
+    <div class="width100 height100 flex flex-direction-column">
+      <div class="search-title width100 flex align-items-center justify-content-center">搜索结果</div>
+      <div class="search-content flex-1">
+        <div
+          class="search-item cursor-pointer"
+          v-for="(item, index) in searchResult"
+          @click="gotoDetails(item)"
+          :key="index">{{item.name}}</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup="props">
+import { defineProps, onBeforeMount, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import list from '@/static/list.js'
+import renderList from '@/common/util/renderList'
+import layoutLeftSidebar from '@/components/left-sidebar/left-sidebar'
+import leftSidebarProps from '@/common/util/left-sidebar-props'
+const allList = renderList(list)
+defineProps(leftSidebarProps)
+const searchResult = ref([])
+const route = useRoute()
+const router = useRouter()
+let inputValue = decodeURI(route.query.key)
+const gotoDetails = (item) => {
+  if (item.noResult) return
+  if (item.link) return window.open(item.link)
+  router.push({
+    path: '/',
+    query: { indexPage: item.indexPage }
+  })
+}
+const init = () => {
+  inputValue = decodeURI(route.query.key)
+  if (inputValue === '') {
+    searchResult.value = [{ name: '请输入关键字', noResult: true }]
+    return
+  }
+  const searchArr = []
+  const filter = (arr) => {
+    if (arr.children) {
+      arr.children.forEach(item => {
+        if (item.children) filter(item)
+        if (item && item.name && !item.children) {
+          (item.name.indexOf(inputValue.trim()) !== -1) && searchArr.push(item)
+        }
+      })
+    }
+  }
+  allList.forEach(filter)
+  searchResult.value = searchArr.length ? searchArr : [{ name: '暂无搜索结果', noResult: true }]
+}
+onBeforeMount(init)
+watch(route, (newV, oldV) => {
+  if (newV.query.key !== inputValue) init()
+})
+</script>
+
+<style scoped lang="scss">
+.search-title{
+  padding: 20px 0;
+  font-size: 25px;
+  border-bottom: 1px solid #eee;
+}
+.search-content{
+  overflow-y: scroll;
+  padding: 30px 10px;
+  .search-item{
+    padding: 10px 20px;
+    &:hover{
+      color: #42b983;
+      text-decoration: underline;
+    }
+  }
+}
+</style>

@@ -16,6 +16,16 @@ const routes = [
     component: () => import(/* webpackChunkName: "error" */ '../views/error.vue')
   },
   {
+    path: '/bingDwenDwen',
+    name: 'BingDwenDwen',
+    component: () => import(/* webpackChunkName: "bingDwenDwen" */ '../views/bingDwenDwen.vue')
+  },
+  {
+    path: '/search',
+    name: 'search',
+    component: () => import(/* webpackChunkName: "search" */ '../views/search.vue')
+  },
+  {
     path: '/404',
     name: '404',
     // route level code-splitting

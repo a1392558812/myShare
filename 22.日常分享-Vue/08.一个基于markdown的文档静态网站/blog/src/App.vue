@@ -1,5 +1,5 @@
 <template>
-  <div id="page">
+  <div id="page" class="overflow-hidden">
     <layout-header
       :ifLarger="ifLarger"
       @toggleMenu="toggleMenu"
@@ -8,7 +8,9 @@
     <div class="content">
       <router-view
         :key="refreshViewKey"
+        :headerH="headerH"
         :ifShowMenu="ifShowMenu"
+        :toggleMenu="toggleMenu"
         :leftSidebarW="leftSidebarW"
         :ifLarger="ifLarger"/>
     </div>
@@ -29,7 +31,7 @@ export default {
   setup () {
     const ifShowMenu = ref(false)
     const ifLarger = useBreakpoints(breakpointsTailwind).greater('sm')
-    const leftSidebarW = ref('400px')
+    const leftSidebarW = ref('320px')
     const refreshViewKey = ref(guid())
     if (!ifLarger) {
       leftSidebarW.value = '100vw'
@@ -41,8 +43,9 @@ export default {
       ifShowMenu,
       refreshViewKey,
       // 切换菜单状态
-      toggleMenu: () => {
-        ifShowMenu.value = !ifShowMenu.value
+      toggleMenu: (state) => {
+        console.log('state', state)
+        ifShowMenu.value = (state !== undefined) ? state : !ifShowMenu.value
       },
       refreshView: () => {
         refreshViewKey.value = guid()
@@ -58,7 +61,7 @@ export default {
   position: relative;
   .content{
     height: calc(100vh - v-bind(headerH));
-    padding-top: v-bind(headerH);
+    margin-top: v-bind(headerH);
   }
 }
 </style>
