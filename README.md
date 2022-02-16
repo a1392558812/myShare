@@ -11,6 +11,7 @@
 
 * 关于图片路径的问题： 属实没办法，兼顾了markdown就没法兼顾网页了（主要是懒得买服务器，都白朴自行车🚲了，还要啥手表）
 
-* 个人 [github地址： https://github.com/a1392558812/myShare](https://github.com/a1392558812/myShare)
-* 个人 [gitee地址：https://gitee.com/a1392558812/miscellaneous/tree/master](https://gitee.com/a1392558812/miscellaneous/tree/master)
+* 个人分享 [github地址： https://github.com/a1392558812/myShare](https://github.com/a1392558812/myShare)
+* 个人分享 [gitee地址：https://gitee.com/a1392558812/miscellaneous/tree/master](https://gitee.com/a1392558812/miscellaneous/tree/master)
 
+* 个人博客：[https://a1392558812.github.io/myShare/#/](https://a1392558812.github.io/myShare/#/)
