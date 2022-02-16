@@ -55,7 +55,6 @@ export default {
     },
     getWaveQuery (e) {
       const data = document.querySelector('#commonBtn').getBoundingClientRect()
-      console.log('data', data)
       if (!data.width || !data.width) return
       data.targetWidth = data.height > data.width ? data.height : data.width
       if (!data.targetWidth) return

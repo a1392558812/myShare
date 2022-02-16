@@ -7,14 +7,19 @@
       :headerH="headerH"
       :toggleMenu="toggleMenu"/>
     <div class="width100 height100 flex flex-direction-column">
-      <div class="search-title width100 flex align-items-center justify-content-center">搜索结果</div>
-      <div class="search-content flex-1">
-        <div
+      <div class="search-title width100 flex align-items-center justify-content-center">
+        <div class="flex align-items-baseline">
+          <p style="margin-right: 10px">搜索结果</p>
+          <p class="search-total">(共计{{searchResult.length}}条)</p>
+        </div>
+      </div>
+      <ul class="search-content flex-1">
+        <li
           class="search-item cursor-pointer"
           v-for="(item, index) in searchResult"
           @click="gotoDetails(item)"
-          :key="index">{{item.name}}</div>
-      </div>
+          :key="index">{{item.name}}</li>
+      </ul>
     </div>
   </div>
 </template>
@@ -52,7 +57,7 @@ const init = () => {
       arr.children.forEach(item => {
         if (item.children) filter(item)
         if (item && item.name && !item.children) {
-          (item.name.indexOf(inputValue.trim()) !== -1) && searchArr.push(item)
+          (item.name.trim().toLowerCase().indexOf(inputValue.trim().toLowerCase()) !== -1) && searchArr.push(item)
         }
       })
     }
@@ -71,11 +76,16 @@ watch(route, (newV, oldV) => {
   padding: 20px 0;
   font-size: 25px;
   border-bottom: 1px solid #eee;
+  .search-total{
+    font-size: 13px;
+    color: #999999;
+  }
 }
 .search-content{
   overflow-y: scroll;
   padding: 30px 10px;
   .search-item{
+    font-size: 16px;
     padding: 10px 20px;
     &:hover{
       color: #42b983;

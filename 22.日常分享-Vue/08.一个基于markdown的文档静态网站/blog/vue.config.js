@@ -1,6 +1,6 @@
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin') // 去掉注释
 const CompressionWebpackPlugin = require('compression-webpack-plugin') // 开启压缩
-const { HashedModuleIdsPlugin } = require('webpack')
+const { HashedModuleIdsPlugin, ProvidePlugin } = require('webpack')
 const isProduction = process.env.NODE_ENV === 'production'
 module.exports = {
   publicPath: './', // 基本路径
@@ -9,7 +9,12 @@ module.exports = {
 
   configureWebpack: config => {
     const plugins = []
-
+    plugins.push(new ProvidePlugin({
+      $: 'jquery',
+      jquery: 'jquery',
+      jQuery: 'jquery',
+      'window.jQuery': 'jquery'
+    }))
     if (isProduction) {
       plugins.push(
         new UglifyJsPlugin({

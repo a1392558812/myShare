@@ -5,7 +5,7 @@
       @toggleMenu="toggleMenu"
       @refreshView="refreshView"
       :headerH="headerH"/>
-    <div class="content">
+    <div class="content relative">
       <router-view
         :key="refreshViewKey"
         :headerH="headerH"
@@ -22,7 +22,7 @@ import { ref } from 'vue'
 import guid from '@/common/util/guid.js'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 
-import layoutHeader from '@/components/header.vue'
+import layoutHeader from '@/components/layout-header.vue'
 
 export default {
   components: {

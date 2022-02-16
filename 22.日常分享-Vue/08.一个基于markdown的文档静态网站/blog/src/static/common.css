@@ -5,6 +5,9 @@ html,body{
 .overflow-hidden{
   overflow: hidden;
 }
+.align-items-baseline{
+  align-items: baseline;
+}
 .flex-1{
   flex:1;
 }
