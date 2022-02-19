@@ -6,7 +6,6 @@ module.exports = {
   publicPath: './', // 基本路径
   assetsDir: 'static',
   productionSourceMap: false, // 去除sourceMap
-
   configureWebpack: config => {
     const plugins = []
     plugins.push(new ProvidePlugin({

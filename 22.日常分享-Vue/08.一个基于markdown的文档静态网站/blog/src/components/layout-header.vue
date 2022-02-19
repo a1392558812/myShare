@@ -2,13 +2,13 @@
   <div
     :style="{padding: ifLarger ? '0 50px' : '0 20px'}"
     class="layout-header flex flex-direction-row-reverse justify-content-space-between align-items-center">
-    <div class="flex align-items-center justify-content-center">
-      <router-link :to="{path: '/bingDwenDwen'}" class="go-home cursor-pointer">冰墩墩</router-link>
-      <div class="go-home cursor-pointer" @click="goHome">首页</div>
-      <div class="popup-wrap">
+    <div class="relative flex align-items-center justify-content-center bg-white">
+      <common-nav-link v-if="ifLarger" :ifLarger="ifLarger" @goHome="goHome"/>
+      <commonm-btn class="nav" v-else :wave-active="true" @click="toggleShowNavLink">导航</commonm-btn>
+      <div class="relative popup-wrap">
         <commonm-btn :wave-active="true" @btnClick="showPopup = !showPopup">通知</commonm-btn>
         <!-- 弹出层 -->
-        <div v-if="showPopup" class="popup">
+        <div v-if="showPopup" class="absolute popup">
           <div class="popup-inner flex flex-direction-column">
             <p class="title flex align-items-center justify-content-center">{{ noticeTitle }}</p>
             <p class="cell">如有疑问联系我QQ:1392558812</p>
@@ -19,18 +19,20 @@
       </div>
     </div>
     <!-- 移动端显示的切换菜单栏按钮 -->
-    <commonm-btn v-if="!ifLarger" :wave-active="true" @btnClick="menuOpen">
+    <commonm-btn v-if="!ifLarger && ifShowHeaderPopupBtn" :wave-active="true" @btnClick="menuOpen">
       <svg class="icon" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2096"><path d="M170.667 170.667h682.666a42.667 42.667 0 0 1 0 85.333H170.667a42.667 42.667 0 1 1 0-85.333z m0 298.666h682.666a42.667 42.667 0 0 1 0 85.334H170.667a42.667 42.667 0 0 1 0-85.334z m0 298.667h682.666a42.667 42.667 0 0 1 0 85.333H170.667a42.667 42.667 0 0 1 0-85.333z" p-id="2097"></path></svg>
     </commonm-btn>
   </div>
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, toRefs } from 'vue'
 
 import { notice, noticeTitle } from '@/static/notice'
 import commonmBtn from '@/components/button'
+import commonNavLink from '@/components/common/nav-link'
+
+import useGoHome from '@/hook/common/useGoHome'
 
 export default {
   name: 'layout-header',
@@ -42,24 +44,35 @@ export default {
     ifLarger: {
       type: Boolean,
       default: true
+    },
+    ifShowHeaderPopupBtn: {
+      type: Boolean,
+      default: true
+    },
+    showNavLink: {
+      type: Boolean,
+      default: false
     }
   },
   components: {
-    commonmBtn
+    commonmBtn,
+    commonNavLink
   },
   setup (props, { emit }) {
     const showPopup = ref(false)
-    const router = useRouter()
+    const { showNavLink } = toRefs(props)
+    const toggleShowNavLink = () => {
+      emit('toggleShowNavLink', !showNavLink.value)
+    }
+    const { goHome } = useGoHome(emit)
     return {
       showPopup,
       notice: reactive(notice),
       noticeTitle: ref(noticeTitle),
+      goHome,
+      toggleShowNavLink,
       menuOpen: () => {
         emit('toggleMenu')
-      },
-      goHome: () => {
-        router.push('/')
-        emit('refreshView')
       }
     }
   }
@@ -79,16 +92,12 @@ export default {
   height: v-bind(headerH);
   background-color: #fff;
   border-bottom: 1px solid #eee;
-  .go-home{
-    margin-right: 30px;
-    color: #00aa88;
-    text-decoration: none;
+  .nav{
+    margin-right: 20px;
   }
   .popup-wrap{
-    position: relative;
     box-sizing: border-box;
     .popup{
-      position: absolute;
       right: 20px;
       top: calc(100% + 15px);
       background-color: #fff;
@@ -136,6 +145,11 @@ export default {
         z-index: 1;
       }
     }
+  }
+  .nav-link-small{
+    width: 60%;
+    background-color: red;
+    border: 5px solid #000;
   }
 }
 </style>

@@ -5,6 +5,15 @@ html,body{
 .overflow-hidden{
   overflow: hidden;
 }
+.overflow-auto{
+  overflow: auto;
+}
+.overflow-y-scroll{
+  overflow: scroll;
+}
+.overflow-x-scroll{
+  overflow: scroll;
+}
 .align-items-baseline{
   align-items: baseline;
 }

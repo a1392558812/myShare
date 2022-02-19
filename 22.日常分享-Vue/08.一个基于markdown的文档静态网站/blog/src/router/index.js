@@ -26,6 +26,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "search" */ '../views/search.vue')
   },
   {
+    path: '/bookmarks',
+    name: 'bookmarks',
+    component: () => import(/* webpackChunkName: "bookmarks" */ '../views/bookmarks.vue')
+  },
+  {
     path: '/404',
     name: '404',
     // route level code-splitting

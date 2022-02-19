@@ -60,6 +60,7 @@ export default {
 .left-sidebar{
   width: v-bind(leftSidebarW);
   flex-shrink: 0;
+  font-size: 16px;
   transition: transform 0.3s;
   border-right: 1px solid #eee;
   padding-left: 20px;

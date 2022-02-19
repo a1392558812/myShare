@@ -109,7 +109,6 @@ export default {
     }
     // 项目点击
     const itemClick = (url) => {
-      console.log('url', url)
       const urlSplitArr = url[url.length - 1].split('.')
       type.value = urlSplitArr[urlSplitArr.length - 1] ? urlSplitArr[urlSplitArr.length - 1] : ''
       const urlLink = `./${url.join('/')}`
@@ -123,7 +122,6 @@ export default {
       if (markdownType.value) {
         return axios.get(urlLink)
           .then((response) => {
-            console.log('response', response)
             if (type.value === 'js') {
               htmlMD.value = '```js' + '\n' + response.data + '\n' + '```'
               return
@@ -262,6 +260,7 @@ export default {
 </script>
 <style lang="scss" scoped>
   .content-inner{
+    font-size: 15px;
     .bg-image{
       background-attachment: fixed;
       background-image: url("~@/static/image/bingdundun.jpg");
