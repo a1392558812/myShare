@@ -1,10 +1,12 @@
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 export default (emit) => {
-  const router = useRouter()
+  const route = useRoute()
   return {
     goHome: () => {
-      router.push('/')
-      emit('refreshView')
+      location.replace(location.href.replace(location.hash, `#${route.path}`))
+      setTimeout(() => {
+        emit('refreshView')
+      }, 0)
     }
   }
 }

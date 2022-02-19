@@ -8,7 +8,7 @@
       @toggleMenu="toggleMenu"
       @toggleShowNavLink="toggleShowNavLink"
       @refreshView="refreshView"/>
-    <div class="content relative" :key="refreshViewKey">
+    <div class="content relative">
       <left-nav-link
         :showNavLink="showNavLink"
         :leftSidebarW="leftSidebarW"
@@ -16,12 +16,12 @@
         @toggleShowNavLink="toggleShowNavLink"
         @refreshView="refreshView"/>
       <router-view
+        :key="refreshViewKey"
         :ifLarger="ifLarger"
         :headerH="headerH"
         :ifShowMenu="ifShowMenu"
         :toggleMenu="toggleMenu"
-        :leftSidebarW="leftSidebarW"
-        @refreshView="refreshView"/>
+        :leftSidebarW="leftSidebarW"/>
     </div>
   </div>
 </template>

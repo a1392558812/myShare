@@ -61,7 +61,7 @@
 
 <script>
 import { ref, watch, nextTick, onBeforeMount, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import axios from '@/common/axios.js'
 import { markdownTypeCheck, imgTypeCheck } from '@/common/methods'
@@ -204,9 +204,8 @@ export default {
 
     // 页面即将初始化
     onBeforeMount(() => {
-      const { indexPage } = (() => useRouter().currentRoute.value.query)()
+      const { indexPage } = useRoute().query
       props.toggleMenu(false)
-      console.log('indexPage', indexPage)
       // 当前路由携带参数
       if (indexPage) {
         hasParamas(indexPage)
