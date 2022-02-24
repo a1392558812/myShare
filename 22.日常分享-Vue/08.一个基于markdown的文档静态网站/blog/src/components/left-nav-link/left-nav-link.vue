@@ -3,10 +3,10 @@
     v-if="!ifLarger"
     :class="showNavLink ? 'translateX-0' : 'translateX-100'"
     class="absolute height100 bg-white left-nav-link">
-    <commonNavLink
+    <common-nav-link
       @goHome="goHome"
       @toggleShowNavLink="toggleShowNavLink"
-      :ifLarger="ifLarger"></commonNavLink>
+      :ifLarger="ifLarger"></common-nav-link>
   </div>
 </template>
 

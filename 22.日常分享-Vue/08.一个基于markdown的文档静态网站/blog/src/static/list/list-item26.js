@@ -107,7 +107,9 @@ export default {
     { name: '91.单点登陆.md' },
     { name: '92.js装饰器.md' },
     { name: '93.苹果官网Ipad mini滚动动画实现原理探究.md' },
-    { name: '94.vue3公共hook提取.md' }
+    { name: '94.vue3公共hook提取.md' },
+    { name: '95.理解hook的意思.md' },
+    { name: '96.一些常用自定义指令整理.md' }
 
   ].reverse()
 }

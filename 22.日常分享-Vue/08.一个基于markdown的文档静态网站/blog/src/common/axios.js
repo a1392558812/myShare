@@ -18,4 +18,17 @@ axios.interceptors.response.use((config) => {
   return config
 })
 
-export default axios
+export default {
+  get: (url) => {
+    return new Promise((resolve, reject) => {
+      axios.get(url)
+        .then(res => {
+          resolve(res)
+        })
+        .catch(e => {
+          NProgress.done()
+          reject(e)
+        })
+    })
+  }
+}

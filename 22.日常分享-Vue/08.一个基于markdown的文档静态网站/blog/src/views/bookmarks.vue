@@ -1,5 +1,5 @@
 <template>
-  <div class="width100 height100 overflow-auto bookmarks">
+  <div class="width100 height100 overflow-auto bookmarks" v-loading="str === ''">
     <div class="html-str" v-html="str"></div>
   </div>
 </template>

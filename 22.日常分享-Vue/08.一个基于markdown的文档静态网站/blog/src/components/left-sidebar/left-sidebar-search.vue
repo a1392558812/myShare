@@ -72,7 +72,7 @@ export default {
           searchResult.value = []
           return
         }
-        let limtNum = 5
+        let limtNum = 10
         const searchArr = []
         const filter = (arr) => {
           if (arr.children && limtNum) {

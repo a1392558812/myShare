@@ -8,9 +8,13 @@ export default {
       default: true
     }
   },
+  emits: ['goHome', 'toggleShowNavLink'],
   setup (props, { emit }) {
     const router = useRouter()
     return {
+      goHome: () => {
+        emit('goHome')
+      },
       navigatorTo: (url) => {
         emit('toggleShowNavLink', false)
         router.push(url)
@@ -24,7 +28,7 @@ export default {
         <div className={this.ifLarger ? 'flex' : smallScreenClass}>
           <div className='go-home cursor-pointer nav-link-item' onClick={() => { this.navigatorTo('/bookmarks') }}>书签</div>
           <div className='go-home cursor-pointer nav-link-item' onClick={() => { this.navigatorTo('/bingDwenDwen') }}>冰墩墩</div>
-          <div className="go-home cursor-pointer nav-link-item" onClick={() => { this.$emit('goHome') }}>首页</div>
+          <div className="go-home cursor-pointer nav-link-item" onClick={() => { this.goHome() }}>首页</div>
         </div>
       </>
     )

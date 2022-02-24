@@ -15,17 +15,18 @@
         <!-- 标题 -->
         <div class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
         <!-- md格式 -->
-        <div class="markdown" v-if="markdownType">
-          <v-md-preview  :text="htmlMD"></v-md-preview>
+        <div class="relative markdown" v-if="markdownType" v-loading="loading">
+          <v-md-preview v-if="!loading" :text="htmlMD"></v-md-preview>
+          <div v-else>加载中...</div>
         </div>
         <!-- 图片格式 -->
         <div v-else-if="imgType" class="image width100">
           <div>预览 / 点击查看详情</div>
           <div class="image-wrap flex">
-            <div v-show="!imageLoading" class="image-content" @click="openPopup">
+            <div v-show="!loading" class="image-content" @click="openPopup">
               <img  @load="imageLoad" :src="htmlMD" :alt="htmlMD"/>
             </div>
-            <div v-show="imageLoading">
+            <div v-show="loading">
               <div>github响应有点慢，莫急,已加载{{imageloadingTime}}秒</div>
               <div class="loading">φ(≧ω≦*)♪图片正在努力加载中</div>
             </div>
@@ -60,7 +61,7 @@
 </template>
 
 <script>
-import { ref, watch, nextTick, onBeforeMount, computed } from 'vue'
+import { ref, nextTick, onBeforeMount, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import axios from '@/common/axios.js'
@@ -85,7 +86,7 @@ export default {
     const title = ref('ReadMe-前言')
     const type = ref('')
     const downloadName = ref('文件')
-    const imageLoading = ref(true)
+    const loading = ref(true)
     const imageloadingTime = ref(1) // 图片加载了多长时间
     const showPopup = ref(false) // 是否显示大图
     // markdown类型
@@ -102,10 +103,56 @@ export default {
     }
     // 链接文章打开一个新的页面
     const linkClick = (url) => {
+      loading.value = false
       type.value = 'link'
       title.value = '链接'
       htmlMD.value = url
       window.open(url)
+    }
+    // 项目点击不同类型回调
+    const itemImageTypeClick = (urlLink) => {
+      htmlMD.value = urlLink
+      clearInterval(timer)
+      imageloadingTime.value = 0
+      timer = setInterval(() => {
+        imageloadingTime.value++
+      }, 1000)
+      scrollTop()
+    }
+    const itemMarkdownTypeClick = (urlLink) => {
+      axios.get(urlLink)
+        .then((response) => {
+          if (type.value === 'js') {
+            htmlMD.value = '```js' + '\n' + response.data + '\n' + '```'
+            return
+          }
+          if (type.value === 'ts') {
+            htmlMD.value = '```typescript' + '\n' + response.data + '\n' + '```'
+            return
+          }
+          if (type.value === 'html') {
+            htmlMD.value = '```html' + '\n' + response.data + '\n' + '```'
+            return
+          }
+          if (type.value === 'jsx') {
+            htmlMD.value = '```jsx' + '\n' + response.data + '\n' + '```'
+            return
+          }
+          htmlMD.value = response.data
+          loading.value = false
+          scrollTop()
+        })
+        .catch(_ => {
+          htmlMD.value = '寄'
+          type.value = 'md'
+          loading.value = false
+        })
+    }
+    const itemOtherTypeClick = (url, urlLink) => {
+      // 其他类型
+      downloadName.value = url[url.length - 1]
+      htmlMD.value = urlLink
+      scrollTop()
     }
     // 项目点击
     const itemClick = (url) => {
@@ -113,41 +160,13 @@ export default {
       type.value = urlSplitArr[urlSplitArr.length - 1] ? urlSplitArr[urlSplitArr.length - 1] : ''
       const urlLink = `./${url.join('/')}`
       title.value = url.join(' > ')
+      loading.value = true
       // 图片类型
-      if (imgType.value) {
-        htmlMD.value = urlLink
-        return
-      }
+      if (imgType.value) return itemImageTypeClick(urlLink)
       // markdown类型
-      if (markdownType.value) {
-        return axios.get(urlLink)
-          .then((response) => {
-            if (type.value === 'js') {
-              htmlMD.value = '```js' + '\n' + response.data + '\n' + '```'
-              return
-            }
-            if (type.value === 'ts') {
-              htmlMD.value = '```typescript' + '\n' + response.data + '\n' + '```'
-              return
-            }
-            if (type.value === 'html') {
-              htmlMD.value = '```html' + '\n' + response.data + '\n' + '```'
-              return
-            }
-            if (type.value === 'jsx') {
-              htmlMD.value = '```jsx' + '\n' + response.data + '\n' + '```'
-              return
-            }
-            htmlMD.value = response.data
-          })
-          .catch(_ => {
-            htmlMD.value = '寄'
-            type.value = 'md'
-          })
-      }
+      if (markdownType.value) return itemMarkdownTypeClick(urlLink)
       // 其他类型
-      downloadName.value = url[url.length - 1]
-      htmlMD.value = urlLink
+      itemOtherTypeClick(url, urlLink)
     }
     // 携带路由参数
     const hasParamas = (indexPage) => {
@@ -186,12 +205,14 @@ export default {
     // 不携带路由参数
     const hsaNotParams = () => {
       const urlLink = './README.md'
+      type.value = 'md'
+      loading.value = true
       axios.get(urlLink).then((response) => {
+        loading.value = false
         htmlMD.value = response.data
-        type.value = 'md'
       }).catch(_ => {
+        loading.value = false
         htmlMD.value = '寄拉！'
-        type.value = 'md'
       })
     }
     // 打开图片模态框
@@ -213,32 +234,13 @@ export default {
         hsaNotParams()
       }
     })
-
-    watch(
-      () => htmlMD.value,
-      (newV, oldV) => {
-        if (newV !== oldV) {
-          imageLoading.value = true
-          scrollTop()
-        }
-        // 如果是图片类型，显示图片加载了多长时间
-        if (imgType.value) {
-          clearInterval(timer)
-          imageloadingTime.value = 0
-          timer = setInterval(() => {
-            imageloadingTime.value++
-          }, 1000)
-        }
-      }
-    )
-
     return {
       markdownType,
       imgType,
       linkType,
       showPopup,
       closeModal,
-      imageLoading,
+      loading,
       htmlMD,
       title,
       type,
@@ -250,7 +252,7 @@ export default {
       imageLoad: () => {
         clearInterval(timer)
         imageloadingTime.value = 0
-        imageLoading.value = false
+        loading.value = false
       }
     }
   }
@@ -279,6 +281,8 @@ export default {
         font-weight: 600;
       }
       .markdown{
+        min-width: 100%;
+        min-height: 100%;
         padding-bottom: 100px;
         z-index: 0;
       }
