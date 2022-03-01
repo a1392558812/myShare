@@ -36,6 +36,7 @@ export default {
       <div className={this.sidebarClassName}>
         <div className="left-sidebar-content">
           <leftSidebarSearch
+            className="search"
             toggleMenu={this.toggleMenu}
             onSearchLinkClick={(link) => { this.$emit('linkClick', link) }}
             onSearchItemClick={(url) => { this.$emit('itemClick', url) }}
@@ -66,24 +67,17 @@ export default {
   padding-left: 20px;
   box-sizing: content-box;
   z-index: 10;
+  .search{
+    padding: 20px 5px 20px 5px;
+    border-bottom: 1px solid #eee;
+  }
   .left-sidebar-content{
     padding-bottom: 30px;
     ::v-deep(.cell){
-      border-bottom: 1px solid #eee;
       line-height: 1.5;
-      .cell-item{
-        .cell-item-link{
-          margin: 5px;
-          height: 14px;
-          border-radius: 5px;
-          padding: 5px 10px;
-          display: inline-block;
-          font-size: 14px;
-          line-height: 1;
-          white-space:nowrap;
-          background-color: skyblue;
-          color: #fff;
-        }
+      .cell-item-title{
+        text-indent: 0.5em;
+        border-bottom: 1px solid #eee;
       }
       .topping{
         margin: 5px;
@@ -95,6 +89,7 @@ export default {
         line-height: 1;
         white-space:nowrap;
         background-color: #42b983;
+        text-indent: 0;
         color: #fff;
       }
     }
@@ -102,13 +97,28 @@ export default {
       position: relative;
       z-index: 0;
       color: #000;
-      padding: 20px 5px;
       font-size: 18px;
       font-weight: 600;
+      .cell-item-title{
+        padding-top: 20px;
+        padding-bottom: 20px;
+        .cell-item-link{
+          margin: 5px;
+          height: 14px;
+          border-radius: 5px;
+          padding: 5px 10px;
+          display: inline-block;
+          font-size: 14px;
+          line-height: 1;
+          white-space:nowrap;
+          text-indent: 0;
+          background-color: skyblue;
+          color: #fff;
+        }
+      }
       .list-active{
         position: absolute;
-        left: -10px;
-        top: 50%;
+        top: 33px;
         transform: translateY(-50%);
         width: 4px;
         border-radius: 200px;
@@ -118,15 +128,40 @@ export default {
     }
     ::v-deep(.item-cell){
       color: #505d6b;
-      padding: 10px 0;
       font-size: 16px;
       font-weight: 400;
+      .cell-item-title{
+        padding-top: 10px;
+        padding-bottom: 10px;
+        .cell-item-link{
+          margin: 5px;
+          height: 14px;
+          border-radius: 5px;
+          padding: 5px 10px;
+          display: inline-block;
+          font-size: 14px;
+          line-height: 1;
+          white-space:nowrap;
+          text-indent: 0;
+          background-color: skyblue;
+          color: #fff;
+        }
+      }
       &:hover{
         color: #42b983;
       }
     }
     ::v-deep(.link-cell){
       color: #006895;
+      font-size: 16px;
+      font-weight: 400;
+      .cell-item-title{
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+      &:hover{
+        color: #42b983;
+      }
     }
     ::v-deep(.item-active){
       color: #42b983;

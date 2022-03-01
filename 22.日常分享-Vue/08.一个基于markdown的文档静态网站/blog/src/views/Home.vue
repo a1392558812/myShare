@@ -15,7 +15,10 @@
         <!-- 标题 -->
         <div class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
         <!-- md格式 -->
-        <div class="relative markdown" v-if="markdownType" v-loading="loading">
+        <div
+          class="relative markdown"
+          v-loading="loading"
+          v-if="markdownType">
           <v-md-preview v-if="!loading" :text="htmlMD"></v-md-preview>
           <div v-else>加载中...</div>
         </div>
@@ -282,7 +285,7 @@ export default {
       }
       .markdown{
         min-width: 100%;
-        min-height: 100%;
+        min-height: calc(100% - 170px);
         padding-bottom: 100px;
         z-index: 0;
       }

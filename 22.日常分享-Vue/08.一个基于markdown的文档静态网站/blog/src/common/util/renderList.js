@@ -3,7 +3,8 @@ const renderList = (list, parentIndex = 0, url = []) => {
     item.indexPage = parentIndex ? `${parentIndex}-${index}` : `${index}`
     item.url = url.length ? [...url, item.name] : [item.name]
     if (item.children) {
-      item.ifShow = false
+      item.ifShow = false // 是否显示
+      item.ifHadRender = false // 是否已经渲染过
       renderList(item.children, item.indexPage, item.url)
     } else {
       item.itemActive = false

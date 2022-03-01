@@ -23,10 +23,13 @@ import listItem22 from './list/list-item22'
 import listItem23 from './list/list-item23'
 import listItem24 from './list/list-item24'
 import listItem25 from './list/list-item25'
-import listItem26 from './list/list-item26'
+
+import miscellaneousList1 from './list/miscellaneous/miscellaneous-list1'
+import interviewList1 from './list/interview/interview-list1'
 import image from './list/image'
 export default [
-  listItem26,
+  miscellaneousList1,
+  interviewList1,
   listItem1,
   listItem2,
   listItem3,
@@ -52,5 +55,5 @@ export default [
   listItem23,
   listItem24,
   listItem25,
-  image,
+  image
 ]

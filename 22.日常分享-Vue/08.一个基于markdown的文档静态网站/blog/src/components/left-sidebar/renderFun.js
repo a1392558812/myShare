@@ -3,13 +3,15 @@
  * @returns {renderFun}
  */
 export default function () {
-  const renderFun = ({ item, grade, list, firstLevelIndex }) => {
+  const renderFun = ({ item, grade, list, firstLevelIndex, ifShow = true }) => {
     if (!item) return null
     grade++
     const renderList = item && item.children ? item.children : []
     // 列表点击
-    const listClick = () => {
+    const listClick = (e) => {
+      e.stopPropagation()
       item.ifShow = !item.ifShow
+      item.ifHadRender = true
       this.nowActive = firstLevelIndex
     }
     // 子项点击
@@ -39,27 +41,47 @@ export default function () {
       }
       return className
     }
+    const titleStyleName = () => {
+      return { marginLeft: `${grade * 25}px` }
+    }
+    const listItemStyle = () => {
+      return { display: `${ifShow ? '' : 'none'}` }
+    }
+    const ifRender = () => {
+      return ('ifHadRender' in item) &&
+        item.ifHadRender &&
+        'ifShow' in item
+    }
     return (<>
-      <div
-        className={className()}
-        onclick={renderList.length ? () => { listClick() } : () => { itemClick() }}
-        style={{ marginLeft: `${grade * 25}px` }}
-        key={item.index}>
-        { grade === 0 && this.nowActive === firstLevelIndex ? (<div className='list-active'></div>) : null }
-        <div className='cell-item'>
-          { item.link ? (<div class='cell-item-link'>链接</div>) : null}
-          {item.name}
-          { item.topping ? (<div className='topping'>置顶</div>) : null}
-        </div>
-      </div>
-      {('ifShow' in item && item.ifShow) ? renderList.map((child, childIndex) => {
-        return (<renderFun
-          item={child}
-          list={renderList}
-          key={childIndex}
-          firstLevelIndex={firstLevelIndex}
-          grade={grade}></renderFun>)
-      }) : null }
+      {
+        (item && item.name) ? (
+          <div
+            className={className()}
+            style={listItemStyle()}
+            onClick={renderList.length ? (e) => {
+              listClick(e)
+            } : () => {
+              itemClick()
+            }}
+            key={item.index}>
+            {grade === 0 && this.nowActive === firstLevelIndex ? (<div className='list-active'></div>) : null}
+            <div style={titleStyleName()} className='cell-item-title'>
+              {item.link ? (<div className='cell-item-link'>链接</div>) : null}
+              {item.name}
+              {item.topping ? (<div className='topping'>置顶</div>) : null}
+            </div>
+            {ifRender() ? renderList.map((child, childIndex) => {
+              return (<renderFun
+                item={child}
+                list={renderList}
+                key={childIndex}
+                ifShow={item.ifShow}
+                firstLevelIndex={firstLevelIndex}
+                grade={grade}></renderFun>)
+            }) : null }
+          </div>
+        ) : null
+      }
     </>)
   }
   return renderFun

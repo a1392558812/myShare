@@ -12,6 +12,7 @@ export default {
     { name: '09.TS.md' },
     { name: '10.Ts复习.md' },
     { name: '11.TS泛型简单理解.md'},
+    { name: '12.Ts一些简单关键字.md' },
     {
       name: 'image',
       children: [
