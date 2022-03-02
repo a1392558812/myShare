@@ -127,6 +127,7 @@ export default {
   border-radius: 5px;
   background: white;
   top: 2em;
+  z-index: 1;
   .drop-down-item{
     background: white;
     font-weight: normal;
