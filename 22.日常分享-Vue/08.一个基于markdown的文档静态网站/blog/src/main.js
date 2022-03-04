@@ -28,4 +28,7 @@ const app = createApp(App)
   .use(router)
   .use(store)
   .use(VMdPreview)
+  .use((app, option) => {
+    console.log('app, option', app, option)
+  }, { data: '这是一个🐮🍺插件' })
 app.mount('#app')

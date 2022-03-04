@@ -1,6 +1,7 @@
 <template>
   <div id="page" class="overflow-hidden">
     <layout-header
+      :style="headerStyle"
       :ifLarger="ifLarger"
       :headerH="headerH"
       :showNavLink="showNavLink"
@@ -27,7 +28,7 @@
 </template>
 <script>
 
-import { ref, watch } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import guid from '@/common/util/guid.js'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useRoute } from 'vue-router'
@@ -42,19 +43,24 @@ export default {
   },
   setup () {
     const ifShowMenu = ref(false)
+    const headerStyle = reactive({}) // meta中给header额外携带的样式
     const showNavLink = ref(false)
     const ifLarger = useBreakpoints(breakpointsTailwind).greater('sm')
     const leftSidebarW = ref('320px')
     const refreshViewKey = ref(guid())
     const route = useRoute()
-    const ifShowHeaderPopupBtn = ref(true) // 头部控制左侧Popup弹出层
+    const ifShowHeaderPopupBtn = ref(false) // 头部控制左侧Popup弹出层
     if (!ifLarger) {
       leftSidebarW.value = '100vw'
     }
     watch(route, (newV) => {
-      ifShowHeaderPopupBtn.value = newV.path !== '/bookmarks'
+      Object.assign(headerStyle, newV.meta.headerStyle)
+      ifShowHeaderPopupBtn.value = ![
+        '/bookmarks'
+      ].includes(newV.path)
     })
     return {
+      headerStyle,
       headerH: ref('70px'),
       showNavLink,
       ifShowMenu,
@@ -80,7 +86,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 #page{
   height: 100vh;
   position: relative;

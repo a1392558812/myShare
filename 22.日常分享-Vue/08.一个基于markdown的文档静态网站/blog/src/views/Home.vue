@@ -27,7 +27,7 @@
           <div>预览 / 点击查看详情</div>
           <div class="image-wrap flex">
             <div v-show="!loading" class="image-content" @click="openPopup">
-              <img  @load="imageLoad" :src="htmlMD" :alt="htmlMD"/>
+              <img @load="imageLoad" @error="imageLoad" :src="htmlMD" :alt="htmlMD"/>
             </div>
             <div v-show="loading">
               <div>github响应有点慢，莫急,已加载{{imageloadingTime}}秒</div>

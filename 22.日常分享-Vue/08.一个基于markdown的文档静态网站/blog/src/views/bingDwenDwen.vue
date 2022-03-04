@@ -6,20 +6,23 @@
       :ifLarger="ifLarger"
       :headerH="headerH"
       :toggleMenu="toggleMenu"/>
-    <div class="flex flex-1 align-items-center justify-content-center">
-      <div id="bingdundun">
-        <div class="body"></div>
-        <div class="earLeft"></div>
-        <div class="earRight"></div>
-        <div class="face"></div>
-        <div class="eyeLeft"></div>
-        <div class="eyeLeft eyeRight"></div>
-        <div class="nose"></div>
-        <div class="mouth"></div>
-        <div class="handLeft"></div>
-        <div class="handRight"></div>
-        <div class="footerLeft"></div>
-        <div class="footerLeft footerRight"></div>
+    <div class="relative width100 height100 flex align-items-center justify-content-center">
+      <div>
+        <div class="width100 notice">这是一个纯css的冰墩墩,掘金大佬做的，觉得好看就放这里来了</div>
+        <div id="bingdundun">
+          <div class="body"></div>
+          <div class="earLeft"></div>
+          <div class="earRight"></div>
+          <div class="face"></div>
+          <div class="eyeLeft"></div>
+          <div class="eyeLeft eyeRight"></div>
+          <div class="nose"></div>
+          <div class="mouth"></div>
+          <div class="handLeft"></div>
+          <div class="handRight"></div>
+          <div class="footerLeft"></div>
+          <div class="footerLeft footerRight"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -31,10 +34,15 @@ import leftSidebarProps from '@/common/util/left-sidebar-props'
 defineProps(leftSidebarProps)
 </script>
 <style scoped lang="scss">
+  .notice{
+    font-size: 15px;
+    text-align: center;
+  }
   #bingdundun {
     position: relative;
     width: 400px;
     height: 400px;
+    overflow: visible;
   }
   #bingdundun .body {
     position: absolute;
