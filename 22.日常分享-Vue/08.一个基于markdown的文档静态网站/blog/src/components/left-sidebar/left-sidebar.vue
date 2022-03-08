@@ -65,7 +65,7 @@ export default {
   transition: transform 0.3s;
   border-right: 1px solid #eee;
   padding-left: 20px;
-  box-sizing: content-box;
+  box-sizing: border-box;
   z-index: 10;
   .search{
     padding: 20px 5px 20px 5px;

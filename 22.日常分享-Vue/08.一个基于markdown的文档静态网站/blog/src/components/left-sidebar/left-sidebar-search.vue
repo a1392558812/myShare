@@ -145,7 +145,7 @@ export default {
   display: block;
   margin-right: 1.5em;
   padding: 5px 8px 5px 2.3em;
-  width: 165px;
+  width: 140px;
   border-radius: 6000px;
   border: none;
   outline: 1px solid #454545;

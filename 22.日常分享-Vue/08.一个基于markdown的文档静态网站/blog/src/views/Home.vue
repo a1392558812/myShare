@@ -8,56 +8,37 @@
       :toggleMenu="toggleMenu"
       @linkClick="linkClick"
       @itemClick="itemClick"/>
-    <div class="relative width100 height100">
+    <div
+      :style="ifLarger ? {width: `calc(100% - ${leftSidebarW})`} : {width: '100%'}"
+      class="relative height100">
       <!-- 背景图 -->
       <div class="bg-image width100 height100 absolute"></div>
       <div class="home relative width100 height100">
         <!-- 标题 -->
-        <div class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
-        <!-- md格式 -->
         <div
-          class="relative markdown"
-          v-loading="loading"
-          v-if="markdownType">
-          <v-md-preview v-if="!loading" :text="htmlMD"></v-md-preview>
-          <div v-else>加载中...</div>
-        </div>
-        <!-- 图片格式 -->
-        <div v-else-if="imgType" class="image width100">
-          <div>预览 / 点击查看详情</div>
-          <div class="image-wrap flex">
-            <div v-show="!loading" class="image-content" @click="openPopup">
-              <img @load="imageLoad" @error="imageLoad" :src="htmlMD" :alt="htmlMD"/>
-            </div>
-            <div v-show="loading">
-              <div>github响应有点慢，莫急,已加载{{imageloadingTime}}秒</div>
-              <div class="loading">φ(≧ω≦*)♪图片正在努力加载中</div>
-            </div>
-          </div>
-        </div>
+          v-if="!markdownType"
+          class="title width100 flex align-items-center justify-content-center">{{ title }}</div>
+        <!-- md格式 -->
+        <markdown-type
+          v-if="markdownType"
+          :title="title"
+          :markdownTitleWidth="markdownTitleWidth"
+          :loading="loading"
+          :ifLarger="ifLarger"
+          :headerH="headerH"
+          :htmlMD="htmlMD"/>
+        <!-- 图片格式   -->
+        <imageType
+          v-else-if="imgType"
+          :htmlMD="htmlMD"
+          @image-load="loading = false"
+          :loading="loading"/>
         <!-- 链接格式,有 一些浏览器阻止页面打开新页面 -->
         <div class="link" v-else-if='linkType'>
           <a :href="htmlMD">链接： {{htmlMD}}</a>
         </div>
         <!-- 其他格式 -->
-        <div v-else class="other-type">
-          <div class="downLoad-cell">链接： {{htmlMD}}</div>
-          <div class="downLoad-cell">文件名： {{downloadName}}</div>
-          <div class="downLoad-cell downLoad-wrap flex">
-            <a class="downLoad" :href="htmlMD" :download="downloadName">下载</a>
-          </div>
-        </div>
-        <!-- 图片大屏展示 -->
-        <div
-          class="popup flex align-items-center justify-content-center relative"
-          v-if="showPopup"
-          @click="showPopup = false">
-          <img :src="htmlMD" :alt="htmlMD"/>
-          <button
-            ref="closeModal"
-            @keydown.esc="showPopup = false"
-            class="absolute hide-button"></button>
-        </div>
+        <other-type v-else :downloadName="downloadName" :htmlMD="htmlMD"/>
       </div>
     </div>
   </div>
@@ -73,25 +54,27 @@ import list from '@/static/list.js'
 import leftSidebarProps from '@/common/util/left-sidebar-props'
 
 import layoutLeftSidebar from '@/components/left-sidebar/left-sidebar'
+import markdownType from '@/components/home/markdown-type'
+import otherType from '@/components/home/other-type'
+import imageType from '@/components/home/image-type'
 
 export default {
   name: 'Home',
   components: {
-    layoutLeftSidebar
+    layoutLeftSidebar,
+    markdownType,
+    otherType,
+    imageType
   },
   props: {
     ...leftSidebarProps
   },
   setup (props) {
-    let timer = null // 定时器
-    const closeModal = ref(null) // closeModal引用
     const htmlMD = ref('')
     const title = ref('ReadMe-前言')
     const type = ref('')
     const downloadName = ref('文件')
     const loading = ref(true)
-    const imageloadingTime = ref(1) // 图片加载了多长时间
-    const showPopup = ref(false) // 是否显示大图
     // markdown类型
     const markdownType = computed(() => markdownTypeCheck(type.value))
     // img类型
@@ -115,16 +98,12 @@ export default {
     // 项目点击不同类型回调
     const itemImageTypeClick = (urlLink) => {
       htmlMD.value = urlLink
-      clearInterval(timer)
-      imageloadingTime.value = 0
-      timer = setInterval(() => {
-        imageloadingTime.value++
-      }, 1000)
       scrollTop()
     }
     const itemMarkdownTypeClick = (urlLink) => {
       axios.get(urlLink)
         .then((response) => {
+          loading.value = false
           if (type.value === 'js') {
             htmlMD.value = '```js' + '\n' + response.data + '\n' + '```'
             return
@@ -142,13 +121,13 @@ export default {
             return
           }
           htmlMD.value = response.data
-          loading.value = false
           scrollTop()
         })
-        .catch(_ => {
+        .catch(e => {
           htmlMD.value = '寄'
           type.value = 'md'
           loading.value = false
+          console.log('error', e)
         })
     }
     const itemOtherTypeClick = (url, urlLink) => {
@@ -164,6 +143,7 @@ export default {
       const urlLink = `./${url.join('/')}`
       title.value = url.join(' > ')
       loading.value = true
+      console.log('markdownType.value', markdownType.value)
       // 图片类型
       if (imgType.value) return itemImageTypeClick(urlLink)
       // markdown类型
@@ -218,13 +198,6 @@ export default {
         htmlMD.value = '寄拉！'
       })
     }
-    // 打开图片模态框
-    const openPopup = () => {
-      showPopup.value = true
-      nextTick(() => {
-        closeModal.value.focus()
-      })
-    }
 
     // 页面即将初始化
     onBeforeMount(() => {
@@ -239,24 +212,16 @@ export default {
     })
     return {
       markdownType,
+      markdownTitleWidth: ref('300px'), // 侧边导航标题栏宽度
       imgType,
       linkType,
-      showPopup,
-      closeModal,
       loading,
       htmlMD,
       title,
       type,
       downloadName,
-      imageloadingTime,
       itemClick,
-      linkClick,
-      openPopup,
-      imageLoad: () => {
-        clearInterval(timer)
-        imageloadingTime.value = 0
-        loading.value = false
-      }
+      linkClick
     }
   }
 
@@ -283,131 +248,10 @@ export default {
         font-size: 18px;
         font-weight: 600;
       }
-      .markdown{
-        min-width: 100%;
-        min-height: calc(100% - 170px);
-        padding-bottom: 100px;
-        z-index: 0;
-      }
-      .image{
-        padding-left: 30px;
-        box-sizing: border-box;
-        .image-wrap{
-          margin-top: 20px;
-        }
-        &-content{
-          max-width: 200px;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          padding: 10px;
-          border-radius: 10px;
-          &::before {
-            content: '';
-            position: absolute;
-            z-index: -2;
-            left: -50%;
-            top: -50%;
-            width: 200%;
-            height: 200%;
-            background-color: #fff;
-            background-repeat: no-repeat;
-            background-size: 50% 50%;
-            background-position: 0 0;
-            background-image: conic-gradient(#399953, #399953);
-            animation: rotate 4s linear infinite;
-          }
-          &::after {
-            content: '';
-            position: absolute;
-            z-index: -1;
-            left: 6px;
-            top: 6px;
-            width: calc(100% - 12px);
-            height: calc(100% - 12px);
-            background: white;
-            border-radius: 5px;
-          }
-          img{
-            display: block;
-            width: 100%;
-            z-index: 2;
-          }
-        }
-        &-btn{
-          margin: 0 10px 10px 0;
-        }
-        .loading {
-          &::after {
-            content: "...";
-            overflow: hidden;
-            display: inline-block;
-            vertical-align: bottom;
-            animation: ellipsis-dot 1s infinite .3s;
-            animation-fill-mode: fowards;
-            width: 1.25em;
-          }
-        }
-      }
-      .other-type{
-        padding: 20px;
-        .downLoad-cell{
-          margin-bottom: 5px;
-        }
-        .downLoad-wrap{
-          .downLoad{
-            display: block;
-            text-decoration: none;
-            color: black;
-            background-color: #eee;
-            line-height: 1;
-            font-size: 14px;
-            padding: 8px 15px;
-            border-radius: 5px;
-          }
-        }
-      }
       .link{
         padding: 20px;
-      }
-      .popup{
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow: auto;
-        z-index: 100;
-        background-color: rgba(0,0,0,0.7);
-        img{
-          max-width: 90%;
-        }
-        .hide-button{
-          padding: 0;
-          border: 0;
-          z-index: -1;
-        }
       }
     }
   }
 
-  @keyframes ellipsis-dot {
-    25% {
-      content: "";
-    }
-    50% {
-      content: ".";
-    }
-    75% {
-      content: "..";
-    }
-    100% {
-      content: "...";
-    }
-  }
-  @keyframes rotate {
-    100% {
-      transform: rotate(1turn);
-    }
-  }
 </style>

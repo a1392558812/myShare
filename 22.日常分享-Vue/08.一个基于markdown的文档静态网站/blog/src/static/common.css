@@ -29,10 +29,15 @@ html,body{
 .absolute{
   position: absolute;
 }
+.fixed{
+  position: fixed;
+}
 .flex{
   display: flex;
 }
-
+.text-align-center{
+  text-align: center;
+}
 .flex-direction-row{
   flex-direction: row;
 }

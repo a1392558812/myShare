@@ -1,6 +1,5 @@
 <script>
 import { useRouter } from 'vue-router'
-import { readonly } from 'vue'
 export default {
   name: 'nav-link',
   props: {
@@ -12,9 +11,7 @@ export default {
   emits: ['goHome', 'toggleShowNavLink'],
   setup (props, { emit }) {
     const router = useRouter()
-    const imageUrl = readonly(require('@/static/image/heishou2.jpg'))
     return {
-      imageUrl,
       goHome: () => {
         emit('goHome')
       },
@@ -38,7 +35,7 @@ export default {
           <div
             className="go-home cursor-pointer nav-link-item flex align-items-center justify-content-start"
             onClick={() => { this.goHome() }}>
-            <img className="heishou" src={this.imageUrl}/>
+            <img className="heishou" src={require('@/static/image/heishou2.jpg')}/>
             <p>首页</p>
           </div>
           <div

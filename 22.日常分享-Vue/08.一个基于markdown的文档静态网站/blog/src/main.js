@@ -16,11 +16,16 @@ import '@kangc/v-md-editor/lib/style/preview.css'
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js'
 import '@kangc/v-md-editor/lib/theme/style/github.css'
 import hljs from 'highlight.js'
+import createCopyCodePlugin from '@kangc/v-md-editor/lib/plugins/copy-code/index'
+import '@kangc/v-md-editor/lib/plugins/copy-code/copy-code.css'
+import createLineNumbertPlugin from '@kangc/v-md-editor/lib/plugins/line-number/index'
 
 import loading from './components/loading/loading.vue'
 import createLoadingLikeDirective from './directive/loading'
 
 VMdPreview.use(githubTheme, { Hljs: hljs })
+VMdPreview.use(createCopyCodePlugin())
+VMdPreview.use(createLineNumbertPlugin())
 
 const app = createApp(App)
   .directive('loading', createLoadingLikeDirective(loading))
