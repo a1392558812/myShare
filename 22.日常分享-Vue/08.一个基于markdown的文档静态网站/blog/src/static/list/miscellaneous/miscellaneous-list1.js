@@ -1,6 +1,5 @@
 export default {
   name: '01.杂项整理',
-  topping: true, // 是否置顶
   children: [
     {
       name: '01.treejs瞎玩',

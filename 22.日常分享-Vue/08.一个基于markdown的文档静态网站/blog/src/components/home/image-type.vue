@@ -1,5 +1,5 @@
 <script>
-import { ref, onMounted, onBeforeMount } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 export default {
   name: 'image-type',
@@ -21,14 +21,23 @@ export default {
     const onKeyDown = (code) => {
       if (showPopup.value && code.keyCode === 27) showPopup.value = false
     }
-    onMounted(() => {
-      clearInterval(timer)
+    const timerFun = () => {
       timer = setInterval(() => {
         imageloadingTime.value++
       }, 1000)
+    }
+
+    watch(() => props.loading, (newV) => {
+      showPopup.value = false
+      imageloadingTime.value = 1
+      clearInterval(timer)
+      if (newV) timerFun()
+    })
+
+    onMounted(() => {
       document.addEventListener('keydown', onKeyDown)
     })
-    onBeforeMount(() => {
+    onUnmounted(() => {
       clearInterval(timer)
       document.removeEventListener('keydown', onKeyDown)
     })

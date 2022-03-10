@@ -28,7 +28,7 @@
           :headerH="headerH"
           :htmlMD="htmlMD"/>
         <!-- 图片格式   -->
-        <imageType
+        <image-type
           v-else-if="imgType"
           :htmlMD="htmlMD"
           @image-load="loading = false"
@@ -81,19 +81,12 @@ export default {
     const imgType = computed(() => imgTypeCheck(type.value))
     // 连接类型
     const linkType = computed(() => type.value === 'link')
+
     // 滚动到顶部
     const scrollTop = () => {
       nextTick(() => {
         document.querySelector('.home').scrollTop = 0
       })
-    }
-    // 链接文章打开一个新的页面
-    const linkClick = (url) => {
-      loading.value = false
-      type.value = 'link'
-      title.value = '链接'
-      htmlMD.value = url
-      window.open(url)
     }
     // 项目点击不同类型回调
     const itemImageTypeClick = (urlLink) => {
@@ -135,6 +128,15 @@ export default {
       downloadName.value = url[url.length - 1]
       htmlMD.value = urlLink
       scrollTop()
+    }
+
+    // 链接文章打开一个新的页面
+    const linkClick = (url) => {
+      loading.value = false
+      type.value = 'link'
+      title.value = '链接'
+      htmlMD.value = url
+      window.open(url)
     }
     // 项目点击
     const itemClick = (url) => {

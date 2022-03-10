@@ -2,6 +2,7 @@ export default {
   name: '02.杂项整理',
   topping: true, // 是否置顶
   children: [
+    { name: '07.vue和react.md' },
     { name: '06.Vue2中修改了数组数值视图不更新.md' },
     { name: '05.Dom可能的性能问题.md' },
     { name: '04.async可能的死锁.md' },

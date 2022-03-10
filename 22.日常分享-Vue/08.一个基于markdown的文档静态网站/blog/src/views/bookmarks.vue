@@ -36,13 +36,13 @@ export default {
     }
     ::v-deep(dt) {
       margin-left: 15px;
+      padding: 10px 0;
     }
     ::v-deep(dl) {
       margin-left: 15px;
     }
     ::v-deep(a) {
-      display: block;
-      margin: 10px 0;
+      display: inline;
       font-size: 16px;
     }
   }

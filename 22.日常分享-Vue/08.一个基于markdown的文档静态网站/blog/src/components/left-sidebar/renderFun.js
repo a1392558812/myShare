@@ -15,19 +15,22 @@ export default function () {
       this.nowActive = firstLevelIndex
     }
     // 子项点击
-    const itemClick = () => {
-      this.nowActive = firstLevelIndex
-      list.map(child => {
-        child.itemActive = false
-        return child
-      })
-      item.itemActive = true
-      this.toggleMenu(false)
-      this.$router.push({
-        path: '/',
-        query: { indexPage: item.indexPage }
-      })
-      this.$emit(item.link ? 'linkClick' : 'itemClick', item.link ? item.link : item.url)
+    const itemClick = (e) => {
+      e.stopPropagation()
+      if (this.$route.query.indexPage !== item.indexPage) {
+        this.nowActive = firstLevelIndex
+        list.map(child => {
+          child.itemActive = false
+          return child
+        })
+        item.itemActive = true
+        this.toggleMenu(false)
+        this.$router.push({
+          path: '/',
+          query: { indexPage: item.indexPage }
+        })
+        this.$emit(item.link ? 'linkClick' : 'itemClick', item.link ? item.link : item.url)
+      }
     }
     const className = () => {
       let className = 'cursor-pointer cell'
@@ -60,8 +63,8 @@ export default function () {
             style={listItemStyle()}
             onClick={renderList.length ? (e) => {
               listClick(e)
-            } : () => {
-              itemClick()
+            } : (e) => {
+              itemClick(e)
             }}
             key={item.index}>
             {grade === 0 && this.nowActive === firstLevelIndex ? (<div className='list-active'></div>) : null}
