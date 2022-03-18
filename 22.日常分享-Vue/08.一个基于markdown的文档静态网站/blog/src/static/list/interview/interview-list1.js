@@ -1,6 +1,7 @@
 export default {
   name: '01.前端圣经',
   children: [
+    { name: '8.圣经.md' },
     { name: '7.圣经.md' },
     { name: '6.圣经.md' },
     { name: '5.圣经.md' },

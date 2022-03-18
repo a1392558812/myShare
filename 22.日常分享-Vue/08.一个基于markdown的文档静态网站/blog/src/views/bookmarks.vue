@@ -5,8 +5,9 @@
 </template>
 
 <script>
-import axios from '@/common/axios.js'
 import { ref } from 'vue'
+import axios from '@/common/axios.js'
+
 export default {
   name: 'bookmarks',
   setup (props) {
