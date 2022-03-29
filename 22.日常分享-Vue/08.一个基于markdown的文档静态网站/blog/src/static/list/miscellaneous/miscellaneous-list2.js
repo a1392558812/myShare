@@ -2,6 +2,7 @@ export default {
   name: '02.杂项整理',
   topping: true, // 是否置顶
   children: [
+    { name: '13.Watch与WatchEffect应用之区别.md' },
     { name: '12.uniapp中rpx与px互相转化.md' },
     { name: '11.vue3响应式原理杂谈.md' },
     { name: '10.JSON不做深拷贝原因.md' },
