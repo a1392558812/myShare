@@ -2,6 +2,8 @@ export default {
   name: '02.杂项整理',
   topping: true, // 是否置顶
   children: [
+    { name: '16.IntersectionObserve观察元素.md' },
+    { name: '15.关于301永久重定向.md' },
     { name: '14.Proxy与Reflect的配合.md' },
     { name: '13.Watch与WatchEffect应用之区别.md' },
     { name: '12.uniapp中rpx与px互相转化.md' },
