@@ -1,8 +1,8 @@
 <script>
 import list from '@/static/list.js'
 import { reactive, ref, computed, onMounted } from 'vue'
-import leftSidebarProps from '@/common/util/left-sidebar-props'
-import renderList from '@/common/util/renderList'
+import leftSidebarProps from '@/common/left-sidebar-props'
+import { renderList } from '@/common/methods'
 import leftSidebarRenderFactoryFun from './renderFun'
 import leftSidebarSearch from './left-sidebar-search'
 

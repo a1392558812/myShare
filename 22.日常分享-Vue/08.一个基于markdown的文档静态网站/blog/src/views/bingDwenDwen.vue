@@ -8,7 +8,9 @@
       :toggleMenu="toggleMenu"/>
     <div class="relative width100 height100 flex align-items-center justify-content-center">
       <div>
-        <div class="width100 notice">这是一个纯css的冰墩墩,掘金大佬做的，觉得好看就放这里来了</div>
+        <div class="width100 notice">这是一个纯css的冰墩墩,掘金大佬做的，</div>
+        <div class="width100 notice">觉得好看就放这里来了。</div>
+        <div class="width100 notice">一时没想好这个页做点啥。</div>
         <div id="bingdundun">
           <div class="body"></div>
           <div class="earLeft"></div>
@@ -30,7 +32,7 @@
 <script setup>
 import { defineProps } from 'vue'
 import layoutLeftSidebar from '@/components/left-sidebar/left-sidebar'
-import leftSidebarProps from '@/common/util/left-sidebar-props'
+import leftSidebarProps from '@/common/left-sidebar-props'
 defineProps(leftSidebarProps)
 </script>
 <style scoped lang="scss">

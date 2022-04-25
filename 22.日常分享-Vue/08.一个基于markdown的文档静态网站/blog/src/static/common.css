@@ -32,6 +32,9 @@ html,body{
 .fixed{
   position: fixed;
 }
+.display-none{
+  display: none;
+}
 .flex{
   display: flex;
 }

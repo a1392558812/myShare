@@ -1,4 +1,4 @@
-export default  {
+export default {
   name: '15.日常分享-基础',
   children: [
     { name: '01.音频视频标签.md' },

@@ -40,3 +40,48 @@ export const imgTypeCheck = (type) => {
     'jpeg'
   ].filter(item => item === type).length
 }
+export const htmlToJson = ($dt, ifRender = false, ifShow = false) => {
+  // h3标签为文件夹名称
+  const $h3 = $dt.children('h3')
+  if ($h3.length === 0) {
+    const $a = $dt.children('a')
+    // 返回该书签的名称和网址组成的对象
+    return $a.length > 0
+      ? Object.freeze({
+        name: $a.text(),
+        href: $a.attr('href'),
+        ...($a.attr('icon') ? { icon: $a.attr('icon') } : {})
+      }) : null
+  }
+  const h3 = $h3.text()
+  const arr = []
+  const obj = { ifRender: false, ifShow: false }
+  // 获取下一级dt标签集合
+  const $dl = $dt.children('dl')
+  const $dtArr = $dl.children('dt')
+  for (let i = 0; i < $dtArr.length; i++) {
+    // 遍历下一级dt标签
+    const tmp = htmlToJson($dtArr.eq(i))
+    // 将返回的对象push至子文件数组
+    arr.push(tmp)
+  }
+  // 创建文件夹与子文件数组的键值对
+  obj.name = h3
+  obj.child = arr
+  // 返回该对象
+  return obj
+}
+export const renderList = (list, parentIndex = 0, url = []) => {
+  return list.map((item, index) => {
+    item.indexPage = parentIndex ? `${parentIndex}-${index}` : `${index}`
+    item.url = url.length ? [...url, item.name] : [item.name]
+    if (item.children) {
+      item.ifShow = false // 是否显示
+      item.ifHadRender = false // 是否已经渲染过
+      renderList(item.children, item.indexPage, item.url)
+    } else {
+      item.itemActive = false
+    }
+    return item
+  })
+}

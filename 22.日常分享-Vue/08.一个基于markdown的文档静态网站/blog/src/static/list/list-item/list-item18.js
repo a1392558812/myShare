@@ -1,4 +1,4 @@
-export default  {
+export default {
   name: '18.日常分享-node',
   children: [
     { name: '01.node了解.md' },

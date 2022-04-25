@@ -28,9 +28,9 @@
 import { defineProps, onBeforeMount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import list from '@/static/list.js'
-import renderList from '@/common/util/renderList'
+import { renderList } from '@/common/methods'
 import layoutLeftSidebar from '@/components/left-sidebar/left-sidebar'
-import leftSidebarProps from '@/common/util/left-sidebar-props'
+import leftSidebarProps from '@/common/left-sidebar-props'
 const allList = renderList(list)
 defineProps(leftSidebarProps)
 const searchResult = ref([])

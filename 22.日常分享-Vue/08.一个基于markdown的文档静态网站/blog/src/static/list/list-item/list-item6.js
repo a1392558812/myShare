@@ -1,4 +1,4 @@
-export default  {
+export default {
   name: '06.日常分享-基础',
   children: [
     { name: '二级菜单的练习.md' },

@@ -51,7 +51,7 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from '@/common/axios.js'
 import { markdownTypeCheck, imgTypeCheck } from '@/common/methods'
 import list from '@/static/list.js'
-import leftSidebarProps from '@/common/util/left-sidebar-props'
+import leftSidebarProps from '@/common/left-sidebar-props'
 
 import layoutLeftSidebar from '@/components/left-sidebar/left-sidebar'
 import markdownType from '@/components/home/markdown-type'
@@ -117,7 +117,7 @@ export default {
           scrollTop()
         })
         .catch(e => {
-          htmlMD.value = '寄'
+          htmlMD.value = '网络寄了，我哭哭~~'
           type.value = 'md'
           loading.value = false
           console.log('error', e)
