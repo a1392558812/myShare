@@ -1,5 +1,5 @@
 <script>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 import navigatorTitle from './navigator-title'
 
 export default {
@@ -34,10 +34,12 @@ export default {
     }
   },
   setup (props) {
-    const preview = ref(null) // marddowb引用
-    const articleTitles = ref([])
-    // 初始化标题
-    const previewInit = () => {
+    const preview = ref(null) // markdown引用
+    const articleTitles = ref([]) // markdown编辑器预览锚点标题
+    const markdownMinHeight = ref('calc(100% - 170px)') // markdown区域的高度
+
+    // 锚点标题动态设定
+    const articleTitlesInit = () => {
       const anchors = preview.value.$el.querySelectorAll('h1,h2,h3,h4,h5,h6')
       const previewTitles = Array.from(anchors).filter((title) => !!title.innerText.trim())
       if (!previewTitles.length) {
@@ -51,12 +53,30 @@ export default {
         indent: hTags.indexOf(el.tagName)
       }))
     }
-    watch(() => props.htmlMD, () => {
-      nextTick(previewInit)
+
+    // markdown部分高度动态设定
+    const setMarkdownMinHeight = () => {
+      console.log('markdown部分高度动态设定')
+      markdownMinHeight.value = `calc(100% - ${100 + $('.home .title').outerHeight()}px)`
+    }
+
+    // 锚点标题动态设定
+    watch(() => props.htmlMD, () => nextTick(() => {
+      articleTitlesInit()
+    }))
+
+    // markdown部分高度动态设定
+    watch(() => props.title, () => {
+      setMarkdownMinHeight()
     })
+
+    // 初始化markdown部分高度动态设定
+    onMounted(setMarkdownMinHeight)
+
     return {
       preview,
       articleTitles,
+      markdownMinHeight,
       handelClick: (e) => {
         let target = $(e.target)
         if (target.hasClass('v-md-copy-code-btn')) {
@@ -102,9 +122,12 @@ export default {
       <>
         <div
           style={this.ifLarger && this.articleTitles.length ? { width: `calc(100% - ${this.markdownTitleWidth})` } : { width: '100%' }}
-          className="title flex align-items-center justify-content-center">{ this.title }</div>
+          className="title flex align-items-center justify-content-center">
+          { this.title }
+        </div>
         <div
           className="relative markdown"
+          style={{ minHeight: this.markdownMinHeight }}
           v-loading={this.loading}>
           {
             !this.loading ? (
@@ -137,14 +160,12 @@ export default {
 <style scoped lang="scss">
   .markdown{
     width: 100%;
-    min-height: calc(100% - 170px);
     padding-bottom: 100px;
     z-index: 0;
   }
   .title{
     box-sizing: border-box;
-    padding: 0 30px;
-    height: 70px;
+    padding: 20px 30px;
     font-size: 18px;
     font-weight: 600;
   }

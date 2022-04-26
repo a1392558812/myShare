@@ -34,7 +34,7 @@ import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useRoute } from 'vue-router'
 import leftNavLink from '@/components/left-nav-link/left-nav-link.vue'
 
-import layoutHeader from '@/components/layout-header.vue'
+import layoutHeader from '@/components/layout-header/layout-header.vue'
 
 export default {
   components: {

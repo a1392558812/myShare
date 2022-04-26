@@ -2,6 +2,7 @@ export default {
   name: '02.杂项整理',
   topping: true, // 是否置顶
   children: [
+    { name: '17.indexDB和离线web.md' },
     { name: '16.IntersectionObserve观察元素.md' },
     { name: '15.关于301永久重定向.md' },
     { name: '14.Proxy与Reflect的配合.md' },

@@ -9,7 +9,9 @@
       @linkClick="linkClick"
       @itemClick="itemClick"/>
     <div
-      :style="ifLarger ? {width: `calc(100% - ${leftSidebarW})`} : {width: '100%'}"
+      :style="ifLarger ? {
+        width: `calc(100% - ${leftSidebarW})`,
+      } : {width: '100%'}"
       class="relative height100">
       <!-- 背景图 -->
       <div class="bg-image width100 height100 absolute"></div>
@@ -214,7 +216,7 @@ export default {
     })
     return {
       markdownType,
-      markdownTitleWidth: ref('300px'), // 侧边导航标题栏宽度
+      markdownTitleWidth: ref('270px'), // 侧边导航标题栏宽度
       imgType,
       linkType,
       loading,
