@@ -55,8 +55,8 @@ export default {
     }
     watch(route, (newV) => {
       Object.assign(headerStyle, newV.meta.headerStyle)
-      ifShowHeaderPopupBtn.value = ![
-        '/bookmarks'
+      ifShowHeaderPopupBtn.value = [
+        '/'
       ].includes(newV.path)
     })
     return {

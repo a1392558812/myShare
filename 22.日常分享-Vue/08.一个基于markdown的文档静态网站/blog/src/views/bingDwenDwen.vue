@@ -11,7 +11,7 @@
         <div class="width100 notice">这是一个纯css的冰墩墩,掘金大佬做的，</div>
         <div class="width100 notice">觉得好看就放这里来了。</div>
         <div class="width100 notice">一时没想好这个页做点啥。</div>
-        <div id="bingdundun">
+        <div style="z-index: -1" id="bingdundun">
           <div class="body"></div>
           <div class="earLeft"></div>
           <div class="earRight"></div>

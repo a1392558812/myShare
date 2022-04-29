@@ -2,6 +2,7 @@ export default {
   name: '02.杂项整理',
   topping: true, // 是否置顶
   children: [
+    { name: '18.js自定义事件定义与触发' },
     { name: '17.indexDB和离线web.md' },
     { name: '16.IntersectionObserve观察元素.md' },
     { name: '15.关于301永久重定向.md' },

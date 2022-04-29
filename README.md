@@ -1,17 +1,14 @@
 ## 分享一些自己日常收获
-* gitee莫名其名的说一些html文件违规，emmmm刷下就好，挺无语的😅😅😅😅，哈密瓜丝，属实是emmmmm(一定要幸福啊)
-* 遇到困难摆大烂，哪里有天才，我只是把别人喝咖啡的工夫用在了喝啤酒上罢了。
-
 ### 1.图片问题
 
 * 关于图片路径的问题： 属实没办法，兼顾了markdown就没法兼顾网页了（主要是懒得买服务器，都白朴自行车🚲了，还要啥手表）
 * 有一些文章加载比较慢，主要是为了处理上面图片路径问题，直接将图片写到markdown中，造成markdown文件过大，🐠和🐻掌不可兼得。
-
-
+* **纵使困顿难行，亦当砥砺奋进！**
 
 <div align=center> 
-      <img src="./image/emmmm.jpg" alt="avatar" style="zoom:50%" />
+      <img src="./image/jiangwei.jpg" alt="avatar" style="zoom:50%" />
     </div>
+
 
 
 ### 2.其他

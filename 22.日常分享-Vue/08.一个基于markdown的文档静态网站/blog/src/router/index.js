@@ -8,7 +8,7 @@ const routes = [
   },
   {
     path: '/bingDwenDwen',
-    name: 'BingDwenDwen',
+    name: 'bingDwenDwen',
     component: () => import(/* webpackChunkName: "bingDwenDwen" */ '../views/bingDwenDwen.vue')
   },
   {
@@ -20,6 +20,11 @@ const routes = [
     path: '/bookmarks',
     name: 'bookmarks',
     component: () => import(/* webpackChunkName: "bookmarks" */ '../views/bookmarks.vue')
+  },
+  {
+    path: '/music',
+    name: 'music',
+    component: () => import(/* webpackChunkName: "music" */ '../views/music.vue')
   },
   {
     path: '/404',

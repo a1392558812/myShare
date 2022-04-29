@@ -11,6 +11,8 @@ import './static/mCustomScrollbar/mCSB_buttons.png'
 import './static/common.css'
 import './static/reset.css'
 
+import VueKinesis from 'vue-kinesis'
+
 import VMdPreview from '@kangc/v-md-editor/lib/preview'
 import '@kangc/v-md-editor/lib/style/preview.css'
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js'
@@ -33,6 +35,7 @@ const app = createApp(App)
   .use(router)
   .use(store)
   .use(VMdPreview)
+  .use(VueKinesis)
   .use((app, option) => {
     console.log('app, option', app, option)
   }, { data: '这是一个🐮🍺插件' })

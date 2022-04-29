@@ -29,7 +29,7 @@ export default {
           this.showPopup
             ? (
               <>
-                <div className={`absolute popup ${this.ifLarger ? 'popup-pc' : 'fixed popup-phone'}`}>
+                <div onClick={this.handelClick} className={`absolute popup ${this.ifLarger ? 'popup-pc' : 'fixed popup-phone'}`}>
                   <div className="popup-inner flex flex-direction-column">
                     <p className="title flex align-items-center justify-content-center">{noticeTitle}</p>
                     <p className="cell">如有疑问联系我QQ:1392558812</p>
@@ -68,6 +68,7 @@ export default {
   .popup-phone{
     top: 50%;
     left: 50%;
+    z-index: 10;
     transform: translate(-50%, -50%);
   }
   .popup{

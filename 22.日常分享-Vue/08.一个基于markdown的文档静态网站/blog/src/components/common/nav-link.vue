@@ -26,12 +26,20 @@ export default {
     return (
       <>
         <div className={this.ifLarger ? 'flex' : smallScreenClass}>
-          <div
-            className='go-home cursor-pointer nav-link-item flex align-items-center justify-content-start'
-            onClick={() => { this.navigatorTo('/bookmarks') }}>书签</div>
-          <div
-            className='go-home cursor-pointer nav-link-item flex align-items-center justify-content-start'
-            onClick={() => { this.navigatorTo('/bingDwenDwen') }}>冰墩墩</div>
+          {
+            [
+              { name: 'listen music', url: '/music' },
+              { name: '书签', url: '/bookmarks' },
+              { name: '冰墩墩', url: '/bingDwenDwen' }
+            ].map(item => {
+              return (
+                <div
+                  className='go-home cursor-pointer nav-link-item flex align-items-center justify-content-start'
+                  key={item.url}
+                  onClick={() => { this.navigatorTo(item.url) }}>{item.name}</div>
+              )
+            })
+          }
           <div
             className="go-home cursor-pointer nav-link-item flex align-items-center justify-content-start"
             onClick={() => { this.goHome() }}>
