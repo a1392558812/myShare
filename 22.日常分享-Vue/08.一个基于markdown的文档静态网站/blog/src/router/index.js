@@ -24,6 +24,9 @@ const routes = [
   {
     path: '/music',
     name: 'music',
+    meta: {
+      ifShowHeaderComponent: false
+    },
     component: () => import(/* webpackChunkName: "music" */ '../views/music.vue')
   },
   {

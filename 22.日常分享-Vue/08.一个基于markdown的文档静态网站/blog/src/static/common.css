@@ -11,8 +11,14 @@ html,body{
 .overflow-y-scroll{
   overflow: scroll;
 }
+.overflow-y-auto{
+    overflow: auto;
+}
 .overflow-x-scroll{
   overflow: scroll;
+}
+.overflow-x-auto{
+    overflow: auto;
 }
 .align-items-baseline{
   align-items: baseline;
@@ -65,6 +71,9 @@ html,body{
 }
 .justify-content-start{
   justify-content: start;
+}
+.justify-content-around{
+    justify-content: space-around;
 }
 .relative{
   position: relative;

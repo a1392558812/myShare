@@ -15,9 +15,10 @@ export default {
       goHome: () => {
         emit('goHome')
       },
-      navigatorTo: (url) => {
+      navigatorTo: (item) => {
+        if (item.newPage) return window.open(`./#${item.url}`)
         emit('toggleShowNavLink', false)
-        router.push(url)
+        router.push(item.url)
       }
     }
   },
@@ -28,7 +29,7 @@ export default {
         <div className={this.ifLarger ? 'flex' : smallScreenClass}>
           {
             [
-              { name: 'listen music', url: '/music' },
+              { name: 'listen music', url: '/music', newPage: true },
               { name: '书签', url: '/bookmarks' },
               { name: '冰墩墩', url: '/bingDwenDwen' }
             ].map(item => {
@@ -36,7 +37,7 @@ export default {
                 <div
                   className='go-home cursor-pointer nav-link-item flex align-items-center justify-content-start'
                   key={item.url}
-                  onClick={() => { this.navigatorTo(item.url) }}>{item.name}</div>
+                  onClick={() => { this.navigatorTo(item) }}>{item.name}</div>
               )
             })
           }

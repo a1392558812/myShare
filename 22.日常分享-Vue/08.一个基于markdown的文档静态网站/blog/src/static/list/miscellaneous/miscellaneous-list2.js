@@ -2,6 +2,7 @@ export default {
   name: '02.杂项整理',
   topping: true, // 是否置顶
   children: [
+    { name: '19.vue的class过渡.md' },
     { name: '18.js自定义事件定义与触发' },
     { name: '17.indexDB和离线web.md' },
     { name: '16.IntersectionObserve观察元素.md' },

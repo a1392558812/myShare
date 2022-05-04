@@ -85,3 +85,4 @@ export const renderList = (list, parentIndex = 0, url = []) => {
     return item
   })
 }
+export const randomXtoY = (x, y) => Math.round(Math.random() * (y - x) + x)

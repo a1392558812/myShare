@@ -89,7 +89,6 @@ module.exports = {
     config
       .plugin('html')
       .tap(args => {
-        console.log('args', args)
         args[0].title = 'Awen的博客'
         return args
       })

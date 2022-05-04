@@ -1,4 +1,4 @@
-export default  {
+export default {
   name: '04.日常分享-基础',
   children: [
     { name: 'div跟随按键移动.md' },
