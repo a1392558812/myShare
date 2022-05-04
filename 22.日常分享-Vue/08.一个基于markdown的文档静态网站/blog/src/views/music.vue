@@ -161,10 +161,12 @@
 <script>
 import { KinesisContainer, KinesisElement, KinesisAudio } from 'vue-kinesis'
 import WaveSurfer from 'wavesurfer.js'
+import { useStore } from 'vuex'
+import { ref, onMounted, watch, onUnmounted, computed, toRefs } from 'vue'
+
 import leftSidebarProps from '@/common/left-sidebar-props'
 import { randomXtoY } from '@/common/methods'
 
-import { ref, onMounted, watch, shallowReactive, onUnmounted, toRefs } from 'vue'
 export default {
   name: 'music',
   components: {
@@ -176,28 +178,10 @@ export default {
     ...leftSidebarProps
   },
   setup (props) {
+    const store = useStore()
     const { ifLarger } = toRefs(props)
     let wavesurfer
-    const list = shallowReactive([
-      {
-        name: '色は匂へど 散りぬるを (花朵艳丽 终会散落)',
-        author: '森永真由美 (もりなが まゆみ)',
-        image: require('@/assets/music/music-bg1.jpg'),
-        url: require('@/assets/music/music1.mp3')
-      },
-      {
-        name: '广寒宫 - 《梦幻西游》月宫门派曲',
-        author: '吴碧霞',
-        image: require('@/assets/music/music-bg2.jpg'),
-        url: require('@/assets/music/music2.mp3')
-      },
-      {
-        name: '风姿花伝 (风姿花传)',
-        author: '谷村新司 (たにむら しんじ)',
-        image: require('@/assets/music/music-bg3.jpg'),
-        url: require('@/assets/music/music3.mp3')
-      }
-    ]) // 歌曲列表
+    const list = computed(() => store.state.musicList) // 歌曲列表
     const randomListFun = () => {
       const listArr = []
       for (let i = 0; i < 9; i++) {
@@ -258,7 +242,7 @@ export default {
         barRadius: 3
       })
       wavesurfer.setMute(true)
-      wavesurfer.load(list[index.value].url)
+      wavesurfer.load(list.value[index.value].url)
       wavesurfer.on('seek', (percentage) => {
         if (ifInitWavesurfer.value) {
           $('audio')[0].currentTime = $('audio')[0].duration * percentage
@@ -302,13 +286,13 @@ export default {
       playAudio.value = false
       ifInitWavesurfer.value = false
       $('audio')[0].pause()
-      if (index.value < list.length - 1) {
+      if (index.value < list.value.length - 1) {
         index.value++
       } else {
         index.value = 0
       }
-      $('audio')[0].src = list[index.value].url
-      wavesurfer.load(list[index.value].url)
+      $('audio')[0].src = list.value[index.value].url
+      wavesurfer.load(list.value[index.value].url)
       randomList.value = randomListFun()
     }
 

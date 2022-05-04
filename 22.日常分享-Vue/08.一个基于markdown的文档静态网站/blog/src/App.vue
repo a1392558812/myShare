@@ -29,11 +29,13 @@
 </template>
 <script>
 
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import guid from '@/common/util/guid.js'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
+import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
 import leftNavLink from '@/components/left-nav-link/left-nav-link.vue'
+import { preloadMusic } from '@/common/methods'
 
 import layoutHeader from '@/components/layout-header/layout-header.vue'
 
@@ -43,6 +45,9 @@ export default {
     leftNavLink
   },
   setup () {
+    const store = useStore()
+
+    const musicList = computed(() => store.state.musicList)
     const ifShowMenu = ref(false) // 是否展示公用头部组件展开左侧抽屉（移动端）的控制按钮
     const showNavLink = ref(false) // 移动端的公用头部组件展开后的左侧【导航抽屉】显影
     const ifShowHeaderPopupBtn = ref(false) // 移动端的公用头部组件展开后的左侧【文章抽屉】显影
@@ -61,6 +66,14 @@ export default {
         '/'
       ].includes(newV.path)
     })
+
+    onMounted(() => {
+      musicList.value.forEach(item => {
+        preloadMusic(item.url)
+        preloadMusic(item.image)
+      })
+    })
+
     return {
       headerH: ref('70px'),
       showNavLink,

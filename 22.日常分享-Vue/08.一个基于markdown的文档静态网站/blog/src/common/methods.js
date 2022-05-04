@@ -86,3 +86,9 @@ export const renderList = (list, parentIndex = 0, url = []) => {
   })
 }
 export const randomXtoY = (x, y) => Math.round(Math.random() * (y - x) + x)
+export const preloadMusic = (url) => {
+  axios({
+    method: 'get',
+    url: url
+  }).then(res => console.log('preloadMusic', res))
+}
