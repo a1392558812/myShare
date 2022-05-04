@@ -309,6 +309,7 @@ export default {
       }
       $('audio')[0].src = list[index.value].url
       wavesurfer.load(list[index.value].url)
+      randomList.value = randomListFun()
     }
 
     return {
