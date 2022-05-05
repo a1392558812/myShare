@@ -11,7 +11,7 @@ import './static/mCustomScrollbar/mCSB_buttons.png'
 import './static/common.css'
 import './static/reset.css'
 
-import VueKinesis from 'vue-kinesis'
+import VueKinesis from '@/static/vue-kinesis/vue-kinesis'
 
 import VMdPreview from '@kangc/v-md-editor/lib/preview'
 import '@kangc/v-md-editor/lib/style/preview.css'

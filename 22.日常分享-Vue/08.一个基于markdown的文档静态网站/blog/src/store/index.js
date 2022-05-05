@@ -4,6 +4,12 @@ export default createStore({
   state: {
     musicList: [
       {
+        name: '风姿花伝 (风姿花传)',
+        author: '谷村新司 (たにむら しんじ)',
+        image: require('@/assets/music/music-bg3.jpg'),
+        url: require('@/assets/music/music3.mp3')
+      },
+      {
         name: '色は匂へど 散りぬるを (花朵艳丽 终会散落)',
         author: '森永真由美 (もりなが まゆみ)',
         image: require('@/assets/music/music-bg1.jpg'),
@@ -14,12 +20,6 @@ export default createStore({
         author: '吴碧霞',
         image: require('@/assets/music/music-bg2.jpg'),
         url: require('@/assets/music/music2.mp3')
-      },
-      {
-        name: '风姿花伝 (风姿花传)',
-        author: '谷村新司 (たにむら しんじ)',
-        image: require('@/assets/music/music-bg3.jpg'),
-        url: require('@/assets/music/music3.mp3')
       }
     ]
   },

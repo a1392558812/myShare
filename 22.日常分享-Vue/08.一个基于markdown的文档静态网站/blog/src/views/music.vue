@@ -159,7 +159,7 @@
 </template>
 
 <script>
-import { KinesisContainer, KinesisElement, KinesisAudio } from 'vue-kinesis'
+import { KinesisContainer, KinesisElement, KinesisAudio } from '@/static/vue-kinesis/vue-kinesis'
 import WaveSurfer from 'wavesurfer.js'
 import { useStore } from 'vuex'
 import { ref, onMounted, watch, onUnmounted, computed, toRefs } from 'vue'
@@ -217,7 +217,7 @@ export default {
       }
       return listArr
     }
-    const randomList = ref(randomListFun())
+    const randomList = ref(randomListFun()) // 获取随机的气泡
     const index = ref(0)
     const rotateDeg = ref(0)
     const ifInitWavesurfer = ref(false) // 是否初始化绘图完成
@@ -251,6 +251,8 @@ export default {
       wavesurfer.on('finish', () => {
         console.log('finish')
         playAudio.value = false
+        $('audio')[0].pause()
+        $('audio')[0].currentTime = 0
       })
       wavesurfer.on('ready', () => {
         console.log('ready')
@@ -274,6 +276,7 @@ export default {
     onUnmounted(() => {
       destroyWavesurfer()
     })
+
     const upContext = (context) => {
       wavesurfer.play($('audio')[0].currentTime)
       rotateDeg.value = rotateDeg.value + 0.05
