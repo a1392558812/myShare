@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<style>
+  html,body{
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .wrap{
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .block{
+    width: 100%;
+    height: 100%;
+    background-attachment: fixed;
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+.block1{
+  background-image: url(./images/bg1.jpg);
+}
+.block2{
+  background-image: url(./images/bg2.jpg);
+}
+.block3{
+  background-image: url(./images/bg3.jpg);
+}
+.block4{
+  background-image: url(./images/bg4.jpg);
+}
+.block5{
+  background-image: url(./images/bg5.jpg);
+}
+.block6{
+  background-image: url(./images/bg6.jpg);
+}
+.content{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-around;
+  font-size: 30px;
+  font-weight: bolder;
+  width: 100%;
+  height: 100%;
+  background: #ff388b;
+}
+</style>
+<body>
+  <div class="wrap">
+    <div class="content">
+      <div>css的视差滚动</div>
+    </div>
+    <div class="block block1"></div>
+    <div class="content">
+      <div>这是第1屏</div>
+    </div>
+    <div class="block block2"></div>
+    <div class="content">
+      <div>这是第2屏</div>
+    </div>
+    <div class="block block3"></div>
+    <div class="content">
+      <div>这是第3屏</div>
+    </div>
+    <div class="block block4"></div>
+    <div class="content">
+      <div>这是第4屏</div>
+    </div>
+    <div class="block block5"></div>
+    <div class="content">
+      <div>这是第5屏</div>
+    </div>
+    <div class="block block6"></div>
+    <div class="content">
+      <div>这是第6屏</div>
+    </div>
+  </div>
+</body>
+</html>
