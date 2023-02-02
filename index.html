@@ -1,1 +1,24 @@
-<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.ico"><title>Awen的博客</title><script defer="defer" type="module" src="static/js/runtime.3d0a604f.js"></script><script defer="defer" type="module" src="static/js/npm.core-js.74c682bd.js"></script><script defer="defer" type="module" src="static/js/npm.vue.3b5135ea.js"></script><script defer="defer" type="module" src="static/js/npm.vueuse.0a4327c4.js"></script><script defer="defer" type="module" src="static/js/npm.vue-router.84924934.js"></script><script defer="defer" type="module" src="static/js/npm.jquery.726657cd.js"></script><script defer="defer" type="module" src="static/js/app.2ce6282f.js"></script><link href="static/css/app.28f17fed.css" rel="stylesheet"><script defer="defer" src="static/js/runtime-legacy.5e4b023c.js" nomodule></script><script defer="defer" src="static/js/npm.core-js-legacy.de10ba72.js" nomodule></script><script defer="defer" src="static/js/npm.vue-legacy.3b5135ea.js" nomodule></script><script defer="defer" src="static/js/npm.vueuse-legacy.0a4327c4.js" nomodule></script><script defer="defer" src="static/js/npm.vue-router-legacy.84924934.js" nomodule></script><script defer="defer" src="static/js/npm.jquery-legacy.726657cd.js" nomodule></script><script defer="defer" src="static/js/app-legacy.3d29e0c2.js" nomodule></script></head><body><noscript><strong>We're sorry but Awen的博客 doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div></body></html>
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <% for (var i in htmlWebpackPlugin.options.cdn && htmlWebpackPlugin.options.cdn.css) { %>
+    <link rel="stylesheet" type="text/css" href="<%= htmlWebpackPlugin.options.cdn.css[i] %>" />
+    <% } %>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+    <!--循环引入-->
+    <% for (var i in htmlWebpackPlugin.options.cdn && htmlWebpackPlugin.options.cdn.js) { %>
+    <script src="<%= htmlWebpackPlugin.options.cdn.js[i] %>" crossorigin="anonymous"></script>
+    <% } %>
+  </body>
+</html>
