@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Edit "{{ post['title'] }}"{% endblock %}</h1>
+{% endblock %}
+
+
+<!-- 
+
+  这个模板有两个表单。第一个提交已编辑过的数据给当前页面（ /<id>/update ）。 另一个表单只包含一个按钮。它指定一个 action 属性，指向删除视图。
+    
+  这个按钮 使用了一些 JavaScript 用以在提交前显示一个确认对话框。
+
+  参数 {{ request.form['title'] or post['title'] }} 用于选择在表单显示什么 数据。当表单还未提交时，显示原 post 数据。
+  
+  但是，如果提交了非法数据，然后 需要显示这些非法数据以便于用户修改时，就显示 request.form 中的数据。 request 是又一个自动在模板中可用的变量。
+ -->
+
+{% block content %}
+  <form method="post">
+    <label for="title">Title</label>
+    <input name="title" id="title"
+      value="{{ request.form['title'] or post['title'] }}" required>
+    <label for="body">Body</label>
+    <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
+    <input type="submit" value="Save">
+  </form>
+  <hr>
+  <form action="{{ url_for('blog.delete', id=post['id']) }}" method="post">
+    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+  </form>
+{% endblock %}

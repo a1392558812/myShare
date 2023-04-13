@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+
+<!-- 
+    【% extends 'base.html' %】 告诉 Jinja 这个模板基于基础模板，并且需要替换 相应的块。所有替换的内容必须位于 【% block %】 标签之内。
+
+    一个实用的模式是把 【% block title %】 放在 【% block header %】 内部。 这里不但可以设置 title 块，还可以把其值作为 header 块的内容， 一举两得。
+
+    input 标记使用了 required 属性。这是告诉浏览器这些字段是必填的。 如果用户使用不支持这个属性的旧版浏览器或者不是浏览器的东西创建的请求， 
+
+    那么你还是要在视图中验证输入数据。总是在服务端中完全验证数据，即使客户端 已经做了一些验证，这一点非常重要。
+ -->
+
+ 
+{% block content %}
+  <form method="post">
+    <label for="username">Username</label>
+    <input name="username" id="username" required>
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required>
+    <input type="submit" value="Register">
+  </form>
+{% endblock %}
