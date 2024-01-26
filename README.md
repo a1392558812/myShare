@@ -26,7 +26,7 @@
 
 ### 个人博客
 
-* 个人博客 [github地址： https://github.com/a1392558812/myShare](https://github.com/a1392558812/myShare)
-* 个人博客 [gitee地址：https://gitee.com/a1392558812/miscellaneous/tree/master](https://gitee.com/a1392558812/miscellaneous/tree/master)
+* github地址：[https://github.com/a1392558812/myShare](https://github.com/a1392558812/myShare)
+* gitee地址：[https://gitee.com/a1392558812/miscellaneous/tree/master](https://gitee.com/a1392558812/miscellaneous/tree/master)
 * 个人博客：[https://awen-blog.netlify.app/#/](https://awen-blog.netlify.app/#/)
 * 个人博客：[https://a1392558812.github.io/myShare/#/](https://a1392558812.github.io/myShare/#/)
