@@ -4,7 +4,7 @@ const path = require('path');
 const targetBasePath = 'D:/Awen/blog';
 const distBasePath = 'D:/Awen/vue-blog/dist';
 const dirFileList = ['demo-static', 'static'];
-const fileList = ['bookmarks.html', 'favicon.ico', 'index.html'];
+const fileList = ['favicon.ico', 'index.html'];
 
 /**
  * 删除文件夹功能
@@ -31,7 +31,7 @@ function deleteDir(url) {
 
     fs.rmdirSync(url); //清除文件夹
   } else {
-    console.log('给定的路径不存在！');
+    console.log('给定的路径不存在！', url);
   }
 }
 
