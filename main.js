@@ -1,3 +1,4 @@
+// node: 版本 18.17.0    npm：版本 6.14.18
 const fs = require('fs');
 const path = require('path');
 

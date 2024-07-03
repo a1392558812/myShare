@@ -1,26 +1,17 @@
 @echo off
-rem Change directory to D:\Awen\vue-blog
-cd /d D:\Awen\vue-blog
+echo 正在执行 main.bat
+ 
+call .\bat\run-build.bat
 
-rem Execute npm run build command
-echo Running npm run build...
-call npm run build
-
-rem 执行 暂停15秒...
-echo Pause for 15 seconds...
-timeout /t 15
+rem 执行 暂停10秒...
+echo Pause for 10 seconds...
+timeout /t 10
 echo Pause End
 
-rem Change directory to D:\Awen\blog
 cd /d D:\Awen\blog
+call .\bat\move-file.bat
 
-rem Execute node ./main.js command
-echo Running node ./main.js...
-node ./main.js
-
-rem Execute node ./menu-list/index.js command
-echo Running node ./menu-list/index.js...
-node ./menu-list/index.js
-
-echo All scripts executed.
-pause
+cd /d D:\Awen\blog
+call .\bat\create-menu.bat
+ 
+echo 回到 main.bat 继续执行
