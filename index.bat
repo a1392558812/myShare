@@ -1,6 +1,8 @@
 @echo off
 echo 正在执行 main.bat
  
+call .\bat\nvm-select.bat
+ 
 call .\bat\run-build.bat
 
 rem 执行 暂停10秒...
