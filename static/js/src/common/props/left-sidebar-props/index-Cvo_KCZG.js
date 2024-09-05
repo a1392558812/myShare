@@ -1,0 +1,1 @@
+const e={leftSidebarW:{type:String,default:"300px"},ifLarger:{type:Boolean,default:!0},ifShowMenu:{type:Boolean,default:!0},toggleMenu:{type:Function,default:()=>{}},headerH:{type:String,default:"70px"}};export{e as l};
