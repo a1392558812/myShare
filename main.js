@@ -1,11 +1,11 @@
 // node: 版本 18.17.0    npm：版本 6.14.18
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const targetBasePath = 'D:/Awen/blog';
-const distBasePath = 'D:/Awen/vue-blog/dist';
-const dirFileList = ['demo-static', 'static'];
-const fileList = ['favicon.ico', 'index.html'];
+const targetBasePath = "F:/awen-project/blog";
+const distBasePath = "F:/awen-project/vue-blog";
+const dirFileList = ["demo-static", "static"];
+const fileList = ["favicon.ico", "index.html"];
 
 /**
  * 删除文件夹功能
@@ -32,7 +32,7 @@ function deleteDir(url) {
 
     fs.rmdirSync(url); //清除文件夹
   } else {
-    console.log('给定的路径不存在！', url);
+    console.log("给定的路径不存在！", url);
   }
 }
 
