@@ -5,7 +5,7 @@ const path = require("path");
 const targetBasePath = "F:/awen-project/blog";
 const distBasePath = "F:/awen-project/vue-blog";
 const dirFileList = ["demo-static", "static"];
-const fileList = ["favicon.ico", "index.html"];
+const fileList = ["favicon.ico", "index.html", "index.html.gz"];
 
 /**
  * 删除文件夹功能
