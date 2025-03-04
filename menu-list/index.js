@@ -20,6 +20,7 @@ const filterFilePath = [
   path.join(basePath, "favicon.ico"),
   path.join(basePath, "index.bat"),
   path.join(basePath, "index.html"),
+  path.join(basePath, "index.html.gz"),
   path.join(basePath, "main.js"),
   path.join(basePath, "README.md"),
 ];
