@@ -1,0 +1,1 @@
+import{_ as t}from"./tabs.vue_vue_type_script_lang-CVt450az.js";import{_ as a}from"../../../../../../plugin-vue_export-helper-BCo6x5W8.js";const e=a(t,[["__scopeId","data-v-cfd74faa"]]);export{e as t};

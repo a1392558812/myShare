@@ -2,8 +2,11 @@
 const fs = require("fs");
 const path = require("path");
 
-const targetBasePath = "F:/awen-project/blog";
-const distBasePath = "F:/awen-project/vue-blog";
+const parentDirectory = path.dirname(__dirname);
+
+const targetBasePath = path.join(parentDirectory, "myShare");
+const distBasePath = path.join(parentDirectory, "vue-blog", "dist");
+
 const dirFileList = ["demo-static", "static"];
 const fileList = ["favicon.ico", "index.html", "index.html.gz"];
 
@@ -32,15 +35,21 @@ function deleteDir(url) {
 
     fs.rmdirSync(url); //清除文件夹
   } else {
-    console.log("给定的路径不存在！", url);
+    fs.mkdir(url, { recursive: true }, (err) => {
+      if (err) {
+        throw err;
+      } else {
+        deleteDir(url);
+      }
+    });
   }
 }
 
 dirFileList.forEach((pathItem) => {
-  deleteDir(`${targetBasePath}/${pathItem}`);
+  deleteDir(path.join(targetBasePath, pathItem));
   fs.cp(
-    `${distBasePath}/${pathItem}`,
-    `${targetBasePath}/${pathItem}`,
+    path.join(distBasePath, pathItem),
+    path.join(targetBasePath, pathItem),
     { recursive: true },
     (err) => {
       if (err) {
@@ -51,8 +60,8 @@ dirFileList.forEach((pathItem) => {
 });
 fileList.forEach((pathItem) => {
   fs.copyFile(
-    `${distBasePath}/${pathItem}`,
-    `${targetBasePath}/${pathItem}`,
+    path.join(distBasePath, pathItem),
+    path.join(targetBasePath, pathItem),
     (err) => {
       if (err) {
         console.error(err);

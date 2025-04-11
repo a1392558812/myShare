@@ -1,7 +1,11 @@
 import fs from "fs";
+import { fileURLToPath } from "url";
 import path from "path";
 
-const basePath = "F:/awen-project/blog";
+const currentFilePath = fileURLToPath(import.meta.url);
+const basePath = path.dirname(path.dirname(currentFilePath));
+
+console.log("basePath", basePath);
 
 const list = [];
 // 过滤的文件夹
