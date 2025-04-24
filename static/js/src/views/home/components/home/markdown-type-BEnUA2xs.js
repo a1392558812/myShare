@@ -1,1 +1,0 @@
-import{_ as e}from"./markdown-type.vue_vue_type_script_lang-0hcCligI.js";import{_ as p}from"../../../../../plugin-vue_export-helper-BCo6x5W8.js";const o=p(e,[["__scopeId","data-v-197c3b4f"]]);export{o as m};
