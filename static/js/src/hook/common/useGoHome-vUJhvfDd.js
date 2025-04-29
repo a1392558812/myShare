@@ -1,1 +1,0 @@
-import{u as e,a as o}from"../../../vue-router-DBqTrJEm.js";const t=t=>{const a=e(),r=o();return{goHome:()=>{"/"===a.path?(location.replace(location.href.replace(location.hash,`#${a.path}`)),setTimeout((()=>{t("refreshView")}),0)):r.push("/")}}};export{t as u};

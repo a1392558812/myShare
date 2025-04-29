@@ -1,0 +1,1 @@
+import{_ as e}from"./nested-components.vue_vue_type_script_lang-EE3wGPsu.js";import{_ as o}from"../../../../../../plugin-vue_export-helper-BCo6x5W8.js";const p=o(e,[["__scopeId","data-v-faac608b"]]);export{p as n};
