@@ -8,7 +8,7 @@ const parentDirectory = path.dirname(__dirname);
 const targetBasePath = path.join(parentDirectory, "myShare");
 const distBasePath = path.join(parentDirectory, "vue-blog", "dist");
 
-const dirFileList = ["demo-static", "static"];
+const dirFileList = ["demo-static", "static", "screenshots"];
 const fileList = [
   "favicon.ico",
   "favicon.svg",
