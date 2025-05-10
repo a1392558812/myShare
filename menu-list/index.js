@@ -1,11 +1,10 @@
 import fs from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
+import { globSync } from "glob";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const basePath = path.dirname(path.dirname(currentFilePath));
-
-console.log("basePath", basePath);
 
 const list = [];
 // 过滤的文件夹
@@ -17,17 +16,48 @@ const filterDirPath = [
   path.join(basePath, "menu-list"),
   path.join(basePath, "static"),
   path.join(basePath, "image"),
+  path.join(basePath, "screenshots"),
+  path.join(basePath, "node_modules"),
 ];
 // 过滤的文件
 const filterFilePath = [
+  path.join(basePath, ".gitignore"),
+  path.join(basePath, ".nojekyll"),
+  path.join(basePath, "apple-touch-icon-180x180.png"),
   path.join(basePath, "bookmarks.html"),
   path.join(basePath, "favicon.ico"),
+  path.join(basePath, "favicon.svg"),
   path.join(basePath, "index.bat"),
   path.join(basePath, "index.html"),
   path.join(basePath, "index.html.gz"),
   path.join(basePath, "main.js"),
+  path.join(basePath, "manifest.webmanifest"),
+  path.join(basePath, "maskable-icon-512x512.png"),
+  path.join(basePath, "netlify.toml"),
+  path.join(basePath, "pwa-64x64.png"),
+  path.join(basePath, "pwa-192x192.png"),
+  path.join(basePath, "pwa-512x512.png"),
   path.join(basePath, "README.md"),
+  path.join(basePath, "sw.js"),
+  path.join(basePath, "sw.js.gz"),
+  path.join(basePath, "vercel.json"),
+  path.join(basePath, "workbox-*.js"),
+  path.join(basePath, "workbox-*.js.gz"),
 ];
+
+// 将通配符匹配的文件转换为路径列表
+let computedFilterFilePath = [];
+
+filterFilePath.forEach((item) => {
+  if (item.split("*").length > 1) {
+    const searchPath = item.replaceAll("\\", "/");
+    const searchPathList = globSync(searchPath);
+    computedFilterFilePath = computedFilterFilePath.concat(searchPathList);
+  } else {
+    computedFilterFilePath.push(item);
+  }
+});
+
 const linkListPath = [
   {
     path: path.join(basePath, "01.杂项整理", "01.treejs瞎玩"),
@@ -103,7 +133,11 @@ const traverseDirectory = (directoryPath, list = []) => {
           }
         }
       } else {
-        if (filterFilePath.findIndex((item) => item === filePath) === -1) {
+        if (
+          computedFilterFilePath.findIndex((item) => {
+            return item === filePath;
+          }) === -1
+        ) {
           // 处理文件
           list.push({ name: file });
         }

@@ -1,1 +1,0 @@
-import{_ as e}from"./left-sidebar-item.vue_vue_type_script_lang-CwXXWNVn.js";import{_ as p}from"../../../../plugin-vue_export-helper-BCo6x5W8.js";const t=p(e,[["__scopeId","data-v-9d8b0da8"]]);export{t as l};
