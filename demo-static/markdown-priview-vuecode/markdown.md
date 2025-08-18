@@ -26,7 +26,7 @@ const value = ref(getValue())
 
 <vue3-file name="App.vue">
 <template>
-    <div class="block" @click="value++">click add me : {{ value }}</div>
+    <div class="block bg-[pink]" @click="value++">click add me : {{ value }}</div>
     <test></test>
 </template>
 <script setup>
