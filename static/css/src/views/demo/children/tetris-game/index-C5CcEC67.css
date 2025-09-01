@@ -1,0 +1,1 @@
+:root{--primary-color: #4a6cf7;--bg-color: #f8f9fa;--text-color: #333;--card-bg: #fff;--border-radius: 8px;--box-shadow: 0 4px 12px rgba(0, 0, 0, .05)}*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif}body{background-color:var(--bg-color);color:var(--text-color);padding:20px;line-height:1.6}#app,#page{height:100%}
