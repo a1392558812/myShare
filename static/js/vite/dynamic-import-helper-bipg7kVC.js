@@ -1,0 +1,1 @@
+const e=(e,n,o)=>{const t=e[n];return t?"function"==typeof t?t():Promise.resolve(t):new Promise(((e,t)=>{("function"==typeof queueMicrotask?queueMicrotask:setTimeout)(t.bind(null,new Error("Unknown variable dynamic import: "+n+(n.split("/").length!==o?". Note that variables only represent file names one level deep.":""))))}))};export{e as _};

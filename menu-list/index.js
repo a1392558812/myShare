@@ -18,6 +18,8 @@ const filterDirPath = [
   path.join(basePath, "image"),
   path.join(basePath, "screenshots"),
   path.join(basePath, "node_modules"),
+  path.join(basePath, "route-list"),
+  path.join(basePath, "async-demo"),
 ];
 // 过滤的文件
 const filterFilePath = [

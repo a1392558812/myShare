@@ -2,6 +2,8 @@
 const fs = require("fs");
 const path = require("path");
 const { glob } = require("glob");
+require("./route-list/index.js");
+require("./menu-list/index.js");
 
 const parentDirectory = path.dirname(__dirname);
 
