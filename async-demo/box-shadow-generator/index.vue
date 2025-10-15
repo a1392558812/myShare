@@ -4,9 +4,16 @@
       <section class="control-panel">
         <div class="header-actions">
           <h2>阴影层控制</h2>
-          <button class="add-layer-btn" @click="addShadowLayer" :disabled="shadowLayers.length >= 5">
-            <span>+</span> 添加阴影层
-          </button>
+
+          <div class="add-layer-wrap">
+            <button class="add-layer-btn" @click="addShadowLayer" :disabled="shadowLayers.length >= 5">
+              <span>+</span> 添加阴影层
+            </button>
+
+            <button class="add-layer-btn" @click="openDialog">
+              查看源码
+            </button>
+          </div>
         </div>
 
         <div class="shadow-layers">
@@ -146,7 +153,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
+import baseConfig from '../static/hooks/extends.js'
+defineOptions({
+  extends: baseConfig({
+    customDialog: import('../components/dialog/index.vue'),
+  }),
+})
 
 // 默认的工厂函数
 const createShadowLayer = (index = 0) => ({
@@ -275,21 +288,7 @@ const loadPreset = (preset) => {
 </script>
 
 <style lang="scss" scoped>
-$primary-color: #4f46e5;
-$secondary-color: #64748b;
-$light-gray: #f8fafc;
-$medium-gray: #e2e8f0;
-$dark-gray: #334155;
-$danger-color: #ef4444;
-$success-color: #10b981;
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 16px;
-$spacing-lg: 24px;
-$border-radius: 8px;
-$transition-speed: 0.2s;
-$shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
-$shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
+@use './async-demo/static/scss/theme.scss';
 
 @mixin control-shared {
   background: white;
@@ -348,21 +347,29 @@ $shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
       font-weight: 600;
     }
 
-    .add-layer-btn {
-      @include button-shared;
-      background-color: $primary-color;
-      color: white;
-      gap: $spacing-xs;
+    .add-layer-wrap {
+      display: flex;
+      gap: $spacing-md;
+      align-items: center;
+      justify-content: center;
 
-      &:hover {
-        background-color: darken($primary-color, 10%);
-      }
+      .add-layer-btn {
+        @include button-shared;
+        background-color: $primary-color;
+        color: white;
+        gap: $spacing-xs;
 
-      &:disabled {
-        background-color: $medium-gray;
-        cursor: not-allowed;
+        &:hover {
+          background-color: darken($primary-color, 10%);
+        }
+
+        &:disabled {
+          background-color: $medium-gray;
+          cursor: not-allowed;
+        }
       }
     }
+
   }
 
   .shadow-layers {

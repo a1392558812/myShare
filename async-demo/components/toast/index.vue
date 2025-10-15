@@ -5,7 +5,6 @@
         zIndex: 9999,
         ...toast.style
       }">
-        <!-- 内容 -->
         <div class="toast-content">
           <div v-if="toast.title" class="toast-title">{{ toast.title }}</div>
           <div class="toast-message" :style="toast.contentStyle">{{ toast.message }}</div>
@@ -18,7 +17,6 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 
-// 响应式数据
 const toast = ref({
   show: false,
   message: '',
@@ -139,7 +137,6 @@ $toast-max-width: 500px;
   }
 }
 
-// 动画效果
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;

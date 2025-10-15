@@ -1,0 +1,1 @@
+import{r}from"../../../@vue-reactivity-v2zUdFSg.js";function e(e){const t=r("url"),n=r(e),o=r(e),a=r([]);return{type:t,inputSrc:n,src:o,fileList:a,beforeUpload:function(r){const e=new FileReader;return e.onload=r=>{const e=r.target.result;o.value=e},e.readAsArrayBuffer(r.target.files[0]),!1}}}export{e as u};

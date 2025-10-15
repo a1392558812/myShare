@@ -1,0 +1,1 @@
+import{_ as e}from"../../../plugin-vue_export-helper-BCo6x5W8.js";import{N as r,c as t,a as o}from"../../../@vue-runtime-core-DQcPG1cz.js";import"../../../@vue-reactivity-v2zUdFSg.js";import"../../../@vue-shared-C0QUMStP.js";const s=e({name:"view-demo"},[["render",function(e,s,i,a,u,m){const n=r("router-view");return o(),t(n)}]]);export{s as default};

@@ -24,11 +24,18 @@
         <span>得分: {{ score }}</span>
       </div>
     </div>
+
+    <codeContent />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+
+import baseConfig from '../static/hooks/extends.js'
+defineOptions({
+  extends: baseConfig(),
+})
 
 // 游戏状态
 const gameState = ref('start') // 'start', 'playing', 'gameOver'
@@ -559,7 +566,9 @@ const drawDino = () => {
 .offline-game-wrap {
   min-height: 100vh;
   min-width: 100vw;
+  padding-top: 100px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 

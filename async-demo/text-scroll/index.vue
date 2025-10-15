@@ -14,10 +14,18 @@
       </div>
     </div>
     <div class="text-scroll-boll"></div>
+    <div class="text-scroll-code">
+      <codeContent />
+    </div>
   </div>
 </template>
 <script setup>
 import { ref } from 'vue'
+import baseConfig from '../static/hooks/extends.js'
+defineOptions({
+  extends: baseConfig(),
+})
+
 const str = ref('这是一条滚动的文本,用于演示animation-timeline，打开【F12】下载完整.vue文件')
 const list = ref(str.value.split(''))
 
@@ -79,6 +87,11 @@ const list = ref(str.value.split(''))
     animation-duration: 1ms;
     animation-timeline: --square-timeline;
     animation-fill-mode: both;
+  }
+
+  .text-scroll-code {
+    position: relative;
+    z-index: 100;
   }
 }
 

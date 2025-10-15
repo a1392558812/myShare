@@ -12,6 +12,7 @@
     </div>
 
     <div class="cloud-controls">
+      <button class="control-btn" @click="openDialog">查看源码</button>
       <button class="control-btn" @click="regenerateCloud">重新生成词云</button>
       <button class="control-btn" @click="isAutoRotating = !isAutoRotating">
         切换旋转isAutoRotating：{{ isAutoRotating }}
@@ -22,15 +23,20 @@
         <span>添加新词</span>
       </button>
     </div>
-
-    <toast ref="toastRef" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import WordCloudCanvas from './components/index.vue'
-import toast from '../components/toast/index.vue'
+import baseConfig, { toastFun } from '../static/hooks/extends.js'
+
+defineOptions({
+  extends: baseConfig({
+    toast: import('../components/toast/index.vue'),
+    customDialog: import('../components/dialog/index.vue'),
+  }),
+})
 
 // 单词数据
 const defaultWords = [
@@ -71,7 +77,6 @@ const defaultWords = [
 const isAutoRotating = ref(true)
 const newWordText = ref('')
 const wordCloudCanvasRef = ref(null)
-const toastRef = ref(null)
 
 const regenerateCloud = () => {
   wordCloudCanvasRef.value.regenerateCloud()
@@ -89,7 +94,7 @@ const addNewWords = () => {
 
 const onCurrentWordClick = (word) => {
   try {
-    toastRef.value.open({
+    toastFun.open({
       message: `点击了单词：${JSON.stringify(word)}`,
       contentStyle: {
         overflow: 'auto',
@@ -104,20 +109,7 @@ const onCurrentWordClick = (word) => {
 </script>
 
 <style scoped lang="scss">
-// 主题颜色和样式变量
-$primary-color: #4f46e5;
-$secondary-color: #64748b;
-$light-gray: #f8fafc;
-$medium-gray: #e2e8f0;
-$dark-gray: #334155;
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 16px;
-$spacing-lg: 24px;
-$border-radius: 8px;
-$transition-speed: 0.3s;
-$shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
-$shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
+@use './async-demo/static/scss/theme.scss';
 
 .cloud-info {
   text-align: center;

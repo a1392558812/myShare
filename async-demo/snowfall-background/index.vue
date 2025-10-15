@@ -43,6 +43,13 @@
         <input type="range" style="width: 100%;" v-model.number="bgOpacity" min="0" max="1" step="0.1" />
       </div>
 
+      <button @click="openDialog({
+        overlayStyle: {
+          zIndex: 1000,
+        },
+        title: '查看源码',
+      })" class="reset-btn">展示源码</button>
+
       <button @click="resetSnowflakes" class="reset-btn">重置雪花</button>
     </div>
 
@@ -51,12 +58,20 @@
         :fall-speed="fallSpeed" :snowflake-size="snowflakeSize" :snowflake-color="snowflakeColor"
         :background-color="computedBackgroundColor" />
     </div>
+
   </div>
 </template>
 
 <script setup>
 import SnowfallBackground from './components/index.vue'
 import { ref, computed } from 'vue'
+import baseConfig from '../static/hooks/extends.js'
+
+defineOptions({
+  extends: baseConfig({
+    customDialog: import('../components/dialog/index.vue'),
+  }),
+})
 
 const snowAmount = ref(5)
 const windDirection = ref(0)

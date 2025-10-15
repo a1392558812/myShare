@@ -1,1 +1,0 @@
-import{a as e}from"../../../axios-DPD4D5Qz.js";import{N as s}from"../../../nprogress-DbBgBvvH.js";e.interceptors.request.use((e=>(s.start(),e))),e.interceptors.response.use((e=>(s.done(),e)));const r={get:r=>new Promise(((t,o)=>{e.get(r).then((e=>{t(e)})).catch((e=>{s.done(),o(e)}))}))};export{r as a};
