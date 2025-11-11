@@ -131,7 +131,7 @@
           <h2>组件配置代码</h2>
           <div class="code-container">
             <pre><code>{{ generateConfigCode }}</code></pre>
-            <button class="copy-button" @click="copyConfig" :class="{ 'copied': copied }">
+            <button class="copy-button" @click="onCopyClick" :class="{ 'copied': copied }">
               {{ copied ? '✓ 已复制' : '📋 复至配置' }}
             </button>
           </div>
@@ -203,7 +203,7 @@ const getRandomColor = () => {
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
-const copyConfig = () => {
+const onCopyClick = () => {
   navigator.clipboard.writeText(generateConfigCode.value).then(() => {
     copied.value = true;
     setTimeout(() => {
@@ -217,7 +217,7 @@ const generateConfigCode = computed(() => {
 
   return `{
   zOffsets: {
-${zOffsetsStr}
+  ${zOffsetsStr}
   },
   sensitivity: ${settings.sensitivity},
   elements: ${customElements.value.length}
@@ -309,24 +309,6 @@ const loadPreset = (preset) => {
 
 <style lang="scss" scoped>
 @use './async-demo/static/scss/theme.scss';
-
-@mixin control-shared {
-  background: white;
-  border-radius: $border-radius;
-  transition: all $transition-speed;
-}
-
-@mixin button-shared {
-  border: none;
-  border-radius: $border-radius;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all $transition-speed;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 
 .app-container {
   height: calc(100vh - $spacing-md * 2);
@@ -619,7 +601,7 @@ const loadPreset = (preset) => {
             background-color: $primary-color;
             color: white;
             font-size: 12px;
-            padding: 4px 8px;
+            padding: $spacing-xs $spacing-sm;
 
             &:hover {
               background-color: darken($primary-color, 10%);

@@ -1,71 +1,82 @@
-<template>
-  <div class="toast-container">
-    <transition name="toast" tag="div">
-      <div v-if="toast.show" class="toast" :style="{
-        zIndex: 9999,
-        ...toast.style
-      }">
-        <div class="toast-content">
-          <div v-if="toast.title" class="toast-title">{{ toast.title }}</div>
-          <div class="toast-message" :style="toast.contentStyle">{{ toast.message }}</div>
-        </div>
-      </div>
-    </transition>
-  </div>
-</template>
+<script lang="jsx">
+import { ref, onUnmounted, Transition } from 'vue'
+export default {
+  setup() {
+    const toast = ref({
+      show: false,
+      message: '',
+      title: '',
+      type: 'info', // success error warning info
+      duration: 2500,
+      autoClose: true,
+      onClose: null,
+      style: {
+        top: '20px',
+      },
+      contentStyle: {},
+      contentSlot: '',
+      verticalOffset: 0,
+    })
 
-<script setup>
-import { ref, onUnmounted } from 'vue'
+    let timer = null
 
-const toast = ref({
-  show: false,
-  message: '',
-  title: '',
-  type: 'info', // success error warning info
-  duration: 2500,
-  autoClose: true,
-  onClose: null,
-  style: {
-    top: '20px',
-  },
-  contentStyle: {},
-  verticalOffset: 0,
-})
-
-let timer = null
-
-const addToast = (options = {}) => {
-  removeToast()
-  Object.assign(toast.value, options, { show: true })
-  if (toast.value.autoClose) {
-    timer = setTimeout(() => {
+    const addToast = (options = {}) => {
       removeToast()
-    }, toast.value.duration)
+      try {
+        Object.assign(toast.value, options, { show: true })
+        if (toast.value.autoClose) {
+          timer = setTimeout(() => {
+            removeToast()
+          }, toast.value.duration)
+        }
+      } catch (error) {
+        console.error('添加toast失败:', error);
+      }
+    }
+
+    // 移除toast
+    const removeToast = () => {
+      toast.value.show = false
+      if (timer) {
+        clearTimeout(timer)
+      }
+      if (toast.value.onClose) {
+        toast.value.onClose()
+      }
+    }
+
+    onUnmounted(() => {
+      removeToast()
+    })
+    return {
+      toast,
+      close: removeToast,
+      open: addToast
+    }
+  },
+  render() {
+    return (<div class="toast-container">
+      <Transition name="toast" tag="div">
+        {
+          this.toast && this.toast.show ? (<div class="toast" style={{ zIndex: 9999, ...this.toast.style }}>
+            <div class="toast-content">
+              {
+                this.toast.title ? (<div class="toast-title">{this.toast.title}</div>) : null
+              }
+              <div class="toast-message" style={this.toast.contentStyle}>
+                {this.toast.contentSlot}
+                {
+                  this.toast.contentSlot ? this.toast.contentSlot() : this.toast.message
+                }
+              </div>
+            </div>
+          </div>) : null
+        }
+      </Transition>
+    </div>)
   }
 }
 
-// 移除toast
-const removeToast = () => {
-  toast.value.show = false
-  if (timer) {
-    clearTimeout(timer)
-  }
-  if (toast.value.onClose) {
-    toast.value.onClose()
-  }
-}
-
-
-
-onUnmounted(() => {
-  removeToast()
-})
-
-// 导出
-defineExpose({
-  close: removeToast,
-  open: addToast
-})
 </script>
 
 <style scoped lang="scss">

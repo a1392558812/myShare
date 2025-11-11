@@ -135,7 +135,7 @@
           <h2>CSS 代码</h2>
           <div class="code-container">
             <pre><code>{{ boxShadowCSS }}</code></pre>
-            <button class="copy-button" @click="copyToClipboard" :class="{ 'copied': copied }">
+            <button class="copy-button" @click="onCopyClick" :class="{ 'copied': copied }">
               {{ copied ? '✓ 已复制' : '📋 复制代码' }}
             </button>
           </div>
@@ -161,7 +161,6 @@ defineOptions({
   }),
 })
 
-// 默认的工厂函数
 const createShadowLayer = (index = 0) => ({
   x: 2 + index * 3,          // X轴偏移量
   y: 2 + index * 3,          // Y轴偏移
@@ -179,9 +178,8 @@ const shadowLayers = ref([
 
 const activeLayerIndex = ref(0);
 
-const copied = ref(false);// 复制状态
+const copied = ref(false);
 
-// 设置当前活动层索引
 const setActiveLayer = (index) => {
   activeLayerIndex.value = index;
 };
@@ -207,16 +205,13 @@ const toggleLayerVisibility = (index) => {
   shadowLayers.value[index].visible = !shadowLayers.value[index].visible;
 };
 
-// 计算带透明度的颜色
 const getColorWithOpacity = (layer) => {
-  // 解析十六进制颜色
   const r = parseInt(layer.color.slice(1, 3), 16);
   const g = parseInt(layer.color.slice(3, 5), 16);
   const b = parseInt(layer.color.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${layer.opacity})`;
 };
 
-// 计算box-shadow样式1
 const boxShadowStyle = computed(() => {
   // 过滤出可见的阴影层
   const visibleLayers = shadowLayers.value.filter(layer => layer.visible);
@@ -251,7 +246,7 @@ const boxShadowCSS = computed(() => {
   return `box-shadow: ${shadows.join(joinWith)};`;
 });
 
-const copyToClipboard = () => {
+const onCopyClick = () => {
   navigator.clipboard.writeText(boxShadowCSS.value).then(() => {
     copied.value = true;
     setTimeout(() => {
@@ -290,24 +285,6 @@ const loadPreset = (preset) => {
 <style lang="scss" scoped>
 @use './async-demo/static/scss/theme.scss';
 
-@mixin control-shared {
-  background: white;
-  border-radius: $border-radius;
-  transition: all $transition-speed;
-}
-
-@mixin button-shared {
-  border: none;
-  border-radius: $border-radius;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all $transition-speed;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .app-container {
   height: calc(100vh - $spacing-md * 2);
   background-color: $light-gray;
@@ -324,7 +301,6 @@ const loadPreset = (preset) => {
   height: 100%;
 }
 
-// 控制面板样式
 .control-panel {
   @include control-shared;
   width: calc((100% - $spacing-lg) / 2);
@@ -562,7 +538,6 @@ const loadPreset = (preset) => {
   }
 }
 
-// 预览面板样式
 .preview-panel {
   display: flex;
   flex-direction: column;
@@ -622,7 +597,7 @@ const loadPreset = (preset) => {
 
         button {
           @include button-shared;
-          padding: 4px 8px;
+          padding: $spacing-xs $spacing-sm;
           font-size: 13px;
           background-color: white;
           border: 1px solid $medium-gray;
@@ -671,7 +646,7 @@ const loadPreset = (preset) => {
         background-color: $primary-color;
         color: white;
         gap: $spacing-xs;
-        padding: 4px 8px;
+        padding: $spacing-xs $spacing-sm;
         font-size: 13px;
 
         &:hover {

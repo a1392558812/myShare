@@ -345,24 +345,6 @@ initializeTableData();
 <style lang="scss" scoped>
 @use './async-demo/static/scss/theme.scss';
 
-@mixin control-shared {
-  background: white;
-  border-radius: $border-radius;
-  transition: all $transition-speed;
-}
-
-@mixin button-shared {
-  border: none;
-  border-radius: $border-radius;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all $transition-speed;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .app-container {
   width: calc(100vw - $spacing-md * 2);
   background-color: $light-gray;

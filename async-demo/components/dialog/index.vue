@@ -2,8 +2,8 @@
   <div class="dialog-overlay" :style="dialogData.overlayStyle" v-show="dialogData.show" @click="dialogData.close">
     <transition name="dialog-fade">
       <div class="dialog-container" :style="dialogData.containerStyle" v-if="dialogData.show" @click.stop="() => { }">
-        <div class="dialog-header" :style="dialogData.containerHeaderStyle">
-          <div>{{ dialogData.title }}</div>
+        <div class="dialog-header" :style="dialogData.containerHeaderStyle" @mousedown="handleDragStart">
+          <div class="dialog-title">{{ dialogData.title }}</div>
           <button class="dialog-close-btn" @click="dialogData.close">
             ×
           </button>
@@ -35,6 +35,9 @@ const dialogDataFun = () => ({
   containerFooterBtnStyle: {},
   containerFooterCancelBtnStyle: {},
   containerFooterConfirmBtnStyle: {},
+  isDragging: false,
+  dragStart: { x: 0, y: 0 },
+  position: { x: 0, y: 0 }, // 拖拽位置
   close: () => {
     dialogData.show = false
   },
@@ -52,13 +55,60 @@ const handleEscKey = (event) => {
   }
 }
 
+const handleDragStart = (event) => {
+  if (!dialogData.show) return;
+
+  const containerRect = event.currentTarget.closest('.dialog-container').getBoundingClientRect();
+  dialogData.isDragging = true;
+  dialogData.dragStart = {
+    x: event.clientX - containerRect.left,
+    y: event.clientY - containerRect.top
+  };
+
+  document.body.style.cursor = 'grabbing';
+};
+
+const handleDragMove = (event) => {
+  if (!dialogData.isDragging) return;
+
+  const newX = event.clientX - dialogData.dragStart.x;
+  const newY = event.clientY - dialogData.dragStart.y;
+
+  dialogData.position = { x: newX, y: newY };
+
+  dialogData.containerStyle = {
+    ...dialogData.containerStyle,
+    position: 'absolute',
+    left: `${newX}px`,
+    top: `${newY}px`,
+  };
+};
+
+const handleDragEnd = () => {
+  dialogData.isDragging = false;
+  document.body.style.cursor = 'default';
+};
+
 const showDialog = (options = {}) => {
   Object.assign(dialogData, dialogDataFun(), options, { show: true })
   document.addEventListener('keydown', handleEscKey);
+
+  if (dialogData.show) {
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('mouseleave', handleDragEnd);
+  }
 }
 const hideDialog = (options = {}) => {
   Object.assign(dialogData, dialogDataFun(), options, { show: false })
   document.removeEventListener('keydown', handleEscKey);
+
+  document.removeEventListener('mousemove', handleDragMove);
+  document.removeEventListener('mouseup', handleDragEnd);
+  document.removeEventListener('mouseleave', handleDragEnd);
+
+  dialogData.isDragging = false;
+  document.body.style.cursor = 'default';
 }
 
 defineExpose({
@@ -80,6 +130,8 @@ defineExpose({
   display: flex;
   justify-content: center;
   align-items: center;
+  /* 支持绝对定位的子元素 */
+  transform: translateZ(0);
 }
 
 .dialog-container {
@@ -93,6 +145,9 @@ defineExpose({
   height: 80%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  min-width: 300px;
+  min-height: 200px;
 }
 
 .dialog-header {
@@ -103,6 +158,12 @@ defineExpose({
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: $spacing-md;
+  cursor: move;
+  user-select: none;
+
+  .dialog-title {
+    pointer-events: none;
+  }
 
   .dialog-close-btn {
     font-size: 1.2rem;
@@ -111,6 +172,7 @@ defineExpose({
     border-radius: 999px;
     border: none;
     background: transparent;
+    pointer-events: auto;
   }
 }
 
