@@ -141,6 +141,7 @@ export const colorPicker = {
             border: "1px solid #ddd",
             borderRadius: "4px",
             padding: "4px",
+            flexShrink: 0,
           },
           ref: colorPickerRef,
           onClick: (e) => {
@@ -257,6 +258,18 @@ export const colorPicker = {
                           fontSize: "13px",
                           backgroundColor: "#f5f5f5",
                           color: "#666",
+                          cursor: "pointer",
+                        },
+                        onClick: (e) => {
+                          if (e.target.value === "已复制") return;
+                          navigator.clipboard
+                            .writeText(currentRgba.value)
+                            .then(() => {
+                              e.target.value = "已复制";
+                              setTimeout(() => {
+                                e.target.value = currentRgba.value;
+                              }, 2000);
+                            });
                         },
                       }),
                       h("div", {
@@ -288,24 +301,33 @@ export const colorPicker = {
                       h(
                         "span",
                         { style: { fontSize: "13px", flexShrink: 0 } },
-                        "透明度："
+                        `透明度(${a.value}):`
                       ),
                       h("input", {
-                        type: "range",
+                        type: "number",
                         min: 0,
                         max: 1,
                         step: 0.01,
                         value: a.value,
                         onInput: (e) => {
                           console.log(e.target.value);
-                          a.value = +e.target.value;
+                          let val = +e.target.value;
+                          if (isNaN(val) || val < 0) {
+                            val = 0;
+                          } else if (val >= 1) {
+                            val = 1;
+                          }
+                          val = val.toFixed(2);
+                          e.target.value = +val;
+                          a.value = +val;
                         },
                         style: {
                           width: "100%",
-                          height: "0px",
-                          borderRadius: "0px",
-                          outline: "none",
-                          padding: "8px 0",
+                          padding: "6px 8px",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          fontSize: "13px",
+                          backgroundColor: "#fff",
                         },
                       }),
                     ]
