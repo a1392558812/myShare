@@ -51,6 +51,7 @@ const inputCom = defineComponent({
         e.target.checked = value;
       }
       emit('update:modelValue', value);
+      console.log('value', value);
       e.target.value = value;
     }
 

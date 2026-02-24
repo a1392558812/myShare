@@ -20,6 +20,7 @@ const filterDirPath = [
   path.join(basePath, "node_modules"),
   path.join(basePath, "route-list"),
   path.join(basePath, "async-demo"),
+  path.join(basePath, ".trae"),
 ];
 // 过滤的文件
 const filterFilePath = [
@@ -123,7 +124,7 @@ const traverseDirectory = (directoryPath, list = []) => {
         const children = [];
         if (filterDirPath.findIndex((item) => item === filePath) === -1) {
           const index = linkListPath.findIndex(
-            (item) => item.path === filePath
+            (item) => item.path === filePath,
           );
           if (index === -1) {
             list.push({ name: file, children });
@@ -155,7 +156,7 @@ const traverseDirectory = (directoryPath, list = []) => {
 traverseDirectory(basePath, list);
 menuListSort.forEach((_, index) => {
   const targetIndex = list.findIndex(
-    (item) => item.name === menuListSort[index].name
+    (item) => item.name === menuListSort[index].name,
   );
   moveItem(list, targetIndex, index);
 });
@@ -171,5 +172,5 @@ fs.writeFile(
       return;
     }
     console.log("文件写入成功");
-  }
+  },
 );

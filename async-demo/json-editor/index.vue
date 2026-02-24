@@ -1,54 +1,40 @@
 <template>
-  <div class="app-container">
-    <main class="main-content">
-      <section class="control-panel">
-        <div class="header-actions">
-          <h2>JSON 编辑器</h2>
-          <div class="add-layer-wrap">
-            <button class="add-layer-btn" @click="openDialog({ overlayStyle: { zIndex: 1000 } })">查看源码</button>
-          </div>
+  <div class="">
+    <!-- 使用参考的布局组件 -->
+    <app-container>
+      <layout-com style="width: calc(500px - 24px); flex-shrink: 0;" title="JSON 编辑器" type="panel" :addLayerBtnList="[
+        { label: '查看源码', callback: () => openDialog({ overlayStyle: { zIndex: 1000 } }) }
+      ]">
+        <div style="display: flex; flex-direction: column; gap: 0.5em;">
+          <custom-btn-com @click="() => { jsonEditable = !jsonEditable }">
+            是否允许编辑：{{ jsonEditable ? '是✔' : '否❌' }}
+          </custom-btn-com>
+          <custom-btn-com @click="setOriginJsonEditorDataToArray">修改为测试数组</custom-btn-com>
+          <custom-btn-com @click="setOriginJsonEditorDataToObject">修改为测试对象</custom-btn-com>
+          <custom-btn-com @click="toggleCustomInput">自定义输入</custom-btn-com>
         </div>
 
-        <div class="grid-controls">
-          <div class="shadow-layer">
-            <div class="layer-header">
-              <h3>数据源控制</h3>
-              <div class="layer-actions"></div>
-            </div>
-            <div class="control-group">
-              <div class="control-item">
-                <div class="control-label">
-                  <span>当前类型</span>
-                  <span class="value-display">{{ Array.isArray(jsonEditorData) ? 'Array' : 'Object' }}</span>
-                </div>
-              </div>
-
-              <div class="control-item">
-                <div class="action-buttons">
-                  <button class="action-btn" @click="setOriginJsonEditorDataToArray">修改为数组</button>
-                  <button class="action-btn" @click="setOriginJsonEditorDataToObject">修改为对象</button>
-                </div>
-              </div>
-            </div>
+        <!-- 自定义输入区域 -->
+        <div v-if="showCustomInput" class="custom-input-section">
+          <p style="margin-bottom: 10px; color: #666;">请输入有效的 JSON 数据：</p>
+          <textarea v-model="customJsonInput" placeholder="输入 JSON 数据..."></textarea>
+          <div style="margin: 10px 0; color: #ff4d4f; font-size: 12px; min-height: 20px;">{{ jsonError }}</div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+            <custom-btn-com @click="cancelCustomInput">取消</custom-btn-com>
+            <custom-btn-com @click="confirmCustomInput" style="background-color: #1890ff; color: white;">
+              确认
+            </custom-btn-com>
           </div>
         </div>
-      </section>
+      </layout-com>
 
-      <section class="preview-panel">
-        <h2>预览</h2>
-        <div class="code-section">
-          <h2>JSON 数据</h2>
-          <div class="code-container">
-            <JsonEditor :editable="jsonEditable" :value="jsonEditorData" @edit="onDataEdit" @add="onDataAdd"
-              @delete="onDataDelete" />
-
-            <button class="edit-button" @click="jsonEditable = !jsonEditable">
-              是否允许编辑：{{ jsonEditable ? '是✔' : '否❌' }}
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
+      <layout-com style="width: calc(100% - 500px - 24px); flex-shrink: 0;" title="预览" type="preview">
+        <template #preview>
+          <JsonEditor :editable="jsonEditable" :value="jsonEditorData" @edit="onDataEdit" @add="onDataAdd"
+            @delete="onDataDelete" />
+        </template>
+      </layout-com>
+    </app-container>
   </div>
 </template>
 
@@ -56,6 +42,15 @@
 import { ref } from 'vue'
 import JsonEditor from '../components/json-editor/index.vue'
 import baseConfig, { toastFun } from '../static/hooks/extends.js'
+import {
+  inputCom,
+  selectCom,
+  customBtnCom,
+  controlItem,
+  codeCopyContent,
+  layoutCom,
+  appContainer
+} from '../components/form-control/index.vue'
 
 defineOptions({
   extends: baseConfig({
@@ -74,6 +69,9 @@ const toastContentStyle = {
 }
 
 const jsonEditable = ref(false)
+const showCustomInput = ref(false)
+const customJsonInput = ref('')
+const jsonError = ref('')
 
 const jsonEditorData = ref({
   key1: 'name',
@@ -202,205 +200,62 @@ const onDataDelete = (payload) => {
   })
   console.log('onDataDelete', jsonEditorData.value, { payload })
 }
+
+const toggleCustomInput = () => {
+  showCustomInput.value = !showCustomInput.value
+  if (showCustomInput.value) {
+    // 打开时填充当前JSON数据
+    customJsonInput.value = JSON.stringify(jsonEditorData.value, null, 2)
+    jsonError.value = ''
+  }
+}
+
+const cancelCustomInput = () => {
+  showCustomInput.value = false
+  customJsonInput.value = ''
+  jsonError.value = ''
+}
+
+const confirmCustomInput = () => {
+  const jsonStr = customJsonInput.value.trim()
+
+  if (!jsonStr) {
+    jsonError.value = '请输入 JSON 数据'
+    return
+  }
+
+  try {
+    const parsedJson = JSON.parse(jsonStr)
+    jsonEditorData.value = parsedJson
+    jsonError.value = ''
+
+    toastFun.open({
+      message: 'JSON 数据更新成功！',
+      contentStyle: toastContentStyle,
+    })
+
+    console.log('Custom JSON input:', parsedJson)
+  } catch (error) {
+    jsonError.value = `JSON 格式错误: ${error.message}`
+  }
+}
 </script>
 <style lang="scss" scoped>
 @use './async-demo/static/scss/theme.scss';
 
-.app-container {
-  height: calc(100vh - $spacing-md * 2);
-  background-color: $light-gray;
-  padding: $spacing-md;
-
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.main-content {
-  width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  gap: $spacing-lg;
-  height: 100%;
-
-  .control-panel {
-    @include control-shared;
-    width: calc(500px - $spacing-md * 2);
-    flex-shrink: 0;
-    overflow: auto;
-    padding: $spacing-md;
-    box-shadow: $shadow-light;
-    height: calc(100% - $spacing-md * 2);
-
-    .header-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: $spacing-md;
-
-      h2 {
-        color: $dark-gray;
-        margin: 0;
-        font-size: 20px;
-        font-weight: 600;
-      }
-
-      .add-layer-wrap {
-        display: flex;
-        gap: $spacing-md;
-        align-items: center;
-        justify-content: center;
-
-        .add-layer-btn {
-          @include button-shared;
-          background-color: $primary-color;
-          color: white;
-          gap: $spacing-xs;
-
-          &:hover {
-            background-color: darken($primary-color, 10%);
-          }
-        }
-      }
-    }
-
-    .grid-controls {
-      display: flex;
-      flex-direction: column;
-      gap: $spacing-md;
-
-      .shadow-layer {
-        @include control-shared;
-        display: flex;
-        flex-direction: column;
-        gap: $spacing-sm;
-        padding: $spacing-md;
-        box-shadow: $shadow-light;
-
-        .layer-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-
-          h3 {
-            margin: 0;
-            color: $secondary-color;
-            font-weight: 600;
-          }
-
-          .layer-actions {
-            display: flex;
-            gap: $spacing-xs;
-          }
-        }
-
-        .control-group {
-          display: flex;
-          flex-direction: column;
-          gap: $spacing-md;
-
-          .control-item {
-            display: flex;
-            flex-direction: column;
-            gap: $spacing-xs;
-
-            .control-label {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              color: $dark-gray;
-              font-weight: 600;
-            }
-
-            .action-buttons {
-              display: flex;
-              gap: $spacing-sm;
-
-              .action-btn {
-                @include button-shared;
-                background-color: $light-gray;
-                color: $secondary-color;
-
-                &:hover {
-                  background-color: $medium-gray;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .preview-panel {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-lg;
-    width: calc(100% - 500px - $spacing-lg);
-    flex-shrink: 0;
-    overflow: auto;
-
-    h2 {
-      color: $dark-gray;
-      flex-shrink: 0;
-      margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-
-    .code-section {
-      flex: 1;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: $spacing-md;
-      overflow: auto;
-
-      .code-container {
-        @include control-shared;
-        padding: $spacing-md;
-        margin-bottom: $spacing-md;
-        border: 1px solid $medium-gray;
-        box-shadow: $shadow-light;
-        position: relative;
-
-        .edit-button {
-          position: absolute;
-          top: $spacing-sm;
-          right: $spacing-sm;
-          @include button-shared;
-          background-color: $primary-color;
-          color: white;
-          font-size: 12px;
-          padding: $spacing-xs $spacing-sm;
-
-          &:hover {
-            background-color: darken($primary-color, 10%);
-          }
-        }
-      }
-    }
-  }
-}
-
-
-
-input[type='number'],
-textarea,
-select,
-input[type='text'] {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid $medium-gray;
-  border-radius: $border-radius;
+textarea {
+  width: calc(100% - 10px * 2);
+  height: 200px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
   font-size: 14px;
+  resize: vertical;
 
   &:focus {
     outline: none;
     border-color: $primary-color;
   }
-}
-
-textarea {
-  resize: vertical;
 }
 </style>
