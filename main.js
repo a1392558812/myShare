@@ -1,12 +1,10 @@
-// node: 版本 18.17.0    npm：版本 6.14.18
+// node: 版本 23.11.0
 const fs = require("fs");
 const path = require("path");
-const { glob } = require("glob");
 require("./route-list/index.js");
 require("./menu-list/index.js");
 
 const parentDirectory = path.dirname(__dirname);
-
 const targetBasePath = path.join(parentDirectory, "myShare");
 const distBasePath = path.join(parentDirectory, "vue-blog", "dist");
 
@@ -31,17 +29,18 @@ const fileList = [
 ];
 
 /**
- * 删除文件夹功能
  * @param  {String} url  文件路径，绝对路径
  * @return {Null}
+ * @description 删除文件夹功能, 递归删除文件夹下的所有文件和子文件夹
  */
-function deleteDir(url) {
+const deleteDir = (url) => {
   if (fs.existsSync(url)) {
-    //判断给定的路径是否存在
+    //判断给定的路径是否存在,
     fs.rmSync(url, { recursive: true });
   }
-}
+};
 
+// 复制目录夹，先删除targetBasePath目录下的文件（文件夹里文件 / 子文件夹一并删掉），再从distBasePath目录复制到targetBasePath目录
 dirFileList.forEach((pathItem) => {
   deleteDir(path.join(targetBasePath, pathItem));
   fs.cp(
@@ -52,28 +51,29 @@ dirFileList.forEach((pathItem) => {
       if (err) {
         console.error(err);
       }
-    }
+    },
   );
 });
 
+// 复制文件
 fileList.forEach(async (pathItem) => {
   if (pathItem.split("*").length > 1) {
     let distBaseFilePath = path.join(distBasePath, pathItem);
     distBaseFilePath = distBaseFilePath.replaceAll("\\", "/");
     console.log("distBaseFilePath", distBaseFilePath);
-    const distBaseFileList = await glob(distBaseFilePath);
+    const distBaseFileList = fs.globSync(distBaseFilePath);
     if (distBaseFileList.length > 0) {
       let targetBaseFilePath = path.join(targetBasePath, pathItem);
       targetBaseFilePath = targetBaseFilePath.replaceAll("\\", "/");
       console.log("targetBaseFilePath", targetBaseFilePath);
-      const targetBaseFileList = await glob(targetBaseFilePath);
+      const targetBaseFileList = fs.globSync(targetBaseFilePath);
       targetBaseFileList.forEach((item) => {
         fs.unlinkSync(item);
       });
       distBaseFileList.forEach(async (item) => {
         fs.copyFileSync(
           item,
-          path.join(targetBasePath, item.split("\\").pop())
+          path.join(targetBasePath, item.split("\\").pop()),
         );
       });
     }
@@ -85,7 +85,10 @@ fileList.forEach(async (pathItem) => {
         if (err) {
           console.error(err);
         }
-      }
+      },
     );
   }
 });
+
+// 统计变更文件
+require("./changed/index.js");

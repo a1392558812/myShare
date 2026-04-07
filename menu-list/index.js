@@ -1,7 +1,6 @@
 import fs from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
-import { globSync } from "glob";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const basePath = path.dirname(path.dirname(currentFilePath));
@@ -54,7 +53,7 @@ let computedFilterFilePath = [];
 filterFilePath.forEach((item) => {
   if (item.split("*").length > 1) {
     const searchPath = item.replaceAll("\\", "/");
-    const searchPathList = globSync(searchPath);
+    const searchPathList = fs.globSync(searchPath);
     computedFilterFilePath = computedFilterFilePath.concat(searchPathList);
   } else {
     computedFilterFilePath.push(item);

@@ -1,5 +1,5 @@
 <script lang="jsx">
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, ref, computed } from "vue";
 
 const useCopyCode = () => {
   const copied = ref(false);
@@ -14,219 +14,286 @@ const useCopyCode = () => {
   return {
     copied,
     onCopyClick,
-  }
-}
+  };
+};
 
 const inputCom = defineComponent({
   props: {
+    disabled: { type: Boolean, default: false },
     modelValue: { type: Number | Boolean | String, default: 0 },
     min: { type: Number, default: undefined },
     max: { type: Number, default: undefined },
     step: { type: Number, default: 1 },
-    placeholder: { type: String, default: '' },
-    type: { type: String, default: 'text' },
+    placeholder: { type: String, default: "" },
+    type: { type: String, default: "text" },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
     const inputClass = computed(() => {
-      if (props.type === 'number') return 'number-control'
-      if (props.type === 'range') return 'range-control'
-      if (props.type === 'text') return 'text-control'
-      if (props.type === 'checkbox') return 'checkbox-control'
-      return ''
-    })
+      if (props.type === "number") return "number-control";
+      if (props.type === "range") return "range-control";
+      if (props.type === "text") return "text-control";
+      if (props.type === "checkbox") return "checkbox-control";
+      return "";
+    });
 
     const onInput = (e) => {
       let value = e.target.value;
-      if (['number', 'range'].includes(props.type)) {
+      if (["number", "range"].includes(props.type)) {
         value = Number(e.target.value);
         if (props.min !== undefined && value < Number(props.min)) {
-          value = Number(props.min)
+          value = Number(props.min);
         } else if (props.max !== undefined && value > Number(props.max)) {
-          value = Number(props.max)
+          value = Number(props.max);
         }
       }
-      if (props.type === 'checkbox') {
-        value = Boolean(e.target.checked)
+      if (props.type === "checkbox") {
+        value = Boolean(e.target.checked);
         e.target.checked = value;
       }
-      emit('update:modelValue', value);
-      console.log('value', value);
+      emit("update:modelValue", value);
+      console.log("value", value);
       e.target.value = value;
-    }
+    };
 
     const currentValue = computed(() => {
-      if (props.type === 'checkbox') {
-        return Boolean(props.modelValue)
-      } else if (props.type === 'text') {
-        return String(props.modelValue)
-      } else if (['number', 'range'].includes(props.type)) {
-        return Number(props.modelValue)
+      if (props.type === "checkbox") {
+        return Boolean(props.modelValue);
+      } else if (props.type === "text") {
+        return String(props.modelValue);
+      } else if (["number", "range"].includes(props.type)) {
+        return Number(props.modelValue);
       }
-      return props.modelValue
-    })
+      return props.modelValue;
+    });
 
     return () => {
       return (
-        <input type={props.type} class={inputClass.value} step={Number(props.step)}
-          min={props.min} max={props.max} placeholder={props.placeholder} checked={currentValue.value} value={currentValue.value}
-          onInput={onInput} />
-      )
-    }
-  }
-})
+        <input
+          disabled={props.disabled}
+          type={props.type}
+          class={inputClass.value}
+          step={Number(props.step)}
+          min={props.min}
+          max={props.max}
+          placeholder={props.placeholder}
+          checked={currentValue.value}
+          value={currentValue.value}
+          onInput={onInput}
+        />
+      );
+    };
+  },
+});
 
 const selectCom = defineComponent({
   props: {
-    modelValue: { type: String | Number, default: '' },
+    disabled: { type: Boolean, default: false },
+    modelValue: { type: String | Number, default: "" },
     options: { type: Array, default: () => [] },
-    currentLabel: { type: String, default: '' },
+    currentLabel: { type: String, default: "" },
     ifShowLabel: { type: Boolean, default: false },
-    placeholder: { type: String, default: '' },
+    placeholder: { type: String, default: "" },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
     const onInput = (e) => {
-      emit('update:modelValue', e.target.value);
-    }
+      emit("update:modelValue", e.target.value);
+    };
     return () => {
       return (
         <div class="select-control">
-          <select class='select-control' placeholder={props.placeholder} style={{ opacity: props.ifShowLabel ? 0 : 1 }} value={props.modelValue} onInput={onInput}>
+          <select
+            disabled={props.disabled}
+            class="select-control"
+            placeholder={props.placeholder}
+            style={{ opacity: props.ifShowLabel ? 0 : 1 }}
+            value={props.modelValue}
+            onInput={onInput}
+          >
             {props.options.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
             ))}
           </select>
-          {
-            props.ifShowLabel ? (<button class="select-control-btn">{(() => {
-              if (props.currentLabel) return props.currentLabel
-              const target = props.options.find((item) => `${item.value}` === `${props.modelValue}`)
-              if (target) return target.label || props.modelValue
-              return props.modelValue
-            })()}</button>) : null
-          }
+          {props.ifShowLabel ? (
+            <button class="select-control-btn">
+              {(() => {
+                if (props.currentLabel) return props.currentLabel;
+                const target = props.options.find(
+                  (item) => `${item.value}` === `${props.modelValue}`,
+                );
+                if (target) return target.label || props.modelValue;
+                return props.modelValue;
+              })()}
+            </button>
+          ) : null}
         </div>
-      )
-    }
+      );
+    };
   },
-})
+});
 
 const customBtnCom = defineComponent({
   props: {
-    inputType: { type: String, default: '' },
+    disabled: { type: Boolean, default: false },
+    inputType: { type: String, default: "" },
     slotProps: { type: Object, default: () => ({}) },
   },
-  emits: ['click'],
+  emits: ["click"],
   setup(props, { slots, emit }) {
     const onClick = (e) => {
       if (props.inputType) {
-        const targetRef = e.target.querySelector('input') || e.target.querySelector('select') || null
-        const val = targetRef ? targetRef.value : null
-        return emit('click', e, val, targetRef);
+        const targetRef =
+          e.target.querySelector("input") ||
+          e.target.querySelector("select") ||
+          null;
+        const val = targetRef ? targetRef.value : null;
+        return emit("click", e, val, targetRef);
       }
-      emit('click', e);
-    }
-    const onInputClick = (e) => { e.stopPropagation(); e.preventDefault(); }
+      emit("click", e);
+    };
+    const onInputClick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    };
     return () => {
       return (
-        <button class="custom-btn" onClick={onClick}>
-          {slots.default ? slots.default() : ''}
-          {props.inputType ? (<inputCom onClick={onInputClick} {...props.slotProps} type={props.inputType} />) : null}
+        <button class="custom-btn" disabled={props.disabled} onClick={onClick}>
+          {slots.default ? slots.default() : ""}
+          {props.inputType ? (
+            <inputCom
+              onClick={onInputClick}
+              {...props.slotProps}
+              type={props.inputType}
+            />
+          ) : null}
         </button>
-      )
-    }
+      );
+    };
   },
-})
+});
 
 const controlItem = defineComponent({
   props: {
-    label: { type: String, default: '' },
-    labelValue: { type: String | Number, default: '' },
-    modelValue: { type: String | Number | Boolean, default: '' },
-    inputType: { type: String, default: '' },
+    disabled: { type: Boolean, default: false },
+    label: { type: String, default: "" },
+    labelValue: { type: String | Number, default: "" },
+    modelValue: { type: String | Number | Boolean, default: "" },
+    inputType: { type: String, default: "" },
     slotProps: { type: Object, default: () => ({}) },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit, slots }) {
     const onUpdateValue = (value) => {
-      emit('update:modelValue', value);
-    }
+      emit("update:modelValue", value);
+    };
     return () => {
       try {
-        return (<div class="control-item">
-          <div class="control-label">
-            <span>{props.label}</span>
-            <span class="value-display">{slots.value ? slots.value() : (props.labelValue || `${props.modelValue}`)}</span>
+        return (
+          <div class="control-item">
+            <div class="control-label">
+              <span>{props.label}</span>
+              <span class="value-display">
+                {slots.value
+                  ? slots.value()
+                  : props.labelValue || `${props.modelValue}`}
+              </span>
+            </div>
+            {slots.default ? (
+              slots.default()
+            ) : (
+              <inputCom
+                disabled={props.disabled}
+                {...props.slotProps}
+                modelValue={props.modelValue}
+                type={props.inputType}
+                onUpdate:modelValue={onUpdateValue}
+              />
+            )}
           </div>
-          {slots.default ? slots.default() : (<inputCom {...props.slotProps} modelValue={props.modelValue} type={props.inputType} onUpdate:modelValue={onUpdateValue} />)}
-        </div>)
+        );
       } catch (error) {
-        console.error('error', error);
+        console.error("error", error);
       }
-    }
+    };
   },
-})
+});
 
 const codeCopyContent = defineComponent({
   props: {
-    code: { type: String, default: '' },
-    title: { type: String, default: '示例' },
+    code: { type: String, default: "" },
+    title: { type: String, default: "示例" },
   },
   setup(props, { slots, emit }) {
-    const { copied, onCopyClick } = useCopyCode()
+    const { copied, onCopyClick } = useCopyCode();
     return () => {
       return (
         <div class="code-section">
-          {props.title ? (<h4>{props.title}</h4>) : null}
+          {props.title ? <h4>{props.title}</h4> : null}
           <div class="code-container">
-            <pre><code>{props.code}</code></pre>
-            <button onClick={() => onCopyClick(props.code)} class={'copy-button' + ` ${copied.value ? 'copied' : ''}`}>
-              {copied.value ? '✓ 已复制' : '📋 复制代码'}
+            <pre>
+              <code>{props.code}</code>
+            </pre>
+            <button
+              onClick={() => onCopyClick(props.code)}
+              class={"copy-button" + ` ${copied.value ? "copied" : ""}`}
+            >
+              {copied.value ? "✓ 已复制" : "📋 复制代码"}
             </button>
           </div>
         </div>
-      )
-    }
+      );
+    };
   },
-})
+});
 
 const layoutCom = defineComponent({
   props: {
-    title: { type: String, default: '' },
+    title: { type: String, default: "" },
     titleLevel: { type: Number, default: 2 },
-    type: { type: String, default: 'preview' }, // preview 预览 panel 控制器
-    addLayerBtnList: { type: Array, default: () => [] },// {label: 'xx', key1: 'xx', key2: 'xx' ...... }
+    type: { type: String, default: "preview" }, // preview 预览 panel 控制器
+    addLayerBtnList: { type: Array, default: () => [] }, // {label: 'xx', key1: 'xx', key2: 'xx' ...... }
   },
   setup(props, { slots }) {
     return () => {
       return (
         <section class={`custom-layout custom-layout-${props.type}`}>
-          {props.title ? (<div class="header-actions">
-            {
-              (() => {
-                const titleLevelCom = `h${props.titleLevel}`
-                return <titleLevelCom>{props.title}</titleLevelCom>
-              })()
-            }
-            {
-              props.addLayerBtnList.length ? (<div class="add-layer-wrap">
-                {
-                  props.addLayerBtnList.map((item, index) => (
-                    <button key={index} class="add-layer-btn" onClick={(e) => item.callback && item.callback(e)}>{item.label}</button>
-                  ))
-                }
-              </div>) : null
-            }
-            {slots.titleRight ? slots.titleRight() : null}
-          </div>) : null}
-          {slots.preview ? (<div class="preview-container">{slots.preview()}</div>) : null}
+          {props.title ? (
+            <div class="header-actions">
+              {(() => {
+                const titleLevelCom = `h${props.titleLevel}`;
+                return <titleLevelCom>{props.title}</titleLevelCom>;
+              })()}
+              {props.addLayerBtnList.length ? (
+                <div class="add-layer-wrap">
+                  {props.addLayerBtnList.map((item, index) => (
+                    <button
+                      key={index}
+                      class="add-layer-btn"
+                      onClick={(e) => item.callback && item.callback(e)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              {slots.titleRight ? slots.titleRight() : null}
+            </div>
+          ) : null}
+          {slots.preview ? (
+            <div class="preview-container">{slots.preview()}</div>
+          ) : null}
           {slots.code ? slots.code() : null}
-          {slots.default ? (<div class="control-group">{slots.default()}</div>) : null}
+          {slots.default ? (
+            <div class="control-group">{slots.default()}</div>
+          ) : null}
         </section>
-      )
-    }
+      );
+    };
   },
-})
+});
 
 const appContainer = defineComponent({
   props: {},
@@ -239,10 +306,10 @@ const appContainer = defineComponent({
           </main>
           {slots.footer ? slots.footer() : null}
         </div>
-      )
-    }
+      );
+    };
   },
-})
+});
 
 export default {
   useCopyCode,
@@ -253,11 +320,11 @@ export default {
   codeCopyContent,
   controlItem,
   layoutCom,
-  appContainer
-}
+  appContainer,
+};
 </script>
 <style lang="scss">
-@use './async-demo/static/scss/theme.scss';
+@use "./async-demo/static/scss/theme.scss";
 
 .select-control {
   display: inline-block;
@@ -270,19 +337,19 @@ export default {
     cursor: pointer;
     padding: $spacing-xs $spacing-md;
 
-    &:hover+.select-control-btn {
+    &:hover + .select-control-btn {
       background-color: #ffffff;
       border-color: #c5c9d2;
     }
 
-    &:focus+.select-control-btn {
+    &:focus + .select-control-btn {
       outline: none;
       border-color: #409eff;
       box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.18);
       background-color: #ffffff;
     }
 
-    &:disabled+.select-control-btn {
+    &:disabled + .select-control-btn {
       cursor: not-allowed;
       opacity: 0.7;
       background-color: #f0f0f0;
@@ -535,7 +602,7 @@ export default {
   background-color: $light-gray;
   padding: $spacing-md;
   margin: 0 auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   overflow: auto;
   display: flex;
   flex-direction: column;
