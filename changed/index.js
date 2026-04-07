@@ -2,6 +2,11 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
+const isNumDotPrefix = (str) => {
+  const reg = /^\d+.+.+/;
+  return reg.test(str);
+};
+
 try {
   execSync("git config --global core.quotepath off");
   const output = execSync(
@@ -10,33 +15,16 @@ try {
   );
 
   const files = output.split("\n").filter((item) => {
-    const isEmpty = !item;
-
-    const isStatic = item.startsWith("static/");
-    const isDemoStatic = item.startsWith("demo-static/");
-    const isMenuList = item.startsWith("menu-list/");
-    const isRouteList = item.startsWith("route-list/");
-    const isCurrentDir = item.startsWith("changed/");
+    if (!item) return false;
 
     const isRootFile = item.split("/").length === 1;
-    console.log(item, {
-      isEmpty,
-      isStatic,
-      isDemoStatic,
-      isMenuList,
-      isRouteList,
-      isRootFile,
-      isCurrentDir,
-    });
-    return (
-      !isEmpty &&
-      !isStatic &&
-      !isDemoStatic &&
-      !isMenuList &&
-      !isRouteList &&
-      !isCurrentDir &&
-      !isRootFile
+    if (isRootFile) return false;
+
+    const isFilterFileFolder = ["async-demo/"].includes((folder) =>
+      item.startsWith(folder),
     );
+
+    return isFilterFileFolder || isNumDotPrefix(item);
   });
 
   const date = new Date();
