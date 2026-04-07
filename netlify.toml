@@ -2,23 +2,3 @@
   for = "/manifest.webmanifest"
   [headers.values]
     Content-Type = "application/manifest+json"
-
-[[headers]]
-  for = "/sw.js"
-  [headers.values]
-    cache-control = '''
-      public,
-      max-age=0,
-      must-revalidate,
-      immutable
-      '''
-
-[[headers]]
-  for = "/index.html"
-  [headers.values]
-    cache-control = '''
-      public,
-      max-age=0,
-      must-revalidate,
-      immutable
-      '''
