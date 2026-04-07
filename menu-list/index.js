@@ -19,6 +19,7 @@ const filterDirPath = [
   path.join(basePath, "node_modules"),
   path.join(basePath, "route-list"),
   path.join(basePath, "async-demo"),
+  path.join(basePath, "changed"),
   path.join(basePath, ".trae"),
 ];
 // 过滤的文件

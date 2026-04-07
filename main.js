@@ -22,8 +22,6 @@ const fileList = [
   "pwa-512x512.png",
   "sw.js",
   "sw.js.gz",
-  "netlify.toml",
-  "vercel.json",
   "workbox-*.js",
   "workbox-*.js.gz",
 ];
