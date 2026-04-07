@@ -20,6 +20,7 @@ const filterDirPath = [
   path.join(basePath, "route-list"),
   path.join(basePath, "async-demo"),
   path.join(basePath, "changed"),
+  path.join(basePath, "git-push"),
   path.join(basePath, ".trae"),
 ];
 // 过滤的文件
