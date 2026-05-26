@@ -8,7 +8,7 @@
 
 ### 关于页面风格
 
-个人偏好简约风格，但技术展示最直观的方式往往是通过炫酷的效果和华丽的页面。因此，将一些特效演示统一放在[特效 demo](https://awen-blog.netlify.app/#/demo)中，主页则专注于展示知识点。
+个人偏好简约风格，但技术展示最直观的方式往往是通过炫酷的效果和华丽的页面。因此，将一些"特效演示"和"开发工具"统一放在[特效/工具 demo](https://awen-blog.netlify.app/#/demo)中，主页则专注于展示知识点。
 
 ### 特效demo中有些可以直接预览源码，有些不可以
 
@@ -16,7 +16,7 @@
 
 后来我将博客拆分为两个项目：一个是负责打包生成博客基础结构的[壳子项目](https://github.com/a1392558812/vue-blog)，另一个是专门存放文章与 demo 的展示项目（即当前仓库）。这样后续更新只需修改展示项目，无需重复打包整个前端工程。
 
-许多早期的demo与**壳子项目**耦合在一起，由于精力有限，目前只有[box-shadow生成器](https://awen-blog.netlify.app/#/demo)及之后的demo完成了迁移。这些迁移后的demo可以通过F12或页面按钮直接查看源码，而之前的demo仍需到blog项目中查看。
+许多早期的demo与**壳子项目**耦合在一起，由于精力有限，目前只有[box-shadow生成器](https://awen-blog.netlify.app/#/demo)及之后的demo完成了迁移。这些迁移后的demo可以通过F12或页面按钮直接查看源码，而之前的demo仍需到blog项目（壳子项目github仓库）中查看。
 
 ### 关于图片路径的问题
 
@@ -29,6 +29,13 @@
 ### 为什么在 markdown 里写代码
 
 原因其实很简单，就是为了方便大家复制粘贴。很多时候，大家需要的并不是完整的文件，而是其中的某个功能点。因此，我将一些讲解直接写在代码注释中，兼顾了工作和学习的需求。时间紧迫时可以直接复制粘贴代码，删除注释即可；时间充裕时则可以仔细阅读注释，加深对知识点的理解。
+
+### 有时候页面循环无限刷新
+
+这个还不是我的问题，是chrome的问题，详情可以参考
+
+- [Reload app button causes infinite reload loop](https://github.com/vite-pwa/vite-plugin-pwa/issues/900)
+- [DevTools "Update on reload" Bug](https://github.com/vite-pwa/vite-plugin-pwa/issues/889)
 
 ## **纵使困顿难行，亦当砥砺奋进！**
 

@@ -3,45 +3,26 @@
     <app-container>
       <layout-com style="width: 400px" title="电话号码生成器" type="panel">
         <control-item label="号码类型:">
-          <select-com
-            :options="phoneTypes"
-            :modelValue="phoneType"
-            @update:modelValue="handlePhoneTypeChange"
-          />
+          <select-com :options="phoneTypes" :modelValue="phoneType" @update:modelValue="handlePhoneTypeChange" />
         </control-item>
 
         <control-item v-if="phoneType === 'mobile'" label="供应商:">
-          <select-com
-            :disabled="isRandomCarrier"
-            :options="carriers"
-            :modelValue="selectedCarrier"
-            @update:modelValue="handleCarrierChange"
-          />
+          <select-com :disabled="isRandomCarrier" :options="carriers" :modelValue="selectedCarrier"
+            @update:modelValue="handleCarrierChange" />
           <div style="display: flex; gap: 5px; align-items: center">
             <div>是否随机供应商：</div>
-            <inputCom
-              type="checkbox"
-              :modelValue="isRandomCarrier"
-              @update:modelValue="isRandomCarrier = Boolean($event)"
-            />
+            <inputCom type="checkbox" :modelValue="isRandomCarrier"
+              @update:modelValue="isRandomCarrier = Boolean($event)" />
           </div>
         </control-item>
 
         <control-item label="号码段:">
-          <select-com
-            :disabled="isRandomPrefix || isRandomCarrier"
-            :options="filteredPrefixes"
-            :modelValue="selectedPrefix"
-            @update:modelValue="selectedPrefix = $event"
-          />
+          <select-com :disabled="isRandomPrefix || isRandomCarrier" :options="filteredPrefixes"
+            :modelValue="selectedPrefix" @update:modelValue="selectedPrefix = $event" />
           <div style="display: flex; gap: 5px; align-items: center">
             <div>是否随机号码段：</div>
-            <inputCom
-              type="checkbox"
-              :disabled="isRandomCarrier"
-              :modelValue="isRandomPrefix"
-              @update:modelValue="isRandomPrefix = Boolean($event)"
-            />
+            <inputCom type="checkbox" :disabled="isRandomCarrier" :modelValue="isRandomPrefix"
+              @update:modelValue="isRandomPrefix = Boolean($event)" />
           </div>
         </control-item>
 
@@ -49,16 +30,9 @@
           <div style="display: flex; flex-direction: column; gap: 1em">
             <div style="display: flex; align-items: center; gap: 0.5em">
               <span>数量:</span>
-              <inputCom
-                type="number"
-                :modelValue="batchCount"
-                @update:modelValue="batchCount = Number($event)"
-                :min="1"
-                :max="500"
-              />
-              <custom-btn-com @click="generateBatchPhoneNumbers"
-                >批量生成</custom-btn-com
-              >
+              <inputCom type="number" :modelValue="batchCount" @update:modelValue="batchCount = Number($event)" :min="1"
+                :max="500" />
+              <custom-btn-com @click="generateBatchPhoneNumbers">批量生成</custom-btn-com>
             </div>
           </div>
         </control-item>
@@ -76,34 +50,25 @@
       <layout-com style="min-width: 700px" title="结果" type="preview">
         <template #preview>
           <div>
-            <div
-              style="
+            <div style="
                 margin-bottom: 2em;
                 padding: 1em;
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
-              "
-            >
+              ">
               <h3 style="margin-top: 0; margin-bottom: 1em">电话号码解析</h3>
               <div style="display: flex; gap: 0.5em; margin-bottom: 1em">
-                <inputCom
-                  style="flex: 1"
-                  type="text"
-                  placeholder="请输入电话号码"
-                  :modelValue="phoneNumberInput"
-                  @update:modelValue="phoneNumberInput = $event"
-                />
+                <inputCom style="flex: 1" type="text" placeholder="请输入电话号码" :modelValue="phoneNumberInput"
+                  @update:modelValue="phoneNumberInput = $event" />
                 <custom-btn-com @click="parsePhoneNumber">解析</custom-btn-com>
               </div>
               <div v-if="parsedInfo" class="parsed-info">
                 <h4 style="margin-top: 0; margin-bottom: 1em">解析结果</h4>
-                <div
-                  style="
+                <div style="
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 0.5em;
-                  "
-                >
+                  ">
                   <div>
                     <strong>号码类型:</strong> {{ parsedInfo.type || "--" }}
                   </div>
@@ -121,28 +86,18 @@
             </div>
           </div>
           <div v-if="batchResults.length > 0">
-            <custom-btn-com
-              @click="copyToClipboard(JSON.stringify(batchResults))"
-              >一键复制所有结果-数据结构是JSON数组</custom-btn-com
-            >
-            <div
-              style="
+            <custom-btn-com @click="copyToClipboard(JSON.stringify(batchResults))">一键复制所有结果-数据结构是JSON数组</custom-btn-com>
+            <div style="
                 margin-top: 1em;
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 1em;
-              "
-            >
-              <div
-                style="display: flex; align-items: center; gap: 0.5em"
-                v-for="(phone, index) in batchResults"
-                :key="index"
-              >
+              ">
+              <div style="display: flex; align-items: center; gap: 0.5em" v-for="(phone, index) in batchResults"
+                :key="index">
                 <span>{{ index + 1 }}.</span>
                 <span>{{ phone }}</span>
-                <custom-btn-com @click="copyToClipboard(phone)"
-                  >复制</custom-btn-com
-                >
+                <custom-btn-com @click="copyToClipboard(phone)">复制</custom-btn-com>
               </div>
             </div>
           </div>
@@ -155,7 +110,6 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
-
 import {
   inputCom,
   selectCom,
@@ -164,6 +118,7 @@ import {
   layoutCom,
   appContainer,
 } from "../components/form-control/index.vue";
+import { toastFun } from '../components/toast/index.js'
 
 const phoneTypes = [
   { label: "手机号码", value: "mobile" },
@@ -435,11 +390,11 @@ const copyToClipboard = (text) => {
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      alert("复制成功！");
+      toastFun.open({ message: '复制成功！' })
     })
     .catch((err) => {
       console.error("复制失败:", err);
-      alert("复制失败，请手动复制");
+      toastFun.open({ message: '复制失败，请手动复制' })
     });
 };
 </script>

@@ -1,14 +1,22 @@
 <script lang="jsx">
 import { defineComponent, ref, computed } from "vue";
 
-const useCopyCode = () => {
+const useCopyCode = (options) => {
   const copied = ref(false);
-  const onCopyClick = (code) => {
-    navigator.clipboard.writeText(code).then(() => {
+  let timer = null;
+  const onCopyClick = (copyOptions) => {
+    navigator.clipboard.writeText(copyOptions?.code || "").then(() => {
       copied.value = true;
-      setTimeout(() => {
+      copyOptions?.startCallback && copyOptions.startCallback();
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      timer = setTimeout(() => {
         copied.value = false;
-      }, 2000);
+        copyOptions?.endCallback && copyOptions.endCallback();
+        timer = null;
+      }, options?.delay || 2000);
     });
   };
   return {
@@ -34,6 +42,7 @@ const inputCom = defineComponent({
       if (props.type === "range") return "range-control";
       if (props.type === "text") return "text-control";
       if (props.type === "checkbox") return "checkbox-control";
+      if (props.type === "color") return "color-control";
       return "";
     });
 
@@ -237,7 +246,7 @@ const codeCopyContent = defineComponent({
               <code>{props.code}</code>
             </pre>
             <button
-              onClick={() => onCopyClick(props.code)}
+              onClick={() => onCopyClick({ code: props.code })}
               class={"copy-button" + ` ${copied.value ? "copied" : ""}`}
             >
               {copied.value ? "✓ 已复制" : "📋 复制代码"}
@@ -380,6 +389,7 @@ export default {
 
 .select-control select,
 .number-control,
+.color-control,
 .text-control {
   padding: $spacing-xs $spacing-sm;
   border: 1px solid $medium-gray;
@@ -391,6 +401,11 @@ export default {
     outline: none;
     border-color: $primary-color;
   }
+}
+
+.color-control {
+  padding: 0px 5px;
+  cursor: pointer;
 }
 
 .checkbox-control {

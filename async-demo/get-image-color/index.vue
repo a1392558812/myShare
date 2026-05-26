@@ -156,13 +156,13 @@
 
 <script setup>
 import { ref } from 'vue';
-import baseConfig, { toastFun } from '../static/hooks/extends.js';
+import { toastFun } from '../components/toast/index.js'
+import baseConfig from '../static/hooks/extends.js';
 import GetImageColor from './components/index.vue';
 
 defineOptions({
   extends: baseConfig({
     customDialog: import('../components/dialog/index.vue'),
-    toast: import('../components/toast/index.vue'),
   }),
 });
 

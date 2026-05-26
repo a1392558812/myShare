@@ -121,12 +121,11 @@ import { ref, computed } from 'vue';
 import Allotment from './components/index.vue';
 import Pane from './components/item.vue';
 import { colorPicker } from '../components/color-picker/index.js';
-
-import baseConfig, { toastFun } from '../static/hooks/extends.js'
+import { toastFun } from '../components/toast/index.js'
+import baseConfig from '../static/hooks/extends.js'
 
 defineOptions({
   extends: baseConfig({
-    toast: import('../components/toast/index.vue'),
     customDialog: import('../components/dialog/index.vue'),
   }),
 })

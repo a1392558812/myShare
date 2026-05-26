@@ -112,12 +112,11 @@
 <script setup lang="jsx">
 import { ref, computed } from 'vue'
 import Affix from './components/index.vue'
-import baseConfig, { toastFun } from '../static/hooks/extends.js'
+import { toastFun } from '../components/toast/index.js'
+import baseConfig from '../static/hooks/extends.js'
 
 defineOptions({
-  extends: baseConfig({
-    toast: import('../components/toast/index.vue')
-  }),
+  extends: baseConfig(),
 })
 
 const copied = ref(false)

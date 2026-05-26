@@ -3,105 +3,64 @@
     <app-container>
       <layout-com style="width: 400px" title="身份id数字生成器" type="panel">
         <control-item :label="`省份:${selectValue.provinceId}`">
-          <select-com
-            :disabled="selectValue.provinceIdIfRandom"
-            :options="provinces || []"
-            :modelValue="selectValue.provinceId"
-            @update:modelValue="handleProvinceChange"
-          />
+          <select-com :disabled="selectValue.provinceIdIfRandom" :options="provinces || []"
+            :modelValue="selectValue.provinceId" @update:modelValue="handleProvinceChange" />
           <div style="display: flex; gap: 5px; align-items: center">
             <div>是否随机省份（{{ selectValue.provinceIdIfRandom }}）：</div>
-            <inputCom
-              type="checkbox"
-              :modelValue="selectValue.provinceIdIfRandom"
-              @update:modelValue="
-                selectValue.provinceIdIfRandom = Boolean($event)
-              "
-            />
+            <inputCom type="checkbox" :modelValue="selectValue.provinceIdIfRandom" @update:modelValue="
+              selectValue.provinceIdIfRandom = Boolean($event)
+              " />
           </div>
         </control-item>
 
         <control-item :label="`城市:${selectValue.cityId}`">
-          <select-com
-            :disabled="computedCityIdIfRandom"
-            :options="computedCities || []"
-            :modelValue="selectValue.cityId"
-            @update:modelValue="handleCityChange"
-          />
+          <select-com :disabled="computedCityIdIfRandom" :options="computedCities || []"
+            :modelValue="selectValue.cityId" @update:modelValue="handleCityChange" />
           <div style="display: flex; gap: 5px; align-items: center">
             <div>是否随机城市（{{ selectValue.cityIdIfRandom }}）：</div>
-            <inputCom
-              :disabled="selectValue.provinceIdIfRandom"
-              type="checkbox"
-              :modelValue="computedCityIdIfRandom"
-              @update:modelValue="selectValue.cityIdIfRandom = Boolean($event)"
-            />
+            <inputCom :disabled="selectValue.provinceIdIfRandom" type="checkbox" :modelValue="computedCityIdIfRandom"
+              @update:modelValue="selectValue.cityIdIfRandom = Boolean($event)" />
           </div>
         </control-item>
 
         <control-item :label="`区县:${selectValue.districtId}`">
-          <select-com
-            :disabled="computedDistrictIdIfRandom"
-            :options="computedDistrict || []"
-            :modelValue="selectValue.districtId"
-            @update:modelValue="handleDistrictChange"
-          />
+          <select-com :disabled="computedDistrictIdIfRandom" :options="computedDistrict || []"
+            :modelValue="selectValue.districtId" @update:modelValue="handleDistrictChange" />
           <div style="display: flex; gap: 5px; align-items: center">
             <div>是否随机城市（{{ selectValue.districtIdIfRandom }}）：</div>
-            <inputCom
-              :disabled="
-                selectValue.provinceIdIfRandom || selectValue.cityIdIfRandom
-              "
-              type="checkbox"
-              :modelValue="computedDistrictIdIfRandom"
-              @update:modelValue="
+            <inputCom :disabled="selectValue.provinceIdIfRandom || selectValue.cityIdIfRandom
+              " type="checkbox" :modelValue="computedDistrictIdIfRandom" @update:modelValue="
                 selectValue.districtIdIfRandom = Boolean($event)
-              "
-            />
+                " />
           </div>
         </control-item>
 
         <control-item label="出生日期:">
-          <div
-            style="
+          <div style="
               width: 100%;
               display: flex;
               flex-direction: column;
               gap: 10px;
-            "
-          >
-            <div
-              style="
+            ">
+            <div style="
                 width: 100%;
                 display: flex;
                 gap: 5px;
                 align-items: center;
                 justify-content: center;
-              "
-              v-for="(key, index) in Object.keys(birthDate)"
-            >
+              " v-for="(key, index) in Object.keys(birthDate)">
               <span>{{ birthDate[key].label }}:</span>
-              <inputCom
-                style="flex: 1"
-                :key="index"
-                type="number"
-                :disabled="birthDate[key].ifRandom"
-                :modelValue="birthDate[key].value"
-                @update:modelValue="birthDate[key].value = Number($event)"
-                :min="birthDate[key].slotProps.min"
-                :max="birthDate[key].slotProps.max"
-              />
+              <inputCom style="flex: 1" :key="index" type="number" :disabled="birthDate[key].ifRandom"
+                :modelValue="birthDate[key].value" @update:modelValue="birthDate[key].value = Number($event)"
+                :min="birthDate[key].slotProps.min" :max="birthDate[key].slotProps.max" />
               <div style="display: flex; gap: 5px; align-items: center">
                 <div>
                   是否随机{{ birthDate[key].label }}（{{
                     birthDate[key].ifRandom
                   }}）：
                 </div>
-                <inputCom
-                  type="checkbox"
-                  :modelValue="birthDate[key].ifRandom"
-                  @update:modelValue="birthDate[key].ifRandom = Boolean($event)"
-                />
+                <inputCom type="checkbox" :modelValue="birthDate[key].ifRandom"
+                  @update:modelValue="birthDate[key].ifRandom = Boolean($event)" />
               </div>
             </div>
           </div>
@@ -109,31 +68,19 @@
 
         <control-item label="性别:">
           <div style="display: flex; gap: 1em">
-            <label
-              v-for="(item, index) in gender.options"
-              :key="index"
-              style="
+            <label v-for="(item, index) in gender.options" :key="index" style="
                 display: flex;
                 align-items: center;
                 gap: 0.5em;
                 cursor: pointer;
-              "
-            >
-              <input
-                type="radio"
-                :disabled="gender.ifRandom"
-                :value="item.value + ''"
-                v-model="gender.value"
-              />
+              ">
+              <input type="radio" :disabled="gender.ifRandom" :value="item.value + ''" v-model="gender.value" />
               <span>{{ item.label }}</span>
             </label>
             <div style="display: flex; gap: 5px; align-items: center">
               <div>是否随机性别：</div>
-              <inputCom
-                type="checkbox"
-                :modelValue="gender.ifRandom"
-                @update:modelValue="gender.ifRandom = Boolean($event)"
-              />
+              <inputCom type="checkbox" :modelValue="gender.ifRandom"
+                @update:modelValue="gender.ifRandom = Boolean($event)" />
             </div>
           </div>
         </control-item>
@@ -142,16 +89,9 @@
           <div style="display: flex; flex-direction: column; gap: 1em">
             <div style="display: flex; align-items: center; gap: 0.5em">
               <span>数量:</span>
-              <inputCom
-                type="number"
-                :modelValue="batchCount"
-                @update:modelValue="batchCount = Number($event)"
-                :min="1"
-                :max="500"
-              />
-              <custom-btn-com @click="generateBatchIdNumbers"
-                >批量生成</custom-btn-com
-              >
+              <inputCom type="number" :modelValue="batchCount" @update:modelValue="batchCount = Number($event)" :min="1"
+                :max="500" />
+              <custom-btn-com @click="generateBatchIdNumbers">批量生成</custom-btn-com>
             </div>
           </div>
         </control-item>
@@ -171,34 +111,25 @@
         <template #preview>
           <div>
             <!-- 逆向解析 -->
-            <div
-              style="
+            <div style="
                 margin-bottom: 2em;
                 padding: 1em;
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
-              "
-            >
+              ">
               <h3 style="margin-top: 0; margin-bottom: 1em">身份id数字解析</h3>
               <div style="display: flex; gap: 0.5em; margin-bottom: 1em">
-                <inputCom
-                  style="flex: 1"
-                  type="text"
-                  placeholder="请输入身份id数字"
-                  :modelValue="idNumberInput"
-                  @update:modelValue="idNumberInput = $event"
-                />
+                <inputCom style="flex: 1" type="text" placeholder="请输入身份id数字" :modelValue="idNumberInput"
+                  @update:modelValue="idNumberInput = $event" />
                 <custom-btn-com @click="parseIdNumber">解析</custom-btn-com>
               </div>
               <div v-if="parsedInfo" class="parsed-info">
                 <h4 style="margin-top: 0; margin-bottom: 1em">解析结果</h4>
-                <div
-                  style="
+                <div style="
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 0.5em;
-                  "
-                >
+                  ">
                   <div>
                     <strong>省份:</strong> {{ parsedInfo.province || "--" }}-{{
                       parsedInfo.provinceCode || "--"
@@ -234,28 +165,18 @@
             </div>
           </div>
           <div v-if="batchResults.length > 0">
-            <custom-btn-com
-              @click="copyToClipboard(JSON.stringify(batchResults))"
-              >一键复制所有结果-数据结构是JSON数组</custom-btn-com
-            >
-            <div
-              style="
+            <custom-btn-com @click="copyToClipboard(JSON.stringify(batchResults))">一键复制所有结果-数据结构是JSON数组</custom-btn-com>
+            <div style="
                 margin-top: 1em;
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 1em;
-              "
-            >
-              <div
-                style="display: flex; align-items: center; gap: 0.5em"
-                v-for="(id, index) in batchResults"
-                :key="index"
-              >
+              ">
+              <div style="display: flex; align-items: center; gap: 0.5em" v-for="(id, index) in batchResults"
+                :key="index">
                 <span>{{ index + 1 }}.</span>
                 <span>{{ id }}</span>
-                <custom-btn-com @click="copyToClipboard(id)"
-                  >复制</custom-btn-com
-                >
+                <custom-btn-com @click="copyToClipboard(id)">复制</custom-btn-com>
               </div>
             </div>
           </div>
@@ -269,7 +190,6 @@
 <script setup>
 import { ref, reactive, computed, onBeforeMount } from "vue";
 import { citys as listArr } from "./js/index-array.js";
-
 import {
   inputCom,
   selectCom,
@@ -278,6 +198,9 @@ import {
   layoutCom,
   appContainer,
 } from "../components/form-control/index.vue";
+
+import { toastFun } from '../components/toast/index.js'
+
 
 const selectValue = reactive({
   provinceId: "110000",
@@ -589,7 +512,7 @@ const generateIdNumber = ({ areaCode, birth, gender }) => {
     return result;
   } catch (error) {
     console.error("生成身份id数字失败:", error);
-    alert("生成身份id数字失败，请检查输入");
+    toastFun.open({ message: '生成身份id数字失败，请检查输入' })
     return null;
   }
 };
@@ -756,11 +679,11 @@ const copyToClipboard = (text) => {
   navigator.clipboard
     .writeText(text)
     .then(() => {
-      alert("复制成功！");
+      toastFun.open({ message: '复制成功！' })
     })
     .catch((err) => {
       console.error("复制失败:", err);
-      alert("复制失败，请手动复制");
+      toastFun.open({ message: '复制失败，请手动复制' })
     });
 };
 </script>

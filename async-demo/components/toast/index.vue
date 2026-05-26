@@ -2,7 +2,7 @@
 import { ref, onUnmounted, Transition } from 'vue'
 export default {
   setup() {
-    const toast = ref({
+    const initToast = () => ({
       show: false,
       message: '',
       title: '',
@@ -18,12 +18,16 @@ export default {
       verticalOffset: 0,
     })
 
+    const toast = ref(initToast())
     let timer = null
 
     const addToast = (options = {}) => {
-      removeToast()
+      if (timer) {
+        clearTimeout(timer)
+      }
       try {
-        Object.assign(toast.value, options, { show: true })
+        Object.assign(toast.value, initToast(), options, { show: true })
+
         if (toast.value.autoClose) {
           timer = setTimeout(() => {
             removeToast()
@@ -64,7 +68,6 @@ export default {
                 this.toast.title ? (<div class="toast-title">{this.toast.title}</div>) : null
               }
               <div class="toast-message" style={this.toast.contentStyle}>
-                {this.toast.contentSlot}
                 {
                   this.toast.contentSlot ? this.toast.contentSlot() : this.toast.message
                 }

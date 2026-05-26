@@ -1,8 +1,5 @@
 import { getCurrentInstance, h, createApp } from "vue";
 
-// 此段代码为耦合代码，这里我图省事了
-export let toastFun;
-
 export const defaultProps = {
   fileList: {
     type: Array,
@@ -27,25 +24,9 @@ const getTargetThis = (currentInstance) => {
   throw new Error("getTargetThis: markdownComponent not found");
 };
 
-const initToast = (propsComponents) => {
-  if (propsComponents.toast) {
-    if (!toastFun) {
-      const divNode = document.createElement("div");
-      divNode.id = "custom-toast-container";
-      propsComponents.toast.then((res) => {
-        const toastApp = createApp(res);
-        toastFun = toastApp.mount(divNode);
-        console.log("toastVNode", res);
-        document.body.appendChild(divNode);
-      });
-    }
-  }
-};
-
 export default (propsComponents = {}) => {
   const components = Object.assign({}, propsComponents);
 
-  initToast(components);
   let markdownComponentFun = () => "";
 
   components.markdownComponent = (attrs) => {
@@ -71,7 +52,7 @@ export default (propsComponents = {}) => {
       console.log(
         "currentInstance",
         targetThis.ctx.computedContent,
-        targetThis.props.fileList
+        targetThis.props.fileList,
       );
       const childrenList = [];
       targetThis.props.fileList.forEach((item) => {
@@ -86,7 +67,7 @@ export default (propsComponents = {}) => {
           },
           h(markdownComponentFun(), {
             text: targetThis.ctx.computedContent(item),
-          })
+          }),
         );
         childrenList.push(result);
       });
@@ -105,7 +86,6 @@ export default (propsComponents = {}) => {
     data() {
       return {
         dialogInstance: null,
-        toastRef: null,
       };
     },
     methods: {
@@ -137,7 +117,7 @@ export default (propsComponents = {}) => {
                 key: item.path,
                 title: item.path,
               },
-              h(this.markdownComponent(), { text: result })
+              h(this.markdownComponent(), { text: result }),
             );
             markdownList.push(vNode);
           });
@@ -149,7 +129,7 @@ export default (propsComponents = {}) => {
             {},
             {
               default: () => markdownList,
-            }
+            },
           );
 
           const dialogApp = createApp(dialogVNode);

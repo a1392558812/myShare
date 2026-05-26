@@ -41,7 +41,8 @@
 <script setup>
 import { ref } from 'vue'
 import JsonEditor from '../components/json-editor/index.vue'
-import baseConfig, { toastFun } from '../static/hooks/extends.js'
+import { toastFun } from '../components/toast/index.js'
+import baseConfig from '../static/hooks/extends.js'
 import {
   inputCom,
   selectCom,
@@ -54,7 +55,6 @@ import {
 
 defineOptions({
   extends: baseConfig({
-    toast: import('../components/toast/index.vue'),
     customDialog: import('../components/dialog/index.vue'),
   }),
 })

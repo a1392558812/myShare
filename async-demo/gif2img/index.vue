@@ -29,14 +29,8 @@
 </template>
 <script setup lang="js">
 import { ref, nextTick, onUnmounted } from 'vue';
-import baseConfig, { toastFun } from '../static/hooks/extends.js'
-defineOptions({
-  extends: baseConfig({
-    toast: import('../components/toast/index.vue'),
-  }),
-})
-
 import SuperGif from './js/libgif.js';
+import { toastFun } from '../components/toast/index.js'
 
 const frames = ref([]);
 const fileUrl = ref('');

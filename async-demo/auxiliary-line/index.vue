@@ -247,13 +247,13 @@
 <script setup lang="jsx">
 import { ref, nextTick } from 'vue';
 import AuxiliaryLine from './components/index.vue';
-import baseConfig, { toastFun } from '../static/hooks/extends.js';
+import { toastFun } from '../components/toast/index.js'
+import baseConfig from '../static/hooks/extends.js';
 import { slotCom1, slotCom2, slotCom3, slotCom4 } from './components/test.js';
 
 defineOptions({
   name: 'AuxiliaryLineDemo',
   extends: baseConfig({
-    toast: import('../components/toast/index.vue'),
     customDialog: import('../components/dialog/index.vue')
   }),
   components: {

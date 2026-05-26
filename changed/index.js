@@ -15,15 +15,19 @@ try {
   );
 
   const files = output.split("\n").filter((item) => {
+    // 排除空行文件
     if (!item) return false;
 
+    // 排除直接在根目录下的文件
     const isRootFile = item.split("/").length === 1;
     if (isRootFile) return false;
 
+    // 是否在指定文件夹下
     const isFilterFileFolder = ["async-demo/"].includes((folder) =>
       item.startsWith(folder),
     );
 
+    // 指定文件夹下的文件或数字前缀的文件保留
     return isFilterFileFolder || isNumDotPrefix(item);
   });
 

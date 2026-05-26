@@ -70,11 +70,11 @@ import {
   customBtnCom,
   inputCom
 } from '../components/form-control/index.vue';
-import baseConfig, { toastFun } from '../static/hooks/extends.js'
+import { toastFun } from '../components/toast/index.js'
+import baseConfig from '../static/hooks/extends.js'
 
 defineOptions({
   extends: baseConfig({
-    toast: import('../components/toast/index.vue'),
     customDialog: import('../components/dialog/index.vue'),
   }),
 })
