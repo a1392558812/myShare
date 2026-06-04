@@ -2,28 +2,50 @@
   <div class="map-container">
     <div class="map-header">
       <h3>冒险地图</h3>
+      <div class="map-level-control">
+        <label>地图等级:</label>
+        <input
+          type="number"
+          v-model.number="mapLevelInput"
+          min="1"
+          max="99"
+          @change="updateMapLevel"
+        />
+        <span class="level-multiplier">倍率: {{ getLevelMultiplier() }}x</span>
+      </div>
       <div class="player-status-mini">
         <span>等级: {{ gameState.player.level }}</span>
-        <span>生命: {{ gameState.player.hp }}/{{ gameState.player.maxHp }}</span>
-        <span>法力: {{ gameState.player.mp }}/{{ gameState.player.maxMp }}</span>
+        <span
+          >生命: {{ formatStat(gameState.player.hp) }}/{{
+            formatStat(gameState.player.maxHp)
+          }}</span
+        >
+        <span
+          >法力: {{ formatStat(gameState.player.mp) }}/{{
+            formatStat(gameState.player.maxMp)
+          }}</span
+        >
       </div>
     </div>
-    
+
     <div class="map-area" ref="mapAreaRef">
       <!-- 地图背景 -->
       <div class="map-background"></div>
-      
+
       <!-- 玩家角色 -->
-      <div 
+      <div
         class="character player-character"
-        :style="{ left: gameState.player.x + 'px', top: gameState.player.y + 'px' }"
+        :style="{
+          left: gameState.player.x + 'px',
+          top: gameState.player.y + 'px',
+        }"
       >
         <div class="char-avatar">勇者</div>
       </div>
-      
+
       <!-- 敌人 -->
-      <div 
-        v-for="enemy in gameState.mapEnemies" 
+      <div
+        v-for="enemy in gameState.mapEnemies"
         :key="enemy.id"
         class="character enemy-character"
         :style="{ left: enemy.x + 'px', top: enemy.y + 'px' }"
@@ -31,11 +53,14 @@
       >
         <div class="char-avatar enemy-avatar">{{ enemy.name }}</div>
         <div class="char-hp-bar">
-          <div class="hp-fill" :style="{ width: (enemy.hp / enemy.maxHp * 100) + '%' }"></div>
+          <div
+            class="hp-fill"
+            :style="{ width: (enemy.hp / enemy.maxHp) * 100 + '%' }"
+          ></div>
         </div>
       </div>
     </div>
-    
+
     <div class="map-controls">
       <div class="d-pad">
         <button @click="move(0, -40)" class="d-btn up">↑</button>
@@ -45,13 +70,8 @@
         </div>
         <button @click="move(0, 40)" class="d-btn down">↓</button>
       </div>
-      
-      <div class="action-buttons">
-        <button class="game-btn" @click="openCharacterPanel">角色信息</button>
-        <button class="game-btn danger" @click="resetGame">重置游戏</button>
-      </div>
     </div>
-    
+
     <div class="map-hint">
       <p>点击敌人或移动到敌人附近开始战斗！</p>
     </div>
@@ -59,78 +79,92 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
-import { gameState, gameActions } from '../stores/gameStore.js'
+import { ref, onMounted, onUnmounted } from "vue";
+import { gameState, gameActions } from "../stores/gameStore.js";
+import { formatStat } from "../stores/utils.js";
+import { GAME_CONFIG } from "../stores/constants.js";
+import { generateMapEnemies } from "../stores/enemy.js";
+
+const mapLevelInput = ref(gameState.mapLevel);
+
+const getLevelMultiplier = () => {
+  if (!gameState.mapLevel || gameState.mapLevel <= 1) {
+    return "1.0";
+  }
+  const multiplier = 1 + GAME_CONFIG.MAP.ENEMY_LEVEL_MULTIPLIER * (gameState.mapLevel - 1);
+  return multiplier.toFixed(2);
+};
+
+const updateMapLevel = () => {
+  if (mapLevelInput.value < 1) mapLevelInput.value = 1;
+  if (mapLevelInput.value > 99) mapLevelInput.value = 99;
+  
+  if (gameState.mapLevel !== mapLevelInput.value) {
+    gameState.mapLevel = mapLevelInput.value;
+    // 刷新地图敌人以应用新等级
+    gameState.mapEnemies = generateMapEnemies(gameState.mapLevel);
+    gameActions.endBattle();
+  }
+};
 
 // 移动
 const move = (dx, dy) => {
-  gameActions.movePlayer(dx, dy)
-  checkNearbyEnemies()
-}
+  gameActions.movePlayer(dx, dy);
+  checkNearbyEnemies();
+};
 
 // 检查附近敌人
 const checkNearbyEnemies = () => {
   for (const enemy of gameState.mapEnemies) {
     const dist = Math.sqrt(
-      Math.pow(gameState.player.x - enemy.x, 2) + Math.pow(gameState.player.y - enemy.y, 2)
-    )
+      Math.pow(gameState.player.x - enemy.x, 2) +
+        Math.pow(gameState.player.y - enemy.y, 2),
+    );
     if (dist < 60) {
-      gameActions.startBattle(enemy)
-      break
+      gameActions.startBattle();
+      break;
     }
   }
-}
+};
 
 // 点击敌人
 const handleEnemyClick = (enemy) => {
-  gameActions.startBattle(enemy)
-}
-
-// 打开角色面板
-const openCharacterPanel = () => {
-  gameActions.setScreen('character')
-}
-
-// 重置游戏
-const resetGame = () => {
-  if (confirm('确定要重置游戏吗？所有进度将丢失。')) {
-    gameActions.resetGame()
-  }
-}
+  gameActions.startBattle();
+};
 
 // 键盘控制
 const handleKeydown = (e) => {
   switch (e.key) {
-    case 'ArrowUp':
-    case 'w':
-    case 'W':
-      move(0, -40)
-      break
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      move(0, 40)
-      break
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      move(-40, 0)
-      break
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      move(40, 0)
-      break
+    case "ArrowUp":
+    case "w":
+    case "W":
+      move(0, -40);
+      break;
+    case "ArrowDown":
+    case "s":
+    case "S":
+      move(0, 40);
+      break;
+    case "ArrowLeft":
+    case "a":
+    case "A":
+      move(-40, 0);
+      break;
+    case "ArrowRight":
+    case "d":
+    case "D":
+      move(40, 0);
+      break;
   }
-}
+};
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
+  window.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
+  window.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <style scoped lang="scss">
@@ -149,12 +183,44 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.7);
   border-radius: 8px;
   color: white;
-  
+
   h3 {
     margin: 0;
     font-size: 18px;
   }
-  
+
+  .map-level-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(59, 130, 246, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+
+    label {
+      font-size: 13px;
+      color: #93c5fd;
+    }
+
+    input {
+      width: 60px;
+      padding: 4px 8px;
+      font-size: 14px;
+      text-align: center;
+      border: 1px solid #3b82f6;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+    }
+
+    .level-multiplier {
+      font-size: 12px;
+      color: #fbbf24;
+      font-weight: bold;
+    }
+  }
+
   .player-status-mini {
     display: flex;
     gap: 20px;
@@ -175,7 +241,7 @@ onUnmounted(() => {
 .map-background {
   position: absolute;
   inset: 0;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 30%, #3d6b1a 0%, transparent 30%),
     radial-gradient(circle at 70% 60%, #3d6b1a 0%, transparent 25%),
     radial-gradient(circle at 50% 80%, #3d6b1a 0%, transparent 35%);
@@ -187,7 +253,7 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   cursor: pointer;
   transition: transform 0.1s;
-  
+
   &:hover {
     transform: translate(-50%, -50%) scale(1.1);
   }
@@ -225,7 +291,7 @@ onUnmounted(() => {
   border-radius: 3px;
   margin: 4px auto 0;
   overflow: hidden;
-  
+
   .hp-fill {
     height: 100%;
     background: linear-gradient(90deg, #ff4757, #ff6b81);
@@ -264,38 +330,13 @@ onUnmounted(() => {
   color: white;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     transform: scale(1.1);
   }
-  
+
   &:active {
     transform: scale(0.95);
-  }
-}
-
-.action-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.game-btn {
-  padding: 12px 24px;
-  font-size: 14px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  }
-  
-  &.danger {
-    background: linear-gradient(135deg, #ff6b6b, #c44569);
   }
 }
 
@@ -305,4 +346,3 @@ onUnmounted(() => {
   font-size: 14px;
 }
 </style>
-
