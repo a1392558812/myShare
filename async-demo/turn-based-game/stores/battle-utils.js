@@ -69,14 +69,21 @@ export const processBuffs = (gameState) => {
       const manaDamagePercent = buff.manaDamagePercent || 0.05;
       
       const damage = Math.floor(target.maxHp * damagePercent);
-      const manaDamage = Math.floor(target.maxMp * manaDamagePercent);
+      const manaDamage = Math.floor((target.maxMp || 0) * manaDamagePercent);
       
       target.hp = Math.max(0, target.hp - damage);
-      target.mp = Math.max(0, target.mp - manaDamage);
+      target.mp = Math.max(0, (target.mp || 0) - manaDamage);
       
-      gameState.battleLog.push(
-        `${targetName} 中毒发作！受到 ${damage} HP伤害和 ${manaDamage} MP伤害`
-      );
+      // 根据目标是否有法力显示不同的消息
+      if (target.maxMp && target.maxMp > 0) {
+        gameState.battleLog.push(
+          `${targetName} 中毒发作！受到 ${damage} HP伤害和 ${manaDamage} MP伤害`
+        );
+      } else {
+        gameState.battleLog.push(
+          `${targetName} 中毒发作！受到 ${damage} HP伤害`
+        );
+      }
     }
   };
 
@@ -114,14 +121,21 @@ export const processBuffs = (gameState) => {
               const manaDamagePercent = buff.manaDamagePercent || 0.05;
               
               const damage = Math.floor(enemy.maxHp * damagePercent);
-              const manaDamage = Math.floor(enemy.maxMp * manaDamagePercent);
+              const manaDamage = Math.floor((enemy.maxMp || 0) * manaDamagePercent);
               
               enemy.hp = Math.max(0, enemy.hp - damage);
-              enemy.mp = Math.max(0, enemy.mp - manaDamage);
+              enemy.mp = Math.max(0, (enemy.mp || 0) - manaDamage);
               
-              gameState.battleLog.push(
-                `${enemy.name} 中毒发作！受到 ${damage} HP伤害和 ${manaDamage} MP伤害`
-              );
+              // 根据敌人是否有法力显示不同的消息
+              if (enemy.maxMp && enemy.maxMp > 0) {
+                gameState.battleLog.push(
+                  `${enemy.name} 中毒发作！受到 ${damage} HP伤害和 ${manaDamage} MP伤害`
+                );
+              } else {
+                gameState.battleLog.push(
+                  `${enemy.name} 中毒发作！受到 ${damage} HP伤害`
+                );
+              }
             }
             
             buff.remainingTurns--;
@@ -158,12 +172,11 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   let buffArray = null;
   let targetName = "";
   
-  // 检查是否是敌人
-  const isEnemy = gameState.currentBattle?.enemies?.some(e => e === target);
+  // 检查是否是敌人（使用 id 匹配，避免对象引用问题）
+  const isEnemy = gameState.currentBattle?.enemies?.some(e => e.id === target.id);
   
   if (isEnemy) {
-    // 敌人的 buff 存储在自己的 buffs 数组中
-    if (!target.buffs) target.buffs = [];
+    // 敌人的 buff 存储在自己的 buffs 数组中（已在敌人生成时初始化）
     buffArray = target.buffs;
     targetName = target.name;
   } else if (target === gameState.player) {
@@ -183,7 +196,9 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   // 冰冻术优先级最高，清除其他debuff
   if (debuffType === 'freeze') {
     if (isEnemy) {
-      target.buffs = target.buffs.filter(b => b.type === 'freeze');
+      // 使用 splice 保持响应式
+      const filtered = target.buffs.filter(b => b.type === 'freeze');
+      target.buffs.splice(0, target.buffs.length, ...filtered);
     } else {
       const filtered = buffArray.filter(b => b.type === 'freeze');
       buffArray.length = 0;
@@ -194,7 +209,9 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
     // 封印和混乱互相覆盖
     if (debuffType === 'seal') {
       if (isEnemy) {
-        target.buffs = target.buffs.filter(b => b.type !== 'confuse');
+        // 使用 splice 保持响应式
+        const filtered = target.buffs.filter(b => b.type !== 'confuse');
+        target.buffs.splice(0, target.buffs.length, ...filtered);
       } else {
         const filtered = buffArray.filter(b => b.type !== 'confuse');
         buffArray.length = 0;
@@ -202,7 +219,9 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
       }
     } else if (debuffType === 'confuse') {
       if (isEnemy) {
-        target.buffs = target.buffs.filter(b => b.type !== 'seal');
+        // 使用 splice 保持响应式
+        const filtered = target.buffs.filter(b => b.type !== 'seal');
+        target.buffs.splice(0, target.buffs.length, ...filtered);
       } else {
         const filtered = buffArray.filter(b => b.type !== 'seal');
         buffArray.length = 0;
@@ -212,7 +231,9 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
     
     // 移除冰冻以外的debuff（冰冻优先级最高）
     if (isEnemy) {
-      target.buffs = target.buffs.filter(b => b.type === 'freeze' || b.type !== debuffType);
+      // 使用 splice 保持响应式
+      const filtered = target.buffs.filter(b => b.type === 'freeze' || b.type !== debuffType);
+      target.buffs.splice(0, target.buffs.length, ...filtered);
     } else {
       const filtered = buffArray.filter(b => b.type === 'freeze' || b.type !== debuffType);
       buffArray.length = 0;
@@ -222,13 +243,39 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
     gameState.battleLog.push(`${casterName} 使用 ${skill.name} 成功！${targetName} 被${debuffType === 'seal' ? '封印' : debuffType === 'confuse' ? '混乱' : debuffType === 'poison' ? '中毒' : '控制'}了！`);
   }
   
-  buffArray.push({
+  // 创建debuff对象
+  const debuff = {
     name: skill.name,
     type: debuffType,
     remainingTurns: skill.duration,
     damagePercent: skill.damagePercent,
     manaDamagePercent: skill.manaDamagePercent,
-  });
+  };
+  
+  // 中毒效果：立即扣减血量和法力
+  if (debuffType === 'poison') {
+    const damagePercent = skill.damagePercent || 0.08;
+    const manaDamagePercent = skill.manaDamagePercent || 0.05;
+    
+    const damage = Math.floor(target.maxHp * damagePercent);
+    const manaDamage = Math.floor((target.maxMp || 0) * manaDamagePercent);
+    
+    target.hp = Math.max(0, target.hp - damage);
+    target.mp = Math.max(0, (target.mp || 0) - manaDamage);
+    
+    // 根据目标是否有法力显示不同的消息
+    if (target.maxMp && target.maxMp > 0) {
+      gameState.battleLog.push(
+        `${casterName} 的 ${skill.name} 生效！${targetName} 受到 ${damage} HP伤害和 ${manaDamage} MP伤害`
+      );
+    } else {
+      gameState.battleLog.push(
+        `${casterName} 的 ${skill.name} 生效！${targetName} 受到 ${damage} HP伤害`
+      );
+    }
+  }
+  
+  buffArray.push(debuff);
 };
 
 export const applyBuff = (gameState, targetType, buff) => {

@@ -114,6 +114,9 @@ export const generateBattleEnemies = (playerLevel, mapLevel = 1) => {
       ...levelBonus,
       id: `battle_enemy_${Date.now()}_${i}`,
       battleIndex: i,
+      maxMp: levelBonus.maxMp || 0, // 敌人默认没有法力上限，设为0
+      mp: levelBonus.mp || 0, // 敌人默认没有法力，设为0
+      buffs: [], // 初始化空的buff数组
       ...enemyAttrs,
     });
   }
@@ -143,6 +146,9 @@ export const generateMapEnemies = (mapLevel = 1) => {
       x: pos.x,
       y: pos.y,
       id: `enemy_${index + 1}`,
+      maxMp: levelBonus.maxMp || 0, // 敌人默认没有法力上限，设为0
+      mp: levelBonus.mp || 0, // 敌人默认没有法力，设为0
+      buffs: [], // 初始化空的buff数组
       ...enemyAttrs,
     };
   });
@@ -179,6 +185,9 @@ export const refreshMapEnemies = (gameState, playerLevel, mapLevel = 1) => {
         id: `enemy_${Date.now()}_${i}`,
         x: mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange,
         y: mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange,
+        maxMp: levelBonus.maxMp || 0, // 敌人默认没有法力上限，设为0
+        mp: levelBonus.mp || 0, // 敌人默认没有法力，设为0
+        buffs: [], // 初始化空的buff数组
         ...enemyAttrs,
       });
     }

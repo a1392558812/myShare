@@ -337,7 +337,7 @@ export const startBattle = (
   gameState.battleLog = [];
   gameState.battleResult = null;
 
-  const battleEnemies = enemies.map((e) => ({ ...e }));
+  const battleEnemies = enemies;
   const playerStats = calculatePlayerStatsFn(gameState.player);
   const petStats = calculatePetStatsFn(gameState.pet);
 

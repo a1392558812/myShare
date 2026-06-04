@@ -369,13 +369,25 @@ const petUseDebuffSkill = (gameState, skill, pet, enemies, targetIndex) => {
   
   if (skill.type.endsWith("_single")) {
     const target = aliveEnemies[targetIndex] || aliveEnemies[0];
-    applyDebuff(gameState, target, skill, pet.name);
+    // 从原始敌人数组中找到对应的敌人对象，确保引用正确
+    const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === target.id);
+    if (originalEnemy) {
+      applyDebuff(gameState, originalEnemy, skill, pet.name);
+    } else {
+      applyDebuff(gameState, target, skill, pet.name);
+    }
   } else if (skill.type.endsWith("_all")) {
     const targetCount = Math.min(skill.targetCount || 3, aliveEnemies.length);
     const shuffled = [...aliveEnemies].sort(() => Math.random() - 0.5);
     
     for (let i = 0; i < targetCount; i++) {
-      applyDebuff(gameState, shuffled[i], skill, pet.name);
+      // 从原始敌人数组中找到对应的敌人对象，确保引用正确
+      const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === shuffled[i].id);
+      if (originalEnemy) {
+        applyDebuff(gameState, originalEnemy, skill, pet.name);
+      } else {
+        applyDebuff(gameState, shuffled[i], skill, pet.name);
+      }
     }
   }
 };

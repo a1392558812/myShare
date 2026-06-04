@@ -14,6 +14,17 @@
         <div class="char-display">
           <div class="char-info">
             <h4>{{ enemy.name }} {{ enemy.hp <= 0 ? "(已击杀)" : "" }}</h4>
+            <!-- 敌人 buff/debuff 显示 -->
+            <div class="buff-list enemy-buffs" v-if="enemy.buffs && enemy.buffs.length > 0">
+              <span
+                v-for="(buff, buffIndex) in enemy.buffs"
+                :key="buffIndex"
+                class="buff-badge"
+                :class="getBuffClass(buff.type)"
+              >
+                {{ buff.name }} ({{ buff.remainingTurns }})
+              </span>
+            </div>
             <div class="hp-bar">
               <span class="label">HP:</span>
               <span class="value"
@@ -164,6 +175,15 @@ const getBuffClass = (type) => {
       return "buff-defense";
     case "speed":
       return "buff-speed";
+    // debuff 类型
+    case "poison":
+      return "debuff-poison";
+    case "freeze":
+      return "debuff-freeze";
+    case "seal":
+      return "debuff-seal";
+    case "confuse":
+      return "debuff-confuse";
     default:
       return "buff-default";
   }
@@ -187,7 +207,7 @@ const getBuffClass = (type) => {
     margin-bottom: 20px;
 
     .enemy-unit {
-      width: 100px;
+      width: 120px;
       color: white;
       cursor: pointer;
       transition: all 0.2s;
@@ -198,6 +218,18 @@ const getBuffClass = (type) => {
       &.selected {
         border-color: #ff6b6b;
         background: rgba(255, 107, 107, 0.1);
+      }
+
+      .enemy-buffs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        margin-bottom: 4px;
+
+        .buff-badge {
+          padding: 1px 4px;
+          font-size: 8px;
+        }
       }
 
       &.dead {
@@ -308,6 +340,27 @@ const getBuffClass = (type) => {
 
           &.pet-buff {
             opacity: 0.9;
+          }
+
+          // debuff 样式
+          &.debuff-poison {
+            background: linear-gradient(135deg, #84cc16, #65a30d);
+            color: white;
+          }
+
+          &.debuff-freeze {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+          }
+
+          &.debuff-seal {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+          }
+
+          &.debuff-confuse {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: white;
           }
         }
 
