@@ -1,6 +1,6 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats, levelUp, petLevelUp } from "./player.js";
-import { generateTurnOrder, checkBattleEnd, getDecisionName, processBuffs } from "./battle-utils.js";
+import { generateTurnOrder, checkBattleEnd, getDecisionName, processBuffs, isTargetFrozen } from "./battle-utils.js";
 import { executePlayerDecision } from "./player-actions.js";
 import { executePetDecision } from "./pet-actions.js";
 import { performEnemyAttack } from "./enemy-actions.js";
@@ -206,6 +206,12 @@ const executePlayerConfusedAttack = (gameState, player) => {
   
   if (chosenTarget.type === 'enemy') {
     // 攻击敌人
+    // 检查目标是否被冰冻
+    if (isTargetFrozen(gameState, chosenTarget.target)) {
+      gameState.battleLog.push(`${chosenTarget.target.name} 被冰冻，无法受到伤害！`);
+      return;
+    }
+    
     const playerStats = calculatePlayerStats(player);
     const critRate = Math.min(playerStats.critRate || 0, GAME_CONFIG.CRIT.MAX_CRIT_RATE) / 100;
     const isCrit = Math.random() < critRate;
@@ -219,6 +225,12 @@ const executePlayerConfusedAttack = (gameState, player) => {
     );
   } else if (chosenTarget.type === 'pet') {
     // 攻击宠物
+    // 检查目标是否被冰冻
+    if (isTargetFrozen(gameState, chosenTarget.target)) {
+      gameState.battleLog.push(`${pet.name} 被冰冻，无法受到伤害！`);
+      return;
+    }
+    
     const playerStats = calculatePlayerStats(player);
     const critRate = Math.min(playerStats.critRate || 0, GAME_CONFIG.CRIT.MAX_CRIT_RATE) / 100;
     const isCrit = Math.random() < critRate;
@@ -227,7 +239,7 @@ const executePlayerConfusedAttack = (gameState, player) => {
     let baseDamage = Math.max(1, playerStats.physicalAttack - petStats.defense);
     let damage = isCrit ? Math.floor(baseDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER) : baseDamage;
     
-    pet.hp -= Math.floor(damage);
+    chosenTarget.target.hp -= Math.floor(damage);
     gameState.battleLog.push(
       `你 混乱中攻击了 ${pet.name}${isCrit ? '【暴击！】' : ''}，造成 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`
     );
@@ -262,6 +274,12 @@ const executePetConfusedAttack = (gameState, pet) => {
   
   if (chosenTarget.type === 'enemy') {
     // 攻击敌人
+    // 检查目标是否被冰冻
+    if (isTargetFrozen(gameState, chosenTarget.target)) {
+      gameState.battleLog.push(`${chosenTarget.target.name} 被冰冻，无法受到伤害！`);
+      return;
+    }
+    
     const petStats = calculatePetStats(pet);
     const critRate = Math.min(petStats.critRate || 0, GAME_CONFIG.CRIT.MAX_CRIT_RATE) / 100;
     const isCrit = Math.random() < critRate;
@@ -275,6 +293,12 @@ const executePetConfusedAttack = (gameState, pet) => {
     );
   } else if (chosenTarget.type === 'player') {
     // 攻击玩家
+    // 检查目标是否被冰冻
+    if (isTargetFrozen(gameState, chosenTarget.target)) {
+      gameState.battleLog.push(`你 被冰冻，无法受到伤害！`);
+      return;
+    }
+    
     const petStats = calculatePetStats(pet);
     const playerStats = calculatePlayerStats(player);
     const critRate = Math.min(petStats.critRate || 0, GAME_CONFIG.CRIT.MAX_CRIT_RATE) / 100;
@@ -283,7 +307,7 @@ const executePetConfusedAttack = (gameState, pet) => {
     let baseDamage = Math.max(1, petStats.physicalAttack - playerStats.defense);
     let damage = isCrit ? Math.floor(baseDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER) : baseDamage;
     
-    player.hp -= Math.floor(damage);
+    chosenTarget.target.hp -= Math.floor(damage);
     gameState.battleLog.push(
       `${pet.name} 混乱中攻击了你${isCrit ? '【暴击！】' : ''}，造成 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`
     );

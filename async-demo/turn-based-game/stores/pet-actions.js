@@ -1,6 +1,6 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePetStats, useItem } from "./player.js";
-import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff } from "./battle-utils.js";
+import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
 
 export const petAttack = (gameState, targetIndex = 0) => {
   if (!gameState.currentBattle) return;
@@ -16,7 +16,13 @@ export const petAttack = (gameState, targetIndex = 0) => {
     if (newTargetIndex === -1) return;
     targetIndex = newTargetIndex;
     enemy = enemies[targetIndex];
-    gameState.battleLog.push(`目标已死亡，${pet.name}随机切换到 ${enemy.name}`);
+    gameState.battleLog.push(`${pet.name}随机切换到 ${enemy.name}`);
+  }
+
+  // 检查目标是否被冰冻
+  if (isTargetFrozen(gameState, enemy)) {
+    gameState.battleLog.push(`${enemy.name} 被冰冻，无法受到伤害！`);
+    return;
   }
 
   const petStats = calculatePetStats(pet);
@@ -57,6 +63,12 @@ export const petAttack = (gameState, targetIndex = 0) => {
   while (comboCount < maxComboCount - 1 && Math.random() < currentComboRate) {
     comboCount++;
     if (enemy.hp <= 0) break;
+    
+    // 检查目标是否在连击中被打成冰冻
+    if (isTargetFrozen(gameState, enemy)) {
+      gameState.battleLog.push(`${enemy.name} 被冰冻，连击中无法继续造成伤害！`);
+      break;
+    }
 
     const isCritCombo = Math.random() < critRate;
     let comboDamage = currentDamage;
@@ -131,6 +143,12 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
     gameState.battleLog.push(`${pet.name} 释放 ${skill.name}，对所有敌人发动攻击！`);
 
     for (const enemy of aliveEnemies) {
+      // 检查目标是否被冰冻
+      if (isTargetFrozen(gameState, enemy)) {
+        gameState.battleLog.push(`${enemy.name} 被冰冻，无法受到伤害！`);
+        continue;
+      }
+      
       const baseDamage = Math.max(
         1,
         petStats.magicAttack * magicMultiplier + skill.damage - enemy.defense,
@@ -162,6 +180,12 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
       ) {
         comboCount++;
         if (enemy.hp <= 0) break;
+        
+        // 检查目标是否在连击中被打成冰冻
+        if (isTargetFrozen(gameState, enemy)) {
+          gameState.battleLog.push(`${enemy.name} 被冰冻，连击中无法继续造成伤害！`);
+          break;
+        }
 
         const isCritCombo = Math.random() < critRate;
         let comboDamage = currentDamage;
@@ -200,6 +224,12 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
       gameState.battleLog.push(`目标已死亡，${pet.name}随机切换到 ${enemy.name}`);
     }
 
+    // 检查目标是否被冰冻
+    if (isTargetFrozen(gameState, enemy)) {
+      gameState.battleLog.push(`${enemy.name} 被冰冻，无法受到伤害！`);
+      return;
+    }
+
     const baseDamage = Math.max(
       1,
       petStats.magicAttack * magicMultiplier + skill.damage - enemy.defense,
@@ -228,6 +258,12 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
     while (comboCount < maxComboCount - 1 && Math.random() < currentComboRate) {
       comboCount++;
       if (enemy.hp <= 0) break;
+      
+      // 检查目标是否在连击中被打成冰冻
+      if (isTargetFrozen(gameState, enemy)) {
+        gameState.battleLog.push(`${enemy.name} 被冰冻，连击中无法继续造成伤害！`);
+        break;
+      }
 
       const isCritCombo = Math.random() < critRate;
       let comboDamage = currentDamage;
@@ -261,6 +297,14 @@ const petUseSupportSkill = (gameState, skill, pet, targetType = "pet") => {
   // 处理治疗技能
   const applyHealToTarget = (t) => {
     if (!t) return;
+    
+    // 检查目标是否被冰冻（冰冻状态下无法被治疗）
+    if (isTargetFrozen(gameState, t)) {
+      const targetName = t === player ? "你" : t.name;
+      gameState.battleLog.push(`${targetName} 被冰冻，无法被治疗！`);
+      return;
+    }
+    
     const healAmount = Math.floor(t.maxHp * skill.healPercent);
     const manaAmount = Math.floor(t.maxMp * skill.manaPercent);
     t.hp = Math.min(t.maxHp, t.hp + healAmount);
@@ -439,6 +483,16 @@ export const executePetDecision = (gameState, decision) => {
         } else {
           target = player;
           targetName = "玩家";
+        }
+
+        // 检查目标是否被冰冻（冰冻状态下无法被治疗）
+        if (decision.item.type.startsWith("heal") || 
+            decision.item.type.startsWith("mana") || 
+            decision.item.type.startsWith("percent")) {
+          if (isTargetFrozen(gameState, target)) {
+            gameState.battleLog.push(`${targetName} 被冰冻，无法被治疗！`);
+            break;
+          }
         }
 
         const result = useItem(target, decision.item, decision.itemIndex, player);

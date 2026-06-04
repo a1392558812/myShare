@@ -12,6 +12,24 @@ export const getRandomAliveEnemyIndex = (enemies) => {
   return aliveIndices[randomIndex];
 };
 
+// 检查目标是否有冰冻buff（冰冻的单位无法受到伤害）
+export const isTargetFrozen = (gameState, target) => {
+  if (!target) return false;
+  
+  // 检查是否是敌人
+  const isEnemy = gameState.currentBattle?.enemies?.some(e => e.id === target.id);
+  
+  if (isEnemy) {
+    return target.buffs?.some(b => b.type === 'freeze') || false;
+  } else if (target === gameState.player) {
+    return gameState.currentBattle?.playerBuffs?.some(b => b.type === 'freeze') || false;
+  } else if (target === gameState.pet) {
+    return gameState.currentBattle?.petBuffs?.some(b => b.type === 'freeze') || false;
+  }
+  
+  return false;
+};
+
 export const processBuffs = (gameState) => {
   if (!gameState.currentBattle) return;
 
@@ -44,6 +62,12 @@ export const processBuffs = (gameState) => {
 
   const executeBuffEffect = (gameState, buff, target, targetName) => {
     if (!buff || !target) return;
+    
+    // 检查目标是否被冰冻（冰冻状态下无法被治疗）
+    if (buff.type === "heal" && isTargetFrozen(gameState, target)) {
+      gameState.battleLog.push(`${targetName} 被冰冻，${buff.name} 无法生效！`);
+      return;
+    }
     
     // 治疗buff效果 - 每回合恢复一定比例的生命和法力
     if (buff.type === "heal") {
@@ -101,7 +125,10 @@ export const processBuffs = (gameState) => {
         const expiredBuffs = [];
         enemy.buffs.forEach((buff, index) => {
           if (buff && buff.remainingTurns > 0) {
-            if (buff.type === "heal") {
+            // 检查敌人是否被冰冻（冰冻状态下无法被治疗）
+            if (buff.type === "heal" && isTargetFrozen(gameState, enemy)) {
+              gameState.battleLog.push(`${enemy.name} 被冰冻，${buff.name} 无法生效！`);
+            } else if (buff.type === "heal") {
               const healPercent = buff.healPercent || 0.15;
               const manaPercent = buff.manaPercent || 0.1;
               const healAmount = Math.floor(enemy.maxHp * healPercent);
@@ -193,10 +220,16 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   
   if (!buffArray) return;
   
-  // 冰冻术优先级最高，清除其他debuff
+  // 检查目标是否被冰冻（冰冻状态下无法受到除冰冻外的任何debuff）
+  if (debuffType !== 'freeze' && isTargetFrozen(gameState, target)) {
+    gameState.battleLog.push(`${targetName} 被冰冻，${skill.name} 无法生效！`);
+    return;
+  }
+  
+  // 冰冻术优先级最高，清除其他所有buff（包括增益和减益）
   if (debuffType === 'freeze') {
     if (isEnemy) {
-      // 使用 splice 保持响应式
+      // 使用 splice 保持响应式 - 只保留冰冻buff
       const filtered = target.buffs.filter(b => b.type === 'freeze');
       target.buffs.splice(0, target.buffs.length, ...filtered);
     } else {
@@ -283,18 +316,30 @@ export const applyBuff = (gameState, targetType, buff) => {
 
   const battle = gameState.currentBattle;
   let buffs;
+  let target;
+  let targetName;
 
   if (targetType === "player") {
     if (!battle.playerBuffs) battle.playerBuffs = [];
     buffs = battle.playerBuffs;
+    target = gameState.player;
+    targetName = "你";
   } else if (targetType === "pet") {
     if (!battle.petBuffs) battle.petBuffs = [];
     buffs = battle.petBuffs;
+    target = gameState.pet;
+    targetName = gameState.pet?.name || "宠物";
   } else {
     return;
   }
 
   if (!buffs) return;
+
+  // 检查目标是否被冰冻（冰冻状态下无法受到除冰冻外的任何buff）
+  if (buff.type !== 'freeze' && isTargetFrozen(gameState, target)) {
+    gameState.battleLog.push(`${targetName} 被冰冻，无法获得 ${buff.name}！`);
+    return;
+  }
 
   const buffType = buff.type;
   const existingIndex = buffs.findIndex((b) => b.type === buffType);

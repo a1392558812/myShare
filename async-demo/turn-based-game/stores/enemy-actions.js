@@ -1,6 +1,6 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats } from "./player.js";
-import { aiConfig, applyDebuff } from "./battle-utils.js";
+import { aiConfig, applyDebuff, isTargetFrozen } from "./battle-utils.js";
 
 export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
   const player = gameState.player;
@@ -136,9 +136,21 @@ const enemyUseDebuffSkill = (gameState, enemy, skill, target, targetType) => {
 };
 
 const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
+  // 检查敌人是否被冰冻（冰冻状态下无法使用支持技能）
+  if (isTargetFrozen(gameState, enemy)) {
+    gameState.battleLog.push(`${enemy.name} 被冰冻，无法使用 ${skill.name}！`);
+    return;
+  }
+  
   gameState.battleLog.push(`${enemy.name} 使用了 ${skill.name}！`);
 
   if (skill.type === "heal_single") {
+    // 检查敌人是否被冰冻（冰冻状态下无法被治疗）
+    if (isTargetFrozen(gameState, enemy)) {
+      gameState.battleLog.push(`${enemy.name} 被冰冻，无法被治疗！`);
+      return;
+    }
+    
     const healAmount = Math.floor(enemy.maxHp * skill.healPercent);
     const manaAmount = Math.floor(enemy.maxMp * skill.manaPercent);
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + healAmount);
@@ -155,6 +167,12 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
       manaPercent: skill.manaPercent || 0.1,
     });
   } else if (skill.type === "heal_all") {
+    // 检查敌人是否被冰冻（冰冻状态下无法被治疗）
+    if (isTargetFrozen(gameState, enemy)) {
+      gameState.battleLog.push(`${enemy.name} 被冰冻，无法被治疗！`);
+      return;
+    }
+    
     const healAmount = Math.floor(enemy.maxHp * skill.healPercent);
     const manaAmount = Math.floor(enemy.maxMp * skill.manaPercent);
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + healAmount);
@@ -163,13 +181,18 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
       `${enemy.name} 恢复了 ${healAmount} HP 和 ${manaAmount} MP！`,
     );
     if (pet && pet.active && pet.hp > 0) {
-      const petHealAmount = Math.floor(pet.maxHp * skill.healPercent);
-      const petManaAmount = Math.floor(pet.maxMp * skill.manaPercent);
-      pet.hp = Math.min(pet.maxHp, pet.hp + petHealAmount);
-      pet.mp = Math.min(pet.maxMp, pet.mp + petManaAmount);
-      gameState.battleLog.push(
-        `${pet.name} 恢复了 ${petHealAmount} HP 和 ${petManaAmount} MP！`,
-      );
+      // 检查宠物是否被冰冻（冰冻状态下无法被治疗）
+      if (isTargetFrozen(gameState, pet)) {
+        gameState.battleLog.push(`${pet.name} 被冰冻，无法被治疗！`);
+      } else {
+        const petHealAmount = Math.floor(pet.maxHp * skill.healPercent);
+        const petManaAmount = Math.floor(pet.maxMp * skill.manaPercent);
+        pet.hp = Math.min(pet.maxHp, pet.hp + petHealAmount);
+        pet.mp = Math.min(pet.maxMp, pet.mp + petManaAmount);
+        gameState.battleLog.push(
+          `${pet.name} 恢复了 ${petHealAmount} HP 和 ${petManaAmount} MP！`,
+        );
+      }
     }
   } else if (skill.type === "buff_attack_single" || skill.type === "buff_attack_all") {
     gameState.battleLog.push(
@@ -251,6 +274,13 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, defend
   const physicalMultiplier = getEnemyBuffMultiplier(enemy, "physicalAttack");
   const magicMultiplier = getEnemyBuffMultiplier(enemy, "magicAttack");
 
+  // 检查目标是否被冰冻
+  const targetName = targetType === "player" ? "你" : (targetType === "pet" ? pet.name : target.name);
+  if (isTargetFrozen(gameState, target)) {
+    gameState.battleLog.push(`${targetName} 被冰冻，无法受到伤害！`);
+    return;
+  }
+
   let baseDamage;
   if (skill.type === "magic") {
     baseDamage = skill.damage + (enemy.magicAttack || 0) * 0.5 * magicMultiplier;
@@ -272,7 +302,6 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, defend
 
   target.hp -= Math.floor(damage);
 
-  const targetName = targetType === "player" ? "你" : (targetType === "pet" ? pet.name : target.name);
   gameState.battleLog.push(
     `${enemy.name} 释放 ${skill.name}${isCrit ? "【暴击！】" : ""}，${targetName}受到 ${damage.toFixed(
       UI_CONFIG.DECIMAL_PLACES,
@@ -288,6 +317,13 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
   const enemyCritRate = enemy.critRate || 0;
   const enemyComboRate = enemy.comboRate || 0;
   const enemyMaxComboCount = enemy.maxComboCount || 1;
+
+  // 检查目标是否被冰冻
+  const targetName = targetType === "player" ? "你" : (targetType === "pet" ? pet.name : target.name);
+  if (isTargetFrozen(gameState, target)) {
+    gameState.battleLog.push(`${targetName} 被冰冻，无法受到伤害！`);
+    return;
+  }
 
   let enemyAttack;
   const physicalMultiplier = getEnemyBuffMultiplier(enemy, "physicalAttack");
@@ -314,7 +350,6 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
 
   target.hp -= Math.floor(damage);
 
-  const targetName = targetType === "player" ? "你" : (targetType === "pet" ? pet.name : target.name);
   gameState.battleLog.push(
     `${enemy.name} 攻击${targetName}${isCrit ? "【暴击！】" : ""}，${targetName}受到 ${damage.toFixed(
       UI_CONFIG.DECIMAL_PLACES,
@@ -339,6 +374,13 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
     target.hp > 0
   ) {
     comboCount++;
+    
+    // 检查目标是否在连击中被打成冰冻
+    if (isTargetFrozen(gameState, target)) {
+      gameState.battleLog.push(`${targetName} 被冰冻，连击中无法继续造成伤害！`);
+      break;
+    }
+    
     const isCritCombo = Math.random() < critRate;
     let comboDamage = currentDamage;
 
