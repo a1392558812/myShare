@@ -162,6 +162,12 @@ export const generateRandomStats = (rarity, level, type = null) => {
         value = Math.max(range.min, Math.min(value, range.max));
       }
 
+      // 忽视障碍异常词缀限制取值范围
+      if (selectedAffix.stat === "ignoreDebuffResist") {
+        const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.ignoreDebuffResist?.range || { min: 1, max: 30 };
+        value = Math.max(range.min, Math.min(value, range.max));
+      }
+
       if (bonusAffixes[selectedAffix.stat]) {
         bonusAffixes[selectedAffix.stat] += value;
       } else {
@@ -312,6 +318,11 @@ export const generateCustomEquipment = (
     // 障碍抗性词缀限制取值范围
     if (stat === "debuffResist") {
       const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.debuffResist?.range || { min: 1, max: 30 };
+      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
+    }
+    // 忽视障碍异常词缀限制取值范围
+    if (stat === "ignoreDebuffResist") {
+      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.ignoreDebuffResist?.range || { min: 1, max: 30 };
       bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
     }
   }

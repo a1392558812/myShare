@@ -411,9 +411,9 @@ const playerUseDebuffSkill = (gameState, skill, player, enemies, targetIndex) =>
     // 从原始敌人数组中找到对应的敌人对象，确保引用正确
     const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === target.id);
     if (originalEnemy) {
-      applyDebuff(gameState, originalEnemy, skill, "你");
+      applyDebuff(gameState, originalEnemy, skill, "你", "player");
     } else {
-      applyDebuff(gameState, target, skill, "你");
+      applyDebuff(gameState, target, skill, "你", "player");
     }
   } else if (skill.type.endsWith("_all")) {
     const targetCount = Math.min(skill.targetCount || 3, aliveEnemies.length);
@@ -423,9 +423,9 @@ const playerUseDebuffSkill = (gameState, skill, player, enemies, targetIndex) =>
       // 从原始敌人数组中找到对应的敌人对象，确保引用正确
       const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === shuffled[i].id);
       if (originalEnemy) {
-        applyDebuff(gameState, originalEnemy, skill, "你");
+        applyDebuff(gameState, originalEnemy, skill, "你", "player");
       } else {
-        applyDebuff(gameState, shuffled[i], skill, "你");
+        applyDebuff(gameState, shuffled[i], skill, "你", "player");
       }
     }
   }

@@ -184,7 +184,7 @@ export const processBuffs = (gameState) => {
   }
 };
 
-export const applyDebuff = (gameState, target, skill, casterName) => {
+export const applyDebuff = (gameState, target, skill, casterName, casterType = 'player') => {
   if (!target) return;
   
   const skillType = skill.type;
@@ -215,27 +215,43 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   
   if (!buffArray) return;
   
-  // 计算障碍抗性对成功率的影响
-  let actualSuccessRate = skill.successRate;
+  // 获取目标和施法者的属性
   let debuffResist = 0;
+  let ignoreDebuffResist = 0;
   
+  // 获取目标的障碍抗性
   if (isEnemy) {
-    // 敌人的障碍抗性（从装备或其他来源获取）
     debuffResist = target.debuffResist || 0;
   } else if (target === gameState.player) {
-    // 玩家的障碍抗性（从装备获取）
     const playerStats = calculatePlayerStats(target);
     debuffResist = playerStats.debuffResist || 0;
   } else if (target === gameState.pet) {
-    // 宠物的障碍抗性（从装备获取）
     const petStats = calculatePetStats(target);
     debuffResist = petStats.debuffResist || 0;
   }
   
-  // 障碍抗性减少被障碍成功的概率：实际成功率 = 原成功率 * (1 - 抗性/100)
+  // 获取施法者的忽视障碍异常属性
+  if (casterType === 'player') {
+    const playerStats = calculatePlayerStats(gameState.player);
+    ignoreDebuffResist = playerStats.ignoreDebuffResist || 0;
+  } else if (casterType === 'pet') {
+    const petStats = calculatePetStats(gameState.pet);
+    ignoreDebuffResist = petStats.ignoreDebuffResist || 0;
+  }
+  
+  // 计算实际成功率：基础成功率 × (1 - 目标障碍抗性/100 + 施法者忽视障碍异常/100)
+  const actualSuccessRate = skill.successRate * (1 - debuffResist / 100 + ignoreDebuffResist / 100);
+  
+  // 构建日志信息
+  const logMessages = [];
   if (debuffResist > 0) {
-    actualSuccessRate = skill.successRate * (1 - debuffResist / 100);
-    gameState.battleLog.push(`${targetName} 的障碍抗性 ${debuffResist}% 生效，成功率降低至 ${(actualSuccessRate * 100).toFixed(1)}%`);
+    logMessages.push(`${targetName} 的障碍抗性 ${debuffResist}% 降低成功率`);
+  }
+  if (ignoreDebuffResist > 0) {
+    logMessages.push(`${casterName} 的忽视障碍异常 ${ignoreDebuffResist}% 提升成功率`);
+  }
+  if (logMessages.length > 0) {
+    gameState.battleLog.push(`${logMessages.join('，')}，实际成功率: ${(actualSuccessRate * 100).toFixed(1)}%`);
   }
   
   if (Math.random() > actualSuccessRate) {

@@ -23,6 +23,7 @@ export const calculatePlayerStats = (player) => {
     comboRate: 0,
     maxComboCount: 1,
     debuffResist: 0, // 障碍抗性
+    ignoreDebuffResist: 0, // 忽视障碍异常
   };
 
   for (const stat in BASE_STATS) {
@@ -395,6 +396,7 @@ export const calculatePetStats = (pet) => {
     comboRate: 0,
     maxComboCount: 1,
     debuffResist: 0, // 障碍抗性
+    ignoreDebuffResist: 0, // 忽视障碍异常
   };
 
   for (const stat in BASE_STATS) {

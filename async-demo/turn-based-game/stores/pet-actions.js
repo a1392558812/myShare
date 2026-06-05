@@ -416,9 +416,9 @@ const petUseDebuffSkill = (gameState, skill, pet, enemies, targetIndex) => {
     // 从原始敌人数组中找到对应的敌人对象，确保引用正确
     const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === target.id);
     if (originalEnemy) {
-      applyDebuff(gameState, originalEnemy, skill, pet.name);
+      applyDebuff(gameState, originalEnemy, skill, pet.name, "pet");
     } else {
-      applyDebuff(gameState, target, skill, pet.name);
+      applyDebuff(gameState, target, skill, pet.name, "pet");
     }
   } else if (skill.type.endsWith("_all")) {
     const targetCount = Math.min(skill.targetCount || 3, aliveEnemies.length);
@@ -428,9 +428,9 @@ const petUseDebuffSkill = (gameState, skill, pet, enemies, targetIndex) => {
       // 从原始敌人数组中找到对应的敌人对象，确保引用正确
       const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === shuffled[i].id);
       if (originalEnemy) {
-        applyDebuff(gameState, originalEnemy, skill, pet.name);
+        applyDebuff(gameState, originalEnemy, skill, pet.name, "pet");
       } else {
-        applyDebuff(gameState, shuffled[i], skill, pet.name);
+        applyDebuff(gameState, shuffled[i], skill, pet.name, "pet");
       }
     }
   }

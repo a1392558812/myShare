@@ -120,7 +120,7 @@ const enemyUseDebuffSkill = (gameState, enemy, skill, target, targetType) => {
   gameState.battleLog.push(`${enemy.name} 使用了 ${skill.name}！`);
 
   if (skill.type.endsWith("_single")) {
-    applyDebuff(gameState, target, skill, enemy.name);
+    applyDebuff(gameState, target, skill, enemy.name, "enemy");
   } else if (skill.type.endsWith("_all")) {
     const aliveTargets = targetType === "player" 
       ? [gameState.player, gameState.pet].filter(t => t && t.hp > 0)
@@ -130,7 +130,7 @@ const enemyUseDebuffSkill = (gameState, enemy, skill, target, targetType) => {
     const shuffled = [...aliveTargets].sort(() => Math.random() - 0.5);
     
     for (let i = 0; i < targetCount; i++) {
-      applyDebuff(gameState, shuffled[i], skill, enemy.name);
+      applyDebuff(gameState, shuffled[i], skill, enemy.name, "enemy");
     }
   }
 };
