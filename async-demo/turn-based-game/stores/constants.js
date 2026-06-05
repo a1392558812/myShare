@@ -146,27 +146,27 @@ export const EQUIPMENT_CONFIG = {
     critRate: {
       coefficient: 1.0,
       name: "暴击率",
-      exclusiveTypes: ["weapon", "leftRing", "rightRing"],
+      exclusiveTypes: ["weapon", "leftRing", "rightRing", "belt"],
     },
     comboRate: {
       coefficient: 1.0,
       name: "连击率",
-      exclusiveTypes: ["weapon", "leftRing", "rightRing"],
+      exclusiveTypes: ["weapon", "leftRing", "rightRing", "belt"],
     },
     maxComboCount: {
       coefficient: 1.0,
       name: "连击次数",
-      exclusiveTypes: ["necklace", "jade"],
+      exclusiveTypes: ["necklace", "jade", "shoes"],
     },
     allStats: {
       coefficient: 1.0,
       name: "全属性强化",
-      exclusiveTypes: ["chest", "legs", "shoes"],
+      exclusiveTypes: ["chest", "legs", "shoes", "crown"],
     },
     debuffResist: {
       coefficient: 1.0,
       name: "障碍抗性",
-      exclusiveTypes: ["jade", "necklace", "crown"],
+      exclusiveTypes: ["jade", "chest", "necklace", "crown"],
       range: { min: 1, max: 30 }, // 取值范围：1~30
       description: "减少被障碍技能成功的概率（X/100）",
     },
