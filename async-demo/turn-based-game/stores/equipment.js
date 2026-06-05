@@ -10,40 +10,6 @@ const EQUIPMENT_PREFIXES = EQUIPMENT_NAME_CONFIG.PREFIXES;
 const EQUIPMENT_SUFFIXES = EQUIPMENT_NAME_CONFIG.SUFFIXES;
 const RARITY_CONFIG = EQUIPMENT_CONFIG.RARITY_WEIGHTS;
 
-/**
- * 动态生成词条库：从 BASE_AFFIX_POOL 和 BONUS_AFFIX_POOL 生成
- */
-const generateAffixLibrary = () => {
-  const library = [];
-
-  // 从 BASE_AFFIX_POOL 生成基础词条
-  const basePool = EQUIPMENT_CONFIG.BASE_AFFIX_POOL;
-  for (const [stat, config] of Object.entries(basePool)) {
-    library.push({
-      stat,
-      baseValue: config.baseValue,
-      name: config.name,
-    });
-  }
-
-  // 从 BONUS_AFFIX_POOL 生成强力词条
-  const bonusPool = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL;
-  for (const [stat, config] of Object.entries(bonusPool)) {
-    const affix = {
-      stat,
-      coefficient: config.coefficient,
-      name: config.name,
-    };
-    if (config.exclusiveTypes) {
-      affix.exclusiveTypes = config.exclusiveTypes;
-    }
-    library.push(affix);
-  }
-
-  return library;
-};
-
-const AFFIX_LIBRARY = generateAffixLibrary();
 const RARITY_NAMES = (() => {
   const names = {};
   for (const rarity in EQUIPMENT_CONFIG.RARITY) {
@@ -56,6 +22,8 @@ const LEVEL_MULTIPLIER = EQUIPMENT_GEN_CONFIG.LEVEL_MULTIPLIER;
 
 /**
  * 根据稀有度和等级生成随机词缀属性
+ * 基础词条：数量不限制，不重复即可
+ * 强力词条：数量受 maxAffixes 限制
  * @param {string} rarity - 装备稀有度
  * @param {number} level - 装备等级
  * @param {string|null} type - 装备类型
@@ -65,118 +33,83 @@ export const generateRandomStats = (rarity, level, type = null) => {
   const config = RARITY_CONFIG[rarity];
   const baseAffixes = {};
   const bonusAffixes = {};
-  const usedAffixes = new Set();
-  const rarityMultiplier = EQUIPMENT_CONFIG.RARITY[rarity]?.multiplier || 1;
+  const usedBaseStats = new Set();
+  const usedBonusStats = new Set();
+  const rarityMultiplier = EQUIPMENT_CONFIG.RARITY[rarity]?.multiplier || 1; // 装备品质乘数
 
-  // 根据稀有度配置决定词缀数量
-  const affixCount = Math.floor(Math.random() * (config.maxAffixes + 1));
+  const maxValue = level + EQUIPMENT_GEN_CONFIG.AFFIX_LEVEL_ADD; // 基础词条最大值
+   const basePool = EQUIPMENT_CONFIG.BASE_AFFIX_POOL; // 基础词条池
+  const bonusPool = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL; // 强力词条池
 
-  // 遍历每个词缀槽位，为其随机选择词缀
-  for (let i = 0; i < affixCount; i++) {
-    let affixIndex;
-    let selectedAffix;
-    let attempts = 0;
-    const maxAttempts = 9999;
+  // ========== 第一步：生成基础词条（数量不限制，不重复） ==========
+  const baseStatKeys = Object.keys(basePool);
+  
+  // 随机决定生成多少个基础词条（0 ~ 全部）
+  const baseAffixCount = Math.floor(Math.random() * (baseStatKeys.length + 1));
+  
+  // 随机选择基础词条
+  const shuffledBaseKeys = [...baseStatKeys].sort(() => Math.random() - 0.5);
+  let baseIndex = 0;
+  while (usedBaseStats.size < baseAffixCount && baseIndex < shuffledBaseKeys.length) {
+    const stat = shuffledBaseKeys[baseIndex];
+    if (!usedBaseStats.has(stat)) {
+      // 生成基础词条值
+      // 基础词条值范围：[1, maxValue] * 装备品质乘数
+      const value = Math.floor((Math.random() * maxValue + 1) * rarityMultiplier);
+      baseAffixes[stat] = value;
+      usedBaseStats.add(stat);
+    }
+    baseIndex++;
+  }
 
-    /**
-     * 词缀选择循环 - 使用 do-while 确保至少尝试一次
-     *
-     * 作用：
-     * 1. 随机从词缀库中选择一个词缀
-     * 2. 检查该词缀是否满足条件：
-     *    - 不是独占类型，或
-     *    - 是独占类型但与当前装备类型匹配
-     * 3. 确保不重复选择同一个词缀（通过 usedAffixes Set 追踪）
-     * 4. 防止无限循环：最多尝试 9999 次
-     *
-     * 退出条件：
-     * - 找到一个有效的、未使用的、符合条件的词缀
-     * - 尝试次数超过上限（防止死循环）
-     */
-    do {
-      // 随机选择一个词缀索引
-      affixIndex = Math.floor(Math.random() * AFFIX_LIBRARY.length);
-      const affix = AFFIX_LIBRARY[affixIndex];
+  // ========== 第二步：生成强力词条（数量受 maxAffixes 限制） ==========
+  // 随机决定生成多少个强力词条（0 ~ maxAffixes）
+  const bonusAffixCount = Math.floor(Math.random() * (config.maxAffixes + 1));
+  
+  // 获取对这装装备类型有效的强力词条
+  let availableBonusStats = Object.keys(bonusPool).filter(stat => {
+    const bonusConfig = bonusPool[stat];
+    // 非独占词条，或独占词条但类型匹配
+    if (!bonusConfig.exclusiveTypes || bonusConfig.exclusiveTypes.length === 0) {
+      return true;
+    }
+    return type && bonusConfig.exclusiveTypes.includes(type);
+  });
 
-      // 检查词缀是否为独占类型
-      const isExclusive =
-        affix.exclusiveTypes && affix.exclusiveTypes.length > 0;
-
-      // 检查词缀是否允许使用
-      // 条件：非独占词缀，或独占词缀但类型匹配
-      const isAllowed =
-        !isExclusive || (type && affix.exclusiveTypes.includes(type));
-
-      // 如果词缀可用且未被使用，则选中它
-      if (isAllowed && !usedAffixes.has(affixIndex)) {
-        selectedAffix = affix;
-        break; // 成功选择，退出循环
-      }
-
-      // 增加尝试次数，防止无限循环
-      attempts++;
-      if (attempts >= maxAttempts) {
-        // 尝试次数过多，说明词缀库可能已耗尽，放弃本次选择
-        selectedAffix = null;
-        break;
-      }
-    } while (usedAffixes.has(affixIndex)); // 如果词缀已被使用，继续循环
-
-    // 如果没有找到有效的词缀，跳过本次循环
-    if (!selectedAffix) continue;
-
-    // 计算词缀的随机值
-    let value;
-    const maxValue = level + EQUIPMENT_GEN_CONFIG.AFFIX_LEVEL_ADD;
-
-    // 根据词缀类型计算数值
-    if (selectedAffix.baseValue !== undefined) {
-      // 基础值类型词缀：生成 1 到 maxValue 之间的随机数，应用稀有度倍率
-      value = Math.floor((Math.random() * maxValue + 1) * rarityMultiplier);
-      if (baseAffixes[selectedAffix.stat]) {
-        baseAffixes[selectedAffix.stat] += value;
-      } else {
-        baseAffixes[selectedAffix.stat] = value;
-      }
-    } else if (selectedAffix.coefficient !== undefined) {
-      // 系数类型词缀：随机数乘以系数，应用稀有度倍率
-      value = Math.floor(
+  // 随机选择强力词条（遍历整个数组，直到找到足够数量的未使用词条）
+  const shuffledBonusKeys = [...availableBonusStats].sort(() => Math.random() - 0.5);
+  let bonusIndex = 0;
+  while (usedBonusStats.size < bonusAffixCount && bonusIndex < shuffledBonusKeys.length) {
+    const stat = shuffledBonusKeys[bonusIndex];
+    if (!usedBonusStats.has(stat)) {
+      const bonusConfig = bonusPool[stat];
+      // 生成强力词条值
+      let value = Math.floor(
         (Math.random() * maxValue + 1) *
-          selectedAffix.coefficient *
-          rarityMultiplier,
+        bonusConfig.coefficient *
+        rarityMultiplier,
       );
 
-      // 全属性词缀限制最大值为等级，应用稀有度倍率
-      if (selectedAffix.stat === "allStats") {
+      // 应用各种限制
+      if (stat === "allStats") {
         value = Math.min(value, Math.floor(level * rarityMultiplier));
       }
-
-      // 连击次数词缀限制最大值为MAX_COMBO_COUNT
-      if (selectedAffix.stat === "maxComboCount") {
+      if (stat === "maxComboCount") {
         value = Math.min(value, GAME_CONFIG.COMBO.MAX_COMBO_COUNT);
       }
-
-      // 障碍抗性词缀限制取值范围
-      if (selectedAffix.stat === "debuffResist") {
-        const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.debuffResist?.range || { min: 1, max: 30 };
+      if (stat === "debuffResist") {
+        const range = bonusPool.debuffResist?.range || { min: 1, max: 30 };
+        value = Math.max(range.min, Math.min(value, range.max));
+      }
+      if (stat === "ignoreDebuffResist") {
+        const range = bonusPool.ignoreDebuffResist?.range || { min: 1, max: 30 };
         value = Math.max(range.min, Math.min(value, range.max));
       }
 
-      // 忽视障碍异常词缀限制取值范围
-      if (selectedAffix.stat === "ignoreDebuffResist") {
-        const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.ignoreDebuffResist?.range || { min: 1, max: 30 };
-        value = Math.max(range.min, Math.min(value, range.max));
-      }
-
-      if (bonusAffixes[selectedAffix.stat]) {
-        bonusAffixes[selectedAffix.stat] += value;
-      } else {
-        bonusAffixes[selectedAffix.stat] = value;
-      }
+      bonusAffixes[stat] = value;
+      usedBonusStats.add(stat);
     }
-
-    // 将已使用的词缀索引添加到集合中，防止重复选择
-    usedAffixes.add(affixIndex);
+    bonusIndex++;
   }
 
   return { baseAffixes, bonusAffixes };
@@ -391,7 +324,7 @@ export const generateSingleBonusAffix = (type, level, rarity, existingAffixes = 
   const bonusPool = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL;
   let availableStats = Object.keys(bonusPool);
   
-  // 筛选对该装备类型有效的词条
+  // 筛选对这装装备类型有效的词条
   availableStats = availableStats.filter(stat => {
     const config = bonusPool[stat];
     if (!config.exclusiveTypes || config.exclusiveTypes.length === 0) {

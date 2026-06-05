@@ -119,12 +119,12 @@ export const EQUIPMENT_CONFIG = {
   },
   /** 稀有度权重配置（用于随机生成） */
   RARITY_WEIGHTS: {
-    0: { weight: 50, maxAffixes: 0 }, // 普通：50%权重，0个词缀
-    1: { weight: 30, maxAffixes: 1 }, // 优秀：30%权重，最多1个词缀
-    2: { weight: 15, maxAffixes: 2 }, // 精良：15%权重，最多2个词缀
-    3: { weight: 4, maxAffixes: 3 }, // 史诗：4%权重，最多3个词缀
-    4: { weight: 0.9, maxAffixes: 4 }, // 传说：0.9%权重，最多4个词缀
-    5: { weight: 0.1, maxAffixes: 5 }, // 神话：0.1%权重，最多5个词缀
+    0: { weight: 50, maxAffixes: 2 }, // 普通：50%权重，最多2个词缀
+    1: { weight: 30, maxAffixes: 3 }, // 优秀：30%权重，最多3个词缀
+    2: { weight: 15, maxAffixes: 4 }, // 精良：15%权重，最多4个词缀
+    3: { weight: 4, maxAffixes: 5 }, // 史诗：4%权重，最多5个词缀
+    4: { weight: 0.9, maxAffixes: 6 }, // 传说：0.9%权重，最多6个词缀
+    5: { weight: 0.1, maxAffixes: 7 }, // 神话：0.1%权重，最多7个词缀
   },
   /** 基础词条池 */
   BASE_AFFIX_POOL: {
@@ -161,7 +161,7 @@ export const EQUIPMENT_CONFIG = {
     allStats: {
       coefficient: 1.0,
       name: "全属性强化",
-      exclusiveTypes: ["chest", "legs"],
+      exclusiveTypes: ["chest", "legs", "shoes"],
     },
     debuffResist: {
       coefficient: 1.0,
