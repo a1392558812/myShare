@@ -320,6 +320,237 @@ export function useDebug() {
     }
   };
 
+  // 战斗buff调试相关
+  const battleBuffTarget = ref("player"); // player, pet, enemy_0, enemy_1, etc.
+  const selectedBuffSkillId = ref(4); // 默认单体治疗术
+
+  // 获取可以施加的buff/debuff技能列表
+  const getBuffSkills = () => {
+    return SKILLS_CONFIG.filter(skill => {
+      // 过滤出辅助技能和障碍技能
+      return skill.type.startsWith("heal_") ||
+             skill.type.startsWith("buff_") ||
+             skill.type.startsWith("debuff_");
+    });
+  };
+
+  // 获取场上所有可作为目标的目标列表
+  const getBattleTargets = () => {
+    const targets = [];
+    
+    // 添加玩家和宠物
+    targets.push({ id: "player", name: "玩家" });
+    if (gameState.pet && gameState.pet.active) {
+      targets.push({ id: "pet", name: gameState.pet.name || "宠物" });
+    }
+    
+    // 添加敌人
+    if (gameState.currentBattle && gameState.currentBattle.enemies) {
+      gameState.currentBattle.enemies.forEach((enemy, index) => {
+        if (enemy && enemy.hp > 0) {
+          targets.push({ id: `enemy_${index}`, name: enemy.name, enemyIndex: index });
+        }
+      });
+    }
+    
+    return targets;
+  };
+
+  // 施加buff
+  const applyBattleBuff = () => {
+    if (!gameState.currentBattle) {
+      alert("当前不在战斗中！");
+      return;
+    }
+
+    const skill = SKILLS_CONFIG.find(s => s.id === selectedBuffSkillId.value);
+    if (!skill) {
+      alert("未选择有效的技能！");
+      return;
+    }
+
+    let target = null;
+    let targetName = "";
+    
+    if (battleBuffTarget.value === "player") {
+      target = gameState.player;
+      targetName = "玩家";
+    } else if (battleBuffTarget.value === "pet") {
+      target = gameState.pet;
+      targetName = gameState.pet?.name || "宠物";
+    } else if (battleBuffTarget.value.startsWith("enemy_")) {
+      const enemyIndex = parseInt(battleBuffTarget.value.replace("enemy_", ""));
+      target = gameState.currentBattle.enemies[enemyIndex];
+      targetName = target?.name || "敌人";
+    }
+
+    if (!target) {
+      alert("未找到目标！");
+      return;
+    }
+
+    // 判断是辅助技能还是障碍技能
+    const skillType = skill.type;
+    if (skillType.startsWith("heal_") || skillType.startsWith("buff_")) {
+      // 辅助技能 - 使用 applyBuff 或直接添加buff
+      applyBuffToTarget(target, skill, targetName);
+    } else if (skillType.startsWith("debuff_")) {
+      // 障碍技能 - 使用 applyDebuff
+      applyDebuffToTarget(target, skill, targetName);
+    }
+  };
+
+  // 应用辅助buff到目标
+  const applyBuffToTarget = (target, skill, targetName) => {
+    const battle = gameState.currentBattle;
+    let buffArray = null;
+
+    // 检查是否是敌人
+    if (battle.enemies?.some(e => e.id === target.id)) {
+      if (!target.buffs) target.buffs = [];
+      buffArray = target.buffs;
+    } else if (target === gameState.player) {
+      if (!battle.playerBuffs) battle.playerBuffs = [];
+      buffArray = battle.playerBuffs;
+    } else if (target === gameState.pet) {
+      if (!battle.petBuffs) battle.petBuffs = [];
+      buffArray = battle.petBuffs;
+    }
+
+    if (!buffArray) return;
+
+    // 移除旧的对立buff
+    if (skill.type.includes("heal")) {
+      const filtered = buffArray.filter(b => b.type !== "heal");
+      buffArray.splice(0, buffArray.length, ...filtered);
+      buffArray.push({
+        name: skill.name,
+        type: "heal",
+        remainingTurns: skill.duration,
+        healPercent: skill.healPercent || 0.15,
+        manaPercent: skill.manaPercent || 0.1,
+      });
+      // 立即生效
+      const healAmount = Math.floor(target.maxHp * (skill.healPercent || 0.15));
+      const manaAmount = Math.floor(target.maxMp * (skill.manaPercent || 0.1));
+      target.hp = Math.min(target.maxHp, target.hp + healAmount);
+      target.mp = Math.min(target.maxMp, target.mp + manaAmount);
+      gameState.battleLog.push(`${targetName} 的 ${skill.name} 生效！恢复 ${healAmount} HP 和 ${manaAmount} MP`);
+    } else if (skill.type.includes("buff_attack")) {
+      const filtered = buffArray.filter(b => b.type !== "physicalAttack" && b.type !== "magicAttack");
+      buffArray.splice(0, buffArray.length, ...filtered);
+      buffArray.push({
+        name: skill.name,
+        type: "physicalAttack",
+        statType: "physicalAttack",
+        value: skill.physicalMultiplier,
+        remainingTurns: skill.duration,
+      });
+      buffArray.push({
+        name: skill.name,
+        type: "magicAttack",
+        statType: "magicAttack",
+        value: skill.magicMultiplier,
+        remainingTurns: skill.duration,
+      });
+      gameState.battleLog.push(`${targetName} 获得了 ${skill.name}！物理攻击 x${skill.physicalMultiplier}，法术攻击 x${skill.magicMultiplier}`);
+    } else if (skill.type.includes("buff_defense")) {
+      const filtered = buffArray.filter(b => b.type !== "defense");
+      buffArray.splice(0, buffArray.length, ...filtered);
+      buffArray.push({
+        name: skill.name,
+        type: "defense",
+        statType: "defense",
+        value: skill.defenseMultiplier,
+        remainingTurns: skill.duration,
+      });
+      gameState.battleLog.push(`${targetName} 获得了 ${skill.name}！防御力 x${skill.defenseMultiplier}`);
+    } else if (skill.type.includes("buff_speed")) {
+      const filtered = buffArray.filter(b => b.type !== "speed");
+      buffArray.splice(0, buffArray.length, ...filtered);
+      buffArray.push({
+        name: skill.name,
+        type: "speed",
+        statType: "speed",
+        value: skill.speedMultiplier,
+        remainingTurns: skill.duration,
+      });
+      gameState.battleLog.push(`${targetName} 获得了 ${skill.name}！速度 x${skill.speedMultiplier}`);
+    }
+  };
+
+  // 应用障碍debuff到目标
+  const applyDebuffToTarget = (target, skill, targetName) => {
+    const battle = gameState.currentBattle;
+    let buffArray = null;
+
+    // 检查是否是敌人
+    if (battle.enemies?.some(e => e.id === target.id)) {
+      if (!target.buffs) target.buffs = [];
+      buffArray = target.buffs;
+    } else if (target === gameState.player) {
+      if (!battle.playerBuffs) battle.playerBuffs = [];
+      buffArray = battle.playerBuffs;
+    } else if (target === gameState.pet) {
+      if (!battle.petBuffs) battle.petBuffs = [];
+      buffArray = battle.petBuffs;
+    }
+
+    if (!buffArray) return;
+
+    const debuffType = skill.type.replace("_single", "").replace("_all", "").replace("debuff_", "");
+
+    // 冰冻术优先级最高，清除所有其他buff
+    if (debuffType === "freeze") {
+      buffArray.splice(0, buffArray.length);
+      buffArray.push({
+        name: skill.name,
+        type: "freeze",
+        remainingTurns: skill.duration,
+      });
+      gameState.battleLog.push(`调试：${targetName} 使用 ${skill.name} 冰冻了目标！`);
+      return;
+    }
+
+    // 封印和混乱互相覆盖
+    if (debuffType === "seal") {
+      const filtered = buffArray.filter(b => b.type !== "confuse" && b.type !== "seal");
+      buffArray.splice(0, buffArray.length, ...filtered);
+    } else if (debuffType === "confuse") {
+      const filtered = buffArray.filter(b => b.type !== "seal" && b.type !== "confuse");
+      buffArray.splice(0, buffArray.length, ...filtered);
+    } else if (debuffType === "poison") {
+      const filtered = buffArray.filter(b => b.type !== "poison");
+      buffArray.splice(0, buffArray.length, ...filtered);
+    }
+
+    // 创建debuff对象
+    const debuff = {
+      name: skill.name,
+      type: debuffType,
+      remainingTurns: skill.duration,
+    };
+
+    // 中毒效果：立即扣减血量和法力
+    if (debuffType === "poison") {
+      const damagePercent = skill.damagePercent || 0.08;
+      const manaDamagePercent = skill.manaDamagePercent || 0.05;
+      
+      const damage = Math.floor(target.maxHp * damagePercent);
+      const manaDamage = Math.floor((target.maxMp || 0) * manaDamagePercent);
+      
+      target.hp = Math.max(0, target.hp - damage);
+      target.mp = Math.max(0, (target.mp || 0) - manaDamage);
+      
+      gameState.battleLog.push(`调试：${skill.name} 生效！${targetName} 受到 ${damage} HP伤害和 ${manaDamage} MP伤害`);
+    }
+
+    buffArray.push(debuff);
+    
+    const effectName = debuffType === "seal" ? "封印" : debuffType === "confuse" ? "混乱" : debuffType === "poison" ? "中毒" : "控制";
+    gameState.battleLog.push(`调试：对 ${targetName} 施加了 ${skill.name}，目标被${effectName}了！`);
+  };
+
   return {
     coeffStatsList,
     defaultCoefficients,
@@ -380,5 +611,11 @@ export function useDebug() {
     SKILLS_CONFIG,
     EQUIPMENT_CONFIG,
     STAT_CONFIG,
+    // 战斗buff调试
+    battleBuffTarget,
+    selectedBuffSkillId,
+    getBuffSkills,
+    getBattleTargets,
+    applyBattleBuff,
   };
 }

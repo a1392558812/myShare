@@ -229,48 +229,47 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   // 冰冻术优先级最高，清除其他所有buff（包括增益和减益）
   if (debuffType === 'freeze') {
     if (isEnemy) {
-      // 使用 splice 保持响应式 - 只保留冰冻buff
-      const filtered = target.buffs.filter(b => b.type === 'freeze');
-      target.buffs.splice(0, target.buffs.length, ...filtered);
+      // 使用 splice 保持响应式 - 清除所有buff（包括旧的冰冻buff），然后添加新的
+      target.buffs.splice(0, target.buffs.length);
     } else {
-      const filtered = buffArray.filter(b => b.type === 'freeze');
+      // 清除所有buff（包括旧的冰冻buff）
       buffArray.length = 0;
-      buffArray.push(...filtered);
     }
     gameState.battleLog.push(`${casterName} 使用 ${skill.name} 冰冻了 ${targetName}！`);
   } else {
     // 封印和混乱互相覆盖
     if (debuffType === 'seal') {
       if (isEnemy) {
-        // 使用 splice 保持响应式
-        const filtered = target.buffs.filter(b => b.type !== 'confuse');
+        // 使用 splice 保持响应式 - 移除混乱和旧的封印
+        const filtered = target.buffs.filter(b => b.type !== 'confuse' && b.type !== 'seal');
         target.buffs.splice(0, target.buffs.length, ...filtered);
       } else {
-        const filtered = buffArray.filter(b => b.type !== 'confuse');
+        // 移除混乱和旧的封印
+        const filtered = buffArray.filter(b => b.type !== 'confuse' && b.type !== 'seal');
         buffArray.length = 0;
         buffArray.push(...filtered);
       }
     } else if (debuffType === 'confuse') {
       if (isEnemy) {
-        // 使用 splice 保持响应式
-        const filtered = target.buffs.filter(b => b.type !== 'seal');
+        // 使用 splice 保持响应式 - 移除封印和旧的混乱
+        const filtered = target.buffs.filter(b => b.type !== 'seal' && b.type !== 'confuse');
         target.buffs.splice(0, target.buffs.length, ...filtered);
       } else {
-        const filtered = buffArray.filter(b => b.type !== 'seal');
+        // 移除封印和旧的混乱
+        const filtered = buffArray.filter(b => b.type !== 'seal' && b.type !== 'confuse');
         buffArray.length = 0;
         buffArray.push(...filtered);
       }
-    }
-    
-    // 移除冰冻以外的debuff（冰冻优先级最高）
-    if (isEnemy) {
-      // 使用 splice 保持响应式
-      const filtered = target.buffs.filter(b => b.type === 'freeze' || b.type !== debuffType);
-      target.buffs.splice(0, target.buffs.length, ...filtered);
-    } else {
-      const filtered = buffArray.filter(b => b.type === 'freeze' || b.type !== debuffType);
-      buffArray.length = 0;
-      buffArray.push(...filtered);
+    } else if (debuffType === 'poison') {
+      // 移除旧的中毒buff
+      if (isEnemy) {
+        const filtered = target.buffs.filter(b => b.type !== 'poison');
+        target.buffs.splice(0, target.buffs.length, ...filtered);
+      } else {
+        const filtered = buffArray.filter(b => b.type !== 'poison');
+        buffArray.length = 0;
+        buffArray.push(...filtered);
+      }
     }
     
     gameState.battleLog.push(`${casterName} 使用 ${skill.name} 成功！${targetName} 被${debuffType === 'seal' ? '封印' : debuffType === 'confuse' ? '混乱' : debuffType === 'poison' ? '中毒' : '控制'}了！`);

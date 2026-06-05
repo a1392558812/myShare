@@ -76,6 +76,14 @@
         :confirm-reset="confirmReset"
       />
 
+      <BattleBuffDebug
+        v-model:battle-buff-target="battleBuffTarget"
+        v-model:selected-buff-skill-id="selectedBuffSkillId"
+        :get-buff-skills="getBuffSkills"
+        :get-battle-targets="getBattleTargets"
+        :apply-battle-buff="applyBattleBuff"
+      />
+
       <DynamicAttributeDebug />
     </div>
   </div>
@@ -89,6 +97,7 @@ import PlayerItemsDebug from "./debug/PlayerItemsDebug.vue";
 import PetDebug from "./debug/PetDebug.vue";
 import EquipmentDebug from "./debug/EquipmentDebug.vue";
 import BattleResetDebug from "./debug/BattleResetDebug.vue";
+import BattleBuffDebug from "./debug/BattleBuffDebug.vue";
 import DynamicAttributeDebug from "./debug/DynamicAttributeDebug.vue";
 import { useDebug } from "./debug/composables/useDebug.js";
 
@@ -152,6 +161,12 @@ const {
   setPlayerTurn,
   setEnemyTurn,
   confirmReset,
+  // 战斗buff调试
+  battleBuffTarget,
+  selectedBuffSkillId,
+  getBuffSkills,
+  getBattleTargets,
+  applyBattleBuff,
 } = useDebug();
 </script>
 

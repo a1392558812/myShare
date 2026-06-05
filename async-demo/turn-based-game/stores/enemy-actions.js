@@ -159,6 +159,9 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
       `${enemy.name} 恢复了 ${healAmount} HP 和 ${manaAmount} MP！`,
     );
     if (!enemy.buffs) enemy.buffs = [];
+    // 移除旧的治疗buff
+    const filtered = enemy.buffs.filter(b => b.type !== "heal");
+    enemy.buffs.splice(0, enemy.buffs.length, ...filtered);
     enemy.buffs.push({
       name: skill.name,
       type: "heal",
@@ -180,6 +183,17 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
     gameState.battleLog.push(
       `${enemy.name} 恢复了 ${healAmount} HP 和 ${manaAmount} MP！`,
     );
+    if (!enemy.buffs) enemy.buffs = [];
+    // 移除旧的治疗buff
+    const filtered = enemy.buffs.filter(b => b.type !== "heal");
+    enemy.buffs.splice(0, enemy.buffs.length, ...filtered);
+    enemy.buffs.push({
+      name: skill.name,
+      type: "heal",
+      remainingTurns: skill.duration,
+      healPercent: skill.healPercent || 0.15,
+      manaPercent: skill.manaPercent || 0.1,
+    });
     if (pet && pet.active && pet.hp > 0) {
       // 检查宠物是否被冰冻（冰冻状态下无法被治疗）
       if (isTargetFrozen(gameState, pet)) {
@@ -199,6 +213,9 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
       `${enemy.name} 使用 ${skill.name}，物理攻击 x${skill.physicalMultiplier}，法术攻击 x${skill.magicMultiplier}！`,
     );
     if (!enemy.buffs) enemy.buffs = [];
+    // 移除旧的物理攻击和法术攻击buff
+    const filtered = enemy.buffs.filter(b => b.type !== "physicalAttack" && b.type !== "magicAttack");
+    enemy.buffs.splice(0, enemy.buffs.length, ...filtered);
     enemy.buffs.push({
       name: skill.name,
       type: "physicalAttack",
@@ -215,6 +232,10 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
     });
     if (skill.type === "buff_attack_all" && pet && pet.active && pet.hp > 0) {
       if (!gameState.currentBattle.petBuffs) gameState.currentBattle.petBuffs = [];
+      // 移除宠物旧的物理攻击和法术攻击buff
+      const petFiltered = gameState.currentBattle.petBuffs.filter(b => b.type !== "physicalAttack" && b.type !== "magicAttack");
+      gameState.currentBattle.petBuffs.length = 0;
+      gameState.currentBattle.petBuffs.push(...petFiltered);
       gameState.currentBattle.petBuffs.push({
         name: skill.name,
         type: "physicalAttack",
@@ -235,6 +256,9 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
       `${enemy.name} 使用 ${skill.name}，防御力 x${skill.defenseMultiplier}！`,
     );
     if (!enemy.buffs) enemy.buffs = [];
+    // 移除旧的防御buff
+    const filtered = enemy.buffs.filter(b => b.type !== "defense");
+    enemy.buffs.splice(0, enemy.buffs.length, ...filtered);
     enemy.buffs.push({
       name: skill.name,
       type: "defense",
@@ -247,6 +271,9 @@ const enemyUseSupportSkill = (gameState, enemy, skill, pet) => {
       `${enemy.name} 使用 ${skill.name}，速度 x${skill.speedMultiplier}！`,
     );
     if (!enemy.buffs) enemy.buffs = [];
+    // 移除旧的速度buff
+    const filtered = enemy.buffs.filter(b => b.type !== "speed");
+    enemy.buffs.splice(0, enemy.buffs.length, ...filtered);
     enemy.buffs.push({
       name: skill.name,
       type: "speed",
