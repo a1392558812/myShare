@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from "./constants.js";
+import { calculatePlayerStats, calculatePetStats } from "./player.js";
 
 export const getRandomAliveEnemyIndex = (enemies) => {
   const aliveIndices = [];
@@ -187,12 +188,6 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   if (!target) return;
   
   const skillType = skill.type;
-  
-  if (Math.random() > skill.successRate) {
-    gameState.battleLog.push(`${casterName} 使用 ${skill.name} 对 ${target.name} 失败！`);
-    return;
-  }
-  
   const debuffType = skillType.replace('_single', '').replace('_all', '').replace('debuff_', '');
   
   // 确定目标类型和对应的 buff 数组
@@ -219,6 +214,34 @@ export const applyDebuff = (gameState, target, skill, casterName) => {
   }
   
   if (!buffArray) return;
+  
+  // 计算障碍抗性对成功率的影响
+  let actualSuccessRate = skill.successRate;
+  let debuffResist = 0;
+  
+  if (isEnemy) {
+    // 敌人的障碍抗性（从装备或其他来源获取）
+    debuffResist = target.debuffResist || 0;
+  } else if (target === gameState.player) {
+    // 玩家的障碍抗性（从装备获取）
+    const playerStats = calculatePlayerStats(target);
+    debuffResist = playerStats.debuffResist || 0;
+  } else if (target === gameState.pet) {
+    // 宠物的障碍抗性（从装备获取）
+    const petStats = calculatePetStats(target);
+    debuffResist = petStats.debuffResist || 0;
+  }
+  
+  // 障碍抗性减少被障碍成功的概率：实际成功率 = 原成功率 * (1 - 抗性/100)
+  if (debuffResist > 0) {
+    actualSuccessRate = skill.successRate * (1 - debuffResist / 100);
+    gameState.battleLog.push(`${targetName} 的障碍抗性 ${debuffResist}% 生效，成功率降低至 ${(actualSuccessRate * 100).toFixed(1)}%`);
+  }
+  
+  if (Math.random() > actualSuccessRate) {
+    gameState.battleLog.push(`${casterName} 使用 ${skill.name} 对 ${targetName} 失败！`);
+    return;
+  }
   
   // 检查目标是否被冰冻（冰冻状态下无法受到除冰冻外的任何debuff）
   if (debuffType !== 'freeze' && isTargetFrozen(gameState, target)) {

@@ -67,6 +67,7 @@ export const STAT_CONFIG = {
     critRate: "暴击率",
     comboRate: "连击率",
     maxComboCount: "最大连击",
+    debuffResist: "障碍抗性",
   },
   /** 可分配的属性点类型列表 */
   POINT_STATS: ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"],
@@ -160,6 +161,13 @@ export const EQUIPMENT_CONFIG = {
       coefficient: 1.0,
       name: "全属性强化",
       exclusiveTypes: ["chest", "legs"],
+    },
+    debuffResist: {
+      coefficient: 1.0,
+      name: "障碍抗性",
+      exclusiveTypes: ["jade", "necklace", "crown"],
+      range: { min: 1, max: 30 }, // 取值范围：1~30
+      description: "减少被障碍技能成功的概率（X/100）",
     },
   },
 };

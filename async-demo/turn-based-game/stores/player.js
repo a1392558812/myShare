@@ -22,6 +22,7 @@ export const calculatePlayerStats = (player) => {
     critRate: 0,
     comboRate: 0,
     maxComboCount: 1,
+    debuffResist: 0, // 障碍抗性
   };
 
   for (const stat in BASE_STATS) {
@@ -393,6 +394,7 @@ export const calculatePetStats = (pet) => {
     critRate: 0,
     comboRate: 0,
     maxComboCount: 1,
+    debuffResist: 0, // 障碍抗性
   };
 
   for (const stat in BASE_STATS) {
