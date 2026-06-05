@@ -65,7 +65,7 @@ export const generateRandomStats = (rarity, level, type = null) => {
   // ========== 第二步：生成强力词条（数量受 maxAffixes 限制） ==========
   // 随机决定生成多少个强力词条（0 ~ maxAffixes）
   const bonusAffixCount = Math.floor(Math.random() * (config.maxAffixes + 1));
-  
+  console.log('baseAffixCount/bonusAffixCount', { baseAffixCount, bonusAffixCount });
   // 获取对这装装备类型有效的强力词条
   let availableBonusStats = Object.keys(bonusPool).filter(stat => {
     const bonusConfig = bonusPool[stat];
