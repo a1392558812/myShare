@@ -29,8 +29,12 @@
         :get-stat-name="getStatName"
         :get-equipment-sell-price="getEquipmentSellPrice"
         :get-refresh-cost="getRefreshCost"
+        :get-single-base-affix-cost="getSingleBaseAffixCost"
+        :get-single-bonus-affix-cost="getSingleBonusAffixCost"
         @sell="handleSellEquipment"
         @refresh="handleRefreshAffixes"
+        @refresh-single-base="handleRefreshSingleBaseAffix"
+        @refresh-single-bonus="handleRefreshSingleBonusAffix"
       />
 
       <PetStatRerollSection
@@ -68,26 +72,28 @@ import { useShop } from "./shop/composables/useShop.js";
 const shop = useShop();
 
 const {
-  rerollStatsList,
-  selectedType,
-  equipmentTypes,
-  getStatName,
-  getTypeName,
-  getRarityColor,
-  getRarityName,
-  getShopEquipmentName,
-  shopPreviewStats,
-  shopEquipmentPrice,
-  closeShop,
-  selectEquipmentType,
-  getEquipmentSellPrice,
-  getRefreshCost,
-  getRerollCost,
-  getCurrentCoefficient,
-  getRerollRange,
-  getPetSkillLearnCost,
-  isPetSkillLearned,
-  getSkillIcon,
+    rerollStatsList,
+    selectedType,
+    equipmentTypes,
+    getStatName,
+    getTypeName,
+    getRarityColor,
+    getRarityName,
+    getShopEquipmentName,
+    shopPreviewStats,
+    shopEquipmentPrice,
+    closeShop,
+    selectEquipmentType,
+    getEquipmentSellPrice,
+    getRefreshCost,
+    getSingleBaseAffixCost,
+    getSingleBonusAffixCost,
+    getRerollCost,
+    getCurrentCoefficient,
+    getRerollRange,
+    getPetSkillLearnCost,
+    isPetSkillLearned,
+    getSkillIcon,
 } = shop;
 
 const handlePurchase = ({ item }) => {
@@ -115,9 +121,19 @@ const handleSellEquipment = (index) => {
 };
 
 const handleRefreshAffixes = (index) => {
-  const result = shop.refreshAffixes(index);
-  alert(result.message);
-};
+    const result = shop.refreshAffixes(index);
+    alert(result.message);
+  };
+
+const handleRefreshSingleBaseAffix = (index, stat) => {
+    const result = shop.refreshSingleBaseAffix(index, stat);
+    alert(result.message);
+  };
+
+const handleRefreshSingleBonusAffix = (index, stat) => {
+    const result = shop.refreshSingleBonusAffix(index, stat);
+    alert(result.message);
+  };
 
 const handleRerollStat = (stat) => {
   const result = shop.rerollPetStatCoefficient(stat);

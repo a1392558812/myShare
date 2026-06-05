@@ -40,6 +40,8 @@ import {
   sellItem,
   buyEquipment,
   refreshEquipmentAffixes,
+  refreshSingleBaseAffix,
+  refreshSingleBonusAffix,
   sellEquipmentForGold,
 } from "./shop.js";
 import {
@@ -256,6 +258,14 @@ export const gameActions = {
 
   refreshEquipmentAffixes(index) {
     return refreshEquipmentAffixes(gameState.player, index);
+  },
+
+  refreshSingleBaseAffix(index, stat) {
+    return refreshSingleBaseAffix(gameState.player, index, stat);
+  },
+
+  refreshSingleBonusAffix(index, stat) {
+    return refreshSingleBonusAffix(gameState.player, index, stat);
   },
 
   getEquipmentSellPrice(equipment) {

@@ -105,6 +105,38 @@ export function useShop() {
     }
   };
 
+  const getSingleBaseAffixCost = (equipment) => {
+    const config = GAME_CONFIG.SHOP.AFFIX_REFRESH;
+    return Math.floor(config.BASE_AFFIX_COST + equipment.level * config.LEVEL_COST_MULTIPLIER);
+  };
+
+  const getSingleBonusAffixCost = (equipment) => {
+    const config = GAME_CONFIG.SHOP.AFFIX_REFRESH;
+    return Math.floor(config.BONUS_AFFIX_COST + equipment.level * config.LEVEL_COST_MULTIPLIER);
+  };
+
+  const refreshSingleBaseAffix = (index, stat) => {
+    const result = gameActions.refreshSingleBaseAffix(index, stat);
+    if (result.success) {
+      const oldName = getStatName(result.oldStat);
+      const newName = getStatName(result.newStat);
+      return { success: true, message: `刷新成功！${oldName} 已替换为 ${newName} +${result.newValue}` };
+    } else {
+      return { success: false, message: result.message || "刷新失败！" };
+    }
+  };
+
+  const refreshSingleBonusAffix = (index, stat) => {
+    const result = gameActions.refreshSingleBonusAffix(index, stat);
+    if (result.success) {
+      const oldName = getStatName(result.oldStat);
+      const newName = getStatName(result.newStat);
+      return { success: true, message: `刷新成功！${oldName} 已替换为 ${newName} +${result.newValue}` };
+    } else {
+      return { success: false, message: result.message || "刷新失败！" };
+    }
+  };
+
   const getRerollCost = () => {
     const pet = gameState.pet;
     if (!pet) return 0;
@@ -219,6 +251,10 @@ export function useShop() {
     getRefreshCost,
     sellEquipment,
     refreshAffixes,
+    getSingleBaseAffixCost,
+    getSingleBonusAffixCost,
+    refreshSingleBaseAffix,
+    refreshSingleBonusAffix,
     getRerollCost,
     getCurrentCoefficient,
     getRerollRange,

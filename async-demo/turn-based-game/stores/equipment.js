@@ -341,6 +341,117 @@ export const generateCustomEquipment = (
   };
 };
 
+/**
+ * 生成单个随机基础词条
+ * @param {string} type - 装备类型
+ * @param {number} level - 装备等级
+ * @param {string} rarity - 装备稀有度
+ * @param {Object} existingAffixes - 已存在的词条，用于避免重复
+ * @param {string} originalStat - 原始要刷新的词条，允许保持相同
+ * @returns {Object} - { stat: string, value: number }
+ */
+export const generateSingleBaseAffix = (type, level, rarity, existingAffixes = {}, originalStat = null) => {
+  const rarityMultiplier = EQUIPMENT_CONFIG.RARITY[rarity]?.multiplier || 1;
+  const basePool = EQUIPMENT_CONFIG.BASE_AFFIX_POOL;
+  let baseStatKeys = Object.keys(basePool);
+  
+  // 排除已存在的词条（除了原始要刷新的词条）
+  baseStatKeys = baseStatKeys.filter(stat => {
+    if (stat === originalStat) return true; // 允许保持相同的词条
+    return !existingAffixes[stat];
+  });
+  
+  if (baseStatKeys.length === 0) {
+    // 如果没有可用的词条了，只能允许重复
+    baseStatKeys = Object.keys(basePool);
+  }
+  
+  // 随机选择一个基础词条
+  const randomIndex = Math.floor(Math.random() * baseStatKeys.length);
+  const selectedStat = baseStatKeys[randomIndex];
+  const config = basePool[selectedStat];
+  
+  const maxValue = level + EQUIPMENT_GEN_CONFIG.AFFIX_LEVEL_ADD;
+  const value = Math.floor((Math.random() * maxValue + 1) * rarityMultiplier);
+  
+  return { stat: selectedStat, value };
+};
+
+/**
+ * 生成单个随机强力词条
+ * @param {string} type - 装备类型
+ * @param {number} level - 装备等级
+ * @param {string} rarity - 装备稀有度
+ * @param {Object} existingAffixes - 已存在的词条，用于避免重复
+ * @param {string} originalStat - 原始要刷新的词条，允许保持相同
+ * @returns {Object} - { stat: string, value: number }
+ */
+export const generateSingleBonusAffix = (type, level, rarity, existingAffixes = {}, originalStat = null) => {
+  const rarityMultiplier = EQUIPMENT_CONFIG.RARITY[rarity]?.multiplier || 1;
+  const bonusPool = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL;
+  let availableStats = Object.keys(bonusPool);
+  
+  // 筛选对该装备类型有效的词条
+  availableStats = availableStats.filter(stat => {
+    const config = bonusPool[stat];
+    if (!config.exclusiveTypes || config.exclusiveTypes.length === 0) {
+      return true;
+    }
+    return config.exclusiveTypes.includes(type);
+  });
+  
+  // 排除已存在的词条（除了原始要刷新的词条）
+  availableStats = availableStats.filter(stat => {
+    if (stat === originalStat) return true; // 允许保持相同的词条
+    return !existingAffixes[stat];
+  });
+  
+  if (availableStats.length === 0) {
+    // 如果没有可用的词条了，只能允许重复
+    availableStats = Object.keys(bonusPool).filter(stat => {
+      const config = bonusPool[stat];
+      if (!config.exclusiveTypes || config.exclusiveTypes.length === 0) {
+        return true;
+      }
+      return config.exclusiveTypes.includes(type);
+    });
+  }
+  
+  if (availableStats.length === 0) {
+    return null;
+  }
+  
+  // 随机选择一个强力词条
+  const randomIndex = Math.floor(Math.random() * availableStats.length);
+  const selectedStat = availableStats[randomIndex];
+  const config = bonusPool[selectedStat];
+  
+  const maxValue = level + EQUIPMENT_GEN_CONFIG.AFFIX_LEVEL_ADD;
+  let value = Math.floor(
+    (Math.random() * maxValue + 1) *
+    config.coefficient *
+    rarityMultiplier,
+  );
+
+  // 应用各种限制
+  if (selectedStat === "allStats") {
+    value = Math.min(value, Math.floor(level * rarityMultiplier));
+  }
+  if (selectedStat === "maxComboCount") {
+    value = Math.min(value, GAME_CONFIG.COMBO.MAX_COMBO_COUNT);
+  }
+  if (selectedStat === "debuffResist") {
+    const range = bonusPool.debuffResist?.range || { min: 1, max: 30 };
+    value = Math.max(range.min, Math.min(value, range.max));
+  }
+  if (selectedStat === "ignoreDebuffResist") {
+    const range = bonusPool.ignoreDebuffResist?.range || { min: 1, max: 30 };
+    value = Math.max(range.min, Math.min(value, range.max));
+  }
+
+  return { stat: selectedStat, value };
+};
+
 export {
   EQUIPMENT_TYPES,
   EQUIPMENT_PREFIXES,

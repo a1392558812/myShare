@@ -338,6 +338,12 @@ export const GAME_CONFIG = {
       BASE_COST: 50, // 基础重铸费用
       LEVEL_COST_MULTIPLIER: 1, // 等级费用乘数
     },
+    // 单个词条重铸配置
+    AFFIX_REFRESH: {
+      BASE_AFFIX_COST: 30, // 基础词条重铸基础费用
+      BONUS_AFFIX_COST: 60, // 强力词条重铸基础费用
+      LEVEL_COST_MULTIPLIER: 0.5, // 等级费用乘数
+    },
   },
 };
 

@@ -43,9 +43,17 @@
             <span
               v-for="(value, stat) in equip.baseAffixes"
               :key="stat"
-              class="stat-badge"
+              class="stat-badge refreshable"
             >
               {{ getStatName(stat) }} +{{ value }}
+              <button
+                v-if="getSingleBaseAffixCost"
+                class="affix-refresh-btn"
+                :disabled="playerGold < getSingleBaseAffixCost(equip)"
+                @click.stop="$emit('refresh-single-base', index, stat)"
+              >
+                🔄
+              </button>
             </span>
             <span
               v-if="Object.keys(equip.baseAffixes || {}).length === 0"
@@ -59,9 +67,17 @@
             <span
               v-for="(value, stat) in equip.bonusAffixes"
               :key="stat"
-              class="stat-badge bonus-badge"
+              class="stat-badge bonus-badge refreshable"
             >
               {{ getStatName(stat) }} +{{ value }}
+              <button
+                v-if="getSingleBonusAffixCost"
+                class="affix-refresh-btn"
+                :disabled="playerGold < getSingleBonusAffixCost(equip)"
+                @click.stop="$emit('refresh-single-bonus', index, stat)"
+              >
+                🔄
+              </button>
             </span>
             <span
               v-if="Object.keys(equip.bonusAffixes || {}).length === 0"
@@ -80,8 +96,11 @@
             :disabled="playerGold < getRefreshCost(equip)"
             @click="$emit('refresh', index)"
           >
-            刷新 (💰{{ getRefreshCost(equip) }})
+            全刷新 (💰{{ getRefreshCost(equip) }})
           </button>
+        </div>
+        <div class="single-refresh-hint">
+          💡 点击词条旁的 🔄 按钮可单独刷新该词条
         </div>
       </div>
       <div v-if="equipmentBag.length === 0" class="empty-tip">
@@ -102,9 +121,11 @@ const props = defineProps({
   getStatName: { type: Function, required: true },
   getEquipmentSellPrice: { type: Function, required: true },
   getRefreshCost: { type: Function, required: true },
+  getSingleBaseAffixCost: { type: Function, required: false },
+  getSingleBonusAffixCost: { type: Function, required: false },
 });
 
-defineEmits(["sell", "refresh"]);
+defineEmits(["sell", "refresh", "refresh-single-base", "refresh-single-bonus"]);
 
 const equipmentBag = computed(() => gameState.player.equipmentBag);
 const playerGold = computed(() => gameState.player.gold);
@@ -151,7 +172,8 @@ const playerGold = computed(() => gameState.player.gold);
 }
 
 .base-stats,
-.affix-stats {
+.affix-stats,
+.bonus-stats {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -164,6 +186,39 @@ const playerGold = computed(() => gameState.player.gold);
   border-radius: 4px;
   font-size: 11px;
   color: #ccc;
+}
+
+.stat-badge.refreshable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.affix-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 0;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.6);
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    background: #333;
+    color: #555;
+    cursor: not-allowed;
+  }
 }
 
 .base-badge {
@@ -188,6 +243,15 @@ const playerGold = computed(() => gameState.player.gold);
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.single-refresh-hint {
+  margin-top: 8px;
+  padding: 6px;
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  opacity: 0.7;
 }
 
 .sell-btn {

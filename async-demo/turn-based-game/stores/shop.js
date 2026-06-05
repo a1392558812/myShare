@@ -2,6 +2,8 @@ import { EQUIPMENT_CONFIG, GAME_CONFIG } from "./constants.js";
 import {
   generateBaseStats,
   generateRandomStats,
+  generateSingleBaseAffix,
+  generateSingleBonusAffix,
   EQUIPMENT_PREFIXES,
   EQUIPMENT_SUFFIXES,
 } from "./equipment.js";
@@ -115,4 +117,86 @@ export const sellEquipmentForGold = (player, index, getEquipmentSellPrice) => {
   player.gold += sellPrice;
   player.equipmentBag.splice(index, 1);
   return sellPrice;
+};
+
+export const refreshSingleBaseAffix = (player, index, stat) => {
+  if (index < 0 || index >= player.equipmentBag.length) {
+    return { success: false, message: '装备不存在' };
+  }
+
+  const equipment = player.equipmentBag[index];
+  const config = GAME_CONFIG.SHOP.AFFIX_REFRESH;
+  const refreshCost = Math.floor(config.BASE_AFFIX_COST + equipment.level * config.LEVEL_COST_MULTIPLIER);
+
+  if (player.gold < refreshCost) {
+    return { success: false, message: '金币不足' };
+  }
+
+  player.gold -= refreshCost;
+
+  // 先移除旧词条，然后传入剩下的词条来避免重复
+  const oldValue = equipment.baseAffixes[stat];
+  delete equipment.baseAffixes[stat];
+  
+  const newAffix = generateSingleBaseAffix(
+    equipment.type, 
+    equipment.level, 
+    equipment.rarity, 
+    equipment.baseAffixes,  // 传入已存在的词条（不包含要刷新的那个）
+    stat // 允许保持相同的词条类型
+  );
+  
+  equipment.baseAffixes[newAffix.stat] = newAffix.value;
+
+  return {
+    success: true,
+    oldStat: stat,
+    oldValue: oldValue,
+    newStat: newAffix.stat,
+    newValue: newAffix.value,
+  };
+};
+
+export const refreshSingleBonusAffix = (player, index, stat) => {
+  if (index < 0 || index >= player.equipmentBag.length) {
+    return { success: false, message: '装备不存在' };
+  }
+
+  const equipment = player.equipmentBag[index];
+  const config = GAME_CONFIG.SHOP.AFFIX_REFRESH;
+  const refreshCost = Math.floor(config.BONUS_AFFIX_COST + equipment.level * config.LEVEL_COST_MULTIPLIER);
+
+  if (player.gold < refreshCost) {
+    return { success: false, message: '金币不足' };
+  }
+
+  player.gold -= refreshCost;
+
+  // 先移除旧词条，然后传入剩下的词条来避免重复
+  const oldValue = equipment.bonusAffixes[stat];
+  delete equipment.bonusAffixes[stat];
+
+  const newAffix = generateSingleBonusAffix(
+    equipment.type, 
+    equipment.level, 
+    equipment.rarity, 
+    equipment.bonusAffixes,  // 传入已存在的词条（不包含要刷新的那个）
+    stat // 允许保持相同的词条类型
+  );
+  
+  if (!newAffix) {
+    // 如果没有可用词条，把旧的加回去
+    equipment.bonusAffixes[stat] = oldValue;
+    return { success: false, message: '没有可用的强力词条' };
+  }
+  
+  equipment.bonusAffixes[newAffix.stat] = newAffix.value;
+
+  return {
+    success: true,
+    oldStat: stat,
+    oldValue: oldValue,
+    newStat: newAffix.stat,
+    newValue: newAffix.value,
+  };
 };
