@@ -290,6 +290,7 @@ export const GAME_CONFIG = {
     ENEMY_LEVEL_MULTIPLIER: 1.3, // 每级敌人属性提升系数
     SUPPORT_SKILL_MIN_LEVEL: 6, // 敌人使用辅助技能最低地图等级
     DEBUFF_SKILL_MIN_LEVEL: 9, // 敌人使用障碍技能最低地图等级
+    MAX_LEVEL: 9999, // 最大地图等级
   },
   // 装备等级偏移配置
   EQUIPMENT_LEVEL_OFFSET: {
@@ -732,6 +733,34 @@ export const ENEMIES_CONFIG = [
   },
   {
     id: 11,
+    name: "暗影封印师",
+    hp: 380,
+    maxHp: 380,
+    physicalAttack: 18,
+    magicAttack: 32,
+    defense: 20,
+    speed: 11,
+    exp: 260,
+    level: 9,
+    attackType: "magic",
+    skills: [2, 3, 12, 13], // 9级敌人，可使用封印术
+  },
+  {
+    id: 12,
+    name: "混沌领主",
+    hp: 420,
+    maxHp: 420,
+    physicalAttack: 28,
+    magicAttack: 32,
+    defense: 24,
+    speed: 13,
+    exp: 320,
+    level: 9,
+    attackType: "magic",
+    skills: [1, 3, 18, 19], // 9级敌人，可使用混乱术
+  },
+  {
+    id: 13,
     name: "混沌魔王",
     hp: 500,
     maxHp: 500,
@@ -745,7 +774,7 @@ export const ENEMIES_CONFIG = [
     skills: [1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19], // 10级敌人，可使用所有障碍技能
   },
   {
-    id: 12,
+    id: 14,
     name: "test耐打王", // 测试用BOSS
     hp: 999999999999999999999999999999999999999999999999,
     maxHp: 999999999999999999999999999999999999999999999999,
@@ -854,6 +883,13 @@ export const PLAYER_CONFIG = {
     { id: 1, count: 3 }, // 3个生命药水
     { id: 3, count: 2 }, // 2个法力药水
   ],
+  // 玩家升级配置
+  LEVEL_UP: {
+    STATS: ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"], // 升级增加的属性点
+    POINTS_PER_STAT: 1, // 每项属性增加的点数
+    FREE_POINTS_PER_LEVEL: 5, // 每级获得的自由分配点数
+    EXP_TO_NEXT_MULTIPLIER: 1.5, // 下一级所需经验倍数
+  },
 };
 
 /**
@@ -880,6 +916,13 @@ export const PET_CONFIG = {
     maxComboCount: 1, // 最大连击1次
   },
   INITIAL_SKILL_INDICES: [1], // 初始技能ID（火球术ID=1）
+  // 宠物升级配置
+  LEVEL_UP: {
+    STATS: ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"], // 升级增加的属性点
+    POINTS_PER_STAT: 1, // 每项属性增加的点数
+    FREE_POINTS_PER_LEVEL: 5, // 每级获得的自由分配点数
+    EXP_TO_NEXT_MULTIPLIER: 1.5, // 下一级所需经验倍数
+  },
 };
 
 export const STORAGE_KEY = "turn_based_game_save";

@@ -97,7 +97,7 @@ const getLevelMultiplier = () => {
 
 const updateMapLevel = () => {
   if (mapLevelInput.value < 1) mapLevelInput.value = 1;
-  if (mapLevelInput.value > 99) mapLevelInput.value = 99;
+  if (mapLevelInput.value > GAME_CONFIG.MAP.MAX_LEVEL) mapLevelInput.value = GAME_CONFIG.MAP.MAX_LEVEL;
   
   if (gameState.mapLevel !== mapLevelInput.value) {
     gameState.mapLevel = mapLevelInput.value;

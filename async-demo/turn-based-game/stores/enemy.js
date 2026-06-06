@@ -52,8 +52,11 @@ const applyMapLevelBonus = (baseEnemy, mapLevel) => {
  * @returns {number[]} 可出现的敌人索引数组
  */
 const getAvailableEnemyIndices = (mapLevel) => {
-  // 不包含测试用的耐打王（索引11）
-  const allIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // 不包含测试用的耐打王
+  const allIndices = Array.from({ length: ENEMIES_CONFIG.length - 1 }, (_, i) => {
+    console.log('allIndices-i', i);
+    return i;
+  });
   
   // 根据地图等级给不同等级敌人不同的权重
   // 地图等级越高，高级敌人越容易出现

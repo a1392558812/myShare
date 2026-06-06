@@ -269,11 +269,11 @@ export const levelUp = (player, battleLog) => {
     player.exp -= player.expToNext;
     player.level++;
     player.expToNext = Math.floor(
-      player.expToNext * GAME_CONFIG.EXP_TO_NEXT_MULTIPLIER,
+      player.expToNext * PLAYER_CONFIG.LEVEL_UP.EXP_TO_NEXT_MULTIPLIER,
     );
 
-    for (const stat of GAME_CONFIG.LEVEL_UP_STATS) {
-      player[`${stat}Points`] += GAME_CONFIG.LEVEL_UP_POINTS_PER_STAT;
+    for (const stat of PLAYER_CONFIG.LEVEL_UP.STATS) {
+      player[`${stat}Points`] += PLAYER_CONFIG.LEVEL_UP.POINTS_PER_STAT;
     }
 
     const calculatedStats = calculatePlayerStats(player);
@@ -282,7 +282,7 @@ export const levelUp = (player, battleLog) => {
     player.hp = player.maxHp;
     player.mp = player.maxMp;
 
-    player.freePoints += GAME_CONFIG.FREE_POINTS_PER_LEVEL;
+    player.freePoints += PLAYER_CONFIG.LEVEL_UP.FREE_POINTS_PER_LEVEL;
 
     if (battleLog) {
       battleLog.push(`升级了！当前等级：${player.level}`);
@@ -596,11 +596,11 @@ export const petLevelUp = (pet, battleLog) => {
     pet.exp -= pet.expToNext;
     pet.level++;
     pet.expToNext = Math.floor(
-      pet.expToNext * GAME_CONFIG.EXP_TO_NEXT_MULTIPLIER,
+      pet.expToNext * PET_CONFIG.LEVEL_UP.EXP_TO_NEXT_MULTIPLIER,
     );
 
-    for (const stat of PET_CONFIG.LEVEL_UP_STATS) {
-      pet[`${stat}Points`] += PET_CONFIG.LEVEL_UP_POINTS_PER_STAT;
+    for (const stat of PET_CONFIG.LEVEL_UP.STATS) {
+      pet[`${stat}Points`] += PET_CONFIG.LEVEL_UP.POINTS_PER_STAT;
     }
 
     const calculatedStats = calculatePetStats(pet);
@@ -609,7 +609,7 @@ export const petLevelUp = (pet, battleLog) => {
     pet.hp = pet.maxHp;
     pet.mp = pet.maxMp;
 
-    pet.freePoints += PET_CONFIG.FREE_POINTS_PER_LEVEL;
+    pet.freePoints += PET_CONFIG.LEVEL_UP.FREE_POINTS_PER_LEVEL;
 
     if (battleLog) {
       battleLog.push(`宠物升级了！当前等级：${pet.level}`);
