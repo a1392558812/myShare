@@ -618,7 +618,6 @@ export const ENEMIES_CONFIG = [
     speed: 5, // 速度
     exp: 20, // 击杀经验
     level: 1, // 等级
-    attackType: "physical", // 攻击类型：physical=物理
     skills: [], // 技能列表：空=无技能
   },
   {
@@ -632,7 +631,6 @@ export const ENEMIES_CONFIG = [
     speed: 8,
     exp: 35,
     level: 2,
-    attackType: "physical",
     skills: [], // 无技能
   },
   {
@@ -646,7 +644,6 @@ export const ENEMIES_CONFIG = [
     speed: 6,
     exp: 50,
     level: 3,
-    attackType: "physical",
     skills: [1], // 技能ID 1=火球术
   },
   {
@@ -660,7 +657,6 @@ export const ENEMIES_CONFIG = [
     speed: 12,
     exp: 70,
     level: 4,
-    attackType: "physical",
     skills: [1, 3], // 技能ID 1=火球术, 3=雷霆一击
   },
   {
@@ -674,7 +670,6 @@ export const ENEMIES_CONFIG = [
     speed: 7,
     exp: 100,
     level: 5,
-    attackType: "magic", // 魔法攻击型敌人
     skills: [1, 2, 3], // 技能ID 1=火球术, 2=冰锥术, 3=雷霆一击
   },
   {
@@ -688,7 +683,6 @@ export const ENEMIES_CONFIG = [
     speed: 10,
     exp: 120,
     level: 6,
-    attackType: "magic",
     skills: [1, 2, 3, 4, 5, 6, 7], // 6级敌人，可使用辅助技能
   },
   {
@@ -702,7 +696,6 @@ export const ENEMIES_CONFIG = [
     speed: 9,
     exp: 150,
     level: 7,
-    attackType: "physical",
     skills: [1, 3, 4, 6, 8, 10], // 7级敌人，可使用辅助技能
   },
   {
@@ -716,7 +709,6 @@ export const ENEMIES_CONFIG = [
     speed: 8,
     exp: 200,
     level: 8,
-    attackType: "magic",
     skills: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // 8级敌人，可使用所有辅助技能
   },
   {
@@ -730,7 +722,6 @@ export const ENEMIES_CONFIG = [
     speed: 12,
     exp: 300,
     level: 9,
-    attackType: "magic",
     skills: [1, 2, 3, 16, 17], // 9级敌人，可使用冰冻术
   },
   {
@@ -744,7 +735,6 @@ export const ENEMIES_CONFIG = [
     speed: 10,
     exp: 280,
     level: 9,
-    attackType: "magic",
     skills: [1, 3, 14, 15], // 9级敌人，可使用中毒术
   },
   {
@@ -758,7 +748,6 @@ export const ENEMIES_CONFIG = [
     speed: 11,
     exp: 260,
     level: 9,
-    attackType: "magic",
     skills: [2, 3, 12, 13], // 9级敌人，可使用封印术
   },
   {
@@ -772,7 +761,6 @@ export const ENEMIES_CONFIG = [
     speed: 13,
     exp: 320,
     level: 9,
-    attackType: "magic",
     skills: [1, 3, 18, 19], // 9级敌人，可使用混乱术
   },
   {
@@ -786,7 +774,6 @@ export const ENEMIES_CONFIG = [
     speed: 15,
     exp: 500,
     level: 10,
-    attackType: "magic",
     skills: [1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19], // 10级敌人，可使用所有障碍技能
   },
   {
@@ -800,7 +787,6 @@ export const ENEMIES_CONFIG = [
     speed: 999999999999999999999999999999999999999999999999,
     exp: 999999999999999999999999999999999999999999999999,
     level: 1,
-    attackType: "physical",
     skills: [],
   },
 ];

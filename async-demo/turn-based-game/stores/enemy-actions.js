@@ -16,45 +16,79 @@ export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
   const enemies = gameState.currentBattle.enemies;
   const aliveAllies = enemies.filter(e => e.hp > 0 && e.id !== enemy.id);
   
-  if (isConfused) {
-    // 混乱状态：随机选择目标（不分敌我）
-    const allTargets = [];
-    if (player.hp > 0) allTargets.push({ target: player, type: "player", stats: playerStats });
-    if (pet && pet.active && pet.hp > 0) allTargets.push({ target: pet, type: "pet", stats: petStats });
-    aliveAllies.forEach(ally => {
-      allTargets.push({
-        target: ally,
-        type: "enemy",
-        stats: {
-          physicalAttack: ally.physicalAttack,
-          magicAttack: ally.magicAttack,
-          defense: ally.defense,
-        }
-      });
-    });
+  // 选择目标函数：如果目标死亡，则选择其他存活目标
+  const selectTarget = () => {
+    let selectedTarget;
+    let selectedType;
+    let selectedStats;
+    let isDefending = false;
     
-    if (allTargets.length > 0) {
-      const randomTarget = allTargets[Math.floor(Math.random() * allTargets.length)];
-      target = randomTarget.target;
-      targetType = randomTarget.type;
-      targetStats = randomTarget.stats;
-      if (targetType === "enemy") {
-        gameState.battleLog.push(`${enemy.name} 混乱中攻击了友方 ${target.name}！`);
+    if (isConfused) {
+      // 混乱状态：随机选择目标（不分敌我）
+      const allTargets = [];
+      if (player.hp > 0) allTargets.push({ target: player, type: "player", stats: playerStats });
+      if (pet && pet.active && pet.hp > 0) allTargets.push({ target: pet, type: "pet", stats: petStats });
+      aliveAllies.forEach(ally => {
+        allTargets.push({
+          target: ally,
+          type: "enemy",
+          stats: {
+            physicalAttack: ally.physicalAttack,
+            magicAttack: ally.magicAttack,
+            defense: ally.defense,
+          }
+        });
+      });
+      
+      if (allTargets.length > 0) {
+        const randomTarget = allTargets[Math.floor(Math.random() * allTargets.length)];
+        selectedTarget = randomTarget.target;
+        selectedType = randomTarget.type;
+        selectedStats = randomTarget.stats;
+        if (selectedType === "enemy") {
+          gameState.battleLog.push(`${enemy.name} 混乱中攻击了友方 ${selectedTarget.name}！`);
+        }
+      } else {
+        // 没有目标时直接返回
+        return null;
       }
     } else {
-      // 没有目标时直接返回
-      return;
+      // 正常状态：优先选择宠物，如果宠物死亡则选择玩家
+      if (pet && pet.active && pet.hp > 0 && Math.random() < 0.6) {
+        selectedTarget = pet;
+        selectedType = "pet";
+        selectedStats = petStats;
+      } else if (player.hp > 0) {
+        selectedTarget = player;
+        selectedType = "player";
+        selectedStats = playerStats;
+        isDefending = gameState.currentBattle.playerDefending;
+      } else if (pet && pet.active && pet.hp > 0) {
+        // 玩家死亡，选择宠物
+        selectedTarget = pet;
+        selectedType = "pet";
+        selectedStats = petStats;
+      } else {
+        // 都死亡了，没有目标
+        return null;
+      }
     }
-  } else if (pet && pet.active && pet.hp > 0 && Math.random() < 0.6) {
-    target = pet;
-    targetType = "pet";
-    targetStats = petStats;
-  } else {
-    target = player;
-    targetType = "player";
-    targetStats = playerStats;
-    defending = gameState.currentBattle.playerDefending;
-  }
+    
+    return {
+      target: selectedTarget,
+      type: selectedType,
+      stats: selectedStats,
+      defending: isDefending,
+    };
+  };
+  
+  // 选择目标
+  const selected = selectTarget();
+  if (!selected) return;
+  target = selected.target;
+  targetType = selected.type;
+  targetStats = selected.stats;
+  defending = selected.defending;
 
   const hasSkills = enemy.skills && enemy.skills.length > 0;
 
@@ -79,7 +113,7 @@ export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
       } else if (isDebuffSkill && canUseDebuffSkill) {
         enemyUseDebuffSkill(gameState, enemy, skill, target, targetType, pet);
       } else if (!isSupportSkill && !isDebuffSkill) {
-        enemyUseAttackSkill(gameState, enemy, skill, target, targetType, defending, pet);
+        enemyUseAttackSkill(gameState, enemy, skill, target, targetType, targetStats, defending, pet);
       } else {
         // 地图等级不足时使用普通攻击
         enemyUseNormalAttack(gameState, enemy, target, targetType, targetStats, defending, pet);
@@ -108,7 +142,7 @@ const enemyUseConfusedAttack = (gameState, enemy, target, targetType, targetStat
       if (enemy.mp > 0) {
         enemy.mp = Math.max(0, enemy.mp - manaCost);
       }
-      enemyUseAttackSkill(gameState, enemy, magicSkill, target, targetType, defending, pet);
+      enemyUseAttackSkill(gameState, enemy, magicSkill, target, targetType, targetStats, defending, pet);
       return;
     }
   }
@@ -313,7 +347,7 @@ const getEnemyBuffMultiplier = (enemy, statType) => {
   return multiplier;
 };
 
-const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, defending, pet) => {
+const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, targetStats, defending, pet) => {
   const enemyCritRate = enemy.critRate || 0;
   const physicalMultiplier = getEnemyBuffMultiplier(enemy, "physicalAttack");
   const magicMultiplier = getEnemyBuffMultiplier(enemy, "magicAttack");
@@ -325,11 +359,12 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, defend
     return;
   }
 
+  // 技能伤害计算与玩家一致：skill.damage + attack * multiplier - defense
   let baseDamage;
   if (skill.type === "magic") {
-    baseDamage = skill.damage + (enemy.magicAttack || 0) * 0.5 * magicMultiplier;
+    baseDamage = Math.max(1, enemy.magicAttack * magicMultiplier + skill.damage - (targetStats.defense || 0));
   } else {
-    baseDamage = skill.damage + (enemy.physicalAttack || 0) * 0.5 * physicalMultiplier;
+    baseDamage = Math.max(1, enemy.physicalAttack * physicalMultiplier + skill.damage - (targetStats.defense || 0));
   }
 
   const critRate = Math.min(enemyCritRate, GAME_CONFIG.CRIT.MAX_CRIT_RATE) / 100;
@@ -369,14 +404,9 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
     return;
   }
 
-  let enemyAttack;
+  // 普通攻击统一使用物理攻击（和玩家一致）
   const physicalMultiplier = getEnemyBuffMultiplier(enemy, "physicalAttack");
-
-  if (enemy.attackType === "magic") {
-    enemyAttack = (enemy.magicAttack || enemy.physicalAttack) * getEnemyBuffMultiplier(enemy, "magicAttack");
-  } else {
-    enemyAttack = (enemy.physicalAttack || enemy.magicAttack) * physicalMultiplier;
-  }
+  const enemyAttack = (enemy.physicalAttack || 0) * physicalMultiplier;
 
   const baseDamage = Math.max(1, enemyAttack - (targetStats.defense || 0));
 
@@ -391,6 +421,13 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
   if (defending && targetType !== "enemy") {
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
+
+  console.log("damage", {
+    damage,
+    enemyAttack,
+    physicalMultiplier,
+    baseDamage,
+  });
 
   target.hp -= Math.floor(damage);
 
