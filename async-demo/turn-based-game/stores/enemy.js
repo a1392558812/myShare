@@ -127,6 +127,34 @@ export const generateBattleEnemies = (playerLevel, mapLevel = 1) => {
   return enemies;
 };
 
+/**
+ * 生成指定数量的额外战斗敌人（用于点击敌人进入战斗时）
+ * @param {number} count - 额外敌人数量
+ * @param {number} mapLevel - 地图等级
+ * @returns {Array} 额外敌人数组
+ */
+export const generateExtraBattleEnemies = (count, mapLevel) => {
+  const enemies = [];
+  for (let i = 0; i < count; i++) {
+    const randomEnemyIndex = getRandomEnemyIndex(mapLevel);
+    const baseEnemy = ENEMIES_CONFIG[randomEnemyIndex];
+    const enemyAttrs = generateEnemyRandomAttributes();
+    const levelBonus = applyMapLevelBonus(baseEnemy, mapLevel);
+    
+    enemies.push({
+      ...baseEnemy,
+      ...levelBonus,
+      id: `battle_enemy_${Date.now()}_extra_${i}`,
+      battleIndex: i + 1, // 从1开始，因为0是被点击的敌人
+      maxMp: levelBonus.maxMp || 0,
+      mp: levelBonus.mp || 0,
+      buffs: [],
+      ...enemyAttrs,
+    });
+  }
+  return enemies;
+};
+
 export const generateMapEnemies = (mapLevel = 1) => {
   // 固定生成5个敌人，但每个敌人都是随机的
   const enemyPositions = [
@@ -159,13 +187,36 @@ export const generateMapEnemies = (mapLevel = 1) => {
 
 export const removeEnemyFromMap = (gameState) => {
   if (gameState.defeatedEnemyId) {
-    const index = gameState.mapEnemies.findIndex(
-      (e) => e.id === gameState.defeatedEnemyId
-    );
-    if (index !== -1) {
-      gameState.mapEnemies.splice(index, 1);
-    }
+    // 处理数组形式的 defeatedEnemyId（多个敌人）
+    const idsToRemove = Array.isArray(gameState.defeatedEnemyId)
+      ? gameState.defeatedEnemyId
+      : [gameState.defeatedEnemyId];
+    
+    idsToRemove.forEach((id) => {
+      const index = gameState.mapEnemies.findIndex((e) => e.id === id);
+      if (index !== -1) {
+        gameState.mapEnemies.splice(index, 1);
+      }
+    });
   }
+};
+
+/**
+ * 将地图上的敌人转换为战斗敌人
+ * @param {Object} mapEnemy - 地图上的敌人对象
+ * @param {number} battleIndex - 战斗中的索引
+ * @returns {Object} 战斗敌人对象
+ */
+export const convertMapEnemyToBattleEnemy = (mapEnemy, battleIndex = 0) => {
+  return {
+    ...mapEnemy,
+    id: `battle_enemy_${Date.now()}_${battleIndex}`,
+    originalId: mapEnemy.id,  // 保存原始敌人ID，用于战斗结束后移除地图敌人
+    battleIndex: battleIndex,
+    maxMp: mapEnemy.maxMp || 0,
+    mp: mapEnemy.mp || 0,
+    buffs: mapEnemy.buffs || [],
+  };
 };
 
 export const refreshMapEnemies = (gameState, playerLevel, mapLevel = 1) => {

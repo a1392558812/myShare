@@ -50,6 +50,8 @@ import {
   removeEnemyFromMap,
   refreshMapEnemies,
   generateBattleEnemies,
+  convertMapEnemyToBattleEnemy,
+  generateExtraBattleEnemies,
 } from "./enemy.js";
 import { loadSave, saveGame } from "./storage.js";
 import {
@@ -108,8 +110,22 @@ export const gameActions = {
     movePlayer(gameState.player, dx, dy);
   },
 
-  startBattle() {
-    const enemies = generateBattleEnemies(gameState.player.level, gameState.mapLevel);
+  startBattle(mapEnemy = null) {
+    let enemies;
+    if (mapEnemy) {
+      // 点击地图敌人进入战斗，必出该敌人
+      enemies = [convertMapEnemyToBattleEnemy(mapEnemy, 0)];
+      
+      // 概率生成额外敌人（最多 MAX_COUNT - 1 个，因为已有1个必出）
+      const extraCount = Math.floor(Math.random() * (GAME_CONFIG.BATTLE_ENEMIES.MAX_COUNT - 1));
+      if (extraCount > 0) {
+        const extraEnemies = generateExtraBattleEnemies(extraCount, gameState.mapLevel);
+        enemies = enemies.concat(extraEnemies);
+      }
+    } else {
+      // 移动触发的战斗，生成随机敌人
+      enemies = generateBattleEnemies(gameState.player.level, gameState.mapLevel);
+    }
     startBattle(
       gameState,
       enemies,

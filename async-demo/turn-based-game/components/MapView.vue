@@ -8,7 +8,7 @@
           type="number"
           v-model.number="mapLevelInput"
           min="1"
-          max="99"
+          :max="GAME_CONFIG.MAP.MAX_LEVEL"
           @change="updateMapLevel"
         />
         <span class="level-multiplier">倍率: {{ getLevelMultiplier() }}x</span>
@@ -91,14 +91,16 @@ const getLevelMultiplier = () => {
   if (!gameState.mapLevel || gameState.mapLevel <= 1) {
     return "1.0";
   }
-  const multiplier = 1 + GAME_CONFIG.MAP.ENEMY_LEVEL_MULTIPLIER * (gameState.mapLevel - 1);
+  const multiplier =
+    1 + GAME_CONFIG.MAP.ENEMY_LEVEL_MULTIPLIER * (gameState.mapLevel - 1);
   return multiplier.toFixed(2);
 };
 
 const updateMapLevel = () => {
   if (mapLevelInput.value < 1) mapLevelInput.value = 1;
-  if (mapLevelInput.value > GAME_CONFIG.MAP.MAX_LEVEL) mapLevelInput.value = GAME_CONFIG.MAP.MAX_LEVEL;
-  
+  if (mapLevelInput.value > GAME_CONFIG.MAP.MAX_LEVEL)
+    mapLevelInput.value = GAME_CONFIG.MAP.MAX_LEVEL;
+
   if (gameState.mapLevel !== mapLevelInput.value) {
     gameState.mapLevel = mapLevelInput.value;
     // 刷新地图敌人以应用新等级
@@ -129,7 +131,7 @@ const checkNearbyEnemies = () => {
 
 // 点击敌人
 const handleEnemyClick = (enemy) => {
-  gameActions.startBattle();
+  gameActions.startBattle(enemy);
 };
 
 // 键盘控制

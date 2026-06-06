@@ -258,6 +258,8 @@ const {
 
       .skill-menu,
       .item-menu {
+        max-height: 400px;
+        overflow-y: auto;
         position: absolute;
         bottom: 100%;
         left: 0;

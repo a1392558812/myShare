@@ -490,7 +490,7 @@ export const handleBattleEnd = (
       );
     }
 
-    gameState.defeatedEnemyId = enemies.map((e) => e.id);
+    gameState.defeatedEnemyId = enemies.map((e) => e.originalId || e.id);
   } else if (player.hp <= 0) {
     gameState.battleResult = "defeat";
     gameState.battleLog.push("战斗失败...");
