@@ -44,3 +44,14 @@ export const applyUnshakableMountainLimit = (damage, target, unshakableMountain,
    }
   return Math.max(1, damage) // 最小伤害为1
 };
+
+// 判断是否闪避成功
+// 有X%概率免疫当次受到的物理伤害或法术伤害
+export const checkDodge = (target, dodgeChance) => {
+  const randomDodgeChance = Math.random() * 100;
+  console.log("checkDodge", target, randomDodgeChance, dodgeChance);
+  if (dodgeChance <= 0) {
+    return false;
+  }
+  return randomDodgeChance < dodgeChance;
+};

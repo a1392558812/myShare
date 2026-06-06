@@ -1,7 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats } from "./player.js";
 import { aiConfig, applyDebuff, isTargetFrozen } from "./battle-utils.js";
-import { applyUnshakableMountainLimit } from "./utils.js";
+import { applyUnshakableMountainLimit, checkDodge } from "./utils.js";
 
 export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
   const player = gameState.player;
@@ -380,8 +380,15 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, target
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
 
-  // 应用不动如山伤害上限（只对玩家和宠物生效）
+  // 优先判断闪避（只对玩家和宠物生效）
   if (targetType !== "enemy") {
+    const dodgeChance = targetStats.dodge || 0;
+    if (checkDodge(target, dodgeChance)) {
+      gameState.battleLog.push(`${targetName} 闪避成功，免疫了 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害！`);
+      return; // 闪避成功，不受任何伤害
+    }
+
+    // 闪避失败后，应用不动如山伤害上限
     const unshakableMountain = targetStats.unshakableMountain || 0;
     damage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
   }
@@ -429,8 +436,15 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
 
-  // 应用不动如山伤害上限（只对玩家和宠物生效）
+  // 优先判断闪避（只对玩家和宠物生效）
   if (targetType !== "enemy") {
+    const dodgeChance = targetStats.dodge || 0;
+    if (checkDodge(target, dodgeChance)) {
+      gameState.battleLog.push(`${targetName} 闪避成功，免疫了 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害！`);
+      return; // 闪避成功，不受任何伤害
+    }
+
+    // 闪避失败后，应用不动如山伤害上限
     const unshakableMountain = targetStats.unshakableMountain || 0;
     damage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
   }
@@ -483,7 +497,7 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
       );
     }
 
-    // 连击伤害也应用不动如山伤害上限
+    // 连击伤害也应用不动如山伤害上限（闪避已在首次攻击时判断过，连击不再判断闪避）
     if (targetType !== "enemy") {
       const unshakableMountain = targetStats.unshakableMountain || 0;
       comboDamage = applyUnshakableMountainLimit(comboDamage, target, unshakableMountain, gameState);

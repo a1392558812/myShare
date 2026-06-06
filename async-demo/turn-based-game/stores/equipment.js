@@ -109,6 +109,10 @@ export const generateRandomStats = (rarity, level, type = null) => {
         const range = bonusPool.unshakableMountain?.range || { min: 1, max: 30 };
         value = Math.max(range.min, Math.min(value, range.max));
       }
+      if (stat === "dodge") {
+        const range = bonusPool.dodge?.range || { min: 1, max: 20 };
+        value = Math.max(range.min, Math.min(value, range.max));
+      }
 
       bonusAffixes[stat] = value;
       usedBonusStats.add(stat);
@@ -267,6 +271,11 @@ export const generateCustomEquipment = (
       const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.unshakableMountain?.range || { min: 1, max: 30 };
       bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
     }
+    // 闪避词缀限制取值范围
+    if (stat === "dodge") {
+      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.dodge?.range || { min: 1, max: 20 };
+      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
+    }
   }
 
   return {
@@ -392,6 +401,10 @@ export const generateSingleBonusAffix = (type, level, rarity, existingAffixes = 
   }
   if (selectedStat === "unshakableMountain") {
     const range = bonusPool.unshakableMountain?.range || { min: 1, max: 30 };
+    value = Math.max(range.min, Math.min(value, range.max));
+  }
+  if (selectedStat === "dodge") {
+    const range = bonusPool.dodge?.range || { min: 1, max: 20 };
     value = Math.max(range.min, Math.min(value, range.max));
   }
 

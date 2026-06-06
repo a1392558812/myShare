@@ -196,6 +196,13 @@ export const EQUIPMENT_CONFIG = {
       range: { min: 1, max: 30 }, // 取值范围：1~30
       description: "单次受到的物理伤害或法术伤害最大不能超过当前血量的(100 - 2.5 * X)%",
     },
+    dodge: {
+      coefficient: 1.0,
+      name: "闪避",
+      exclusiveTypes: ["belt", "shoes"],
+      range: { min: 1, max: 20 }, // 取值范围：1~20
+      description: "有X%概率闪避当次受到的物理伤害或法术伤害",
+    },
   },
 };
 
