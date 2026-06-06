@@ -115,11 +115,13 @@ const onAttack = () => {
 const onUseSkill = (skill) => {
   emit("use-skill", skill);
   showSkillMenu.value = false;
+  showItemMenu.value = false;
 };
 
 const onSelectItem = (item, index) => {
   emit("select-item", item, index);
   showSkillMenu.value = false;
+  showItemMenu.value = false;
 };
 
 const onDefend = () => {

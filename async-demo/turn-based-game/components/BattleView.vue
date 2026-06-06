@@ -20,39 +20,42 @@
       :pet-buffs="gameState.currentBattle?.petBuffs || []"
     />
 
-    <BattleLog :battle-log="gameState.battleLog" ref="battleLogRef" />
+    <div class="battle-log-container">
+      <BattleLog :battle-log="gameState.battleLog" ref="battleLogRef" />
 
-    <div v-if="!gameState.battleResult" class="action-area">
-      <PlayerControls
-        :show="showPlayerControls"
-        :is-command-phase="isCommandPhase"
-        :player-needs-rescue="playerNeedsRescue"
-        :target-name="selectedTargetName"
-        :skills="gameState.player.skills"
-        :player-mp="gameState.player.mp"
-        :player-level="gameState.player.level"
-        :inventory="gameState.player.inventory"
-        :alive-enemies="aliveEnemies"
-        @attack="actions.handlePlayerAttack"
-        @use-skill="actions.handlePlayerUseSkill"
-        @select-item="actions.selectItemForUse"
-        @defend="actions.handlePlayerDefend"
-        @flee="actions.handlePlayerFlee"
-      />
+      <div v-if="!gameState.battleResult" class="action-area">
+        <PlayerControls
+          :show="showPlayerControls"
+          :is-command-phase="isCommandPhase"
+          :player-needs-rescue="playerNeedsRescue"
+          :target-name="selectedTargetName"
+          :skills="gameState.player.skills"
+          :player-mp="gameState.player.mp"
+          :player-level="gameState.player.level"
+          :inventory="gameState.player.inventory"
+          :alive-enemies="aliveEnemies"
+          @attack="actions.handlePlayerAttack"
+          @use-skill="actions.handlePlayerUseSkill"
+          @select-item="actions.selectItemForUse"
+          @defend="actions.handlePlayerDefend"
+          @flee="actions.handlePlayerFlee"
+        />
 
-      <PetControls
-        :show="showPetControls"
-        :pet="gameState.pet"
-        :is-command-phase="isCommandPhase"
-        :target-name="selectedTargetName"
-        :inventory="gameState.player.inventory"
-        :alive-enemies="aliveEnemies"
-        @attack="actions.handlePetAttack"
-        @use-skill="actions.handlePetUseSkill"
-        @select-item="actions.selectPetItemForUse"
-        @defend="actions.handlePetDefend"
-      />
+        <PetControls
+          :show="showPetControls"
+          :pet="gameState.pet"
+          :is-command-phase="isCommandPhase"
+          :target-name="selectedTargetName"
+          :inventory="gameState.player.inventory"
+          :alive-enemies="aliveEnemies"
+          @attack="actions.handlePetAttack"
+          @use-skill="actions.handlePetUseSkill"
+          @select-item="actions.selectPetItemForUse"
+          @defend="actions.handlePetDefend"
+        />
+      </div>
     </div>
+    
 
     <!-- 玩家道具/辅助技能目标选择 -->
     <TargetSelector
@@ -317,9 +320,17 @@ const {
   }
 }
 
-.action-area {
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  padding: 16px;
+.battle-log-container {
+  display: flex;
+  align-items: stretch;
+  height: 250px;
+  .action-area {
+    flex: 1;
+    height: calc(100% - 16px * 2);
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    padding: 16px;
+  }
 }
 </style>

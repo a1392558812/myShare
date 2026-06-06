@@ -26,12 +26,18 @@
               </span>
             </div>
             <div class="hp-bar">
-              <span class="label">HP:</span>
-              <span class="value"
-                >{{ formatStat(Math.max(0, enemy.hp)) }}/{{
-                  formatStat(enemy.maxHp)
-                }}</span
-              >
+              <span class="label">HP</span>
+              <div class="bar-bg">
+                <div
+                  class="bar-fill hp-fill"
+                  :style="{
+                    width: (enemy.hp / enemy.maxHp) * 100 + '%',
+                  }"
+                ></div>
+                <span class="bar-value">
+                  {{ formatStat(Math.max(0, enemy.hp)) }}/{{ formatStat(enemy.maxHp) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -67,12 +73,10 @@
                   width: (player.hp / player.maxHp) * 100 + '%',
                 }"
               ></div>
+              <span class="bar-value">
+                {{ formatStat(Math.max(0, player.hp)) }}/{{ formatStat(player.maxHp) }}
+              </span>
             </div>
-            <span class="value"
-              >{{ formatStat(Math.max(0, player.hp)) }}/{{
-                formatStat(player.maxHp)
-              }}</span
-            >
           </div>
           <div class="mp-bar">
             <span class="label">MP</span>
@@ -83,10 +87,10 @@
                   width: (player.mp / player.maxMp) * 100 + '%',
                 }"
               ></div>
+              <span class="bar-value">
+                {{ formatStat(player.mp) }}/{{ formatStat(player.maxMp) }}
+              </span>
             </div>
-            <span class="value"
-              >{{ formatStat(player.mp) }}/{{ formatStat(player.maxMp) }}</span
-            >
           </div>
         </div>
       </div>
@@ -122,12 +126,10 @@
                   width: Math.max(0, (pet.hp / pet.maxHp) * 100) + '%',
                 }"
               ></div>
+              <span class="bar-value">
+                {{ formatStat(Math.max(0, pet.hp)) }}/{{ formatStat(pet.maxHp) }}
+              </span>
             </div>
-            <span class="value"
-              >{{ formatStat(Math.max(0, pet.hp)) }}/{{
-                formatStat(pet.maxHp)
-              }}</span
-            >
           </div>
           <div class="mp-bar">
             <span class="label">MP</span>
@@ -138,10 +140,10 @@
                   width: Math.max(0, (pet.mp / pet.maxMp) * 100) + '%',
                 }"
               ></div>
+              <span class="bar-value">
+                {{ formatStat(pet.mp) }}/{{ formatStat(pet.maxMp) }}
+              </span>
             </div>
-            <span class="value"
-              >{{ formatStat(pet.mp) }}/{{ formatStat(pet.maxMp) }}</span
-            >
           </div>
         </div>
       </div>
@@ -207,13 +209,56 @@ const getBuffClass = (type) => {
     margin-bottom: 20px;
 
     .enemy-unit {
-      width: 120px;
+      width: 180px;
       color: white;
       cursor: pointer;
       transition: all 0.2s;
       padding: 8px;
       border-radius: 8px;
       border: 2px solid #fff;
+
+      .hp-bar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 4px;
+
+        .label {
+          width: 24px;
+          color: #aaa;
+          font-size: 12px;
+        }
+
+        .bar-bg {
+          flex: 1;
+          height: 10px;
+          background: #333;
+          border-radius: 10px;
+          overflow: hidden;
+          position: relative;
+
+          .bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+
+            &.hp-fill {
+              background: linear-gradient(90deg, #ff4757, #ff6b81);
+            }
+          }
+
+          .bar-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: white;
+            text-shadow: 0 0 3px black;
+            white-space: nowrap;
+            z-index: 1;
+          }
+        }
+      }
 
       &.selected {
         border-color: #ff6b6b;
@@ -245,9 +290,9 @@ const getBuffClass = (type) => {
 
   .character-area {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 24px;
 
     .char-display {
       display: flex;
@@ -378,11 +423,12 @@ const getBuffClass = (type) => {
           }
 
           .bar-bg {
-            width: 150px;
+            width: 180px;
             height: 12px;
             background: #333;
             border-radius: 10px;
             overflow: hidden;
+            position: relative;
 
             .bar-fill {
               height: 100%;
@@ -396,13 +442,18 @@ const getBuffClass = (type) => {
                 background: linear-gradient(90deg, #4facfe, #00f2fe);
               }
             }
-          }
 
-          .value {
-            width: 70px;
-            color: white;
-            font-size: 14px;
-            text-align: right;
+            .bar-value {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 12px;
+              color: white;
+              text-shadow: 0 0 3px black;
+              white-space: nowrap;
+              z-index: 1;
+            }
           }
         }
       }

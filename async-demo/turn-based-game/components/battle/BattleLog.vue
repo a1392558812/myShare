@@ -23,7 +23,7 @@ const props = defineProps({
 const logContentRef = ref(null);
 
 watch(
-  () => props.battleLog,
+  () => props.battleLog.length,
   () => {
     nextTick(() => {
       if (logContentRef.value) {
@@ -38,19 +38,26 @@ defineExpose({ logContentRef });
 
 <style scoped lang="scss">
 .battle-log {
+  width: 400px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   overflow: hidden;
 
   .log-header {
     padding: 10px 16px;
+    flex-shrink: 0;
     background: rgba(0, 0, 0, 0.3);
     color: #888;
     font-size: 14px;
   }
 
   .log-content {
-    height: 120px;
+    flex: 1;
+    min-height: 120px;
+    flex-shrink: 0;
     overflow-y: auto;
     padding: 12px 16px;
 
