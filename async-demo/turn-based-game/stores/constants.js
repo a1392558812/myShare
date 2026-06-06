@@ -46,11 +46,11 @@ export const STAT_CONFIG = {
   },
   /** 基础属性值：初始创建角色时的默认属性 */
   BASE_VALUES: {
-    physicalAttack: 15, // 基础物理攻击
+    physicalAttack: 55, // 基础物理攻击
     magicAttack: 10, // 基础魔法攻击
     defense: 5, // 基础防御
     speed: 5, // 基础速度
-    maxHp: 100, // 基础最大生命
+    maxHp: 350, // 基础最大生命
     maxMp: 50, // 基础最大法力
     critRate: 5, // 基础暴击率(%)
     comboRate: 0, // 基础连击率(%)
@@ -598,9 +598,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 1,
     name: "史莱姆", // 敌人名称
-    hp: 50, // 当前生命
-    maxHp: 50, // 最大生命
-    physicalAttack: 8, // 物理攻击
+    hp: 100, // 当前生命
+    maxHp: 100, // 最大生命
+    physicalAttack: 38, // 物理攻击
     magicAttack: 3, // 法术攻击
     defense: 2, // 防御力
     speed: 5, // 速度
@@ -612,9 +612,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 2,
     name: "哥布林",
-    hp: 80,
-    maxHp: 80,
-    physicalAttack: 12,
+    hp: 130,
+    maxHp: 130,
+    physicalAttack: 52,
     magicAttack: 5,
     defense: 5,
     speed: 8,
@@ -626,9 +626,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 3,
     name: "骷髅兵",
-    hp: 120,
-    maxHp: 120,
-    physicalAttack: 15,
+    hp: 170,
+    maxHp: 170,
+    physicalAttack: 65,
     magicAttack: 10,
     defense: 8,
     speed: 6,
@@ -640,9 +640,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 4,
     name: "暗影狼",
-    hp: 150,
-    maxHp: 150,
-    physicalAttack: 20,
+    hp: 120,
+    maxHp: 120,
+    physicalAttack: 50,
     magicAttack: 8,
     defense: 10,
     speed: 12,
@@ -656,7 +656,7 @@ export const ENEMIES_CONFIG = [
     name: "石像鬼",
     hp: 200,
     maxHp: 200,
-    physicalAttack: 12,
+    physicalAttack: 65,
     magicAttack: 20,
     defense: 15,
     speed: 7,
@@ -668,9 +668,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 6,
     name: "暗影法师",
-    hp: 180,
-    maxHp: 180,
-    physicalAttack: 10,
+    hp: 280,
+    maxHp: 280,
+    physicalAttack: 68,
     magicAttack: 25,
     defense: 12,
     speed: 10,
@@ -682,9 +682,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 7,
     name: "暗影骑士",
-    hp: 250,
-    maxHp: 250,
-    physicalAttack: 22,
+    hp: 350,
+    maxHp: 350,
+    physicalAttack: 62,
     magicAttack: 15,
     defense: 18,
     speed: 9,
@@ -696,9 +696,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 8,
     name: "巫妖王",
-    hp: 300,
-    maxHp: 300,
-    physicalAttack: 15,
+    hp: 400,
+    maxHp: 400,
+    physicalAttack: 55,
     magicAttack: 30,
     defense: 20,
     speed: 8,
@@ -710,9 +710,9 @@ export const ENEMIES_CONFIG = [
   {
     id: 9,
     name: "冰霜巨龙",
-    hp: 400,
-    maxHp: 400,
-    physicalAttack: 25,
+    hp: 500,
+    maxHp: 500,
+    physicalAttack: 55,
     magicAttack: 35,
     defense: 25,
     speed: 12,
@@ -724,10 +724,10 @@ export const ENEMIES_CONFIG = [
   {
     id: 10,
     name: "剧毒领主",
-    hp: 350,
-    maxHp: 350,
-    physicalAttack: 20,
-    magicAttack: 30,
+    hp: 450,
+    maxHp: 450,
+    physicalAttack: 55,
+    magicAttack: 35,
     defense: 22,
     speed: 10,
     exp: 280,
@@ -738,10 +738,10 @@ export const ENEMIES_CONFIG = [
   {
     id: 11,
     name: "暗影封印师",
-    hp: 380,
-    maxHp: 380,
-    physicalAttack: 18,
-    magicAttack: 32,
+    hp: 480,
+    maxHp: 480,
+    physicalAttack: 58,
+    magicAttack: 38,
     defense: 20,
     speed: 11,
     exp: 260,
@@ -752,10 +752,10 @@ export const ENEMIES_CONFIG = [
   {
     id: 12,
     name: "混沌领主",
-    hp: 420,
-    maxHp: 420,
-    physicalAttack: 28,
-    magicAttack: 32,
+    hp: 620,
+    maxHp: 620,
+    physicalAttack: 68,
+    magicAttack: 42,
     defense: 24,
     speed: 13,
     exp: 320,
@@ -766,10 +766,10 @@ export const ENEMIES_CONFIG = [
   {
     id: 13,
     name: "混沌魔王",
-    hp: 500,
-    maxHp: 500,
-    physicalAttack: 30,
-    magicAttack: 35,
+    hp: 1000,
+    maxHp: 1000,
+    physicalAttack: 70,
+    magicAttack: 65,
     defense: 30,
     speed: 15,
     exp: 500,
