@@ -156,33 +156,34 @@ export const generateExtraBattleEnemies = (count, mapLevel) => {
 };
 
 export const generateMapEnemies = (mapLevel = 1) => {
-  // 固定生成5个敌人，但每个敌人都是随机的
-  const enemyPositions = [
-    { x: 200, y: 200 },
-    { x: 600, y: 150 },
-    { x: 150, y: 400 },
-    { x: 500, y: 450 },
-    { x: 300, y: 500 },
-  ];
+  const mapConfig = GAME_CONFIG.MAP;
+  // 随机生成 MIN_ENEMIES 到 MAX_ENEMIES 之间的敌人数量
+  const enemyCount = Math.floor(Math.random() * (mapConfig.MAX_ENEMIES - mapConfig.MIN_ENEMIES + 1)) + mapConfig.MIN_ENEMIES;
   
-  return enemyPositions.map((pos, index) => {
+  const xRange = mapConfig.ENEMY_X_RANGE.max - mapConfig.ENEMY_X_RANGE.min;
+  const yRange = mapConfig.ENEMY_Y_RANGE.max - mapConfig.ENEMY_Y_RANGE.min;
+  
+  const enemies = [];
+  for (let i = 0; i < enemyCount; i++) {
     const randomEnemyIndex = getRandomEnemyIndex(mapLevel);
     const baseEnemy = ENEMIES_CONFIG[randomEnemyIndex];
     const enemyAttrs = generateEnemyRandomAttributes();
     const levelBonus = applyMapLevelBonus(baseEnemy, mapLevel);
     
-    return {
+    enemies.push({
       ...baseEnemy,
       ...levelBonus,
-      x: pos.x,
-      y: pos.y,
-      id: `enemy_${index + 1}`,
-      maxMp: levelBonus.maxMp || 0, // 敌人默认没有法力上限，设为0
-      mp: levelBonus.mp || 0, // 敌人默认没有法力，设为0
-      buffs: [], // 初始化空的buff数组
+      x: mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange,
+      y: mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange,
+      id: `enemy_${Date.now()}_${i}`,
+      maxMp: levelBonus.maxMp || 0,
+      mp: levelBonus.mp || 0,
+      buffs: [],
       ...enemyAttrs,
-    };
-  });
+    });
+  }
+  
+  return enemies;
 };
 
 export const removeEnemyFromMap = (gameState) => {
@@ -221,12 +222,15 @@ export const convertMapEnemyToBattleEnemy = (mapEnemy, battleIndex = 0) => {
 
 export const refreshMapEnemies = (gameState, playerLevel, mapLevel = 1) => {
   const mapConfig = GAME_CONFIG.MAP;
-  if (gameState.mapEnemies.length < mapConfig.MIN_ENEMIES) {
-    const refreshCount = mapConfig.MIN_ENEMIES - gameState.mapEnemies.length;
-    const xRange =
-      mapConfig.ENEMY_X_RANGE.max - mapConfig.ENEMY_X_RANGE.min;
-    const yRange =
-      mapConfig.ENEMY_Y_RANGE.max - mapConfig.ENEMY_Y_RANGE.min;
+  if (gameState.mapEnemies.length < mapConfig.MAX_ENEMIES) {
+    // 随机补充敌人，补充到 MIN_ENEMIES 到 MAX_ENEMIES 之间的随机数量
+    const targetCount = Math.floor(Math.random() * (mapConfig.MAX_ENEMIES - mapConfig.MIN_ENEMIES + 1)) + mapConfig.MIN_ENEMIES;
+    const refreshCount = Math.min(targetCount, mapConfig.MAX_ENEMIES) - gameState.mapEnemies.length;
+    
+    if (refreshCount <= 0) return;
+    
+    const xRange = mapConfig.ENEMY_X_RANGE.max - mapConfig.ENEMY_X_RANGE.min;
+    const yRange = mapConfig.ENEMY_Y_RANGE.max - mapConfig.ENEMY_Y_RANGE.min;
 
     for (let i = 0; i < refreshCount; i++) {
       const randomEnemyIndex = getRandomEnemyIndex(mapLevel);
@@ -239,9 +243,9 @@ export const refreshMapEnemies = (gameState, playerLevel, mapLevel = 1) => {
         id: `enemy_${Date.now()}_${i}`,
         x: mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange,
         y: mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange,
-        maxMp: levelBonus.maxMp || 0, // 敌人默认没有法力上限，设为0
-        mp: levelBonus.mp || 0, // 敌人默认没有法力，设为0
-        buffs: [], // 初始化空的buff数组
+        maxMp: levelBonus.maxMp || 0,
+        mp: levelBonus.mp || 0,
+        buffs: [],
         ...enemyAttrs,
       });
     }

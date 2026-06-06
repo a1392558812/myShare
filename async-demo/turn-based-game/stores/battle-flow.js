@@ -1,4 +1,4 @@
-import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
+import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG, ITEMS_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats, levelUp, petLevelUp } from "./player.js";
 import { generateTurnOrder, checkBattleEnd, getDecisionName, processBuffs, isTargetFrozen } from "./battle-utils.js";
 import { executePlayerDecision } from "./player-actions.js";

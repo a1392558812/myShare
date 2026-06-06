@@ -291,6 +291,10 @@ export const GAME_CONFIG = {
     SUPPORT_SKILL_MIN_LEVEL: 6, // 敌人使用辅助技能最低地图等级
     DEBUFF_SKILL_MIN_LEVEL: 9, // 敌人使用障碍技能最低地图等级
     MAX_LEVEL: 9999, // 最大地图等级
+    MIN_ENEMIES: 3, // 地图最少敌人数量
+    MAX_ENEMIES: 10, // 地图最多敌人数量
+    ENEMY_X_RANGE: { min: 50, max: 750 }, // 敌人X轴范围
+    ENEMY_Y_RANGE: { min: 50, max: 500 }, // 敌人Y轴范围
   },
   // 装备等级偏移配置
   EQUIPMENT_LEVEL_OFFSET: {
