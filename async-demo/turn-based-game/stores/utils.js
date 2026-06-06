@@ -26,3 +26,21 @@ export const calculateSkillCost = (skill, level, isPet = false) => {
   });
   return resCost;
 };
+
+// 应用不动如山伤害上限
+// 单次受到的物理伤害或法术伤害最大不能超过当前血量的(100 - 2.5 * X)%
+export const applyUnshakableMountainLimit = (damage, target, unshakableMountain, gameState) => {
+  console.log("applyUnshakableMountainLimit", target);
+  if (unshakableMountain <= 0) {
+    return damage;
+  }
+  const maxDamagePercent = Math.max(0, 100 - 2.5 * unshakableMountain); // 上限百分比
+  const maxDamage = target.hp * maxDamagePercent / 100;
+  if (maxDamage < damage) {
+    gameState.battleLog.push(
+      `【${target.name}】不动如山触发，免疫${damage - maxDamage}点伤害`,
+    );
+    return Math.max(1, maxDamage);
+   }
+  return Math.max(1, damage) // 最小伤害为1
+};

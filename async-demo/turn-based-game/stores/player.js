@@ -25,6 +25,7 @@ export const calculatePlayerStats = (player) => {
     maxComboCount: 1,
     debuffResist: 0, // 障碍抗性
     ignoreDebuffResist: 0, // 忽视障碍异常
+    unshakableMountain: 0, // 不动如山：伤害上限百分比
   };
 
   for (const stat in BASE_STATS) {
@@ -414,6 +415,7 @@ export const calculatePetStats = (pet) => {
     maxComboCount: 1,
     debuffResist: 0, // 障碍抗性
     ignoreDebuffResist: 0, // 忽视障碍异常
+    unshakableMountain: 0, // 不动如山：伤害上限百分比
   };
 
   // 1. 初始化基础属性

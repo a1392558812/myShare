@@ -1,6 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats } from "./player.js";
 import { aiConfig, applyDebuff, isTargetFrozen } from "./battle-utils.js";
+import { applyUnshakableMountainLimit } from "./utils.js";
 
 export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
   const player = gameState.player;
@@ -379,6 +380,12 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, target
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
 
+  // 应用不动如山伤害上限（只对玩家和宠物生效）
+  if (targetType !== "enemy") {
+    const unshakableMountain = targetStats.unshakableMountain || 0;
+    damage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
+  }
+
   target.hp -= Math.floor(damage);
 
   gameState.battleLog.push(
@@ -422,12 +429,11 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
 
-  console.log("damage", {
-    damage,
-    enemyAttack,
-    physicalMultiplier,
-    baseDamage,
-  });
+  // 应用不动如山伤害上限（只对玩家和宠物生效）
+  if (targetType !== "enemy") {
+    const unshakableMountain = targetStats.unshakableMountain || 0;
+    damage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
+  }
 
   target.hp -= Math.floor(damage);
 
@@ -475,6 +481,12 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
       comboDamage = Math.floor(
         comboDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER,
       );
+    }
+
+    // 连击伤害也应用不动如山伤害上限
+    if (targetType !== "enemy") {
+      const unshakableMountain = targetStats.unshakableMountain || 0;
+      comboDamage = applyUnshakableMountainLimit(comboDamage, target, unshakableMountain, gameState);
     }
 
     target.hp -= Math.floor(comboDamage);

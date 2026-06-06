@@ -189,6 +189,13 @@ export const EQUIPMENT_CONFIG = {
       range: { min: 1, max: 30 }, // 取值范围：1~30
       description: "增加使用障碍技能成功的概率（X/100）",
     },
+    unshakableMountain: {
+      coefficient: 1.0,
+      name: "不动如山",
+      exclusiveTypes: ["chest"],
+      range: { min: 1, max: 30 }, // 取值范围：1~30
+      description: "单次受到的物理伤害或法术伤害最大不能超过当前血量的(100 - 2.5 * X)%",
+    },
   },
 };
 

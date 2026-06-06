@@ -105,6 +105,10 @@ export const generateRandomStats = (rarity, level, type = null) => {
         const range = bonusPool.ignoreDebuffResist?.range || { min: 1, max: 30 };
         value = Math.max(range.min, Math.min(value, range.max));
       }
+      if (stat === "unshakableMountain") {
+        const range = bonusPool.unshakableMountain?.range || { min: 1, max: 30 };
+        value = Math.max(range.min, Math.min(value, range.max));
+      }
 
       bonusAffixes[stat] = value;
       usedBonusStats.add(stat);
@@ -258,6 +262,11 @@ export const generateCustomEquipment = (
       const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.ignoreDebuffResist?.range || { min: 1, max: 30 };
       bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
     }
+    // 不动如山词缀限制取值范围
+    if (stat === "unshakableMountain") {
+      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.unshakableMountain?.range || { min: 1, max: 30 };
+      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
+    }
   }
 
   return {
@@ -379,6 +388,10 @@ export const generateSingleBonusAffix = (type, level, rarity, existingAffixes = 
   }
   if (selectedStat === "ignoreDebuffResist") {
     const range = bonusPool.ignoreDebuffResist?.range || { min: 1, max: 30 };
+    value = Math.max(range.min, Math.min(value, range.max));
+  }
+  if (selectedStat === "unshakableMountain") {
+    const range = bonusPool.unshakableMountain?.range || { min: 1, max: 30 };
     value = Math.max(range.min, Math.min(value, range.max));
   }
 

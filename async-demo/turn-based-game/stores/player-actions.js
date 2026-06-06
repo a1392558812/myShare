@@ -1,7 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, useItem } from "./player.js";
 import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
-import { calculateSkillCost } from "./utils.js";
+import { calculateSkillCost, applyUnshakableMountainLimit } from "./utils.js";
 
 export const playerAttack = (gameState, targetIndex = 0) => {
   if (!gameState.currentBattle) return;
