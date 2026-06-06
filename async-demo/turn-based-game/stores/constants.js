@@ -56,6 +56,18 @@ export const STAT_CONFIG = {
     comboRate: 0, // 基础连击率(%)
     maxComboCount: 1, // 基础最大连击次数
   },
+  /** 宠物基础属性值：初始创建宠物时的默认属性 */
+  PET_BASE_VALUES: {
+    physicalAttack: 40, // 基础物理攻击
+    magicAttack: 8, // 基础魔法攻击
+    defense: 4, // 基础防御
+    speed: 6, // 基础速度
+    maxHp: 250, // 基础最大生命
+    maxMp: 40, // 基础最大法力
+    critRate: 4, // 基础暴击率(%)
+    comboRate: 0, // 基础连击率(%)
+    maxComboCount: 1, // 基础最大连击次数
+  },
   /** 属性中文名称映射 */
   NAMES: {
     physicalAttack: "物攻",

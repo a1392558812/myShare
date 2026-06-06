@@ -10,6 +10,7 @@ import {
 const STAT_POINT_COEFFICIENTS = STAT_CONFIG.POINT_COEFFICIENTS;
 const PET_STAT_POINT_COEFFICIENTS = STAT_CONFIG.PET_POINT_COEFFICIENTS;
 const BASE_STATS = STAT_CONFIG.BASE_VALUES;
+const PET_BASE_STATS = STAT_CONFIG.PET_BASE_VALUES;
 
 export const calculatePlayerStats = (player) => {
   const stats = {
@@ -384,6 +385,22 @@ export const movePlayer = (player, dx, dy) => {
 
 // ========== 宠物相关功能 ==========
 
+/**
+ * 计算宠物属性
+ * 计算逻辑：
+ * 1. 从 PET_BASE_STATS 基础属性开始
+ * 2. 处理 critRate/comboRate/maxComboCount：这些是战斗属性，不是可分配的点数
+ *    - critRate: 暴击率(%)，基础值 4，宠物升级或装备可能增加
+ *    - comboRate: 连击率(%)，基础值 0，宠物升级或装备可能增加
+ *    - maxComboCount: 最大连击次数，基础值 1，宠物升级或装备可能增加
+ *    - 计算方式：用宠物当前的属性值 - 基础属性值 = 额外获得的属性
+ *    - 然后叠加到基础属性上，例如：critRate = 4(基础) + (pet.critRate - 4)(额外) = pet.critRate
+ * 3. 处理可分配点数(physicalAttackPoints, magicAttackPoints 等)：每点属性 * 系数
+ * 4. 处理装备加成
+ * 5. 处理临时属性覆盖
+ * @param {Object} pet - 宠物对象
+ * @returns {Object} 计算后的属性对象
+ */
 export const calculatePetStats = (pet) => {
   const stats = {
     physicalAttack: 0,
@@ -399,18 +416,23 @@ export const calculatePetStats = (pet) => {
     ignoreDebuffResist: 0, // 忽视障碍异常
   };
 
-  for (const stat in BASE_STATS) {
-    stats[stat] = BASE_STATS[stat] * 0.7; // 宠物基础属性稍低
+  // 1. 初始化基础属性
+  for (const stat in PET_BASE_STATS) {
+    stats[stat] = PET_BASE_STATS[stat];
   }
 
+  // 2. 处理战斗属性（critRate/comboRate/maxComboCount）
+  // 这些属性不是通过点数分配的，而是宠物升级或装备直接提供的
+  // 计算公式：基础值 + (宠物当前值 - 基础值) = 宠物当前值
+  // 例如：宠物 critRate = 10，基础 = 4，则 stats.critRate = 4 + (10 - 4) = 10
   if (pet.critRate !== undefined) {
-    stats.critRate += pet.critRate - BASE_STATS.critRate * 0.7;
+    stats.critRate += pet.critRate - PET_BASE_STATS.critRate;
   }
   if (pet.comboRate !== undefined) {
-    stats.comboRate += pet.comboRate - BASE_STATS.comboRate * 0.7;
+    stats.comboRate += pet.comboRate - PET_BASE_STATS.comboRate;
   }
   if (pet.maxComboCount !== undefined) {
-    stats.maxComboCount += pet.maxComboCount - BASE_STATS.maxComboCount;
+    stats.maxComboCount += pet.maxComboCount - PET_BASE_STATS.maxComboCount;
   }
 
   // 使用宠物的自定义系数（如果存在），否则使用默认系数
