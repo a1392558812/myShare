@@ -315,9 +315,7 @@ export function useDebug() {
   };
 
   const confirmReset = () => {
-    if (confirm("确定要重置游戏吗？所有进度将丢失！")) {
-      gameActions.resetGame();
-    }
+    gameActions.resetGame();
   };
 
   // 战斗buff调试相关

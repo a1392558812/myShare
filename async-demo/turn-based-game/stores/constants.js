@@ -881,3 +881,5 @@ export const PET_CONFIG = {
   },
   INITIAL_SKILL_INDICES: [1], // 初始技能ID（火球术ID=1）
 };
+
+export const STORAGE_KEY = "turn_based_game_save";

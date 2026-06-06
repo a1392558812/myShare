@@ -6,6 +6,7 @@ import {
   PLAYER_CONFIG,
   PET_CONFIG,
   GAME_CONFIG,
+  STORAGE_KEY,
 } from "./constants.js";
 import {
   calculatePlayerStats,
@@ -93,38 +94,10 @@ watch(
 
 export const gameActions = {
   resetGame() {
-    const player = { ...initialPlayerState };
-    const calculatedPlayerStats = calculatePlayerStats(player);
-    player.maxHp = calculatedPlayerStats.maxHp;
-    player.maxMp = calculatedPlayerStats.maxMp;
-    player.hp = player.maxHp;
-    player.mp = player.maxMp;
-    player.skills = PLAYER_CONFIG.INITIAL_SKILL_INDICES.map(
-      (id) => SKILLS_CONFIG.find((s) => s.id === id),
-    ).filter(Boolean);
-    player.inventory = PLAYER_CONFIG.INITIAL_ITEMS.map(({ id, count }) => ({
-      ...ITEMS_CONFIG.find((item) => item.id === id),
-      count,
-    })).filter(item => item.id);
-
-    const pet = { ...initialPet };
-    const calculatedPetStats = calculatePetStats(pet);
-    pet.maxHp = calculatedPetStats.maxHp;
-    pet.maxMp = calculatedPetStats.maxMp;
-    pet.hp = pet.maxHp;
-    pet.mp = pet.maxMp;
-    pet.skills = PET_CONFIG.INITIAL_SKILL_INDICES.map(
-      (id) => SKILLS_CONFIG.find((s) => s.id === id),
-    ).filter(Boolean);
-
-    gameState.player = player;
-    gameState.pet = pet;
-    gameState.mapLevel = GAME_CONFIG.MAP.DEFAULT_LEVEL;
-    gameState.mapEnemies = generateMapEnemies(GAME_CONFIG.MAP.DEFAULT_LEVEL);
-    gameState.screen = "map";
-    gameState.currentBattle = null;
-    gameState.battleLog = [];
-    gameState.battleResult = null;
+    if (confirm("确定要重置游戏吗？所有进度将丢失！")) {
+      localStorage.removeItem(STORAGE_KEY);
+      window.location.reload();
+    }
   },
 
   setScreen(screen) {

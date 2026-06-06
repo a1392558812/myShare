@@ -1,4 +1,4 @@
-const STORAGE_KEY = "turn_based_game_save";
+import { STORAGE_KEY } from "./constants.js";
 
 export const loadSave = () => {
   try {

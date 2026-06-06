@@ -1,27 +1,34 @@
 <template>
-  <div class="turn-based-game">
-    <div v-if="gameState.screen !== 'battle'" class="game-header">
-      <h1>回合制战斗小游戏</h1>
-      <div class="header-info">
-        <div class="gold-display">💰 {{ gameState.player.gold }}</div>
-        <button class="common-btn game-btn" @click="openCharacterPanel">
-          角色信息
-        </button>
-        <button class="common-btn pet-btn" @click="openPetPanel">
-          🐾 宠物
-        </button>
-        <button class="common-btn shop-btn" @click="openShop">🏪 商店</button>
-        <button class="common-btn danger" @click="resetGame">重置游戏</button>
+  <div>
+    <div class="turn-based-game">
+      <div v-if="gameState.screen !== 'battle'" class="game-header">
+        <h1>ai生成的回合制小游戏</h1>
+        <div class="header-info">
+          <div class="debug-mode">
+            <label for="debug-mode">查看文档</label>
+            <input id="debug-mode" type="checkbox" v-model="isDebugMode" />
+          </div>
+          <div class="gold-display">💰 {{ gameState.player.gold }}</div>
+          <button class="common-btn game-btn" @click="openCharacterPanel">
+            角色信息
+          </button>
+          <button class="common-btn pet-btn" @click="openPetPanel">
+            🐾 宠物
+          </button>
+          <button class="common-btn shop-btn" @click="openShop">🏪 商店</button>
+          <button class="common-btn danger" @click="resetGame">重置游戏</button>
+        </div>
       </div>
+      <div class="game-wrapper">
+        <MapView v-if="gameState.screen === 'map'" />
+        <BattleView v-else-if="gameState.screen === 'battle'" />
+        <CharacterPanel v-else-if="gameState.screen === 'character'" />
+        <PetPanel v-else-if="gameState.screen === 'pet'" />
+        <Shop v-else-if="gameState.screen === 'shop'" />
+      </div>
+      <DebugPanel v-if="isDebugMode" />
     </div>
-    <div class="game-wrapper">
-      <MapView v-if="gameState.screen === 'map'" />
-      <BattleView v-else-if="gameState.screen === 'battle'" />
-      <CharacterPanel v-else-if="gameState.screen === 'character'" />
-      <PetPanel v-else-if="gameState.screen === 'pet'" />
-      <Shop v-else-if="gameState.screen === 'shop'" />
-    </div>
-    <DebugPanel />
+    <markdownFn v-if="isDebugMode" :text="markdownStr" />
   </div>
 </template>
 
@@ -33,6 +40,22 @@ import CharacterPanel from "./components/CharacterPanel.vue";
 import PetPanel from "./components/PetPanel.vue";
 import Shop from "./components/Shop.vue";
 import DebugPanel from "./components/DebugPanel.vue";
+import { ref } from "vue";
+
+const props = defineProps({
+  markdownComponent: {
+    type: Function,
+    default: () => {},
+  },
+});
+
+const markdownFn = props.markdownComponent();
+
+const isDebugMode = ref(false);
+const markdownStr = ref("加载中...");
+fetch("./async-demo/turn-based-game/需求.md")
+  .then((res) => res.text())
+  .then((text) => (markdownStr.value = text));
 
 const openShop = () => {
   gameActions.setScreen("shop");
@@ -49,9 +72,7 @@ const openCharacterPanel = () => {
 
 // 重置游戏
 const resetGame = () => {
-  if (confirm("确定要重置游戏吗？所有进度将丢失。")) {
-    gameActions.resetGame();
-  }
+  gameActions.resetGame();
 };
 </script>
 
@@ -59,7 +80,7 @@ const resetGame = () => {
 @use "./async-demo/static/scss/theme.scss";
 
 .turn-based-game {
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -85,6 +106,14 @@ const resetGame = () => {
   display: flex;
   align-items: center;
   gap: 16px;
+  color: white;
+  .debug-mode {
+    display: flex;
+    align-items: center;
+    label,input {
+      cursor: pointer;
+    }
+  }
   .gold-display {
     font-size: 18px;
     font-weight: bold;
@@ -110,7 +139,9 @@ const resetGame = () => {
     &.game-btn {
       background: linear-gradient(135deg, #667eea, #764ba2);
     }
-
+    &.debug-btn {
+      background: linear-gradient(135deg, #fbbf24, #e67700);
+    }
     &.danger {
       background: linear-gradient(135deg, #ff6b6b, #c44569);
     }
