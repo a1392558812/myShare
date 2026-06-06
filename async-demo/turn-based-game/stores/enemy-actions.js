@@ -77,7 +77,7 @@ export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
       if (isSupportSkill && canUseSupportSkill) {
         enemyUseSupportSkill(gameState, enemy, skill, pet);
       } else if (isDebuffSkill && canUseDebuffSkill) {
-        enemyUseDebuffSkill(gameState, enemy, skill, target, targetType);
+        enemyUseDebuffSkill(gameState, enemy, skill, target, targetType, pet);
       } else if (!isSupportSkill && !isDebuffSkill) {
         enemyUseAttackSkill(gameState, enemy, skill, target, targetType, defending, pet);
       } else {
@@ -116,15 +116,14 @@ const enemyUseConfusedAttack = (gameState, enemy, target, targetType, targetStat
   enemyUseNormalAttack(gameState, enemy, target, targetType, targetStats, defending, pet);
 };
 
-const enemyUseDebuffSkill = (gameState, enemy, skill, target, targetType) => {
+const enemyUseDebuffSkill = (gameState, enemy, skill, target, targetType, pet) => {
   gameState.battleLog.push(`${enemy.name} 使用了 ${skill.name}！`);
 
   if (skill.type.endsWith("_single")) {
     applyDebuff(gameState, target, skill, enemy.name, "enemy");
   } else if (skill.type.endsWith("_all")) {
-    const aliveTargets = targetType === "player" 
-      ? [gameState.player, gameState.pet].filter(t => t && t.hp > 0)
-      : gameState.currentBattle.enemies.filter(e => e.hp > 0);
+    // 障碍技能始终作用于玩家和宠物
+    const aliveTargets = [gameState.player, pet].filter(t => t && t.hp > 0);
     
     const targetCount = Math.min(skill.targetCount || 3, aliveTargets.length);
     const shuffled = [...aliveTargets].sort(() => Math.random() - 0.5);
