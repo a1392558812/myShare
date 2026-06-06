@@ -30,6 +30,7 @@
         :target-name="selectedTargetName"
         :skills="gameState.player.skills"
         :player-mp="gameState.player.mp"
+        :player-level="gameState.player.level"
         :inventory="gameState.player.inventory"
         :alive-enemies="aliveEnemies"
         @attack="actions.handlePlayerAttack"

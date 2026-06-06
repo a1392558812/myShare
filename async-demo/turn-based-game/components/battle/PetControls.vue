@@ -23,7 +23,7 @@
             v-for="skill in pet.skills"
             :key="skill.id"
             class="skill-item"
-            :class="{ disabled: pet.mp < skill.cost }"
+            :class="{ disabled: pet.mp < getSkillCost(skill) }"
             @click="onUseSkill(skill)"
           >
             <div class="skill-name">
@@ -32,7 +32,7 @@
                 >范围</span
               >
             </div>
-            <div class="skill-cost">消耗: {{ skill.cost }} MP</div>
+            <div class="skill-cost">消耗: {{ getSkillCost(skill) }} MP</div>
           </div>
         </div>
       </div>
@@ -71,8 +71,9 @@
 
 <script setup>
 import { ref } from "vue";
+import { calculateSkillCost } from "../../stores/utils.js";
 
-defineProps({
+const props = defineProps({
   show: { type: Boolean, required: true },
   pet: { type: Object, default: null },
   isCommandPhase: { type: Boolean, required: true },
@@ -90,6 +91,10 @@ const emit = defineEmits([
 
 const showSkillMenu = ref(false);
 const showItemMenu = ref(false);
+
+const getSkillCost = (skill) => {
+  return calculateSkillCost(skill, props.pet.level, true);
+};
 
 const toggleSkillMenu = () => {
   showSkillMenu.value = !showSkillMenu.value;
@@ -114,7 +119,7 @@ const onUseSkill = (skill) => {
 
 const onSelectItem = (item, index) => {
   emit("select-item", item, index);
-  showItemMenu.value = false;
+  showSkillMenu.value = false;
 };
 
 const onDefend = () => {

@@ -25,7 +25,7 @@
             v-for="skill in skills"
             :key="skill.id"
             class="skill-item"
-            :class="{ disabled: playerMp < skill.cost }"
+            :class="{ disabled: playerMp < getSkillCost(skill) }"
             @click="onUseSkill(skill)"
           >
             <div class="skill-name">
@@ -34,7 +34,7 @@
                 >范围</span
               >
             </div>
-            <div class="skill-cost">消耗: {{ skill.cost }} MP</div>
+            <div class="skill-cost">消耗: {{ getSkillCost(skill) }} MP</div>
           </div>
         </div>
       </div>
@@ -80,7 +80,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { calculateSkillCost } from "../../stores/utils.js";
 
 const props = defineProps({
   show: { type: Boolean, required: true },
@@ -89,6 +90,7 @@ const props = defineProps({
   targetName: { type: String, required: true },
   skills: { type: Array, required: true },
   playerMp: { type: Number, required: true },
+  playerLevel: { type: Number, required: true },
   inventory: { type: Array, required: true },
   aliveEnemies: { type: Array, default: () => [] },
 });
@@ -103,6 +105,10 @@ const emit = defineEmits([
 
 const showSkillMenu = ref(false);
 const showItemMenu = ref(false);
+
+const getSkillCost = (skill) => {
+  return calculateSkillCost(skill, props.playerLevel, false);
+};
 
 const toggleSkillMenu = () => {
   showSkillMenu.value = !showSkillMenu.value;
@@ -127,7 +133,7 @@ const onUseSkill = (skill) => {
 
 const onSelectItem = (item, index) => {
   emit("select-item", item, index);
-  showItemMenu.value = false;
+  showSkillMenu.value = false;
 };
 
 const onDefend = () => {

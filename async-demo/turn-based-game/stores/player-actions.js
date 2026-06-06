@@ -1,6 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, useItem } from "./player.js";
 import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
+import { calculateSkillCost } from "./utils.js";
 
 export const playerAttack = (gameState, targetIndex = 0) => {
   if (!gameState.currentBattle) return;
@@ -96,13 +97,15 @@ export const playerUseSkill = (gameState, skill, targetIndex = 0, targetType = "
 
   const player = gameState.player;
   const enemies = gameState.currentBattle.enemies;
+  
+  const skillCost = calculateSkillCost(skill, player.level, false);
 
-  if (player.mp < skill.cost) {
+  if (player.mp < skillCost) {
     gameState.battleLog.push("蓝量不足，无法释放技能！");
     return;
   }
 
-  player.mp -= skill.cost;
+  player.mp -= skillCost;
 
   if (skill.type === "magic") {
     playerUseMagicSkill(gameState, skill, player, enemies, targetIndex);

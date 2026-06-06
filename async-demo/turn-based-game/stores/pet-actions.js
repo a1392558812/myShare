@@ -32,8 +32,14 @@ export const petAttack = (gameState, targetIndex = 0) => {
 
   const comboRateRaw = petStats.comboRate || 0;
   const maxComboRate = GAME_CONFIG.COMBO.MAX_COMBO_RATE;
-  const physicalMultiplier = getBuffMultiplier(gameState.currentBattle.petBuffs, "physicalAttack");
-  const baseDamage = Math.max(1, petStats.physicalAttack * physicalMultiplier - enemy.defense);
+  const physicalMultiplier = getBuffMultiplier(
+    gameState.currentBattle.petBuffs,
+    "physicalAttack",
+  );
+  const baseDamage = Math.max(
+    1,
+    petStats.physicalAttack * physicalMultiplier - enemy.defense,
+  );
   const maxComboCount = Math.min(
     petStats.maxComboCount || 1,
     GAME_CONFIG.COMBO.MAX_COMBO_COUNT,
@@ -63,10 +69,12 @@ export const petAttack = (gameState, targetIndex = 0) => {
   while (comboCount < maxComboCount - 1 && Math.random() < currentComboRate) {
     comboCount++;
     if (enemy.hp <= 0) break;
-    
+
     // 检查目标是否在连击中被打成冰冻
     if (isTargetFrozen(gameState, enemy)) {
-      gameState.battleLog.push(`${enemy.name} 被冰冻，连击中无法继续造成伤害！`);
+      gameState.battleLog.push(
+        `${enemy.name} 被冰冻，连击中无法继续造成伤害！`,
+      );
       break;
     }
 
@@ -93,7 +101,12 @@ export const petAttack = (gameState, targetIndex = 0) => {
   }
 };
 
-export const petUseSkill = (gameState, skill, targetIndex = 0, targetType = "pet") => {
+export const petUseSkill = (
+  gameState,
+  skill,
+  targetIndex = 0,
+  targetType = "pet",
+) => {
   if (!gameState.currentBattle) return;
 
   const pet = gameState.pet;
@@ -101,13 +114,15 @@ export const petUseSkill = (gameState, skill, targetIndex = 0, targetType = "pet
 
   if (!pet || pet.hp <= 0) return;
 
-  if (pet.mp < skill.cost) {
+  const skillCost = calculateSkillCost(skill, pet.level, true);
+
+  if (pet.mp < skillCost) {
     gameState.battleLog.push(`${pet.name} 法力不足！`);
     petAttack(gameState, targetIndex);
     return;
   }
 
-  pet.mp -= skill.cost;
+  pet.mp -= skillCost;
 
   if (skill.type === "magic") {
     petUseMagicSkill(gameState, skill, pet, enemies, targetIndex);
@@ -133,14 +148,19 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
   const comboProbDecay = GAME_CONFIG.COMBO.COMBO_PROB_DECAY;
   const comboDamageDecay = GAME_CONFIG.COMBO.COMBO_DAMAGE_DECAY;
 
-  const magicMultiplier = getBuffMultiplier(gameState.currentBattle.petBuffs, "magicAttack");
+  const magicMultiplier = getBuffMultiplier(
+    gameState.currentBattle.petBuffs,
+    "magicAttack",
+  );
 
   if (skill.targetType === "all") {
     const aliveEnemies = enemies.filter((e) => e.hp > 0);
 
     if (aliveEnemies.length === 0) return;
 
-    gameState.battleLog.push(`${pet.name} 释放 ${skill.name}，对所有敌人发动攻击！`);
+    gameState.battleLog.push(
+      `${pet.name} 释放 ${skill.name}，对所有敌人发动攻击！`,
+    );
 
     for (const enemy of aliveEnemies) {
       // 检查目标是否被冰冻
@@ -148,7 +168,7 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
         gameState.battleLog.push(`${enemy.name} 被冰冻，无法受到伤害！`);
         continue;
       }
-      
+
       const baseDamage = Math.max(
         1,
         petStats.magicAttack * magicMultiplier + skill.damage - enemy.defense,
@@ -180,10 +200,12 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
       ) {
         comboCount++;
         if (enemy.hp <= 0) break;
-        
+
         // 检查目标是否在连击中被打成冰冻
         if (isTargetFrozen(gameState, enemy)) {
-          gameState.battleLog.push(`${enemy.name} 被冰冻，连击中无法继续造成伤害！`);
+          gameState.battleLog.push(
+            `${enemy.name} 被冰冻，连击中无法继续造成伤害！`,
+          );
           break;
         }
 
@@ -221,7 +243,9 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
       if (newTargetIndex === -1) return;
       targetIndex = newTargetIndex;
       enemy = enemies[targetIndex];
-      gameState.battleLog.push(`目标已死亡，${pet.name}随机切换到 ${enemy.name}`);
+      gameState.battleLog.push(
+        `目标已死亡，${pet.name}随机切换到 ${enemy.name}`,
+      );
     }
 
     // 检查目标是否被冰冻
@@ -258,10 +282,12 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
     while (comboCount < maxComboCount - 1 && Math.random() < currentComboRate) {
       comboCount++;
       if (enemy.hp <= 0) break;
-      
+
       // 检查目标是否在连击中被打成冰冻
       if (isTargetFrozen(gameState, enemy)) {
-        gameState.battleLog.push(`${enemy.name} 被冰冻，连击中无法继续造成伤害！`);
+        gameState.battleLog.push(
+          `${enemy.name} 被冰冻，连击中无法继续造成伤害！`,
+        );
         break;
       }
 
@@ -297,14 +323,14 @@ const petUseSupportSkill = (gameState, skill, pet, targetType = "pet") => {
   // 处理治疗技能
   const applyHealToTarget = (t) => {
     if (!t) return;
-    
+
     // 检查目标是否被冰冻（冰冻状态下无法被治疗）
     if (isTargetFrozen(gameState, t)) {
       const targetName = t === player ? "你" : t.name;
       gameState.battleLog.push(`${targetName} 被冰冻，无法被治疗！`);
       return;
     }
-    
+
     const healAmount = Math.floor(t.maxHp * skill.healPercent);
     const manaAmount = Math.floor(t.maxMp * skill.manaPercent);
     t.hp = Math.min(t.maxHp, t.hp + healAmount);
@@ -315,7 +341,13 @@ const petUseSupportSkill = (gameState, skill, pet, targetType = "pet") => {
   };
 
   // 处理增益Buff
-  const applyBuffToTarget = (t, buffType, buffStatType, buffValue, extraData = {}) => {
+  const applyBuffToTarget = (
+    t,
+    buffType,
+    buffStatType,
+    buffValue,
+    extraData = {},
+  ) => {
     if (!t) return;
     const targetKey = t === player ? "player" : "pet";
     applyBuff(gameState, targetKey, {
@@ -356,29 +388,67 @@ const petUseSupportSkill = (gameState, skill, pet, targetType = "pet") => {
     // 单体强化 - 对指定目标施BUFF，不检查血量状态
     const target = targetType === "player" ? player : pet;
     const targetName = target === player ? "你" : target.name;
-    gameState.battleLog.push(`${pet.name} 使用 ${skill.name}，${targetName} 物理攻击 x${skill.physicalMultiplier}，法术攻击 x${skill.magicMultiplier}！`);
-    applyBuffToTarget(target, "physicalAttack", "physicalAttack", skill.physicalMultiplier);
-    applyBuffToTarget(target, "magicAttack", "magicAttack", skill.magicMultiplier);
+    gameState.battleLog.push(
+      `${pet.name} 使用 ${skill.name}，${targetName} 物理攻击 x${skill.physicalMultiplier}，法术攻击 x${skill.magicMultiplier}！`,
+    );
+    applyBuffToTarget(
+      target,
+      "physicalAttack",
+      "physicalAttack",
+      skill.physicalMultiplier,
+    );
+    applyBuffToTarget(
+      target,
+      "magicAttack",
+      "magicAttack",
+      skill.magicMultiplier,
+    );
   } else if (skill.type === "buff_attack_all") {
     // 群体强化 - 只给存活的目标施BUFF
-    gameState.battleLog.push(`${pet.name} 使用 ${skill.name}，己方物理攻击 x${skill.physicalMultiplier}，法术攻击 x${skill.magicMultiplier}！`);
+    gameState.battleLog.push(
+      `${pet.name} 使用 ${skill.name}，己方物理攻击 x${skill.physicalMultiplier}，法术攻击 x${skill.magicMultiplier}！`,
+    );
     if (pet && pet.active && pet.hp > 0) {
-      applyBuffToTarget(pet, "physicalAttack", "physicalAttack", skill.physicalMultiplier);
-      applyBuffToTarget(pet, "magicAttack", "magicAttack", skill.magicMultiplier);
+      applyBuffToTarget(
+        pet,
+        "physicalAttack",
+        "physicalAttack",
+        skill.physicalMultiplier,
+      );
+      applyBuffToTarget(
+        pet,
+        "magicAttack",
+        "magicAttack",
+        skill.magicMultiplier,
+      );
     }
     if (player && player.hp > 0) {
-      applyBuffToTarget(player, "physicalAttack", "physicalAttack", skill.physicalMultiplier);
-      applyBuffToTarget(player, "magicAttack", "magicAttack", skill.magicMultiplier);
+      applyBuffToTarget(
+        player,
+        "physicalAttack",
+        "physicalAttack",
+        skill.physicalMultiplier,
+      );
+      applyBuffToTarget(
+        player,
+        "magicAttack",
+        "magicAttack",
+        skill.magicMultiplier,
+      );
     }
   } else if (skill.type === "buff_defense_single") {
     // 单体防御 - 对指定目标施BUFF，不检查血量状态
     const target = targetType === "player" ? player : pet;
     const targetName = target === player ? "你" : target.name;
-    gameState.battleLog.push(`${pet.name} 使用 ${skill.name}，${targetName} 防御力 x${skill.defenseMultiplier}！`);
+    gameState.battleLog.push(
+      `${pet.name} 使用 ${skill.name}，${targetName} 防御力 x${skill.defenseMultiplier}！`,
+    );
     applyBuffToTarget(target, "defense", "defense", skill.defenseMultiplier);
   } else if (skill.type === "buff_defense_all") {
     // 群体防御 - 只给存活的目标施BUFF
-    gameState.battleLog.push(`${pet.name} 使用 ${skill.name}，己方防御力 x${skill.defenseMultiplier}！`);
+    gameState.battleLog.push(
+      `${pet.name} 使用 ${skill.name}，己方防御力 x${skill.defenseMultiplier}！`,
+    );
     if (pet && pet.active && pet.hp > 0) {
       applyBuffToTarget(pet, "defense", "defense", skill.defenseMultiplier);
     }
@@ -389,11 +459,15 @@ const petUseSupportSkill = (gameState, skill, pet, targetType = "pet") => {
     // 单体敏捷 - 对指定目标施BUFF，不检查血量状态
     const target = targetType === "player" ? player : pet;
     const targetName = target === player ? "你" : target.name;
-    gameState.battleLog.push(`${pet.name} 使用 ${skill.name}，${targetName} 速度 x${skill.speedMultiplier}！`);
+    gameState.battleLog.push(
+      `${pet.name} 使用 ${skill.name}，${targetName} 速度 x${skill.speedMultiplier}！`,
+    );
     applyBuffToTarget(target, "speed", "speed", skill.speedMultiplier);
   } else if (skill.type === "buff_speed_all") {
     // 群体敏捷 - 只给存活的目标施BUFF
-    gameState.battleLog.push(`${pet.name} 使用 ${skill.name}，己方速度 x${skill.speedMultiplier}！`);
+    gameState.battleLog.push(
+      `${pet.name} 使用 ${skill.name}，己方速度 x${skill.speedMultiplier}！`,
+    );
     if (pet && pet.active && pet.hp > 0) {
       applyBuffToTarget(pet, "speed", "speed", skill.speedMultiplier);
     }
@@ -404,17 +478,19 @@ const petUseSupportSkill = (gameState, skill, pet, targetType = "pet") => {
 };
 
 const petUseDebuffSkill = (gameState, skill, pet, enemies, targetIndex) => {
-  const aliveEnemies = enemies.filter(e => e.hp > 0);
-  
+  const aliveEnemies = enemies.filter((e) => e.hp > 0);
+
   if (aliveEnemies.length === 0) {
     gameState.battleLog.push("没有存活的敌人可以施加debuff！");
     return;
   }
-  
+
   if (skill.type.endsWith("_single")) {
     const target = aliveEnemies[targetIndex] || aliveEnemies[0];
     // 从原始敌人数组中找到对应的敌人对象，确保引用正确
-    const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === target.id);
+    const originalEnemy = gameState.currentBattle.enemies.find(
+      (e) => e.id === target.id,
+    );
     if (originalEnemy) {
       applyDebuff(gameState, originalEnemy, skill, pet.name, "pet");
     } else {
@@ -423,10 +499,12 @@ const petUseDebuffSkill = (gameState, skill, pet, enemies, targetIndex) => {
   } else if (skill.type.endsWith("_all")) {
     const targetCount = Math.min(skill.targetCount || 3, aliveEnemies.length);
     const shuffled = [...aliveEnemies].sort(() => Math.random() - 0.5);
-    
+
     for (let i = 0; i < targetCount; i++) {
       // 从原始敌人数组中找到对应的敌人对象，确保引用正确
-      const originalEnemy = gameState.currentBattle.enemies.find(e => e.id === shuffled[i].id);
+      const originalEnemy = gameState.currentBattle.enemies.find(
+        (e) => e.id === shuffled[i].id,
+      );
       if (originalEnemy) {
         applyDebuff(gameState, originalEnemy, skill, pet.name, "pet");
       } else {
@@ -462,8 +540,14 @@ export const executePetDecision = (gameState, decision) => {
       petAttack(gameState, decision.targetIndex);
       break;
     case "skill":
-      if (decision.skill && pet.mp >= decision.skill.cost) {
-        petUseSkill(gameState, decision.skill, decision.targetIndex, decision.targetType);
+      const petSkillCost = calculateSkillCost(decision.skill, pet.level, true);
+      if (decision.skill && pet.mp >= petSkillCost) {
+        petUseSkill(
+          gameState,
+          decision.skill,
+          decision.targetIndex,
+          decision.targetType,
+        );
       } else {
         gameState.battleLog.push(`${pet.name} 法力不足，改为普通攻击！`);
         petAttack(gameState, decision.targetIndex);
@@ -486,16 +570,23 @@ export const executePetDecision = (gameState, decision) => {
         }
 
         // 检查目标是否被冰冻（冰冻状态下无法被治疗）
-        if (decision.item.type.startsWith("heal") || 
-            decision.item.type.startsWith("mana") || 
-            decision.item.type.startsWith("percent")) {
+        if (
+          decision.item.type.startsWith("heal") ||
+          decision.item.type.startsWith("mana") ||
+          decision.item.type.startsWith("percent")
+        ) {
           if (isTargetFrozen(gameState, target)) {
             gameState.battleLog.push(`${targetName} 被冰冻，无法被治疗！`);
             break;
           }
         }
 
-        const result = useItem(target, decision.item, decision.itemIndex, player);
+        const result = useItem(
+          target,
+          decision.item,
+          decision.itemIndex,
+          player,
+        );
 
         if (result.success) {
           const restoreTypeText = getRestoreTypeText(decision.item, result);
