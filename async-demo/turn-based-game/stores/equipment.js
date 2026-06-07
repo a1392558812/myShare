@@ -21,6 +21,41 @@ const BASE_STATS_BY_TYPE = EQUIPMENT_GEN_CONFIG.BASE_STATS_BY_TYPE;
 const LEVEL_MULTIPLIER = EQUIPMENT_GEN_CONFIG.LEVEL_MULTIPLIER;
 
 /**
+ * 应用强力词条的范围限制
+ * @param {string} stat - 词条名称
+ * @param {number} value - 基础词条最大值
+ * @param {number} level - 装备等级（用于 allStats 限制）
+ * @param {number} rarityMultiplier - 稀有度乘数
+ * @param {boolean} isDebug - 是否为调试模式，用于是否应用范围限制
+ * @returns {number} - 限制后的词条值
+ */
+export const applyBonusAffixRangeLimit = (stat, value, level = 1, rarityMultiplier = 1, isDebug = false) => {
+  const bonusPool = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL;
+  
+  // allStats 特殊限制：不能超过等级 * 稀有度乘数
+  if (stat === "allStats") {
+    return Math.min(value, Math.floor(level * rarityMultiplier));
+  }
+  
+  // maxComboCount 特殊限制：不能超过游戏配置的最大连击次数
+  if (stat === "maxComboCount") {
+    return Math.min(value, GAME_CONFIG.COMBO.MAX_COMBO_COUNT);
+  }
+  
+  // 从词条池获取范围配置
+  const bonusConfig = bonusPool[stat];
+  if (bonusConfig && bonusConfig.range) {
+    const min = bonusConfig.range.min;
+    const max = bonusConfig.range.max;
+    const random = Math.floor(Math.random() * (max - min + 1)) + min;
+    return isDebug ? value : random;
+  }
+  
+  // 默认不限制
+  return value;
+};
+
+/**
  * 根据稀有度和等级生成随机词缀属性
  * 基础词条：数量不限制，不重复即可
  * 强力词条：数量受 maxAffixes 限制
@@ -90,29 +125,8 @@ export const generateRandomStats = (rarity, level, type = null) => {
         rarityMultiplier,
       );
 
-      // 应用各种限制
-      if (stat === "allStats") {
-        value = Math.min(value, Math.floor(level * rarityMultiplier));
-      }
-      if (stat === "maxComboCount") {
-        value = Math.min(value, GAME_CONFIG.COMBO.MAX_COMBO_COUNT);
-      }
-      if (stat === "debuffResist") {
-        const range = bonusPool.debuffResist?.range || { min: 1, max: 30 };
-        value = Math.max(range.min, Math.min(value, range.max));
-      }
-      if (stat === "ignoreDebuffResist") {
-        const range = bonusPool.ignoreDebuffResist?.range || { min: 1, max: 30 };
-        value = Math.max(range.min, Math.min(value, range.max));
-      }
-      if (stat === "unshakableMountain") {
-        const range = bonusPool.unshakableMountain?.range || { min: 1, max: 30 };
-        value = Math.max(range.min, Math.min(value, range.max));
-      }
-      if (stat === "dodge") {
-        const range = bonusPool.dodge?.range || { min: 1, max: 20 };
-        value = Math.max(range.min, Math.min(value, range.max));
-      }
+      // 应用强力词条范围限制
+      value = applyBonusAffixRangeLimit(stat, value, level, rarityMultiplier);
 
       bonusAffixes[stat] = value;
       usedBonusStats.add(stat);
@@ -146,13 +160,14 @@ export const getRandomRarity = () => {
   return rarities[0];
 };
 
-export const getRandomEquipmentLevel = (playerLevel) => {
+export const getRandomEquipmentLevel = (mapLevel) => {
   const { min, max } = GAME_CONFIG.EQUIPMENT_LEVEL_OFFSET;
-  const minLevel = Math.max(1, playerLevel + min);
-  const maxLevel = playerLevel + max;
+  const minLevel = Math.max(1, mapLevel + min);
+  const maxLevel = mapLevel + max;
   return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
 };
 
+// 生成基础属性
 export const generateBaseStats = (type, level, rarity) => {
   const baseStats = BASE_STATS_BY_TYPE[type] || {};
   const stats = {};
@@ -169,11 +184,11 @@ export const generateBaseStats = (type, level, rarity) => {
   return stats;
 };
 
-export const getRandomEquipment = (playerLevel = 1) => {
+export const getRandomEquipment = (mapLevel = 1) => {
   const type =
     EQUIPMENT_TYPES[Math.floor(Math.random() * EQUIPMENT_TYPES.length)];
   const rarity = getRandomRarity();
-  const level = getRandomEquipmentLevel(playerLevel);
+  const level = getRandomEquipmentLevel(mapLevel);
 
   const baseStats = generateBaseStats(type, level, rarity);
   const { baseAffixes, bonusAffixes } = generateRandomStats(
@@ -205,37 +220,23 @@ export const getEquipmentSellPrice = (equipment) => {
   return Math.floor(basePrice * equipment.level * rarityMultiplier * sellRatio);
 };
 
-export const generateDebugEquipment = (rarity, level) => {
-  const type =
-    EQUIPMENT_TYPES[Math.floor(Math.random() * EQUIPMENT_TYPES.length)];
-  const baseStats = generateBaseStats(type, level, rarity);
-  const { baseAffixes, bonusAffixes } = generateRandomStats(
-    rarity,
-    level,
-    type,
-  );
-  const name = generateEquipmentName(type);
-
-  return {
-    uid: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    id: `${type}_${Date.now()}`,
-    name,
-    type,
-    rarity,
-    level,
-    baseStats,
-    baseAffixes,
-    bonusAffixes,
-    description: `Lv.${level} ${RARITY_NAMES[rarity]}的${name}`,
-  };
-};
-
+/**
+ * 
+ * @param {string} type - 装备类型
+ * @param {string} rarity - 装备稀有度
+ * @param {number} level - 装备等级
+ * @param {Object} baseAffixes - 自定义基础词条
+ * @param {Object} bonusAffixes - 自定义强力词条
+ * @param {boolean} isDebug - 是否为调试模式
+ * @returns 
+ */
 export const generateCustomEquipment = (
   type,
   rarity,
   level,
   baseAffixes = {},
   bonusAffixes = {},
+  isDebug = false,
 ) => {
   const baseStats = generateBaseStats(type, level, rarity);
   const name = generateEquipmentName(type);
@@ -246,41 +247,10 @@ export const generateCustomEquipment = (
     baseAffixes[stat] = Math.floor(value * rarityMultiplier);
   }
   for (const [stat, value] of Object.entries(bonusAffixes)) {
+    // 先应用稀有度倍率
     bonusAffixes[stat] = Math.floor(value * rarityMultiplier);
-    if (stat === "allStats") {
-      bonusAffixes[stat] = Math.min(
-        bonusAffixes[stat],
-        Math.floor(level * rarityMultiplier),
-      );
-    }
-    if (stat === "maxComboCount") {
-      bonusAffixes[stat] = Math.min(bonusAffixes[stat], 3);
-    }
-    // 障碍抗性词缀限制取值范围
-    if (stat === "debuffResist") {
-      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.debuffResist?.range || { min: 1, max: 30 };
-      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
-    }
-    // 忽视障碍异常词缀限制取值范围
-    if (stat === "ignoreDebuffResist") {
-      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.ignoreDebuffResist?.range || { min: 1, max: 30 };
-      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
-    }
-    // 不动如山词缀限制取值范围
-    if (stat === "unshakableMountain") {
-      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.unshakableMountain?.range || { min: 1, max: 30 };
-      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
-    }
-    // 闪避词缀限制取值范围
-    if (stat === "dodge") {
-      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.dodge?.range || { min: 1, max: 20 };
-      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
-    }
-    // 反震词缀限制取值范围
-    if (stat === "shockAbsorb") {
-      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.shockAbsorb?.range || { min: 1, max: 20 };
-      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
-    }
+    // 再应用强力词条范围限制
+    bonusAffixes[stat] = applyBonusAffixRangeLimit(stat, bonusAffixes[stat], level, rarityMultiplier, isDebug);
   }
 
   return {
@@ -389,33 +359,8 @@ export const generateSingleBonusAffix = (type, level, rarity, existingAffixes = 
     rarityMultiplier,
   );
 
-  // 应用各种限制
-  if (selectedStat === "allStats") {
-    value = Math.min(value, Math.floor(level * rarityMultiplier));
-  }
-  if (selectedStat === "maxComboCount") {
-    value = Math.min(value, GAME_CONFIG.COMBO.MAX_COMBO_COUNT);
-  }
-  if (selectedStat === "debuffResist") {
-    const range = bonusPool.debuffResist?.range || { min: 1, max: 30 };
-    value = Math.max(range.min, Math.min(value, range.max));
-  }
-  if (selectedStat === "ignoreDebuffResist") {
-    const range = bonusPool.ignoreDebuffResist?.range || { min: 1, max: 30 };
-    value = Math.max(range.min, Math.min(value, range.max));
-  }
-  if (selectedStat === "unshakableMountain") {
-    const range = bonusPool.unshakableMountain?.range || { min: 1, max: 30 };
-    value = Math.max(range.min, Math.min(value, range.max));
-  }
-  if (selectedStat === "dodge") {
-    const range = bonusPool.dodge?.range || { min: 1, max: 20 };
-    value = Math.max(range.min, Math.min(value, range.max));
-  }
-  if (selectedStat === "shockAbsorb") {
-    const range = bonusPool.shockAbsorb?.range || { min: 1, max: 20 };
-    value = Math.max(range.min, Math.min(value, range.max));
-  }
+  // 应用强力词条范围限制
+  value = applyBonusAffixRangeLimit(selectedStat, value, level, rarityMultiplier);
 
   return { stat: selectedStat, value };
 };

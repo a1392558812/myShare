@@ -95,24 +95,6 @@ export const calculatePlayerStats = (player) => {
             stats.speed += allStatsValue;
             stats.maxHp += allStatsValue;
             stats.maxMp += allStatsValue;
-
-            const critBonus = Math.max(
-              1,
-              Math.floor((allStatsValue / equip.level) * 30),
-            );
-            stats.critRate += critBonus;
-
-            const comboBonus = Math.max(
-              1,
-              Math.floor((allStatsValue / equip.level) * 30),
-            );
-            stats.comboRate += comboBonus;
-
-            const maxComboBonus = Math.max(
-              1,
-              Math.floor((allStatsValue / equip.level) * 10),
-            );
-            stats.maxComboCount += maxComboBonus;
           } else if (stats[stat] !== undefined) {
             stats[stat] += bonusValue;
           } else {
@@ -495,24 +477,6 @@ export const calculatePetStats = (pet) => {
             stats.speed += allStatsValue;
             stats.maxHp += allStatsValue;
             stats.maxMp += allStatsValue;
-
-            const critBonus = Math.max(
-              1,
-              Math.floor((allStatsValue / equip.level) * 30),
-            );
-            stats.critRate += critBonus;
-
-            const comboBonus = Math.max(
-              1,
-              Math.floor((allStatsValue / equip.level) * 30),
-            );
-            stats.comboRate += comboBonus;
-
-            const maxComboBonus = Math.max(
-              1,
-              Math.floor((allStatsValue / equip.level) * 10),
-            );
-            stats.maxComboCount += maxComboBonus;
           } else if (stats[stat] !== undefined) {
             stats[stat] += bonusValue;
           } else {

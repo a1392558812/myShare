@@ -252,6 +252,7 @@ export function useDebug() {
       equipLevel.value,
       baseAffixes,
       bonusAffixes,
+      true,
     );
     gameState.player.equipmentBag.push(equipment);
   };

@@ -57,7 +57,6 @@ import { loadSave, saveGame } from "./storage.js";
 import {
   getRandomEquipment,
   getEquipmentSellPrice,
-  generateDebugEquipment,
   generateCustomEquipment,
   RARITY_NAMES,
 } from "./equipment.js";
@@ -265,16 +264,13 @@ export const gameActions = {
     return calculatePlayerStats(player);
   },
 
-  generateDebugEquipment(rarity, level) {
-    return generateDebugEquipment(rarity, level);
-  },
-
   generateCustomEquipment(
     type,
     rarity,
     level,
     baseAffixes = {},
     bonusAffixes = {},
+    isDebug = false,
   ) {
     return generateCustomEquipment(
       type,
@@ -282,6 +278,7 @@ export const gameActions = {
       level,
       baseAffixes,
       bonusAffixes,
+      isDebug,
     );
   },
 
