@@ -67,13 +67,17 @@ import {
 
 const savedData = loadSave();
 console.log('加载存档:', savedData);
+const initialPlayerData = loadPlayerData(savedData?.player);
+const initialBosses = savedData ? savedData.mapBosses : generateMapBosses(GAME_CONFIG.MAP.DEFAULT_LEVEL, initialPlayerData.x, initialPlayerData.y, []);
+const initialEnemies = savedData ? savedData.mapEnemies : generateMapEnemies(GAME_CONFIG.MAP.DEFAULT_LEVEL, initialPlayerData.x, initialPlayerData.y, initialBosses);
+
 export const gameState = reactive({
   screen: "map",
-  player: loadPlayerData(savedData?.player),
+  player: initialPlayerData,
   pet: loadPetData(savedData?.pet),
   mapLevel: savedData?.mapLevel || GAME_CONFIG.MAP.DEFAULT_LEVEL,
-  mapEnemies: savedData ? savedData.mapEnemies : generateMapEnemies(GAME_CONFIG.MAP.DEFAULT_LEVEL, loadPlayerData(savedData?.player).x, loadPlayerData(savedData?.player).y),
-  mapBosses: savedData ? savedData.mapBosses : generateMapBosses(GAME_CONFIG.MAP.DEFAULT_LEVEL, loadPlayerData(savedData?.player).x, loadPlayerData(savedData?.player).y),
+  mapEnemies: initialEnemies,
+  mapBosses: initialBosses,
   currentBattle: null,
   battleLog: [],
   battleResult: null,

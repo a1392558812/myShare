@@ -28,9 +28,16 @@
       </div>
     </div>
 
-    <div class="map-area" ref="mapAreaRef">
+    <div class="map-area" ref="mapAreaRef" @click="handleMapClick">
       <!-- 地图背景 -->
       <div class="map-background"></div>
+
+      <!-- 目标指示器 -->
+      <div
+        v-if="targetX !== null && targetY !== null"
+        class="target-indicator"
+        :style="getTargetPosition()"
+      ></div>
 
       <!-- 玩家角色 -->
       <div
@@ -133,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { gameState, gameActions } from "../stores/gameStore.js";
 import { formatStat } from "../stores/utils.js";
 import { GAME_CONFIG, BOSS_CONFIG } from "../stores/constants.js";
@@ -144,6 +151,12 @@ const mapAreaRef = ref(null);
 const mapAreaRect = ref(null);
 const showBossConfirm = ref(false);
 const selectedBoss = ref(null);
+
+// 平滑移动相关状态
+const targetX = ref(null);
+const targetY = ref(null);
+const animationFrameId = ref(null);
+const moveSpeed = 0.5; // 移动速度（百分比每帧）
 
 const getPosition = (target) => {
   return {
@@ -181,6 +194,13 @@ const getBossRarityName = (rarity) => {
   return BOSS_CONFIG.RARITY_NAMES[rarity];
 };
 
+const getTargetPosition = () => {
+  return {
+    left: mapAreaRect.value.width * targetX.value / 100 + 'px',
+    top: mapAreaRect.value.height * targetY.value / 100 + 'px',
+  };
+};
+
 const getLevelMultiplier = () => {
   if (!gameState.mapLevel || gameState.mapLevel <= 1) {
     return "1.0";
@@ -197,8 +217,9 @@ const updateMapLevel = () => {
 
   if (gameState.mapLevel !== mapLevelInput.value) {
     gameState.mapLevel = mapLevelInput.value;
-    gameState.mapEnemies = generateMapEnemies(gameState.mapLevel, gameState.player.x, gameState.player.y);
-    gameState.mapBosses = generateMapBosses(gameState.mapLevel, gameState.player.x, gameState.player.y);
+    // 先生成BOSS，然后用BOSS数组作为参数生成敌人，确保不会重叠
+    gameState.mapBosses = generateMapBosses(gameState.mapLevel, gameState.player.x, gameState.player.y, []);
+    gameState.mapEnemies = generateMapEnemies(gameState.mapLevel, gameState.player.x, gameState.player.y, gameState.mapBosses);
     gameActions.endBattle();
   }
 };
@@ -259,7 +280,77 @@ const startBossBattle = () => {
   selectedBoss.value = null;
 };
 
+// 停止移动动画
+const stopMoving = () => {
+  if (animationFrameId.value) {
+    cancelAnimationFrame(animationFrameId.value);
+    animationFrameId.value = null;
+  }
+  targetX.value = null;
+  targetY.value = null;
+};
+
+// 平滑移动到目标位置
+const moveToTarget = () => {
+  if (targetX.value === null || targetY.value === null) return;
+
+  const player = gameState.player;
+  const dx = targetX.value - player.x;
+  const dy = targetY.value - player.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // 如果距离小于速度阈值，直接到达目标
+  if (distance < moveSpeed) {
+    gameActions.movePlayer(dx, dy);
+    stopMoving();
+    checkNearbyEnemies();
+    return;
+  }
+
+  // 计算单位向量
+  const unitX = dx / distance;
+  const unitY = dy / distance;
+
+  // 移动一步
+  gameActions.movePlayer(unitX * moveSpeed, unitY * moveSpeed);
+  
+  // 检查是否碰到敌人
+  checkNearbyEnemies();
+  
+  // 继续下一帧
+  animationFrameId.value = requestAnimationFrame(moveToTarget);
+};
+
+// 处理地图点击事件
+const handleMapClick = (event) => {
+  // 检查是否点击了角色（敌人或BOSS），如果是则不处理
+  const clickedElement = event.target;
+  if (clickedElement.closest('.character')) {
+    return;
+  }
+
+  // 计算点击位置相对于地图区域的坐标（百分比）
+  const rect = mapAreaRef.value.getBoundingClientRect();
+  const clickX = (event.clientX - rect.left) / rect.width * 100;
+  const clickY = (event.clientY - rect.top) / rect.height * 100;
+
+  // 限制在地图范围内
+  const boundedX = Math.max(0, Math.min(100, clickX));
+  const boundedY = Math.max(0, Math.min(100, clickY));
+
+  // 停止当前移动，设置新目标
+  stopMoving();
+  targetX.value = boundedX;
+  targetY.value = boundedY;
+
+  // 开始移动
+  moveToTarget();
+};
+
 const handleKeydown = (e) => {
+  // 停止平滑移动
+  stopMoving();
+  
   switch (e.key) {
     case "ArrowUp":
     case "w":
@@ -292,6 +383,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleKeydown);
+  stopMoving();
 });
 </script>
 
@@ -590,4 +682,34 @@ onUnmounted(() => {
     box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
   }
 }
+
+/* 目标指示器样式 */
+.target-indicator {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #4facfe;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s ease-in-out infinite;
+  background: rgba(79, 172, 254, 0.2);
+  z-index: 5;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0.5;
+  }
+}
+
+/* 优化角色移动的平滑效果 */
+.player-character {
+  transition: left 0.05s linear, top 0.05s linear;
+}
+
 </style>

@@ -27,7 +27,7 @@
         <SkillManager v-else-if="gameState.screen === 'skill'" />
       </div>
       <div v-if="gameState.screen !== 'battle'" class="game-footer">
-        <div>按wasd或↑↓←→移动，或点击敌人开始战斗</div>
+        <div>按wasd或↑↓←→移动，或点击地图区域移动，或点击敌人开始战斗</div>
         <div>
           <div class="debug-mode">
             <label for="document-mode">查看文档</label>
@@ -186,6 +186,7 @@ const resetGame = () => {
   .debug-mode {
     display: flex;
     align-items: center;
+    gap: 4px;
     label,input {
       cursor: pointer;
     }

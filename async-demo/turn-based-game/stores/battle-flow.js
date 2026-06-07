@@ -554,6 +554,50 @@ export const handleBattleEnd = (
   } else if (player.hp <= 0) {
     gameState.battleResult = "defeat";
     gameState.battleLog.push("战斗失败...");
+    
+    // 计算战斗失败惩罚
+    const levelDiff = Math.abs(player.level - mapLevel);
+    const enemyCount = enemies.length;
+    
+    // 计算基础惩罚值
+    let goldPenalty = Math.floor(
+      GAME_CONFIG.BATTLE_PENALTY.GOLD_BASE +
+      levelDiff * GAME_CONFIG.BATTLE_PENALTY.LEVEL_DIFF_MULTIPLIER +
+      enemyCount * GAME_CONFIG.BATTLE_PENALTY.ENEMY_COUNT_MULTIPLIER
+    );
+    
+    let expPenalty = Math.floor(
+      GAME_CONFIG.BATTLE_PENALTY.EXP_BASE +
+      levelDiff * GAME_CONFIG.BATTLE_PENALTY.LEVEL_DIFF_MULTIPLIER +
+      enemyCount * GAME_CONFIG.BATTLE_PENALTY.ENEMY_COUNT_MULTIPLIER
+    );
+    
+    // 如果地图等级高于玩家等级，降低惩罚
+    if (mapLevel > player.level) {
+      const reduction = GAME_CONFIG.BATTLE_PENALTY.MAP_LEVEL_HIGHER_REDUCTION;
+      goldPenalty = Math.floor(goldPenalty * (1 - reduction));
+      expPenalty = Math.floor(expPenalty * (1 - reduction));
+    }
+    
+    // 应用惩罚上限
+    const maxGoldPenalty = Math.floor(player.gold * GAME_CONFIG.BATTLE_PENALTY.GOLD_MAX_PERCENT);
+    const maxExpPenalty = Math.floor(player.expToNext * GAME_CONFIG.BATTLE_PENALTY.EXP_MAX_PERCENT);
+    
+    goldPenalty = Math.min(goldPenalty, maxGoldPenalty);
+    expPenalty = Math.min(expPenalty, maxExpPenalty);
+    
+    // 确保惩罚不为负数，且金币和经验值不会被扣除到负数
+    if (player.gold > 0 && goldPenalty > 0) {
+      const actualGoldPenalty = Math.min(goldPenalty, player.gold);
+      player.gold -= actualGoldPenalty;
+      gameState.battleLog.push(`损失了 ${actualGoldPenalty} 金币...`);
+    }
+    
+    if (player.exp > 0 && expPenalty > 0) {
+      const actualExpPenalty = Math.min(expPenalty, player.exp);
+      player.exp -= actualExpPenalty;
+      gameState.battleLog.push(`损失了 ${actualExpPenalty} 点经验值...`);
+    }
   }
 };
 

@@ -314,6 +314,20 @@ export const GAME_CONFIG = {
     SKILL_DROP_CHANCE: 0.05, // 技能掉落概率
     PET_EXP_RATIO: 0.6, // 宠物获得经验比例
   },
+  // 战斗失败惩罚配置
+  BATTLE_PENALTY: {
+    // 基础惩罚值
+    GOLD_BASE: 5, // 金币基础惩罚
+    EXP_BASE: 10, // 经验值基础惩罚
+    // 惩罚系数
+    LEVEL_DIFF_MULTIPLIER: 3, // 等级差系数：每差1级惩罚增加
+    ENEMY_COUNT_MULTIPLIER: 2, // 敌人数量系数：每多一个敌人惩罚增加
+    // 惩罚调整系数
+    MAP_LEVEL_HIGHER_REDUCTION: 0.5, // 地图等级高于玩家等级时的惩罚降低比例（0-1）
+    // 惩罚上限（防止惩罚过大）
+    GOLD_MAX_PERCENT: 0.2, // 金币最大惩罚不超过当前金币的百分比
+    EXP_MAX_PERCENT: 0.1, // 经验值最大惩罚不超过当前经验到下一级所需经验的百分比
+  },
   // 道具效果配置
   ITEMS: {
     HEAL_AMOUNT: 50, // 恢复道具基础恢复量
@@ -1022,7 +1036,7 @@ export const PLAYER_CONFIG = {
   INITIAL_STATS: {
     // 初始战斗属性
     critRate: 5, // 暴击率5%
-    comboRate: 0, // 连击率0%
+    comboRate: 1, // 连击率0%
     maxComboCount: 1, // 最大连击1次
   },
   INITIAL_SKILL_INDICES: [1], // 初始技能ID（火球术ID=1）
@@ -1060,7 +1074,7 @@ export const PET_CONFIG = {
   INITIAL_STATS: {
     // 初始战斗属性
     critRate: 3, // 暴击率3%
-    comboRate: 0, // 连击率0%
+    comboRate: 1, // 连击率0%
     maxComboCount: 1, // 最大连击1次
   },
   INITIAL_SKILL_INDICES: [1], // 初始技能ID（火球术ID=1）

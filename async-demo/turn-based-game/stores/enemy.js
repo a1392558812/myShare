@@ -183,7 +183,7 @@ export const generateExtraBattleEnemies = (count, mapLevel) => {
   return enemies;
 };
 
-export const generateMapEnemies = (mapLevel = 1, playerX = null, playerY = null) => {
+export const generateMapEnemies = (mapLevel = 1, playerX = null, playerY = null, existingBosses = []) => {
   const mapConfig = GAME_CONFIG.MAP;
   // 随机生成 MIN_ENEMIES 到 MAX_ENEMIES 之间的敌人数量
   const enemyCount = Math.floor(Math.random() * (mapConfig.MAX_ENEMIES - mapConfig.MIN_ENEMIES + 1)) + mapConfig.MIN_ENEMIES;
@@ -198,7 +198,7 @@ export const generateMapEnemies = (mapLevel = 1, playerX = null, playerY = null)
     const enemyAttrs = generateEnemyRandomAttributes();
     const levelBonus = applyMapLevelBonus(baseEnemy, mapLevel);
     
-    // 生成敌人位置，确保与玩家保持安全距离
+    // 生成敌人位置，确保与玩家、其他敌人和BOSS保持安全距离
     let enemyX, enemyY;
     let attempts = 0;
     const maxAttempts = 100; // 最大尝试次数，避免死循环
@@ -206,7 +206,11 @@ export const generateMapEnemies = (mapLevel = 1, playerX = null, playerY = null)
       enemyX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
       enemyY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
       attempts++;
-    } while (playerX !== null && playerY !== null && isTooClose(enemyX, enemyY, playerX, playerY, mapConfig.ENEMY_SAFE_DISTANCE) && attempts < maxAttempts);
+    } while (
+      (playerX !== null && playerY !== null && isTooClose(enemyX, enemyY, playerX, playerY, mapConfig.ENEMY_SAFE_DISTANCE) 
+      || isOverlapping(enemyX, enemyY, enemies, existingBosses, mapConfig.ENEMY_SAFE_DISTANCE)) 
+      && attempts < maxAttempts
+    );
     
     enemies.push({
       ...baseEnemy,
@@ -229,6 +233,23 @@ const isTooClose = (x1, y1, x2, y2, distance) => {
   const dx = x1 - x2;
   const dy = y1 - y2;
   return Math.sqrt(dx * dx + dy * dy) < distance;
+};
+
+// 检查位置是否与其他角色重叠
+const isOverlapping = (x, y, existingEnemies, existingBosses, safeDistance) => {
+  // 检查与普通敌人的距离
+  for (const enemy of existingEnemies) {
+    if (isTooClose(x, y, enemy.x, enemy.y, safeDistance)) {
+      return true;
+    }
+  }
+  // 检查与BOSS的距离
+  for (const boss of existingBosses) {
+    if (isTooClose(x, y, boss.x, boss.y, safeDistance)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 export const removeEnemyFromMap = (gameState) => {
@@ -283,7 +304,7 @@ export const refreshMapEnemies = (gameState) => {
       const enemyAttrs = generateEnemyRandomAttributes();
       const levelBonus = applyMapLevelBonus(randomEnemy, gameState.mapLevel || 1);
       
-      // 生成敌人位置，确保与玩家保持安全距离
+      // 生成敌人位置，确保与玩家、其他敌人和BOSS保持安全距离
       let enemyX, enemyY;
       let attempts = 0;
       const maxAttempts = 100; // 最大尝试次数，避免死循环
@@ -291,10 +312,13 @@ export const refreshMapEnemies = (gameState) => {
         enemyX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
         enemyY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
         attempts++;
-      } while (gameState.player.x !== null 
+      } while (
+        (gameState.player.x !== null 
         && gameState.player.y !== null 
         && isTooClose(enemyX, enemyY, gameState.player.x, gameState.player.y, mapConfig.ENEMY_SAFE_DISTANCE)
-        && attempts < maxAttempts);
+        || isOverlapping(enemyX, enemyY, gameState.mapEnemies, gameState.mapBosses || [], mapConfig.ENEMY_SAFE_DISTANCE))
+        && attempts < maxAttempts
+      );
       
       gameState.mapEnemies.push({
         ...randomEnemy,
@@ -316,9 +340,10 @@ export const refreshMapEnemies = (gameState) => {
  * @param {number} mapLevel - 地图等级
  * @param {number} playerX - 玩家X坐标
  * @param {number} playerY - 玩家Y坐标
+ * @param {Array} existingEnemies - 已存在的敌人
  * @returns {Array} BOSS数组
  */
-export const generateMapBosses = (mapLevel = 1, playerX = null, playerY = null) => {
+export const generateMapBosses = (mapLevel = 1, playerX = null, playerY = null, existingEnemies = []) => {
   const bossCount = BOSS_CONFIG.COUNT;
   const mapConfig = GAME_CONFIG.MAP;
   
@@ -332,7 +357,7 @@ export const generateMapBosses = (mapLevel = 1, playerX = null, playerY = null) 
     const enemyAttrs = generateEnemyRandomAttributes();
     const levelBonus = applyBossLevelBonus(baseBoss, mapLevel);
     
-    // 生成BOSS位置，确保与玩家保持安全距离
+    // 生成BOSS位置，确保与玩家、其他BOSS和敌人保持安全距离
     let bossX, bossY;
     let attempts = 0;
     const maxAttempts = 100; // 最大尝试次数，避免死循环
@@ -340,7 +365,11 @@ export const generateMapBosses = (mapLevel = 1, playerX = null, playerY = null) 
       bossX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
       bossY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
       attempts++;
-    } while (playerX !== null && playerY !== null && isTooClose(bossX, bossY, playerX, playerY, mapConfig.ENEMY_SAFE_DISTANCE) && attempts < maxAttempts);
+    } while (
+      (playerX !== null && playerY !== null && isTooClose(bossX, bossY, playerX, playerY, mapConfig.ENEMY_SAFE_DISTANCE) 
+      || isOverlapping(bossX, bossY, existingEnemies, bosses, mapConfig.ENEMY_SAFE_DISTANCE)) 
+      && attempts < maxAttempts
+    );
     
     bosses.push({
       ...baseBoss,
@@ -397,7 +426,7 @@ export const refreshMapBosses = (gameState) => {
       const enemyAttrs = generateEnemyRandomAttributes();
       const levelBonus = applyBossLevelBonus(randomBoss, gameState.mapLevel || 1);
       
-      // 生成BOSS位置，确保与玩家保持安全距离
+      // 生成BOSS位置，确保与玩家、其他BOSS和敌人保持安全距离
       let bossX, bossY;
       let attempts = 0;
       const maxAttempts = 100; // 最大尝试次数，避免死循环
@@ -405,10 +434,13 @@ export const refreshMapBosses = (gameState) => {
         bossX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
         bossY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
         attempts++;
-      } while (gameState.player.x !== null 
+      } while (
+        (gameState.player.x !== null 
         && gameState.player.y !== null 
         && isTooClose(bossX, bossY, gameState.player.x, gameState.player.y, mapConfig.ENEMY_SAFE_DISTANCE)
-        && attempts < maxAttempts);
+        || isOverlapping(bossX, bossY, gameState.mapEnemies, gameState.mapBosses, mapConfig.ENEMY_SAFE_DISTANCE))
+        && attempts < maxAttempts
+      );
       
       gameState.mapBosses.push({
         ...randomBoss,
