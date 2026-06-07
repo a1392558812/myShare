@@ -58,10 +58,34 @@
     </div>
     <div class="debug-info">
       宠物已拥有技能:
-      {{ gameState.pet?.skills?.map((s) => s.name).join(", ") || "无" }}
+      {{ gameState.pet?.skills?.map((s) => `${s.name}[Lv.${s.enhanceLevel || 0}]`).join(", ") || "无" }}
     </div>
     <div class="debug-row">
       <button @click="addAllPetSkills">宠物获得全部技能</button>
+    </div>
+
+    <div class="debug-section">
+      <h4>⚡ 宠物技能强化</h4>
+      <div class="debug-row">
+        <select v-model="selectedPetSkillForEnhance">
+          <option
+            v-for="(skill, index) in gameState.pet?.skills || []"
+            :key="skill.id"
+            :value="index"
+          >
+            {{ skill.name }} - 强化等级: {{ skill.enhanceLevel || 0 }} / {{ maxEnhanceLevel }}
+          </option>
+        </select>
+      </div>
+      <div class="debug-row">
+        <input type="number" v-model.number="skillEnhanceAmount" placeholder="强化等级变更量" />
+        <button @click="enhancePetSkill(true)">+增加</button>
+        <button @click="enhancePetSkill(false)">-减少</button>
+        <button @click="setPetSkillEnhance">设置等级</button>
+      </div>
+      <div class="debug-info" v-if="selectedPetSkill">
+        当前技能: {{ selectedPetSkill.name }} | 强化等级: {{ selectedPetSkill.enhanceLevel || 0 }} | 消耗减免: -{{ calculateSkillReducePercent(selectedPetSkill) }}%
+      </div>
     </div>
 
     <div class="coeff-section">
@@ -91,8 +115,9 @@
 
 <script setup>
 import { gameState } from "../../stores/gameStore.js";
-import { SKILLS_CONFIG } from "../../stores/constants.js";
+import { SKILLS_CONFIG, GAME_CONFIG } from "../../stores/constants.js";
 import { getStatName } from "../../stores/utils.js";
+import { computed } from "vue";
 
 const selectedPetStat = defineModel("selectedPetStat");
 const petStatAmount = defineModel("petStatAmount");
@@ -100,6 +125,8 @@ const petExpAmount = defineModel("petExpAmount");
 const petHpAmount = defineModel("petHpAmount");
 const petMpAmount = defineModel("petMpAmount");
 const selectedPetSkillId = defineModel("selectedPetSkillId");
+const selectedPetSkillForEnhance = defineModel("selectedPetSkillForEnhance");
+const skillEnhanceAmount = defineModel("skillEnhanceAmount");
 const petCoefficients = defineModel("petCoefficients");
 const coeffStatsList = defineModel("coeffStatsList");
 
@@ -112,10 +139,24 @@ const props = defineProps({
   fillPetMp: { type: Function, required: true },
   addPetSkill: { type: Function, required: true },
   addAllPetSkills: { type: Function, required: true },
+  enhancePetSkill: { type: Function, required: true },
+  setPetSkillEnhance: { type: Function, required: true },
+  calculateSkillReducePercent: { type: Function, required: true },
   getCurrentCoefficientInfo: { type: Function, required: true },
   getDefaultCoefficient: { type: Function, required: true },
   resetCoefficient: { type: Function, required: true },
   applyAllCoefficients: { type: Function, required: true },
   resetAllCoefficients: { type: Function, required: true },
+});
+
+const maxEnhanceLevel = GAME_CONFIG.SHOP.SKILL_ENHANCE.MAX_LEVEL;
+
+const selectedPetSkill = computed(() => {
+  if (!gameState.pet) return null;
+  const index = selectedPetSkillForEnhance.value;
+  if (index >= 0 && index < gameState.pet.skills.length) {
+    return gameState.pet.skills[index];
+  }
+  return null;
 });
 </script>

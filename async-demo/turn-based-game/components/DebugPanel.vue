@@ -24,37 +24,47 @@
       />
 
       <PlayerItemsDebug
-        v-model:selected-item-id="selectedItemId"
-        v-model:item-count="itemCount"
-        v-model:selected-skill-id="selectedSkillId"
-        :add-item="addItem"
-        :add-skill="addSkill"
-        :add-all-skills="addAllSkills"
-      />
+      v-model:selected-item-id="selectedItemId"
+      v-model:item-count="itemCount"
+      v-model:selected-skill-id="selectedSkillId"
+      v-model:selected-player-skill-for-enhance="selectedPlayerSkillForEnhance"
+      v-model:skill-enhance-amount="skillEnhanceAmount"
+      :add-item="addItem"
+      :add-skill="addSkill"
+      :add-all-skills="addAllSkills"
+      :enhance-player-skill="enhancePlayerSkill"
+      :set-player-skill-enhance="setPlayerSkillEnhance"
+      :calculate-skill-reduce-percent="calculateSkillReducePercent"
+    />
 
       <PetDebug
-        v-model:selected-pet-stat="selectedPetStat"
-        v-model:pet-stat-amount="petStatAmount"
-        v-model:pet-exp-amount="petExpAmount"
-        v-model:pet-hp-amount="petHpAmount"
-        v-model:pet-mp-amount="petMpAmount"
-        v-model:selected-pet-skill-id="selectedPetSkillId"
-        v-model:pet-coefficients="petCoefficients"
-        v-model:coeff-stats-list="coeffStatsList"
-        :add-pet-stat-points="addPetStatPoints"
-        :add-pet-exp="addPetExp"
-        :add-pet-hp="addPetHp"
-        :fill-pet-hp="fillPetHp"
-        :add-pet-mp="addPetMp"
-        :fill-pet-mp="fillPetMp"
-        :add-pet-skill="addPetSkill"
-        :add-all-pet-skills="addAllPetSkills"
-        :get-current-coefficient-info="getCurrentCoefficientInfo"
-        :get-default-coefficient="getDefaultCoefficient"
-        :reset-coefficient="resetCoefficient"
-        :apply-all-coefficients="applyAllCoefficients"
-        :reset-all-coefficients="resetAllCoefficients"
-      />
+      v-model:selected-pet-stat="selectedPetStat"
+      v-model:pet-stat-amount="petStatAmount"
+      v-model:pet-exp-amount="petExpAmount"
+      v-model:pet-hp-amount="petHpAmount"
+      v-model:pet-mp-amount="petMpAmount"
+      v-model:selected-pet-skill-id="selectedPetSkillId"
+      v-model:selected-pet-skill-for-enhance="selectedPetSkillForEnhance"
+      v-model:skill-enhance-amount="skillEnhanceAmount"
+      v-model:pet-coefficients="petCoefficients"
+      v-model:coeff-stats-list="coeffStatsList"
+      :add-pet-stat-points="addPetStatPoints"
+      :add-pet-exp="addPetExp"
+      :add-pet-hp="addPetHp"
+      :fill-pet-hp="fillPetHp"
+      :add-pet-mp="addPetMp"
+      :fill-pet-mp="fillPetMp"
+      :add-pet-skill="addPetSkill"
+      :add-all-pet-skills="addAllPetSkills"
+      :enhance-pet-skill="enhancePetSkill"
+      :set-pet-skill-enhance="setPetSkillEnhance"
+      :calculate-skill-reduce-percent="calculateSkillReducePercent"
+      :get-current-coefficient-info="getCurrentCoefficientInfo"
+      :get-default-coefficient="getDefaultCoefficient"
+      :reset-coefficient="resetCoefficient"
+      :apply-all-coefficients="applyAllCoefficients"
+      :reset-all-coefficients="resetAllCoefficients"
+    />
 
       <EquipmentDebug
         v-model:selected-equip-type="selectedEquipType"
@@ -106,25 +116,33 @@ const onUpdateStatAmount = (statAmount) => {
 
 const isExpanded = ref(false);
 const {
-  goldAmount,
-  statAmount,
-  selectedStat,
-  expAmount,
-  hpAmount,
-  mpAmount,
-  addGold,
-  addStatPoints,
-  addExp,
-  addHp,
-  fillHp,
-  addMp,
-  fillMp,
-  selectedItemId,
-  itemCount,
-  selectedSkillId,
-  addItem,
-  addSkill,
-  addAllSkills,
+    goldAmount,
+    statAmount,
+    selectedStat,
+    expAmount,
+    hpAmount,
+    mpAmount,
+    addGold,
+    addStatPoints,
+    addExp,
+    addHp,
+    fillHp,
+    addMp,
+    fillMp,
+    selectedItemId,
+    itemCount,
+    selectedSkillId,
+    selectedPlayerSkillForEnhance,
+    selectedPetSkillForEnhance,
+    skillEnhanceAmount,
+    addItem,
+    addSkill,
+    addAllSkills,
+    enhancePlayerSkill,
+    enhancePetSkill,
+    setPlayerSkillEnhance,
+    setPetSkillEnhance,
+    calculateSkillReducePercent,
   selectedPetStat,
   petStatAmount,
   petExpAmount,

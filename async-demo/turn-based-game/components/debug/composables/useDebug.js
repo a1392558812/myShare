@@ -9,7 +9,9 @@ import {
   EQUIPMENT_CONFIG,
   STAT_CONFIG,
   SKILLS_CONFIG,
+  GAME_CONFIG,
 } from "../../../stores/constants.js";
+import { getStatName } from "../../../stores/utils.js";
 
 export function useDebug() {
   const coeffStatsList = Object.keys(
@@ -40,6 +42,9 @@ export function useDebug() {
   const petHpAmount = ref(50);
   const petMpAmount = ref(30);
   const selectedPetSkillId = ref(SKILLS_CONFIG[0].id);
+  const selectedPlayerSkillForEnhance = ref(0);
+  const selectedPetSkillForEnhance = ref(0);
+  const skillEnhanceAmount = ref(10);
 
   const customBaseAffixes = ref([{ stat: "physicalAttack", value: 5 }]);
   const customBonusAffixes = ref([{ stat: "physicalAttack", value: 20 }]);
@@ -122,7 +127,7 @@ export function useDebug() {
       (skill) => skill.id === skillData.id,
     );
     if (!hasSkill) {
-      gameState.player.skills.push(skillData);
+      gameState.player.skills.push({ ...skillData, enhanceLevel: 0 });
     }
   };
 
@@ -132,7 +137,7 @@ export function useDebug() {
         (skill) => skill.id === skillData.id,
       );
       if (!hasSkill) {
-        gameState.player.skills.push(skillData);
+        gameState.player.skills.push({ ...skillData, enhanceLevel: 0 });
       }
     });
   };
@@ -198,7 +203,7 @@ export function useDebug() {
       (skill) => skill.id === skillData.id,
     );
     if (!hasSkill) {
-      gameState.pet.skills.push(skillData);
+      gameState.pet.skills.push({ ...skillData, enhanceLevel: 0 });
     }
   };
 
@@ -209,9 +214,67 @@ export function useDebug() {
         (skill) => skill.id === skillData.id,
       );
       if (!hasSkill) {
-        gameState.pet.skills.push(skillData);
+        gameState.pet.skills.push({ ...skillData, enhanceLevel: 0 });
       }
     });
+  };
+
+  // 技能强化相关
+  const enhancePlayerSkill = (add = true) => {
+    const skills = gameState.player.skills;
+    if (!skills || skills.length === 0) return;
+    const index = selectedPlayerSkillForEnhance.value;
+    if (index < 0 || index >= skills.length) return;
+    
+    const maxLevel = GAME_CONFIG.SHOP.SKILL_ENHANCE.MAX_LEVEL;
+    const skill = skills[index];
+    if (add) {
+      skill.enhanceLevel = Math.min(maxLevel, (skill.enhanceLevel || 0) + skillEnhanceAmount.value);
+    } else {
+      skill.enhanceLevel = Math.max(0, (skill.enhanceLevel || 0) - skillEnhanceAmount.value);
+    }
+  };
+
+  const enhancePetSkill = (add = true) => {
+    if (!gameState.pet) return;
+    const skills = gameState.pet.skills;
+    if (!skills || skills.length === 0) return;
+    const index = selectedPetSkillForEnhance.value;
+    if (index < 0 || index >= skills.length) return;
+    
+    const maxLevel = GAME_CONFIG.SHOP.SKILL_ENHANCE.MAX_LEVEL;
+    const skill = skills[index];
+    if (add) {
+      skill.enhanceLevel = Math.min(maxLevel, (skill.enhanceLevel || 0) + skillEnhanceAmount.value);
+    } else {
+      skill.enhanceLevel = Math.max(0, (skill.enhanceLevel || 0) - skillEnhanceAmount.value);
+    }
+  };
+
+  const setPlayerSkillEnhance = () => {
+    const skills = gameState.player.skills;
+    if (!skills || skills.length === 0) return;
+    const index = selectedPlayerSkillForEnhance.value;
+    if (index < 0 || index >= skills.length) return;
+    
+    const maxLevel = GAME_CONFIG.SHOP.SKILL_ENHANCE.MAX_LEVEL;
+    skills[index].enhanceLevel = Math.min(maxLevel, Math.max(0, skillEnhanceAmount.value));
+  };
+
+  const setPetSkillEnhance = () => {
+    if (!gameState.pet) return;
+    const skills = gameState.pet.skills;
+    if (!skills || skills.length === 0) return;
+    const index = selectedPetSkillForEnhance.value;
+    if (index < 0 || index >= skills.length) return;
+    
+    const maxLevel = GAME_CONFIG.SHOP.SKILL_ENHANCE.MAX_LEVEL;
+    skills[index].enhanceLevel = Math.min(maxLevel, Math.max(0, skillEnhanceAmount.value));
+  };
+
+  const calculateSkillReducePercent = (skill) => {
+    if (!skill || !skill.enhanceLevel || skill.enhanceLevel <= 0) return 0;
+    return Math.floor(skill.enhanceLevel / 10);
   };
 
   const addBaseAffix = () => {
@@ -570,6 +633,9 @@ export function useDebug() {
     petHpAmount,
     petMpAmount,
     selectedPetSkillId,
+    selectedPlayerSkillForEnhance,
+    selectedPetSkillForEnhance,
+    skillEnhanceAmount,
     customBaseAffixes,
     customBonusAffixes,
     uniqueBonusAffixStats,
@@ -591,6 +657,11 @@ export function useDebug() {
     fillPetMp,
     addPetSkill,
     addAllPetSkills,
+    enhancePlayerSkill,
+    enhancePetSkill,
+    setPlayerSkillEnhance,
+    setPetSkillEnhance,
+    calculateSkillReducePercent,
     addBaseAffix,
     addBonusAffix,
     removeAffix,

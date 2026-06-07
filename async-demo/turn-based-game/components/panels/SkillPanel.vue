@@ -4,11 +4,21 @@
     
     <div class="skill-list">
       <div v-for="skill in skills" :key="skill.id" class="skill-card">
-        <div class="skill-name">{{ skill.name }}</div>
+        <div class="skill-header">
+          <div class="skill-name">{{ skill.name }}</div>
+          <div v-if="skill.enhanceLevel > 0" class="skill-enhance">
+            ⚡ Lv.{{ skill.enhanceLevel }}
+          </div>
+        </div>
         <div class="skill-type">
           {{ skill.type === 'magic' ? '法术' : '物理' }}
         </div>
-        <div class="skill-cost">消耗: {{ skill.cost }} MP</div>
+        <div class="skill-cost">
+          消耗: {{ skill.cost }} MP
+          <span v-if="skill.enhanceLevel > 0" class="skill-reduce">
+            (-{{ Math.floor(skill.enhanceLevel / 10) }}%)
+          </span>
+        </div>
         <div class="skill-desc">{{ skill.description }}</div>
       </div>
     </div>
@@ -60,11 +70,27 @@ h3 {
   border-radius: 8px;
 }
 
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
 .skill-name {
   color: white;
   font-weight: bold;
   font-size: 16px;
-  margin-bottom: 6px;
+}
+
+.skill-enhance {
+  padding: 2px 8px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+  color: #60a5fa;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .skill-type {
@@ -81,6 +107,11 @@ h3 {
   color: #888;
   font-size: 12px;
   margin-bottom: 4px;
+}
+
+.skill-reduce {
+  color: #10b981;
+  margin-left: 8px;
 }
 
 .skill-desc {
