@@ -2,6 +2,8 @@ import {
   ENEMIES_CONFIG,
   ENEMY_ATTRIBUTE_RANGES,
   GAME_CONFIG,
+  BOSSES_CONFIG,
+  BOSS_CONFIG,
 } from "./constants.js";
 
 export const generateEnemyRandomAttributes = () => {
@@ -43,6 +45,32 @@ const applyMapLevelBonus = (baseEnemy, mapLevel) => {
     defense: Math.floor(baseEnemy.defense * multiplier),
     speed: Math.floor(baseEnemy.speed * multiplier),
     exp: Math.floor(baseEnemy.exp * multiplier),
+  };
+};
+
+const applyBossLevelBonus = (baseBoss, mapLevel) => {
+  if (!mapLevel || mapLevel <= 1) {
+    return {
+      hp: baseBoss.hp,
+      maxHp: baseBoss.maxHp,
+      physicalAttack: baseBoss.physicalAttack,
+      magicAttack: baseBoss.magicAttack,
+      defense: baseBoss.defense,
+      speed: baseBoss.speed,
+      exp: baseBoss.exp,
+    };
+  }
+  
+  const multiplier = 1 + BOSS_CONFIG.LEVEL_MULTIPLIER * (mapLevel - 1);
+  
+  return {
+    hp: Math.floor(baseBoss.hp * multiplier),
+    maxHp: Math.floor(baseBoss.maxHp * multiplier),
+    physicalAttack: Math.floor(baseBoss.physicalAttack * multiplier),
+    magicAttack: Math.floor(baseBoss.magicAttack * multiplier),
+    defense: Math.floor(baseBoss.defense * multiplier),
+    speed: Math.floor(baseBoss.speed * multiplier),
+    exp: Math.floor(baseBoss.exp * multiplier),
   };
 };
 
@@ -278,6 +306,121 @@ export const refreshMapEnemies = (gameState) => {
         mp: levelBonus.mp || 0,
         buffs: [],
         ...enemyAttrs,
+      });
+    }
+  }
+};
+
+/**
+ * 生成地图BOSS
+ * @param {number} mapLevel - 地图等级
+ * @param {number} playerX - 玩家X坐标
+ * @param {number} playerY - 玩家Y坐标
+ * @returns {Array} BOSS数组
+ */
+export const generateMapBosses = (mapLevel = 1, playerX = null, playerY = null) => {
+  const bossCount = BOSS_CONFIG.COUNT;
+  const mapConfig = GAME_CONFIG.MAP;
+  
+  const xRange = mapConfig.ENEMY_X_RANGE.max - mapConfig.ENEMY_X_RANGE.min;
+  const yRange = mapConfig.ENEMY_Y_RANGE.max - mapConfig.ENEMY_Y_RANGE.min;
+  
+  const bosses = [];
+  for (let i = 0; i < bossCount; i++) {
+    const randomBossIndex = Math.floor(Math.random() * BOSSES_CONFIG.length);
+    const baseBoss = BOSSES_CONFIG[randomBossIndex];
+    const enemyAttrs = generateEnemyRandomAttributes();
+    const levelBonus = applyBossLevelBonus(baseBoss, mapLevel);
+    
+    // 生成BOSS位置，确保与玩家保持安全距离
+    let bossX, bossY;
+    let attempts = 0;
+    const maxAttempts = 100; // 最大尝试次数，避免死循环
+    do {
+      bossX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
+      bossY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
+      attempts++;
+    } while (playerX !== null && playerY !== null && isTooClose(bossX, bossY, playerX, playerY, mapConfig.ENEMY_SAFE_DISTANCE) && attempts < maxAttempts);
+    
+    bosses.push({
+      ...baseBoss,
+      ...levelBonus,
+      x: bossX,
+      y: bossY,
+      id: `boss_${Date.now()}_${i}`,
+      maxMp: levelBonus.maxMp || 0,
+      mp: levelBonus.mp || 0,
+      buffs: [],
+      ...enemyAttrs,
+      isBoss: true, // 标记为BOSS
+    });
+  }
+  
+  return bosses;
+};
+
+/**
+ * 从地图移除BOSS
+ * @param {Object} gameState - 游戏状态
+ */
+export const removeBossFromMap = (gameState) => {
+  if (gameState.defeatedEnemyId) {
+    // 处理数组形式的 defeatedEnemyId（多个敌人）
+    const idsToRemove = Array.isArray(gameState.defeatedEnemyId)
+      ? gameState.defeatedEnemyId
+      : [gameState.defeatedEnemyId];
+    
+    idsToRemove.forEach((id) => {
+      const index = gameState.mapBosses.findIndex((b) => b.id === id);
+      if (index !== -1) {
+        gameState.mapBosses.splice(index, 1);
+      }
+    });
+  }
+};
+
+/**
+ * 刷新地图BOSS
+ * @param {Object} gameState - 游戏状态
+ */
+export const refreshMapBosses = (gameState) => {
+  if (gameState.mapBosses.length < BOSS_CONFIG.COUNT) {
+    const refreshCount = BOSS_CONFIG.COUNT - gameState.mapBosses.length;
+    
+    const mapConfig = GAME_CONFIG.MAP;
+    const xRange = mapConfig.ENEMY_X_RANGE.max - mapConfig.ENEMY_X_RANGE.min;
+    const yRange = mapConfig.ENEMY_Y_RANGE.max - mapConfig.ENEMY_Y_RANGE.min;
+
+    for (let i = 0; i < refreshCount; i++) {
+      const randomBossIndex = Math.floor(Math.random() * BOSSES_CONFIG.length);
+      const randomBoss = BOSSES_CONFIG[randomBossIndex];
+      const enemyAttrs = generateEnemyRandomAttributes();
+      const levelBonus = applyBossLevelBonus(randomBoss, gameState.mapLevel || 1);
+      
+      // 生成BOSS位置，确保与玩家保持安全距离
+      let bossX, bossY;
+      let attempts = 0;
+      const maxAttempts = 100; // 最大尝试次数，避免死循环
+      do {
+        bossX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
+        bossY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
+        attempts++;
+      } while (gameState.player.x !== null 
+        && gameState.player.y !== null 
+        && isTooClose(bossX, bossY, gameState.player.x, gameState.player.y, mapConfig.ENEMY_SAFE_DISTANCE)
+        && attempts < maxAttempts);
+      
+      gameState.mapBosses.push({
+        ...randomBoss,
+        ...levelBonus,
+        id: `boss_${Date.now()}_${i}`,
+        x: bossX,
+        y: bossY,
+        maxMp: levelBonus.maxMp || 0,
+        mp: levelBonus.mp || 0,
+        buffs: [],
+        ...enemyAttrs,
+        isBoss: true, // 标记为BOSS
       });
     }
   }

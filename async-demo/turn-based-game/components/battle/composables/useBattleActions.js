@@ -7,7 +7,13 @@ const isSupportSkill = (skill) => {
 
 export function useBattleActions(state) {
   const handlePlayerAttack = () => {
-    const targetIdx = state.getAliveTargetIndex();
+    // 优先使用用户已选择的目标，如果目标已死亡则选择第一个存活的敌人
+    let targetIdx = state.selectedTargetIndex.value;
+    const enemies = gameState.currentBattle?.enemies;
+    if (!enemies || !enemies[targetIdx] || enemies[targetIdx].hp <= 0) {
+      targetIdx = state.getAliveTargetIndex();
+    }
+    
     if (targetIdx >= 0) {
       state.selectedTargetIndex.value = targetIdx;
       gameActions.playerAttack(targetIdx);
@@ -128,7 +134,13 @@ export function useBattleActions(state) {
   };
 
   const handlePetAttack = () => {
-    const targetIdx = state.getAliveTargetIndex();
+    // 优先使用用户已选择的目标，如果目标已死亡则选择第一个存活的敌人
+    let targetIdx = state.selectedTargetIndex.value;
+    const enemies = gameState.currentBattle?.enemies;
+    if (!enemies || !enemies[targetIdx] || enemies[targetIdx].hp <= 0) {
+      targetIdx = state.getAliveTargetIndex();
+    }
+    
     if (targetIdx >= 0) {
       state.selectedTargetIndex.value = targetIdx;
       gameActions.petAttack(targetIdx);

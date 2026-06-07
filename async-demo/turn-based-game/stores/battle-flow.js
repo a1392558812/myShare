@@ -1,4 +1,4 @@
-import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG, ITEMS_CONFIG } from "./constants.js";
+import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG, ITEMS_CONFIG, BOSS_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats, levelUp, petLevelUp } from "./player.js";
 import { generateTurnOrder, checkBattleEnd, getDecisionName, processBuffs, isTargetFrozen } from "./battle-utils.js";
 import { executePlayerDecision } from "./player-actions.js";
@@ -424,21 +424,40 @@ export const handleBattleEnd = (
 
   const allEnemiesDead = enemies.every((enemy) => enemy.hp <= 0);
 
+  // 检查是否是BOSS战斗
+  const isBossBattle = enemies.some(enemy => enemy.isBoss);
+  const bossEnemies = enemies.filter(enemy => enemy.isBoss);
+
   if (allEnemiesDead) {
     gameState.battleResult = "victory";
-    gameState.battleLog.push("战斗胜利！你击败了所有敌人！");
+    
+    if (isBossBattle) {
+      gameState.battleLog.push("恭喜！你击败了BOSS！");
+    } else {
+      gameState.battleLog.push("战斗胜利！你击败了所有敌人！");
+    }
 
     let totalExp = 0;
     let totalGold = 0;
 
     enemies.forEach((enemy) => {
       totalExp += enemy.exp;
-      const goldReward = Math.floor(
+      let goldReward = Math.floor(
         mapLevel * GAME_CONFIG.BATTLE_REWARD.GOLD_BASE +
           Math.random() * GAME_CONFIG.BATTLE_REWARD.GOLD_RANDOM,
       );
+      
+      // BOSS金币奖励翻倍
+      if (enemy.isBoss) {
+        goldReward = Math.floor(goldReward * BOSS_CONFIG.GOLD_MULTIPLIER);
+      }
       totalGold += goldReward;
     });
+
+    // BOSS经验奖励翻倍
+    if (isBossBattle) {
+      totalExp = Math.floor(totalExp * BOSS_CONFIG.EXP_MULTIPLIER);
+    }
 
     player.exp += totalExp;
     if (pet && pet.active) {
@@ -454,41 +473,81 @@ export const handleBattleEnd = (
       petLevelUpFn(pet, gameState.battleLog);
     }
 
-    if (Math.random() < GAME_CONFIG.BATTLE_REWARD.ITEM_DROP_CHANCE) {
-      const dropItem =
-        ITEMS_CONFIG[Math.floor(Math.random() * ITEMS_CONFIG.length)];
-      const existingItem = player.inventory.find((i) => i.id === dropItem.id);
-      if (existingItem) {
-        existingItem.count++;
-      } else {
-        player.inventory.push({ ...dropItem, count: 1 });
-      }
-      gameState.battleLog.push(`获得 ${dropItem.name}！`);
-    }
+    // BOSS必定掉落物品和装备
+    if (isBossBattle) {
+      bossEnemies.forEach(boss => {
+        // BOSS必定掉落物品
+        const dropItem = ITEMS_CONFIG[Math.floor(Math.random() * ITEMS_CONFIG.length)];
+        const existingItem = player.inventory.find((i) => i.id === dropItem.id);
+        if (existingItem) {
+          existingItem.count++;
+        } else {
+          player.inventory.push({ ...dropItem, count: 1 });
+        }
+        gameState.battleLog.push(`获得 ${dropItem.name}！`);
 
-    if (
-      Math.random() < GAME_CONFIG.BATTLE_REWARD.SKILL_DROP_CHANCE &&
-      player.skills.length < SKILLS_CONFIG.length
-    ) {
-      const unlockedSkillIds = player.skills.map((s) => s.id);
-      const availableSkills = SKILLS_CONFIG.filter(
-        (s) => !unlockedSkillIds.includes(s.id),
-      );
-      if (availableSkills.length > 0) {
-        const newSkill =
-          availableSkills[Math.floor(Math.random() * availableSkills.length)];
-        player.skills.push(newSkill);
-        gameState.battleLog.push(`学会了新技能：${newSkill.name}！`);
+        // 掉落BOSS专属稀有度装备
+        const dropRarity = boss.dropRarity || boss.rarity || 1;
+        
+        if (BOSS_CONFIG.DROP_MULTI_RARITY) {
+          // 掉落多件装备
+          const dropCount = BOSS_CONFIG.MIN_DROPS + Math.floor(Math.random() * (BOSS_CONFIG.MAX_DROPS - BOSS_CONFIG.MIN_DROPS + 1));
+          for (let i = 0; i < dropCount; i++) {
+            const equipment = getRandomEquipmentFn(mapLevel, dropRarity);
+            player.equipmentBag.push(equipment);
+            const rarityName = rarityNames[equipment.rarity] || "普通";
+            gameState.battleLog.push(
+              `获得 Lv.${equipment.level} ${rarityName}装备：${equipment.name}！`,
+            );
+          }
+        } else {
+          // 掉落单件装备
+          const equipment = getRandomEquipmentFn(mapLevel, dropRarity);
+          player.equipmentBag.push(equipment);
+          const rarityName = rarityNames[equipment.rarity] || "普通";
+          gameState.battleLog.push(
+            `获得 Lv.${equipment.level} ${rarityName}装备：${equipment.name}！`,
+          );
+        }
+      });
+    } else {
+      // 普通敌人掉落逻辑
+      if (Math.random() < GAME_CONFIG.BATTLE_REWARD.ITEM_DROP_CHANCE) {
+        const dropItem =
+          ITEMS_CONFIG[Math.floor(Math.random() * ITEMS_CONFIG.length)];
+        const existingItem = player.inventory.find((i) => i.id === dropItem.id);
+        if (existingItem) {
+          existingItem.count++;
+        } else {
+          player.inventory.push({ ...dropItem, count: 1 });
+        }
+        gameState.battleLog.push(`获得 ${dropItem.name}！`);
       }
-    }
 
-    if (Math.random() < GAME_CONFIG.BATTLE_REWARD.EQUIPMENT_DROP_CHANCE) {
-      const equipment = getRandomEquipmentFn(mapLevel);
-      player.equipmentBag.push(equipment);
-      const rarityName = rarityNames[equipment.rarity] || "普通";
-      gameState.battleLog.push(
-        `获得 Lv.${equipment.level} ${rarityName}装备：${equipment.name}！`,
-      );
+      if (
+        Math.random() < GAME_CONFIG.BATTLE_REWARD.SKILL_DROP_CHANCE &&
+        player.skills.length < SKILLS_CONFIG.length
+      ) {
+        const unlockedSkillIds = player.skills.map((s) => s.id);
+        const availableSkills = SKILLS_CONFIG.filter(
+          (s) => !unlockedSkillIds.includes(s.id),
+        );
+        if (availableSkills.length > 0) {
+          const newSkill =
+            availableSkills[Math.floor(Math.random() * availableSkills.length)];
+          player.skills.push(newSkill);
+          gameState.battleLog.push(`学会了新技能：${newSkill.name}！`);
+        }
+      }
+
+      if (Math.random() < GAME_CONFIG.BATTLE_REWARD.EQUIPMENT_DROP_CHANCE) {
+        const equipment = getRandomEquipmentFn(mapLevel);
+        player.equipmentBag.push(equipment);
+        const rarityName = rarityNames[equipment.rarity] || "普通";
+        gameState.battleLog.push(
+          `获得 Lv.${equipment.level} ${rarityName}装备：${equipment.name}！`,
+        );
+      }
     }
 
     gameState.defeatedEnemyId = enemies.map((e) => e.originalId || e.id);

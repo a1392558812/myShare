@@ -184,10 +184,10 @@ export const generateBaseStats = (type, level, rarity) => {
   return stats;
 };
 
-export const getRandomEquipment = (mapLevel = 1) => {
+export const getRandomEquipment = (mapLevel = 1, fixedRarity = null) => {
   const type =
     EQUIPMENT_TYPES[Math.floor(Math.random() * EQUIPMENT_TYPES.length)];
-  const rarity = getRandomRarity();
+  const rarity = fixedRarity !== null ? fixedRarity.toString() : getRandomRarity();
   const level = getRandomEquipmentLevel(mapLevel);
 
   const baseStats = generateBaseStats(type, level, rarity);

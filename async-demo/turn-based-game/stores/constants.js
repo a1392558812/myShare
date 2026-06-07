@@ -827,6 +827,117 @@ export const ENEMIES_CONFIG = [
 ];
 
 /**
+ * BOSS配置
+ */
+export const BOSSES_CONFIG = [
+  {
+    id: 1,
+    name: "暗影领主",
+    level: 1,
+    hp: 800,
+    maxHp: 800,
+    physicalAttack: 80,
+    magicAttack: 50,
+    defense: 30,
+    speed: 10,
+    exp: 500,
+    skills: [1, 2, 3, 4, 5, 6, 7],
+    rarity: 1, // BOSS稀有度等级 1-5
+    dropRarity: 1, // 掉落装备稀有度等级
+  },
+  {
+    id: 2,
+    name: "暗黑骑士",
+    level: 2,
+    hp: 1200,
+    maxHp: 1200,
+    physicalAttack: 100,
+    magicAttack: 60,
+    defense: 40,
+    speed: 12,
+    exp: 800,
+    skills: [1, 2, 3, 4, 6, 8, 10, 12, 13],
+    rarity: 2,
+    dropRarity: 2,
+  },
+  {
+    id: 3,
+    name: "冰霜女王",
+    level: 3,
+    hp: 1500,
+    maxHp: 1500,
+    physicalAttack: 70,
+    magicAttack: 120,
+    defense: 35,
+    speed: 11,
+    exp: 1000,
+    skills: [1, 2, 3, 14, 15, 16, 17, 18, 19],
+    rarity: 3,
+    dropRarity: 3,
+  },
+  {
+    id: 4,
+    name: "深渊魔王",
+    level: 4,
+    hp: 2000,
+    maxHp: 2000,
+    physicalAttack: 120,
+    magicAttack: 100,
+    defense: 50,
+    speed: 13,
+    exp: 1500,
+    skills: [1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19],
+    rarity: 4,
+    dropRarity: 4,
+  },
+  {
+    id: 5,
+    name: "混沌之神",
+    level: 5,
+    hp: 3000,
+    maxHp: 3000,
+    physicalAttack: 150,
+    magicAttack: 130,
+    defense: 70,
+    speed: 15,
+    exp: 2500,
+    skills: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    rarity: 5,
+    dropRarity: 5,
+  },
+];
+
+/**
+ * BOSS配置选项
+ */
+export const BOSS_CONFIG = {
+  COUNT: 2, // 每张地图刷新的BOSS数量
+  LEVEL_MULTIPLIER: 1.8, // BOSS等级属性提升系数（比普通敌人更高）
+  DROP_GUARANTEED: true, // BOSS是否必定掉落装备
+  DROP_MULTI_RARITY: true, // 是否掉落多件稀有装备
+  MIN_DROPS: 1, // 最小掉落数量
+  MAX_DROPS: 3, // 最大掉落数量
+  GOLD_MULTIPLIER: 3, // 金币奖励倍数
+  EXP_MULTIPLIER: 2.5, // 经验奖励倍数
+  // BOSS外观配置
+  STYLES: {
+    1: { color: "#22c55e", border: "#15803d", bg: "#14532d", glow: "rgba(34, 197, 94, 0.5)" },
+    2: { color: "#3b82f6", border: "#1d4ed8", bg: "#1e40af", glow: "rgba(59, 130, 246, 0.5)" },
+    3: { color: "#a855f7", border: "#7c3aed", bg: "#5b21b6", glow: "rgba(168, 85, 247, 0.5)" },
+    4: { color: "#f97316", border: "#ea580c", bg: "#c2410c", glow: "rgba(249, 115, 22, 0.5)" },
+    5: { color: "#ef4444", border: "#dc2626", bg: "#991b1b", glow: "rgba(239, 68, 68, 0.6)" },
+  },
+  // BOSS等级名称
+  RARITY_NAMES: {
+    1: "普通BOSS",
+    2: "精英BOSS",
+    3: "稀有BOSS",
+    4: "史诗BOSS",
+    5: "传说BOSS",
+  },
+};
+
+/**
  * 道具配置列表
  */
 export const ITEMS_CONFIG = [

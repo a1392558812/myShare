@@ -40,7 +40,7 @@
         <div class="char-avatar">勇者</div>
       </div>
 
-      <!-- 敌人 -->
+      <!-- 普通敌人 -->
       <div
         v-for="enemy in gameState.mapEnemies"
         :key="enemy.id"
@@ -58,6 +58,76 @@
           ></div>
         </div>
       </div>
+
+      <!-- BOSS敌人 -->
+      <div
+        v-for="boss in gameState.mapBosses"
+        :key="boss.id"
+        :x="boss.x"
+        :y="boss.y"
+        class="character boss-character"
+        :style="mapAreaRect ? getPosition(boss) : {}"
+        @click="handleBossClick(boss)"
+      >
+        <div 
+          class="char-avatar boss-avatar"
+          :style="getBossStyle(boss.rarity)"
+        >
+          {{ boss.name }}
+        </div>
+        <div class="char-hp-bar">
+          <div
+            class="hp-fill"
+            :style="{ width: (boss.hp / boss.maxHp) * 100 + '%' }"
+          ></div>
+        </div>
+        <div class="boss-badge" :style="getBossBadgeStyle(boss.rarity)">
+          {{ getBossRarityName(boss.rarity) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- BOSS战斗确认对话框 -->
+    <div v-if="showBossConfirm" class="boss-confirm-overlay" @click="cancelBossBattle">
+      <div class="boss-confirm-dialog" @click.stop>
+        <h3 class="boss-confirm-title">⚠️ BOSS挑战确认 ⚠️</h3>
+        <div class="boss-info">
+          <div class="boss-name">{{ selectedBoss?.name }}</div>
+          <div class="boss-rarity" :style="getBossRarityTextStyle(selectedBoss?.rarity)">
+            {{ getBossRarityName(selectedBoss?.rarity) }}
+          </div>
+          <div class="boss-stats">
+            <div class="stat-row">
+              <span class="stat-label">生命值:</span>
+              <span class="stat-value">{{ formatStat(selectedBoss?.hp) }} / {{ formatStat(selectedBoss?.maxHp) }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">物理攻击:</span>
+              <span class="stat-value">{{ selectedBoss?.physicalAttack }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">法术攻击:</span>
+              <span class="stat-value">{{ selectedBoss?.magicAttack }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">防御力:</span>
+              <span class="stat-value">{{ selectedBoss?.defense }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">经验奖励:</span>
+              <span class="stat-value">{{ selectedBoss?.exp }}</span>
+            </div>
+          </div>
+          <div class="boss-warning">
+            <p>⚠️ 警告：挑战BOSS可能会非常困难！</p>
+            <p>但奖励也会非常丰厚！</p>
+          </div>
+        </div>
+        <div class="boss-confirm-buttons">
+          <button class="cancel-btn" @click="cancelBossBattle">取消</button>
+          <button class="confirm-btn" @click="startBossBattle">挑战BOSS</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -66,19 +136,50 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { gameState, gameActions } from "../stores/gameStore.js";
 import { formatStat } from "../stores/utils.js";
-import { GAME_CONFIG } from "../stores/constants.js";
-import { generateMapEnemies } from "../stores/enemy.js";
+import { GAME_CONFIG, BOSS_CONFIG } from "../stores/constants.js";
+import { generateMapEnemies, generateMapBosses } from "../stores/enemy.js";
 
 const mapLevelInput = ref(gameState.mapLevel);
 const mapAreaRef = ref(null);
 const mapAreaRect = ref(null);
+const showBossConfirm = ref(false);
+const selectedBoss = ref(null);
 
 const getPosition = (target) => {
   return {
     left: mapAreaRect.value.width * target.x / 100 + 'px',
     top: mapAreaRect.value.height * target.y / 100 + 'px',
   };
-}
+};
+
+const getBossStyle = (rarity) => {
+  const style = BOSS_CONFIG.STYLES[rarity];
+  return {
+    background: `linear-gradient(135deg, ${style.bg}, ${style.border})`,
+    borderColor: style.border,
+    boxShadow: `0 0 20px ${style.glow}, 0 0 40px ${style.glow}`,
+  };
+};
+
+const getBossBadgeStyle = (rarity) => {
+  const style = BOSS_CONFIG.STYLES[rarity];
+  return {
+    background: style.color,
+    borderColor: style.border,
+    boxShadow: `0 0 10px ${style.glow}`,
+  };
+};
+
+const getBossRarityTextStyle = (rarity) => {
+  const style = BOSS_CONFIG.STYLES[rarity];
+  return {
+    color: style.color,
+  };
+};
+
+const getBossRarityName = (rarity) => {
+  return BOSS_CONFIG.RARITY_NAMES[rarity];
+};
 
 const getLevelMultiplier = () => {
   if (!gameState.mapLevel || gameState.mapLevel <= 1) {
@@ -96,28 +197,27 @@ const updateMapLevel = () => {
 
   if (gameState.mapLevel !== mapLevelInput.value) {
     gameState.mapLevel = mapLevelInput.value;
-    // 刷新地图敌人以应用新等级
     gameState.mapEnemies = generateMapEnemies(gameState.mapLevel, gameState.player.x, gameState.player.y);
+    gameState.mapBosses = generateMapBosses(gameState.mapLevel, gameState.player.x, gameState.player.y);
     gameActions.endBattle();
   }
 };
 
-// 移动
 const move = (dx, dy) => {
   let temDx = dx;
   let temDy = dy;
   if (gameState.player.x / 100 * mapAreaRect.value.width + 56 + dx >= mapAreaRect.value.width) {
     temDx = (mapAreaRect.value.width - gameState.player.x / 100 * mapAreaRect.value.width - 56) / mapAreaRect.value.width * 100;
   } else if (gameState.player.x / 100 * mapAreaRect.value.width + dx <= 0) {
-    temDx = 0 - gameState.player.x
+    temDx = 0 - gameState.player.x;
   } else {
     temDx = dx / mapAreaRect.value.width * 100;
   }
 
-  if (gameState.player.y / 100 * mapAreaRect.value.height +56+ dy >= mapAreaRect.value.height) {
+  if (gameState.player.y / 100 * mapAreaRect.value.height + 56 + dy >= mapAreaRect.value.height) {
     temDy = (mapAreaRect.value.height - gameState.player.y / 100 * mapAreaRect.value.height - 56) / mapAreaRect.value.height * 100;
   } else if (gameState.player.y / 100 * mapAreaRect.value.height + dy <= 0) {
-    temDy = 0 - gameState.player.y
+    temDy = 0 - gameState.player.y;
   } else {
     temDy = dy / mapAreaRect.value.height * 100;
   }
@@ -126,7 +226,6 @@ const move = (dx, dy) => {
   checkNearbyEnemies();
 };
 
-// 检查附近敌人
 const checkNearbyEnemies = () => {
   for (const enemy of gameState.mapEnemies) {
     const dist = Math.sqrt(
@@ -134,18 +233,32 @@ const checkNearbyEnemies = () => {
         Math.pow(mapAreaRect.value.height * gameState.player.y / 100 - mapAreaRect.value.height * enemy.y / 100, 2),
     );
     if (dist < 60) {
-      gameActions.startBattle();
+      gameActions.startBattle(enemy);
       break;
     }
   }
 };
 
-// 点击敌人
 const handleEnemyClick = (enemy) => {
   gameActions.startBattle(enemy);
 };
 
-// 键盘控制
+const handleBossClick = (boss) => {
+  selectedBoss.value = boss;
+  showBossConfirm.value = true;
+};
+
+const cancelBossBattle = () => {
+  showBossConfirm.value = false;
+  selectedBoss.value = null;
+};
+
+const startBossBattle = () => {
+  showBossConfirm.value = false;
+  gameActions.startBattle(selectedBoss.value);
+  selectedBoss.value = null;
+};
+
 const handleKeydown = (e) => {
   switch (e.key) {
     case "ArrowUp":
@@ -294,6 +407,27 @@ onUnmounted(() => {
   font-size: 10px;
 }
 
+.boss-character {
+  z-index: 10;
+}
+
+.boss-avatar {
+  width: 70px;
+  height: 70px;
+  font-size: 12px;
+  border: 4px solid;
+  animation: bossPulse 2s ease-in-out infinite;
+}
+
+@keyframes bossPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
 .char-hp-bar {
   width: 40px;
   height: 6px;
@@ -306,6 +440,154 @@ onUnmounted(() => {
     height: 100%;
     background: linear-gradient(90deg, #ff4757, #ff6b81);
     transition: width 0.3s;
+  }
+}
+
+.boss-character .char-hp-bar {
+  width: 60px;
+  height: 8px;
+
+  .hp-fill {
+    background: linear-gradient(90deg, #ffd700, #ffed4a);
+  }
+}
+
+.boss-badge {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+  border: 2px solid;
+}
+
+.boss-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.boss-confirm-dialog {
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border: 3px solid #fbbf24;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 0 50px rgba(251, 191, 36, 0.3);
+}
+
+.boss-confirm-title {
+  margin: 0 0 24px 0;
+  color: #fbbf24;
+  font-size: 24px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.boss-info {
+  .boss-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .boss-rarity {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .boss-stats {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .stat-label {
+    color: #9ca3af;
+    font-size: 14px;
+  }
+
+  .stat-value {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .boss-warning {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 24px;
+
+    p {
+      margin: 4px 0;
+      color: #fca5a5;
+      font-size: 14px;
+    }
+  }
+}
+
+.boss-confirm-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.cancel-btn,
+.confirm-btn {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background: #374151;
+  color: white;
+
+  &:hover {
+    background: #4b5563;
+  }
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1e293b;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
   }
 }
 </style>

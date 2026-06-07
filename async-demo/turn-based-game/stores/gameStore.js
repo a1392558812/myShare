@@ -53,6 +53,9 @@ import {
   generateBattleEnemies,
   convertMapEnemyToBattleEnemy,
   generateExtraBattleEnemies,
+  generateMapBosses,
+  removeBossFromMap,
+  refreshMapBosses,
 } from "./enemy.js";
 import { loadSave, saveGame } from "./storage.js";
 import {
@@ -63,13 +66,14 @@ import {
 } from "./equipment.js";
 
 const savedData = loadSave();
-console.log("加载存档:", savedData);
+console.log('加载存档:', savedData);
 export const gameState = reactive({
   screen: "map",
   player: loadPlayerData(savedData?.player),
   pet: loadPetData(savedData?.pet),
   mapLevel: savedData?.mapLevel || GAME_CONFIG.MAP.DEFAULT_LEVEL,
   mapEnemies: savedData ? savedData.mapEnemies : generateMapEnemies(GAME_CONFIG.MAP.DEFAULT_LEVEL, loadPlayerData(savedData?.player).x, loadPlayerData(savedData?.player).y),
+  mapBosses: savedData ? savedData.mapBosses : generateMapBosses(GAME_CONFIG.MAP.DEFAULT_LEVEL, loadPlayerData(savedData?.player).x, loadPlayerData(savedData?.player).y),
   currentBattle: null,
   battleLog: [],
   battleResult: null,
@@ -86,6 +90,7 @@ watch(
     pet: gameState.pet,
     mapLevel: gameState.mapLevel,
     mapEnemies: gameState.mapEnemies,
+    mapBosses: gameState.mapBosses,
   }),
   (newState) => {
     console.log("游戏状态更新:", newState);
@@ -305,8 +310,10 @@ export const gameActions = {
 
   endBattle() {
     removeEnemyFromMap(gameState);
+    removeBossFromMap(gameState);
     gameState.screen = "map";
     gameState.currentBattle = null;
     refreshMapEnemies(gameState);
+    refreshMapBosses(gameState);
   },
 };

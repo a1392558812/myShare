@@ -1,7 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePetStats, useItem } from "./player.js";
 import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
-import { applyDamage } from "./utils.js";
+import { calculateSkillCost, applyDamage } from "./utils.js";
 
 export const petAttack = (gameState, targetIndex = 0) => {
   if (!gameState.currentBattle) return;
