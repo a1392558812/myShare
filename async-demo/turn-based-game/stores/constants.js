@@ -447,9 +447,9 @@ export const SKILLS_CONFIG = [
     cost: 25,
     healPercent: 0.15,
     manaPercent: 0.1,
-    duration: 3,
+    duration: 5,
     targetType: "single",
-    description: "消耗25法力，对单个己方恢复15%生命和10%法力，持续3回合",
+    description: "消耗25法力，对单个己方恢复15%生命和10%法力，持续5回合",
   },
   {
     id: 5,
@@ -458,9 +458,9 @@ export const SKILLS_CONFIG = [
     cost: 40,
     healPercent: 0.1,
     manaPercent: 0.08,
-    duration: 3,
+    duration: 5,
     targetType: "all",
-    description: "消耗40法力，对己方所有人恢复10%生命和8%法力，持续3回合",
+    description: "消耗40法力，对己方所有人恢复10%生命和8%法力，持续5回合",
   },
   {
     id: 6,
@@ -469,10 +469,10 @@ export const SKILLS_CONFIG = [
     cost: 30,
     physicalMultiplier: 1.5,
     magicMultiplier: 1.2,
-    duration: 3,
+    duration: 5,
     targetType: "single",
     description:
-      "消耗30法力，对单个己方增加1.5倍物理攻击和1.2倍法术攻击，持续3回合",
+      "消耗30法力，对单个己方增加1.5倍物理攻击和1.2倍法术攻击，持续5回合",
   },
   {
     id: 7,
@@ -481,10 +481,10 @@ export const SKILLS_CONFIG = [
     cost: 50,
     physicalMultiplier: 1.5,
     magicMultiplier: 1.2,
-    duration: 3,
+    duration: 5,
     targetType: "all",
     description:
-      "消耗50法力，对己方所有人增加1.5倍物理攻击和1.2倍法术攻击，持续3回合",
+      "消耗50法力，对己方所有人增加1.5倍物理攻击和1.2倍法术攻击，持续5回合",
   },
   {
     id: 8,
@@ -492,9 +492,9 @@ export const SKILLS_CONFIG = [
     type: "buff_defense_single",
     cost: 25,
     defenseMultiplier: 1.5,
-    duration: 3,
+    duration: 5,
     targetType: "single",
-    description: "消耗25法力，对单个己方增加1.5倍防御，持续3回合",
+    description: "消耗25法力，对单个己方增加1.5倍防御，持续5回合",
   },
   {
     id: 9,
@@ -502,9 +502,9 @@ export const SKILLS_CONFIG = [
     type: "buff_defense_all",
     cost: 45,
     defenseMultiplier: 1.5,
-    duration: 3,
+    duration: 5,
     targetType: "all",
-    description: "消耗45法力，对己方所有人增加1.5倍防御，持续3回合",
+    description: "消耗45法力，对己方所有人增加1.5倍防御，持续5回合",
   },
   {
     id: 10,
@@ -512,9 +512,9 @@ export const SKILLS_CONFIG = [
     type: "buff_speed_single",
     cost: 20,
     speedMultiplier: 1.5,
-    duration: 3,
+    duration: 5,
     targetType: "single",
-    description: "消耗20法力，对单个己方增加1.5倍速度，持续3回合",
+    description: "消耗20法力，对单个己方增加1.5倍速度，持续5回合",
   },
   {
     id: 11,
@@ -522,9 +522,9 @@ export const SKILLS_CONFIG = [
     type: "buff_speed_all",
     cost: 35,
     speedMultiplier: 1.5,
-    duration: 3,
+    duration: 5,
     targetType: "all",
-    description: "消耗35法力，对己方所有人增加1.5倍速度，持续3回合",
+    description: "消耗35法力，对己方所有人增加1.5倍速度，持续5回合",
   },
   {
     id: 12,
@@ -535,7 +535,7 @@ export const SKILLS_CONFIG = [
     successRate: 0.3,
     targetType: "single",
     description:
-      "消耗30法力，对单个敌人进行封印，30%概率成功，成功后敌人每回合跳过行动，持续2回合",
+      "消耗30法力，对单个敌人进行封印，30%概率成功，成功后敌人每回合跳过行动，持续5回合",
   },
   {
     id: 13,
@@ -547,7 +547,7 @@ export const SKILLS_CONFIG = [
     targetCount: 3,
     targetType: "all",
     description:
-      "消耗50法力，对随机3个敌人进行封印，每个敌人30%概率成功，成功后每回合跳过行动，持续2回合",
+      "消耗50法力，对随机3个敌人进行封印，每个敌人30%概率成功，成功后每回合跳过行动，持续5回合",
   },
   {
     id: 14,
@@ -560,7 +560,7 @@ export const SKILLS_CONFIG = [
     manaDamagePercent: 0.05,
     targetType: "single",
     description:
-      "消耗25法力，对单个敌人进行中毒，50%概率成功，成功后每回合受到8%生命和5%法力伤害，持续3回合",
+      "消耗25法力，对单个敌人进行中毒，50%概率成功，成功后每回合受到8%生命和5%法力伤害，持续5回合",
   },
   {
     id: 15,
@@ -574,7 +574,7 @@ export const SKILLS_CONFIG = [
     targetCount: 3,
     targetType: "all",
     description:
-      "消耗45法力，对随机3个敌人进行中毒，每个敌人50%概率成功，成功后每回合受到8%生命和5%法力伤害，持续3回合",
+      "消耗45法力，对随机3个敌人进行中毒，每个敌人50%概率成功，成功后每回合受到8%生命和5%法力伤害，持续5回合",
   },
   {
     id: 16,
@@ -585,7 +585,7 @@ export const SKILLS_CONFIG = [
     successRate: 0.7,
     targetType: "single",
     description:
-      "消耗35法力，对单个敌人进行冰冻，70%概率成功，成功后敌人每回合跳过行动且免疫伤害，持续2回合",
+      "消耗35法力，对单个敌人进行冰冻，70%概率成功，成功后敌人每回合跳过行动且免疫伤害，持续5回合",
   },
   {
     id: 17,
@@ -597,7 +597,7 @@ export const SKILLS_CONFIG = [
     targetCount: 3,
     targetType: "all",
     description:
-      "消耗60法力，对随机3个敌人进行冰冻，每个敌人70%概率成功，成功后每回合跳过行动且免疫伤害，持续2回合",
+      "消耗60法力，对随机3个敌人进行冰冻，每个敌人70%概率成功，成功后每回合跳过行动且免疫伤害，持续5回合",
   },
   {
     id: 18,
@@ -608,7 +608,7 @@ export const SKILLS_CONFIG = [
     successRate: 0.3,
     targetType: "single",
     description:
-      "消耗30法力，对单个敌人进行混乱，30%概率成功，成功后敌人每回合随机攻击，不分敌我，持续2回合",
+      "消耗30法力，对单个敌人进行混乱，30%概率成功，成功后敌人每回合随机攻击，不分敌我，持续5回合",
   },
   {
     id: 19,
@@ -620,7 +620,7 @@ export const SKILLS_CONFIG = [
     targetCount: 3,
     targetType: "all",
     description:
-      "消耗50法力，对随机3个敌人进行混乱，每个敌人30%概率成功，成功后每回合随机攻击，不分敌我，持续2回合",
+      "消耗50法力，对随机3个敌人进行混乱，每个敌人30%概率成功，成功后每回合随机攻击，不分敌我，持续5回合",
   },
 ];
 
