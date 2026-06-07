@@ -158,16 +158,19 @@ export const EQUIPMENT_CONFIG = {
     critRate: {
       coefficient: 1.0,
       name: "暴击率",
+      range: { min: 1, max: 30 }, // 取值范围：1~30
       exclusiveTypes: ["weapon", "leftRing", "rightRing", "belt"],
     },
     comboRate: {
       coefficient: 1.0,
       name: "连击率",
+      range: { min: 1, max: 30 }, // 取值范围：1~30
       exclusiveTypes: ["weapon", "leftRing", "rightRing", "belt"],
     },
     maxComboCount: {
       coefficient: 1.0,
       name: "连击次数",
+      range: { min: 1, max: 10 }, // 取值范围：1~30
       exclusiveTypes: ["necklace", "jade", "shoes"],
     },
     allStats: {
@@ -202,6 +205,13 @@ export const EQUIPMENT_CONFIG = {
       exclusiveTypes: ["belt", "shoes"],
       range: { min: 1, max: 20 }, // 取值范围：1~20
       description: "有X%概率闪避当次受到的物理伤害或法术伤害",
+    },
+    shockAbsorb: {
+      coefficient: 1.0,
+      name: "反震",
+      exclusiveTypes: ["necklace", "crown", "jade"],
+      range: { min: 1, max: 30 }, // 取值范围：1~30
+      description: "当受到物理伤害或法术伤害时，有X%概率令伤害来源受到同等伤害",
     },
   },
 };

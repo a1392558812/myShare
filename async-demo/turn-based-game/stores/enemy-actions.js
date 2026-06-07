@@ -379,6 +379,7 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, target
   if (defending && targetType !== "enemy") {
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
+  let currnetDamage = damage;
 
   // 优先判断闪避（只对玩家和宠物生效）
   if (targetType !== "enemy") {
@@ -390,13 +391,28 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, target
 
     // 闪避失败后，应用不动如山伤害上限
     const unshakableMountain = targetStats.unshakableMountain || 0;
-    damage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
+    currnetDamage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
   }
 
-  target.hp -= Math.floor(damage);
+  target.hp -= Math.floor(currnetDamage);
+
+  // 判断反震效果（只对玩家和宠物生效，且未死亡时触发）
+  if (targetType !== "enemy" && target.hp > 0) {
+    const shockAbsorbChance = targetStats.shockAbsorb || 0;
+    if (shockAbsorbChance > 0 && Math.random() * 100 < shockAbsorbChance) {
+      // 反震触发，对伤害来源（敌人）造成同等伤害
+      enemy.hp -= Math.floor(damage);
+      gameState.battleLog.push(`${targetName} 反震触发，${enemy.name}受到 ${Math.floor(damage)} 点反震伤害！`);
+      
+      // 检查敌人是否被反震打死
+      if (enemy.hp <= 0) {
+        gameState.battleLog.push(`${enemy.name} 被反震击败了！`);
+      }
+    }
+  }
 
   gameState.battleLog.push(
-    `${enemy.name} 释放 ${skill.name}${isCrit ? "【暴击！】" : ""}，${targetName}受到 ${damage.toFixed(
+    `${enemy.name} 释放 ${skill.name}${isCrit ? "【暴击！】" : ""}，${targetName}受到 ${currnetDamage.toFixed(
       UI_CONFIG.DECIMAL_PLACES,
     )} 点伤害`,
   );
@@ -435,6 +451,7 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
   if (defending && targetType !== "enemy") {
     damage = Math.floor(damage * aiConfig.DEFENSE_DAMAGE_REDUCTION);
   }
+  let currnetDamage = damage;
 
   // 优先判断闪避（只对玩家和宠物生效）
   if (targetType !== "enemy") {
@@ -446,13 +463,28 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
 
     // 闪避失败后，应用不动如山伤害上限
     const unshakableMountain = targetStats.unshakableMountain || 0;
-    damage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
+    currnetDamage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
   }
 
-  target.hp -= Math.floor(damage);
+  target.hp -= Math.floor(currnetDamage);
+
+  // 判断反震效果（只对玩家和宠物生效，且未死亡时触发）
+  if (targetType !== "enemy" && target.hp > 0) {
+    const shockAbsorbChance = targetStats.shockAbsorb || 0;
+    if (shockAbsorbChance > 0 && Math.random() * 100 < shockAbsorbChance) {
+      // 反震触发，对伤害来源（敌人）造成同等伤害
+      enemy.hp -= Math.floor(damage);
+      gameState.battleLog.push(`${targetName} 反震触发，${enemy.name}受到 ${Math.floor(damage)} 点反震伤害！`);
+      
+      // 检查敌人是否被反震打死
+      if (enemy.hp <= 0) {
+        gameState.battleLog.push(`${enemy.name} 被反震击败了！`);
+      }
+    }
+  }
 
   gameState.battleLog.push(
-    `${enemy.name} 攻击${targetName}${isCrit ? "【暴击！】" : ""}，${targetName}受到 ${damage.toFixed(
+    `${enemy.name} 攻击${targetName}${isCrit ? "【暴击！】" : ""}，${targetName}受到 ${currnetDamage.toFixed(
       UI_CONFIG.DECIMAL_PLACES,
     )} 点伤害`,
   );
@@ -496,18 +528,36 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
         comboDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER,
       );
     }
+    let currentComboDamage = comboDamage;
 
     // 连击伤害也应用不动如山伤害上限（闪避已在首次攻击时判断过，连击不再判断闪避）
     if (targetType !== "enemy") {
       const unshakableMountain = targetStats.unshakableMountain || 0;
-      comboDamage = applyUnshakableMountainLimit(comboDamage, target, unshakableMountain, gameState);
+      currentComboDamage = applyUnshakableMountainLimit(comboDamage, target, unshakableMountain, gameState);
     }
 
-    target.hp -= Math.floor(comboDamage);
+    target.hp -= Math.floor(currentComboDamage);
+
+    // 连击伤害也触发反震效果
+    if (targetType !== "enemy" && target.hp > 0) {
+      const shockAbsorbChance = targetStats.shockAbsorb || 0;
+      if (shockAbsorbChance > 0 && Math.random() * 100 < shockAbsorbChance) {
+        // 反震触发，对伤害来源（敌人）造成同等伤害
+        enemy.hp -= Math.floor(comboDamage);
+        gameState.battleLog.push(`${targetName} 反震触发，${enemy.name}受到 ${Math.floor(comboDamage)} 点反震伤害！`);
+        
+        // 检查敌人是否被反震打死
+        if (enemy.hp <= 0) {
+          gameState.battleLog.push(`${enemy.name} 被反震击败了！`);
+          break; // 敌人死亡，停止连击
+        }
+      }
+    }
+
     gameState.battleLog.push(
       `【连击${comboCount + 1}】${enemy.name}攻击${targetName}${
         isCritCombo ? "【暴击！】" : ""
-      }，${targetName}受到 ${comboDamage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`,
+      }，${targetName}受到 ${currentComboDamage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`,
     );
 
     currentComboRate *= comboProbDecay;

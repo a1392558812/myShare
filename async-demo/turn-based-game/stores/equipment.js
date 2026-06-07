@@ -276,6 +276,11 @@ export const generateCustomEquipment = (
       const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.dodge?.range || { min: 1, max: 20 };
       bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
     }
+    // 反震词缀限制取值范围
+    if (stat === "shockAbsorb") {
+      const range = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL.shockAbsorb?.range || { min: 1, max: 20 };
+      bonusAffixes[stat] = Math.max(range.min, Math.min(bonusAffixes[stat], range.max));
+    }
   }
 
   return {
@@ -405,6 +410,10 @@ export const generateSingleBonusAffix = (type, level, rarity, existingAffixes = 
   }
   if (selectedStat === "dodge") {
     const range = bonusPool.dodge?.range || { min: 1, max: 20 };
+    value = Math.max(range.min, Math.min(value, range.max));
+  }
+  if (selectedStat === "shockAbsorb") {
+    const range = bonusPool.shockAbsorb?.range || { min: 1, max: 20 };
     value = Math.max(range.min, Math.min(value, range.max));
   }
 

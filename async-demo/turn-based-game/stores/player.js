@@ -27,6 +27,7 @@ export const calculatePlayerStats = (player) => {
     ignoreDebuffResist: 0, // 忽视障碍异常
     unshakableMountain: 0, // 不动如山：伤害上限百分比
     dodge: 0, // 闪避：概率免疫伤害
+    shockAbsorb: 0, // 反震：受到伤害时概率反弹同等伤害
   };
 
   for (const stat in BASE_STATS) {
@@ -418,6 +419,7 @@ export const calculatePetStats = (pet) => {
     ignoreDebuffResist: 0, // 忽视障碍异常
     unshakableMountain: 0, // 不动如山：伤害上限百分比
     dodge: 0, // 闪避率(%)，基础值 0，宠物升级或装备可能增加
+    shockAbsorb: 0, // 反震：受到伤害时概率反弹同等伤害
   };
 
   // 1. 初始化基础属性
