@@ -303,7 +303,7 @@ export const GAME_CONFIG = {
   // 战斗敌人数量配置
   BATTLE_ENEMIES: {
     MIN_COUNT: 1, // 最小敌人数量
-    MAX_COUNT: 4, // 最大敌人数量
+    MAX_COUNT: 5, // 最大敌人数量
   },
   // 战斗奖励配置
   BATTLE_REWARD: {
@@ -917,8 +917,8 @@ export const PLAYER_CONFIG = {
   INITIAL_SKILL_INDICES: [1], // 初始技能ID（火球术ID=1）
   INITIAL_ITEMS: [
     // 初始道具
-    { id: 1, count: 3 }, // 3个生命药水
-    { id: 3, count: 2 }, // 2个法力药水
+    { id: 1, count: 30 }, // 3个生命药水
+    { id: 3, count: 20 }, // 2个法力药水
   ],
   // 玩家升级配置
   LEVEL_UP: {

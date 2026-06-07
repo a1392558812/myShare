@@ -1,6 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePetStats, useItem } from "./player.js";
 import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
+import { applyDamage } from "./utils.js";
 
 export const petAttack = (gameState, targetIndex = 0) => {
   if (!gameState.currentBattle) return;
@@ -55,7 +56,7 @@ export const petAttack = (gameState, targetIndex = 0) => {
     damage = Math.floor(damage * critMultiplier);
   }
 
-  enemy.hp -= Math.floor(damage);
+  applyDamage(enemy, damage);
   gameState.battleLog.push(
     `${pet.name} 使用普通攻击${isCrit ? "【暴击！】" : ""}，${enemy.name}受到 ${damage.toFixed(
       UI_CONFIG.DECIMAL_PLACES,
@@ -85,7 +86,7 @@ export const petAttack = (gameState, targetIndex = 0) => {
       comboDamage = Math.floor(comboDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER);
     }
     comboDamage = Math.floor(comboDamage) || 1;
-    enemy.hp -= comboDamage;
+    applyDamage(enemy, comboDamage);
     gameState.battleLog.push(
       `【连击${comboCount + 1}】${isCritCombo ? "【暴击！】" : ""}${
         enemy.name
@@ -182,7 +183,7 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
         damage = Math.floor(damage * critMultiplier);
       }
 
-      enemy.hp -= Math.floor(damage);
+      applyDamage(enemy, damage);
 
       gameState.battleLog.push(
         `${skill.name}${isCrit ? "【暴击！】" : ""}，${enemy.name}受到 ${damage.toFixed(
@@ -218,7 +219,7 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
           );
         }
 
-        enemy.hp -= Math.floor(comboDamage);
+        applyDamage(enemy, comboDamage);
         gameState.battleLog.push(
           `【连击${comboCount + 1}】${skill.name}${isCritCombo ? "【暴击！】" : ""}，${
             enemy.name
@@ -267,7 +268,7 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
       damage = Math.floor(damage * critMultiplier);
     }
 
-    enemy.hp -= Math.floor(damage);
+    applyDamage(enemy, damage);
 
     gameState.battleLog.push(
       `${pet.name} 释放 ${skill.name}${isCrit ? "【暴击！】" : ""}，${enemy.name}受到 ${damage.toFixed(
@@ -300,7 +301,7 @@ const petUseMagicSkill = (gameState, skill, pet, enemies, targetIndex) => {
         );
       }
 
-      enemy.hp -= Math.floor(comboDamage);
+      applyDamage(enemy, comboDamage);
       gameState.battleLog.push(
         `【连击${comboCount + 1}】${skill.name}${isCritCombo ? "【暴击！】" : ""}${
           enemy.name

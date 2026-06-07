@@ -1,7 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, calculatePetStats } from "./player.js";
 import { aiConfig, applyDebuff, isTargetFrozen } from "./battle-utils.js";
-import { applyUnshakableMountainLimit, checkDodge } from "./utils.js";
+import { applyUnshakableMountainLimit, checkDodge, applyDamage } from "./utils.js";
 
 export const performEnemyAttack = (gameState, enemy, isConfused = false) => {
   const player = gameState.player;
@@ -394,14 +394,14 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, target
     currnetDamage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
   }
 
-  target.hp -= Math.floor(currnetDamage);
+  applyDamage(target, currnetDamage);
 
   // 判断反震效果（只对玩家和宠物生效，且未死亡时触发）
   if (targetType !== "enemy" && target.hp > 0) {
     const shockAbsorbChance = targetStats.shockAbsorb || 0;
     if (shockAbsorbChance > 0 && Math.random() * 100 < shockAbsorbChance) {
       // 反震触发，对伤害来源（敌人）造成同等伤害
-      enemy.hp -= Math.floor(damage);
+      applyDamage(enemy, damage);
       gameState.battleLog.push(`${targetName} 反震触发，${enemy.name}受到 ${Math.floor(damage)} 点反震伤害！`);
       
       // 检查敌人是否被反震打死
@@ -466,14 +466,14 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
     currnetDamage = applyUnshakableMountainLimit(damage, target, unshakableMountain, gameState);
   }
 
-  target.hp -= Math.floor(currnetDamage);
+  applyDamage(target, currnetDamage);
 
   // 判断反震效果（只对玩家和宠物生效，且未死亡时触发）
   if (targetType !== "enemy" && target.hp > 0) {
     const shockAbsorbChance = targetStats.shockAbsorb || 0;
     if (shockAbsorbChance > 0 && Math.random() * 100 < shockAbsorbChance) {
       // 反震触发，对伤害来源（敌人）造成同等伤害
-      enemy.hp -= Math.floor(damage);
+      applyDamage(enemy, damage);
       gameState.battleLog.push(`${targetName} 反震触发，${enemy.name}受到 ${Math.floor(damage)} 点反震伤害！`);
       
       // 检查敌人是否被反震打死
@@ -536,14 +536,14 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
       currentComboDamage = applyUnshakableMountainLimit(comboDamage, target, unshakableMountain, gameState);
     }
 
-    target.hp -= Math.floor(currentComboDamage);
+    applyDamage(target, currentComboDamage);
 
     // 连击伤害也触发反震效果
     if (targetType !== "enemy" && target.hp > 0) {
       const shockAbsorbChance = targetStats.shockAbsorb || 0;
       if (shockAbsorbChance > 0 && Math.random() * 100 < shockAbsorbChance) {
         // 反震触发，对伤害来源（敌人）造成同等伤害
-        enemy.hp -= Math.floor(comboDamage);
+        applyDamage(enemy, comboDamage);
         gameState.battleLog.push(`${targetName} 反震触发，${enemy.name}受到 ${Math.floor(comboDamage)} 点反震伤害！`);
         
         // 检查敌人是否被反震打死

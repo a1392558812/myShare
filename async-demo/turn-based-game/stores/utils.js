@@ -82,6 +82,18 @@ export const checkDodge = (target, dodgeChance) => {
 };
 
 /**
+ * 对目标应用伤害，确保血量不会低于0
+ * @param {Object} target - 目标对象（玩家、宠物或敌人）
+ * @param {number} damage - 伤害值
+ * @returns {number} 实际受到的伤害（不会超过目标当前血量）
+ */
+export const applyDamage = (target, damage) => {
+  const actualDamage = Math.floor(damage);
+  target.hp = Math.max(0, target.hp - actualDamage);
+  return actualDamage;
+};
+
+/**
  * 获取普通词条的名称
  * 优先从 STAT_CONFIG.NAMES 中获取，如果没有则使用 stat 本身
  */

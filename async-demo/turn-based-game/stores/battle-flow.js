@@ -5,6 +5,7 @@ import { executePlayerDecision } from "./player-actions.js";
 import { executePetDecision } from "./pet-actions.js";
 import { performEnemyAttack } from "./enemy-actions.js";
 import { getRandomEquipment, RARITY_NAMES } from "./equipment.js";
+import { applyDamage } from "./utils.js";
 
 const executeTurnOrder = (
   gameState,
@@ -219,7 +220,7 @@ const executePlayerConfusedAttack = (gameState, player) => {
     let baseDamage = Math.max(1, playerStats.physicalAttack - chosenTarget.target.defense);
     let damage = isCrit ? Math.floor(baseDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER) : baseDamage;
     
-    chosenTarget.target.hp -= Math.floor(damage);
+    applyDamage(chosenTarget.target, damage);
     gameState.battleLog.push(
       `你 混乱中攻击了 ${chosenTarget.target.name}${isCrit ? '【暴击！】' : ''}，造成 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`
     );
@@ -239,7 +240,7 @@ const executePlayerConfusedAttack = (gameState, player) => {
     let baseDamage = Math.max(1, playerStats.physicalAttack - petStats.defense);
     let damage = isCrit ? Math.floor(baseDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER) : baseDamage;
     
-    chosenTarget.target.hp -= Math.floor(damage);
+    applyDamage(chosenTarget.target, damage);
     gameState.battleLog.push(
       `你 混乱中攻击了 ${pet.name}${isCrit ? '【暴击！】' : ''}，造成 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`
     );
@@ -287,7 +288,7 @@ const executePetConfusedAttack = (gameState, pet) => {
     let baseDamage = Math.max(1, petStats.physicalAttack - chosenTarget.target.defense);
     let damage = isCrit ? Math.floor(baseDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER) : baseDamage;
     
-    chosenTarget.target.hp -= Math.floor(damage);
+    applyDamage(chosenTarget.target, damage);
     gameState.battleLog.push(
       `${pet.name} 混乱中攻击了 ${chosenTarget.target.name}${isCrit ? '【暴击！】' : ''}，造成 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`
     );
@@ -307,7 +308,7 @@ const executePetConfusedAttack = (gameState, pet) => {
     let baseDamage = Math.max(1, petStats.physicalAttack - playerStats.defense);
     let damage = isCrit ? Math.floor(baseDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER) : baseDamage;
     
-    chosenTarget.target.hp -= Math.floor(damage);
+    applyDamage(chosenTarget.target, damage);
     gameState.battleLog.push(
       `${pet.name} 混乱中攻击了你${isCrit ? '【暴击！】' : ''}，造成 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`
     );

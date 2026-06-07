@@ -1,7 +1,7 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
 import { calculatePlayerStats, useItem } from "./player.js";
 import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
-import { calculateSkillCost, applyUnshakableMountainLimit } from "./utils.js";
+import { calculateSkillCost, applyUnshakableMountainLimit, applyDamage } from "./utils.js";
 
 export const playerAttack = (gameState, targetIndex = 0) => {
   if (!gameState.currentBattle) return;
@@ -48,7 +48,7 @@ export const playerAttack = (gameState, targetIndex = 0) => {
     damage = Math.floor(damage * critMultiplier);
   }
 
-  enemy.hp -= Math.floor(damage);
+  applyDamage(enemy, damage);
   gameState.battleLog.push(
     `你 使用普通攻击${isCrit ? "【暴击！】" : ""}，${enemy.name}受到 ${damage.toFixed(
       UI_CONFIG.DECIMAL_PLACES,
@@ -76,7 +76,7 @@ export const playerAttack = (gameState, targetIndex = 0) => {
       comboDamage = Math.floor(comboDamage * GAME_CONFIG.CRIT.CRIT_MULTIPLIER);
     }
     comboDamage = Math.floor(comboDamage) || 1;
-    enemy.hp -= comboDamage;
+    applyDamage(enemy, comboDamage);
     gameState.battleLog.push(
       `【连击${comboCount + 1}】${isCritCombo ? "【暴击！】" : ""}${enemy.name}受到 ${comboDamage.toFixed(
         UI_CONFIG.DECIMAL_PLACES,
@@ -160,8 +160,7 @@ const playerUseMagicSkill = (gameState, skill, player, enemies, targetIndex) => 
         damage = Math.floor(damage * critMultiplier);
       }
 
-      enemy.hp -= Math.floor(damage);
-
+      applyDamage(enemy, damage);
       gameState.battleLog.push(
         `${skill.name}${isCrit ? "【暴击！】" : ""}，${enemy.name}受到 ${damage.toFixed(
           UI_CONFIG.DECIMAL_PLACES,
@@ -194,7 +193,7 @@ const playerUseMagicSkill = (gameState, skill, player, enemies, targetIndex) => 
           );
         }
 
-        enemy.hp -= Math.floor(comboDamage);
+        applyDamage(enemy, comboDamage);
         gameState.battleLog.push(
           `【连击${comboCount + 1}】${skill.name}${isCritCombo ? "【暴击！】" : ""}，${
             enemy.name
@@ -241,7 +240,7 @@ const playerUseMagicSkill = (gameState, skill, player, enemies, targetIndex) => 
       damage = Math.floor(damage * critMultiplier);
     }
 
-    enemy.hp -= Math.floor(damage);
+    applyDamage(enemy, damage);
 
     gameState.battleLog.push(
       `你 释放 ${skill.name}${isCrit ? "【暴击！】" : ""}，${enemy.name}受到 ${damage.toFixed(
@@ -272,9 +271,9 @@ const playerUseMagicSkill = (gameState, skill, player, enemies, targetIndex) => 
         );
       }
 
-      enemy.hp -= Math.floor(comboDamage);
+      applyDamage(enemy, comboDamage);
       gameState.battleLog.push(
-        `【连击${comboCount + 1}】${skill.name}${isCritCombo ? "【暴击！】" : ""}${
+        `【连击${comboCount + 1}】${skill.name}${isCritCombo ? "【暴击！】" : ""}，${
           enemy.name
         }受到 ${comboDamage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害`,
       );
