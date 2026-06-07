@@ -963,3 +963,5 @@ export const PET_CONFIG = {
 };
 
 export const STORAGE_KEY = "turn_based_game_save";
+export const IS_DOCUMENT_MODE = "is_document_mode"
+export const IS_DEBUG_MODE = "is_debug_mode"

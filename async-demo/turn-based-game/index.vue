@@ -4,10 +4,6 @@
       <div v-if="gameState.screen !== 'battle'" class="game-header">
         <h1>ai生成的回合制小游戏</h1>
         <div class="header-info">
-          <div class="debug-mode">
-            <label for="debug-mode">查看文档</label>
-            <input id="debug-mode" type="checkbox" v-model="isDebugMode" />
-          </div>
           <div class="gold-display">💰 {{ gameState.player.gold }}</div>
           <button class="common-btn game-btn" @click="openCharacterPanel">
             角色信息
@@ -30,9 +26,22 @@
         <Shop v-else-if="gameState.screen === 'shop'" />
         <SkillManager v-else-if="gameState.screen === 'skill'" />
       </div>
+      <div v-if="gameState.screen !== 'battle'" class="game-footer">
+        <div>按wasd或↑↓←→移动，或点击敌人开始战斗</div>
+        <div>
+          <div class="debug-mode">
+            <label for="document-mode">查看文档</label>
+            <input id="document-mode" type="checkbox" v-model="isDocumentMode" @input="onDocumentModeChange"/>
+          </div>
+           <div class="debug-mode">
+            <label for="debug-mode">开启调试</label>
+            <input id="debug-mode" type="checkbox" v-model="isDebugMode" @input="onDebugModeChange"/>
+          </div>
+        </div>
+      </div>
       <DebugPanel v-if="isDebugMode" />
     </div>
-    <markdownFn v-if="isDebugMode" :text="markdownStr" />
+    <markdownFn v-if="isDocumentMode" :text="markdownStr" />
   </div>
 </template>
 
@@ -46,6 +55,7 @@ import Shop from "./components/Shop.vue";
 import SkillManager from "./components/SkillManager.vue";
 import DebugPanel from "./components/DebugPanel.vue";
 import { ref } from "vue";
+import { IS_DOCUMENT_MODE, IS_DEBUG_MODE } from "./stores/constants.js";
 
 const props = defineProps({
   markdownComponent: {
@@ -55,13 +65,21 @@ const props = defineProps({
 });
 
 const markdownFn = props.markdownComponent();
+const isDebugMode = ref(localStorage.getItem(IS_DEBUG_MODE) === "true");
+const isDocumentMode = ref(localStorage.getItem(IS_DOCUMENT_MODE) === "true");
 
-const isDebugMode = ref(false);
 const markdownStr = ref("加载中...");
 fetch("./async-demo/turn-based-game/需求.md")
   .then((res) => res.text())
   .then((text) => (markdownStr.value = text));
 
+const onDocumentModeChange = (e) => {
+  localStorage.setItem(IS_DOCUMENT_MODE, !isDocumentMode.value);
+};
+
+const onDebugModeChange = (e) => {
+  localStorage.setItem(IS_DEBUG_MODE, !isDebugMode.value);
+};
 const openShop = () => {
   gameActions.setScreen("shop");
 };
@@ -95,6 +113,7 @@ const resetGame = () => {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
 }
 
 .game-header {
@@ -118,13 +137,6 @@ const resetGame = () => {
   align-items: center;
   gap: 16px;
   color: white;
-  .debug-mode {
-    display: flex;
-    align-items: center;
-    label,input {
-      cursor: pointer;
-    }
-  }
   .gold-display {
     font-size: 18px;
     font-weight: bold;
@@ -167,5 +179,16 @@ const resetGame = () => {
   width: 100%;
   height: 100%;
   min-height: 700px;
+}
+.game-footer {
+  padding: 0 24px;
+  color: #fff;
+  .debug-mode {
+    display: flex;
+    align-items: center;
+    label,input {
+      cursor: pointer;
+    }
+  }
 }
 </style>

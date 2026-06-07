@@ -59,21 +59,6 @@
         </div>
       </div>
     </div>
-
-    <div class="map-controls">
-      <div class="d-pad">
-        <button @click="move(0, -10)" class="d-btn up">↑</button>
-        <div class="d-row">
-          <button @click="move(-10, 0)" class="d-btn left">←</button>
-          <button @click="move(10, 0)" class="d-btn right">→</button>
-        </div>
-        <button @click="move(0, 10)" class="d-btn down">↓</button>
-      </div>
-    </div>
-
-    <div class="map-hint">
-      <p>点击敌人或移动到敌人附近开始战斗！</p>
-    </div>
   </div>
 </template>
 
@@ -201,7 +186,6 @@ onUnmounted(() => {
 .map-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   height: 100%;
 }
 
@@ -211,7 +195,6 @@ onUnmounted(() => {
   align-items: center;
   padding: 12px 16px;
   background: rgba(0, 0, 0, 0.7);
-  border-radius: 8px;
   color: white;
 
   h3 {
@@ -261,9 +244,10 @@ onUnmounted(() => {
 .map-area {
   position: relative;
   width: calc(100% - 4px * 2);
-  height: 600px;
+  min-height: 600px;
+  flex: 1;
+  flex-shrink: 0;
   background: #2d5016;
-  border-radius: 8px;
   overflow: hidden;
   border: 4px solid #1a3009;
 }
@@ -323,52 +307,5 @@ onUnmounted(() => {
     background: linear-gradient(90deg, #ff4757, #ff6b81);
     transition: width 0.3s;
   }
-}
-
-.map-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-}
-
-.d-pad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.d-row {
-  display: flex;
-  gap: 4px;
-}
-
-.d-btn {
-  width: 50px;
-  height: 50px;
-  font-size: 24px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-.map-hint {
-  text-align: center;
-  color: #888;
-  font-size: 14px;
 }
 </style>
