@@ -235,6 +235,7 @@
 <script setup>
 import { ref } from 'vue';
 import { STAT_CONFIG, EQUIPMENT_CONFIG } from '../../stores/constants.js';
+import { getStatName, getBonusStatName } from '../../stores/utils.js';
 
 const props = defineProps({
   equipment: {
@@ -366,30 +367,6 @@ const equipItem = (equip, index) => {
 
 const getRarityColor = (rarity) => {
   return EQUIPMENT_CONFIG.RARITY[rarity]?.color || '#9ca3af';
-};
-
-/**
- * 获取基础词条的名称
- * 优先从 BASE_AFFIX_POOL 中获取，如果没有则使用 STAT_CONFIG.NAMES
- */
-const getStatName = (stat) => {
-  const baseConfig = EQUIPMENT_CONFIG.BASE_AFFIX_POOL[stat];
-  if (baseConfig && baseConfig.name) {
-    return baseConfig.name;
-  }
-  return STAT_CONFIG.NAMES[stat] || stat;
-};
-
-/**
- * 获取强力词条的名称
- * 优先从 BONUS_AFFIX_POOL 中获取，如果没有则使用 STAT_CONFIG.NAMES
- */
-const getBonusStatName = (stat) => {
-  const bonusConfig = EQUIPMENT_CONFIG.BONUS_AFFIX_POOL[stat];
-  if (bonusConfig && bonusConfig.name) {
-    return bonusConfig.name;
-  }
-  return STAT_CONFIG.NAMES[stat] || stat;
 };
 
 const getRarityName = (rarity) => {

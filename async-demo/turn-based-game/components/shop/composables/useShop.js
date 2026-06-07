@@ -11,6 +11,11 @@ import {
   PET_CONFIG,
   SKILLS_CONFIG,
 } from "../../../stores/constants.js";
+import {
+  calculateSkillEnhanceCost,
+  calculateSkillEnhanceReducePercent,
+  getStatName,
+} from "../../../stores/utils.js";
 
 export function useShop() {
   const rerollStatsList = Object.keys(
@@ -19,7 +24,6 @@ export function useShop() {
   const selectedType = ref("weapon");
   const equipmentTypes = Object.keys(EQUIPMENT_CONFIG.TYPES);
 
-  const getStatName = (stat) => STAT_CONFIG.NAMES[stat] || stat;
   const getTypeName = (type) => EQUIPMENT_CONFIG.TYPES[type]?.name || type;
   const getRarityColor = (rarity) =>
     EQUIPMENT_CONFIG.RARITY[rarity]?.color || "#9ca3af";
@@ -224,18 +228,21 @@ export function useShop() {
       return { success: false, message: "该技能已学习！" };
     }
     gameState.player.gold -= cost;
-    gameState.pet.skills.push({ ...skill });
+    gameState.pet.skills.push({ ...skill, enhanceLevel: 0 });
     return {
       success: true,
       message: `恭喜！${gameState.pet.name} 学会了 ${skill.name}！`,
     };
   };
 
+  const enhanceSkill = ({ character, index }) => {
+    return gameActions.enhanceSkill(character, index);
+  };
+
   return {
     rerollStatsList,
     selectedType,
     equipmentTypes,
-    getStatName,
     getTypeName,
     getRarityColor,
     getRarityName,
@@ -263,6 +270,9 @@ export function useShop() {
     isPetSkillLearned,
     getSkillIcon,
     learnPetSkill,
+    enhanceSkill,
+    calculateSkillEnhanceCost,
+    calculateSkillEnhanceReducePercent,
     ITEMS_CONFIG,
     SKILLS_CONFIG,
   };

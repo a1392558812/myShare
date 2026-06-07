@@ -69,7 +69,7 @@
               :key="stat"
               class="stat-badge bonus-badge refreshable"
             >
-              {{ getStatName(stat) }} +{{ value }}
+              {{ getBonusStatName(stat) }} +{{ value }}
               <button
                 v-if="getSingleBonusAffixCost"
                 class="affix-refresh-btn"
@@ -113,12 +113,11 @@
 <script setup>
 import { computed } from "vue";
 import { gameState } from "../../stores/gameStore.js";
-import { GAME_CONFIG } from "../../stores/constants.js";
+import { getStatName, getBonusStatName } from "../../stores/utils.js";
 
 const props = defineProps({
   getRarityColor: { type: Function, required: true },
   getRarityName: { type: Function, required: true },
-  getStatName: { type: Function, required: true },
   getEquipmentSellPrice: { type: Function, required: true },
   getRefreshCost: { type: Function, required: true },
   getSingleBaseAffixCost: { type: Function, required: false },

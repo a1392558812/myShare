@@ -7,6 +7,7 @@ import {
   EQUIPMENT_PREFIXES,
   EQUIPMENT_SUFFIXES,
 } from "./equipment.js";
+import { calculateSkillEnhanceCost } from "./utils.js";
 
 export const buyItem = (player, item) => {
   const buyPrice = item.price;
@@ -198,5 +199,37 @@ export const refreshSingleBonusAffix = (player, index, stat) => {
     oldValue: oldValue,
     newStat: newAffix.stat,
     newValue: newAffix.value,
+  };
+};
+
+// 强化玩家或宠物的技能
+export const enhanceSkill = (character, skillIndex, gameConfig) => {
+  const skills = character.skills || [];
+  
+  if (skillIndex < 0 || skillIndex >= skills.length) {
+    return { success: false, message: '技能不存在' };
+  }
+  
+  const skill = skills[skillIndex];
+  const enhanceConfig = gameConfig.SHOP.SKILL_ENHANCE;
+  
+  if (skill.enhanceLevel >= enhanceConfig.MAX_LEVEL) {
+    return { success: false, message: '技能已达到最高强化等级' };
+  }
+  
+  const cost = calculateSkillEnhanceCost(skill, gameConfig);
+  
+  if (character.gold < cost) {
+    return { success: false, message: '金币不足' };
+  }
+  
+  character.gold -= cost;
+  skill.enhanceLevel += 1;
+  
+  return {
+    success: true,
+    oldLevel: skill.enhanceLevel - 1,
+    newLevel: skill.enhanceLevel,
+    message: `技能强化成功！${skill.name} Lv${skill.enhanceLevel}`,
   };
 };

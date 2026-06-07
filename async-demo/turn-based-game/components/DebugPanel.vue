@@ -49,7 +49,6 @@
         :fill-pet-mp="fillPetMp"
         :add-pet-skill="addPetSkill"
         :add-all-pet-skills="addAllPetSkills"
-        :get-stat-name="getStatName"
         :get-current-coefficient-info="getCurrentCoefficientInfo"
         :get-default-coefficient="getDefaultCoefficient"
         :reset-coefficient="resetCoefficient"
@@ -142,7 +141,6 @@ const {
   fillPetMp,
   addPetSkill,
   addAllPetSkills,
-  getStatName,
   getCurrentCoefficientInfo,
   getDefaultCoefficient,
   resetCoefficient,

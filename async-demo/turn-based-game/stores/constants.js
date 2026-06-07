@@ -81,6 +81,10 @@ export const STAT_CONFIG = {
     maxComboCount: "最大连击",
     debuffResist: "障碍抗性",
     ignoreDebuffResist: "忽视障碍异常",
+    unshakableMountain: "不动如山",
+    dodge: "闪避",
+    shockAbsorb: "反震",
+    allStats: "所有属性",
   },
   /** 可分配的属性点类型列表 */
   POINT_STATS: ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"],
@@ -385,6 +389,12 @@ export const GAME_CONFIG = {
       BASE_AFFIX_COST: 30, // 基础词条重铸基础费用
       BONUS_AFFIX_COST: 60, // 强力词条重铸基础费用
       LEVEL_COST_MULTIPLIER: 0.5, // 等级费用乘数
+    },
+    // 技能强化配置
+    SKILL_ENHANCE: {
+      MAX_LEVEL: 300, // 技能最大强化等级
+      BASE_COST: 50, // 强化基础费用
+      LEVEL_COST_MULTIPLIER: 10, // 等级费用乘数：费用 = 基础费用 + (当前强化等级) * 等级费用乘数
     },
   },
 };

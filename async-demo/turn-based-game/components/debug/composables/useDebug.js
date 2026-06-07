@@ -269,8 +269,6 @@ export function useDebug() {
     }
   };
 
-  const getStatName = (stat) => STAT_CONFIG.NAMES[stat] || stat;
-
   const getCurrentCoefficientInfo = () => {
     if (!gameState.pet) return "无宠物";
     const pet = gameState.pet;
@@ -599,7 +597,6 @@ export function useDebug() {
     addCustomEquipment,
     setPlayerTurn,
     setEnemyTurn,
-    getStatName,
     getCurrentCoefficientInfo,
     getDefaultCoefficient,
     resetCoefficient,

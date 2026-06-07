@@ -44,6 +44,7 @@
 <script setup>
 import { computed } from "vue";
 import { gameState } from "../../stores/gameStore.js";
+import { getStatName } from "../../stores/utils.js";
 
 const props = defineProps({
   selectedType: { type: String, required: true },
@@ -51,7 +52,6 @@ const props = defineProps({
   shopPreviewStats: { type: Object, required: true },
   shopEquipmentPrice: { type: Number, required: true },
   getTypeName: { type: Function, required: true },
-  getStatName: { type: Function, required: true },
   shopEquipmentName: { type: String, required: true },
 });
 

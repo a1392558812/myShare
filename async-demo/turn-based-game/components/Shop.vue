@@ -15,7 +15,6 @@
         :shop-preview-stats="shopPreviewStats"
         :shop-equipment-price="shopEquipmentPrice"
         :get-type-name="getTypeName"
-        :get-stat-name="getStatName"
         :shop-equipment-name="getShopEquipmentName()"
         @select-type="selectEquipmentType"
         @purchase="handleEquipmentPurchase"
@@ -26,7 +25,6 @@
       <EquipmentBagSection
         :get-rarity-color="getRarityColor"
         :get-rarity-name="getRarityName"
-        :get-stat-name="getStatName"
         :get-equipment-sell-price="getEquipmentSellPrice"
         :get-refresh-cost="getRefreshCost"
         :get-single-base-affix-cost="getSingleBaseAffixCost"
@@ -40,7 +38,6 @@
       <PetStatRerollSection
         v-if="gameState.pet"
         :reroll-stats-list="rerollStatsList"
-        :get-stat-name="getStatName"
         :get-current-coefficient="getCurrentCoefficient"
         :get-reroll-range="getRerollRange"
         :get-reroll-cost="getRerollCost"
@@ -53,6 +50,11 @@
         :is-pet-skill-learned="isPetSkillLearned"
         :get-skill-icon="getSkillIcon"
         @learn="handleLearnSkill"
+      />
+
+      <SkillEnhanceSection
+        :get-skill-icon="getSkillIcon"
+        @enhance="handleEnhanceSkill"
       />
     </div>
   </div>
@@ -67,6 +69,7 @@ import SellItemsSection from "./shop/SellItemsSection.vue";
 import EquipmentBagSection from "./shop/EquipmentBagSection.vue";
 import PetStatRerollSection from "./shop/PetStatRerollSection.vue";
 import PetSkillLearnSection from "./shop/PetSkillLearnSection.vue";
+import SkillEnhanceSection from "./shop/SkillEnhanceSection.vue";
 import { useShop } from "./shop/composables/useShop.js";
 
 const shop = useShop();
@@ -75,7 +78,6 @@ const {
     rerollStatsList,
     selectedType,
     equipmentTypes,
-    getStatName,
     getTypeName,
     getRarityColor,
     getRarityName,
@@ -142,6 +144,11 @@ const handleRerollStat = (stat) => {
 
 const handleLearnSkill = (skill) => {
   const result = shop.learnPetSkill(skill);
+  alert(result.message);
+};
+
+const handleEnhanceSkill = (data) => {
+  const result = shop.enhanceSkill(data);
   alert(result.message);
 };
 </script>

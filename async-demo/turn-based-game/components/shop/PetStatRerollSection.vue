@@ -35,10 +35,10 @@
 <script setup>
 import { computed } from "vue";
 import { gameState } from "../../stores/gameStore.js";
+import { getStatName } from "../../stores/utils.js";
 
 const props = defineProps({
   rerollStatsList: { type: Array, required: true },
-  getStatName: { type: Function, required: true },
   getCurrentCoefficient: { type: Function, required: true },
   getRerollRange: { type: Function, required: true },
   getRerollCost: { type: Function, required: true },

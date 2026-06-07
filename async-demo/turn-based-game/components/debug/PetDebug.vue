@@ -92,6 +92,7 @@
 <script setup>
 import { gameState } from "../../stores/gameStore.js";
 import { SKILLS_CONFIG } from "../../stores/constants.js";
+import { getStatName } from "../../stores/utils.js";
 
 const selectedPetStat = defineModel("selectedPetStat");
 const petStatAmount = defineModel("petStatAmount");
@@ -111,7 +112,6 @@ const props = defineProps({
   fillPetMp: { type: Function, required: true },
   addPetSkill: { type: Function, required: true },
   addAllPetSkills: { type: Function, required: true },
-  getStatName: { type: Function, required: true },
   getCurrentCoefficientInfo: { type: Function, required: true },
   getDefaultCoefficient: { type: Function, required: true },
   resetCoefficient: { type: Function, required: true },

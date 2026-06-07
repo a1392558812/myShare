@@ -44,6 +44,7 @@ import {
   refreshSingleBaseAffix,
   refreshSingleBonusAffix,
   sellEquipmentForGold,
+  enhanceSkill,
 } from "./shop.js";
 import {
   generateMapEnemies,
@@ -284,6 +285,10 @@ export const gameActions = {
 
   sellEquipmentForGold(index) {
     return sellEquipmentForGold(gameState.player, index, getEquipmentSellPrice);
+  },
+
+  enhanceSkill(character, skillIndex) {
+    return enhanceSkill(character, skillIndex, GAME_CONFIG);
   },
 
   isPlayerTurn() {

@@ -157,7 +157,10 @@ export const createPlayer = () => {
   player.hp = player.maxHp;
   player.mp = player.maxMp;
   player.skills = PLAYER_CONFIG.INITIAL_SKILL_INDICES.map(
-    (id) => SKILLS_CONFIG.find((s) => s.id === id),
+    (id) => {
+      const skill = SKILLS_CONFIG.find((s) => s.id === id);
+      return skill ? { ...skill, enhanceLevel: 0 } : null;
+    }
   ).filter(Boolean);
   player.inventory = PLAYER_CONFIG.INITIAL_ITEMS.map(({ id, count }) => ({
     ...ITEMS_CONFIG.find((item) => item.id === id),
@@ -183,14 +186,22 @@ export const loadPlayerData = (savedPlayerData) => {
         player.skills = savedPlayerData.skills.map(savedSkill => {
           if (savedSkill.id) {
             const skill = SKILLS_CONFIG.find(s => s.id === savedSkill.id);
-            return skill || savedSkill;
+            if (skill) {
+              return { 
+                ...skill, 
+                enhanceLevel: savedSkill.enhanceLevel !== undefined ? savedSkill.enhanceLevel : 0 
+              };
+            }
           }
           return savedSkill;
         });
       } else {
         // 使用初始技能
         player.skills = PLAYER_CONFIG.INITIAL_SKILL_INDICES.map(
-          (id) => SKILLS_CONFIG.find((s) => s.id === id),
+          (id) => {
+            const skill = SKILLS_CONFIG.find((s) => s.id === id);
+            return skill ? { ...skill, enhanceLevel: 0 } : null;
+          }
         ).filter(Boolean);
       }
       
@@ -535,7 +546,10 @@ export const createPet = () => {
   pet.hp = pet.maxHp;
   pet.mp = pet.maxMp;
   pet.skills = PET_CONFIG.INITIAL_SKILL_INDICES.map(
-    (id) => SKILLS_CONFIG.find((s) => s.id === id),
+    (id) => {
+      const skill = SKILLS_CONFIG.find((s) => s.id === id);
+      return skill ? { ...skill, enhanceLevel: 0 } : null;
+    }
   ).filter(Boolean);
   return pet;
 };
@@ -556,14 +570,22 @@ export const loadPetData = (savedPetData) => {
         pet.skills = savedPetData.skills.map(savedSkill => {
           if (savedSkill.id) {
             const skill = SKILLS_CONFIG.find(s => s.id === savedSkill.id);
-            return skill || savedSkill;
+            if (skill) {
+              return { 
+                ...skill, 
+                enhanceLevel: savedSkill.enhanceLevel !== undefined ? savedSkill.enhanceLevel : 0 
+              };
+            }
           }
           return savedSkill;
         });
       } else {
         // 使用初始技能
         pet.skills = PET_CONFIG.INITIAL_SKILL_INDICES.map(
-          (id) => SKILLS_CONFIG.find((s) => s.id === id),
+          (id) => {
+            const skill = SKILLS_CONFIG.find((s) => s.id === id);
+            return skill ? { ...skill, enhanceLevel: 0 } : null;
+          }
         ).filter(Boolean);
       }
     } else {
