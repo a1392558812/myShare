@@ -381,8 +381,8 @@ export const useItem = (target, item, index, inventoryOwner = null) => {
 };
 
 export const movePlayer = (player, dx, dy) => {
-  player.x = Math.max(30, Math.min(770, player.x + dx));
-  player.y = Math.max(30, Math.min(570, player.y + dy));
+  player.x = player.x + dx;
+  player.y = player.y + dy;
 };
 
 // ========== 宠物相关功能 ==========

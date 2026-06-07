@@ -319,8 +319,9 @@ export const GAME_CONFIG = {
     MAX_LEVEL: 9999, // 最大地图等级
     MIN_ENEMIES: 3, // 地图最少敌人数量
     MAX_ENEMIES: 10, // 地图最多敌人数量
-    ENEMY_X_RANGE: { min: 50, max: 750 }, // 敌人X轴范围
-    ENEMY_Y_RANGE: { min: 50, max: 500 }, // 敌人Y轴范围
+    ENEMY_X_RANGE: { min: 20, max: 80 }, // 敌人X轴范围
+    ENEMY_Y_RANGE: { min: 20, max: 80 }, // 敌人Y轴范围
+    ENEMY_SAFE_DISTANCE: 20, // 敌人与玩家的最小安全距离
   },
   // 装备等级偏移配置
   EQUIPMENT_LEVEL_OFFSET: {
@@ -884,8 +885,8 @@ export const PLAYER_CONFIG = {
     speed: 1,
   },
   INITIAL_FREE_POINTS: 5, // 初始自由属性点
-  INITIAL_X: 400, // 初始X坐标
-  INITIAL_Y: 300, // 初始Y坐标
+  INITIAL_X: 40, // 初始X坐标
+  INITIAL_Y: 30, // 初始Y坐标
   INITIAL_GOLD: 100, // 初始金币
   INITIAL_STATS: {
     // 初始战斗属性

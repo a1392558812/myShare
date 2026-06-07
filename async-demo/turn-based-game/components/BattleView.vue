@@ -192,7 +192,6 @@ const {
   gap: 16px;
   height: calc(100% - 20px * 2);
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  border-radius: 12px;
   padding: 20px;
   :deep(.action-buttons) {
     display: flex;

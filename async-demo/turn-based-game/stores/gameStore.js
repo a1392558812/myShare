@@ -69,7 +69,7 @@ export const gameState = reactive({
   player: loadPlayerData(savedData?.player),
   pet: loadPetData(savedData?.pet),
   mapLevel: savedData?.mapLevel || GAME_CONFIG.MAP.DEFAULT_LEVEL,
-  mapEnemies: savedData ? savedData.mapEnemies : generateMapEnemies(GAME_CONFIG.MAP.DEFAULT_LEVEL),
+  mapEnemies: savedData ? savedData.mapEnemies : generateMapEnemies(GAME_CONFIG.MAP.DEFAULT_LEVEL, loadPlayerData(savedData?.player).x, loadPlayerData(savedData?.player).y),
   currentBattle: null,
   battleLog: [],
   battleResult: null,
@@ -305,6 +305,6 @@ export const gameActions = {
     removeEnemyFromMap(gameState);
     gameState.screen = "map";
     gameState.currentBattle = null;
-    refreshMapEnemies(gameState, gameState.player.level, gameState.mapLevel);
+    refreshMapEnemies(gameState);
   },
 };

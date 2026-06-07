@@ -17,11 +17,6 @@
         @add-point="addPoint"
       />
 
-      <SkillPanel
-        :skills="gameState.pet.skills"
-        empty-tip="暂无技能，让宠物学会更多技能吧！"
-      />
-
       <EquipmentPanel
         :equipment="gameState.pet.equipment"
         :show-equipment-bag="true"
@@ -29,6 +24,7 @@
         equipment-bag-title="宠物装备背包"
         equipment-bag-empty-tip="装备背包空空如也，击败敌人有概率获得装备！"
         equip-button-text="给宠物穿戴"
+        :show-item-bag="false"
         @unequip-item="unequipItem"
         @equip-item="equipItem"
       />
@@ -41,7 +37,6 @@ import { computed } from 'vue';
 import { gameState, gameActions } from '../stores/gameStore.js';
 import { calculatePetStats } from '../stores/player.js';
 import StatPanel from './panels/StatPanel.vue';
-import SkillPanel from './panels/SkillPanel.vue';
 import EquipmentPanel from './panels/EquipmentPanel.vue';
 
 const petActualStats = computed(() => {
@@ -99,7 +94,6 @@ const unequipItem = (slot) => {
   flex-direction: column;
   height: 100%;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  border-radius: 12px;
   overflow: hidden;
 }
 

@@ -35,10 +35,7 @@
       <!-- 玩家角色 -->
       <div
         class="character player-character"
-        :style="{
-          left: gameState.player.x + 'px',
-          top: gameState.player.y + 'px',
-        }"
+        :style="mapAreaRect ? getPosition(gameState.player) : {}"
       >
         <div class="char-avatar">勇者</div>
       </div>
@@ -47,8 +44,10 @@
       <div
         v-for="enemy in gameState.mapEnemies"
         :key="enemy.id"
+        :x="enemy.x"
+        :y="enemy.y"
         class="character enemy-character"
-        :style="{ left: enemy.x + 'px', top: enemy.y + 'px' }"
+        :style="mapAreaRect ? getPosition(enemy) : {}"
         @click="handleEnemyClick(enemy)"
       >
         <div class="char-avatar enemy-avatar">{{ enemy.name }}</div>
@@ -63,12 +62,12 @@
 
     <div class="map-controls">
       <div class="d-pad">
-        <button @click="move(0, -40)" class="d-btn up">↑</button>
+        <button @click="move(0, -10)" class="d-btn up">↑</button>
         <div class="d-row">
-          <button @click="move(-40, 0)" class="d-btn left">←</button>
-          <button @click="move(40, 0)" class="d-btn right">→</button>
+          <button @click="move(-10, 0)" class="d-btn left">←</button>
+          <button @click="move(10, 0)" class="d-btn right">→</button>
         </div>
-        <button @click="move(0, 40)" class="d-btn down">↓</button>
+        <button @click="move(0, 10)" class="d-btn down">↓</button>
       </div>
     </div>
 
@@ -86,6 +85,15 @@ import { GAME_CONFIG } from "../stores/constants.js";
 import { generateMapEnemies } from "../stores/enemy.js";
 
 const mapLevelInput = ref(gameState.mapLevel);
+const mapAreaRef = ref(null);
+const mapAreaRect = ref(null);
+
+const getPosition = (target) => {
+  return {
+    left: mapAreaRect.value.width * target.x / 100 + 'px',
+    top: mapAreaRect.value.height * target.y / 100 + 'px',
+  };
+}
 
 const getLevelMultiplier = () => {
   if (!gameState.mapLevel || gameState.mapLevel <= 1) {
@@ -104,14 +112,32 @@ const updateMapLevel = () => {
   if (gameState.mapLevel !== mapLevelInput.value) {
     gameState.mapLevel = mapLevelInput.value;
     // 刷新地图敌人以应用新等级
-    gameState.mapEnemies = generateMapEnemies(gameState.mapLevel);
+    gameState.mapEnemies = generateMapEnemies(gameState.mapLevel, gameState.player.x, gameState.player.y);
     gameActions.endBattle();
   }
 };
 
 // 移动
 const move = (dx, dy) => {
-  gameActions.movePlayer(dx, dy);
+  let temDx = dx;
+  let temDy = dy;
+  if (gameState.player.x / 100 * mapAreaRect.value.width + 56 + dx >= mapAreaRect.value.width) {
+    temDx = (mapAreaRect.value.width - gameState.player.x / 100 * mapAreaRect.value.width - 56) / mapAreaRect.value.width * 100;
+  } else if (gameState.player.x / 100 * mapAreaRect.value.width + dx <= 0) {
+    temDx = 0 - gameState.player.x
+  } else {
+    temDx = dx / mapAreaRect.value.width * 100;
+  }
+
+  if (gameState.player.y / 100 * mapAreaRect.value.height +56+ dy >= mapAreaRect.value.height) {
+    temDy = (mapAreaRect.value.height - gameState.player.y / 100 * mapAreaRect.value.height - 56) / mapAreaRect.value.height * 100;
+  } else if (gameState.player.y / 100 * mapAreaRect.value.height + dy <= 0) {
+    temDy = 0 - gameState.player.y
+  } else {
+    temDy = dy / mapAreaRect.value.height * 100;
+  }
+  
+  gameActions.movePlayer(temDx, temDy);
   checkNearbyEnemies();
 };
 
@@ -119,8 +145,8 @@ const move = (dx, dy) => {
 const checkNearbyEnemies = () => {
   for (const enemy of gameState.mapEnemies) {
     const dist = Math.sqrt(
-      Math.pow(gameState.player.x - enemy.x, 2) +
-        Math.pow(gameState.player.y - enemy.y, 2),
+      Math.pow(mapAreaRect.value.width * gameState.player.x / 100 - mapAreaRect.value.width * enemy.x / 100, 2) +
+        Math.pow(mapAreaRect.value.height * gameState.player.y / 100 - mapAreaRect.value.height * enemy.y / 100, 2),
     );
     if (dist < 60) {
       gameActions.startBattle();
@@ -140,27 +166,29 @@ const handleKeydown = (e) => {
     case "ArrowUp":
     case "w":
     case "W":
-      move(0, -40);
+      move(0, -10);
       break;
     case "ArrowDown":
     case "s":
     case "S":
-      move(0, 40);
+      move(0, 10);
       break;
     case "ArrowLeft":
     case "a":
     case "A":
-      move(-40, 0);
+      move(-10, 0);
       break;
     case "ArrowRight":
     case "d":
     case "D":
-      move(40, 0);
+      move(10, 0);
       break;
   }
 };
 
 onMounted(() => {
+  mapAreaRect.value = mapAreaRef.value.getBoundingClientRect();
+  console.log('mapAreaRect.value', mapAreaRect.value);
   window.addEventListener("keydown", handleKeydown);
 });
 
@@ -232,7 +260,7 @@ onUnmounted(() => {
 
 .map-area {
   position: relative;
-  width: 800px;
+  width: calc(100% - 4px * 2);
   height: 600px;
   background: #2d5016;
   border-radius: 8px;
@@ -252,13 +280,9 @@ onUnmounted(() => {
 
 .character {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(0%, 0%);
   cursor: pointer;
   transition: transform 0.1s;
-
-  &:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-  }
 }
 
 .char-avatar {

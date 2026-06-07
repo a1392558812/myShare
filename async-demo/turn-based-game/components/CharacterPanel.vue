@@ -17,18 +17,6 @@
         @restore-all="restoreAll"
       />
 
-      <SkillPanel
-        :skills="gameState.player.skills"
-        empty-tip="暂无技能，战斗胜利有概率获得技能书！"
-      />
-
-      <InventoryPanel
-        :inventory="gameState.player.inventory"
-        empty-tip="背包空空如也，去战斗获取战利品吧！"
-        @use-item="useItem"
-        @sell-item="sellItem"
-      />
-
       <EquipmentPanel
         :equipment="gameState.player.equipment"
         :show-equipment-bag="true"
@@ -36,8 +24,16 @@
         equipment-bag-title="装备背包"
         equipment-bag-empty-tip="装备背包空空如也，击败敌人有概率获得装备！"
         equip-button-text="穿戴"
+        :show-item-bag="true"
+        :item-bag="gameState.player.inventory"
+        item-bag-title="物品背包"
+        item-bag-empty-tip="背包空空如也，去战斗获取战利品吧！"
+        :show-use-item-button="true"
+        :show-sell-item-button="true"
         @unequip-item="unequipItem"
         @equip-item="equipItem"
+        @use-item="useItem"
+        @sell-item="sellItem"
       />
     </div>
   </div>
@@ -48,8 +44,6 @@ import { computed } from "vue";
 import { gameState, gameActions } from "../stores/gameStore.js";
 import { calculatePlayerStats } from "../stores/player.js";
 import StatPanel from "./panels/StatPanel.vue";
-import SkillPanel from "./panels/SkillPanel.vue";
-import InventoryPanel from "./panels/InventoryPanel.vue";
 import EquipmentPanel from "./panels/EquipmentPanel.vue";
 
 const playerActualStats = computed(() => {
@@ -121,7 +115,6 @@ const unequipItem = (slot) => {
   flex-direction: column;
   height: 100%;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  border-radius: 12px;
   overflow: hidden;
 }
 

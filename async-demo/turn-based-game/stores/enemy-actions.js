@@ -384,7 +384,7 @@ const enemyUseAttackSkill = (gameState, enemy, skill, target, targetType, target
   if (targetType !== "enemy") {
     const dodgeChance = targetStats.dodge || 0;
     if (checkDodge(target, dodgeChance)) {
-      gameState.battleLog.push(`${targetName} 闪避成功，免疫了 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害！`);
+      gameState.battleLog.push(`${targetName} 闪避成功，不受任何伤害！`);
       return; // 闪避成功，不受任何伤害
     }
 
@@ -440,7 +440,7 @@ const enemyUseNormalAttack = (gameState, enemy, target, targetType, targetStats,
   if (targetType !== "enemy") {
     const dodgeChance = targetStats.dodge || 0;
     if (checkDodge(target, dodgeChance)) {
-      gameState.battleLog.push(`${targetName} 闪避成功，免疫了 ${damage.toFixed(UI_CONFIG.DECIMAL_PLACES)} 点伤害！`);
+      gameState.battleLog.push(`${targetName} 闪避成功，不受任何伤害！`);
       return; // 闪避成功，不受任何伤害
     }
 

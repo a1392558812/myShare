@@ -15,6 +15,9 @@
           <button class="common-btn pet-btn" @click="openPetPanel">
             🐾 宠物
           </button>
+          <button class="common-btn skill-btn" @click="openSkillPanel">
+            📚 技能
+          </button>
           <button class="common-btn shop-btn" @click="openShop">🏪 商店</button>
           <button class="common-btn danger" @click="resetGame">重置游戏</button>
         </div>
@@ -25,6 +28,7 @@
         <CharacterPanel v-else-if="gameState.screen === 'character'" />
         <PetPanel v-else-if="gameState.screen === 'pet'" />
         <Shop v-else-if="gameState.screen === 'shop'" />
+        <SkillManager v-else-if="gameState.screen === 'skill'" />
       </div>
       <DebugPanel v-if="isDebugMode" />
     </div>
@@ -39,6 +43,7 @@ import BattleView from "./components/BattleView.vue";
 import CharacterPanel from "./components/CharacterPanel.vue";
 import PetPanel from "./components/PetPanel.vue";
 import Shop from "./components/Shop.vue";
+import SkillManager from "./components/SkillManager.vue";
 import DebugPanel from "./components/DebugPanel.vue";
 import { ref } from "vue";
 
@@ -65,6 +70,11 @@ const openPetPanel = () => {
   gameActions.setScreen("pet");
 };
 
+// 打开技能面板
+const openSkillPanel = () => {
+  gameActions.setScreen("skill");
+};
+
 // 打开角色面板
 const openCharacterPanel = () => {
   gameActions.setScreen("character");
@@ -81,6 +91,7 @@ const resetGame = () => {
 
 .turn-based-game {
   width: 100vw;
+  min-width: 1000px;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -132,6 +143,9 @@ const resetGame = () => {
     }
     &.pet-btn {
       background: linear-gradient(135deg, #a855f7, #7c3aed);
+    }
+    &.skill-btn {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
     }
     &.shop-btn {
       background: linear-gradient(135deg, #667eea, #764ba2);

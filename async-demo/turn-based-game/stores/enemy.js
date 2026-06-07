@@ -155,7 +155,7 @@ export const generateExtraBattleEnemies = (count, mapLevel) => {
   return enemies;
 };
 
-export const generateMapEnemies = (mapLevel = 1) => {
+export const generateMapEnemies = (mapLevel = 1, playerX = null, playerY = null) => {
   const mapConfig = GAME_CONFIG.MAP;
   // 随机生成 MIN_ENEMIES 到 MAX_ENEMIES 之间的敌人数量
   const enemyCount = Math.floor(Math.random() * (mapConfig.MAX_ENEMIES - mapConfig.MIN_ENEMIES + 1)) + mapConfig.MIN_ENEMIES;
@@ -170,11 +170,21 @@ export const generateMapEnemies = (mapLevel = 1) => {
     const enemyAttrs = generateEnemyRandomAttributes();
     const levelBonus = applyMapLevelBonus(baseEnemy, mapLevel);
     
+    // 生成敌人位置，确保与玩家保持安全距离
+    let enemyX, enemyY;
+    let attempts = 0;
+    const maxAttempts = 100; // 最大尝试次数，避免死循环
+    do {
+      enemyX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
+      enemyY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
+      attempts++;
+    } while (playerX !== null && playerY !== null && isTooClose(enemyX, enemyY, playerX, playerY, mapConfig.ENEMY_SAFE_DISTANCE) && attempts < maxAttempts);
+    
     enemies.push({
       ...baseEnemy,
       ...levelBonus,
-      x: mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange,
-      y: mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange,
+      x: enemyX,
+      y: enemyY,
       id: `enemy_${Date.now()}_${i}`,
       maxMp: levelBonus.maxMp || 0,
       mp: levelBonus.mp || 0,
@@ -184,6 +194,13 @@ export const generateMapEnemies = (mapLevel = 1) => {
   }
   
   return enemies;
+};
+
+// 检查敌人位置是否离玩家太近
+const isTooClose = (x1, y1, x2, y2, distance) => {
+  const dx = x1 - x2;
+  const dy = y1 - y2;
+  return Math.sqrt(dx * dx + dy * dy) < distance;
 };
 
 export const removeEnemyFromMap = (gameState) => {
@@ -220,7 +237,7 @@ export const convertMapEnemyToBattleEnemy = (mapEnemy, battleIndex = 0) => {
   };
 };
 
-export const refreshMapEnemies = (gameState, playerLevel, mapLevel = 1) => {
+export const refreshMapEnemies = (gameState) => {
   const mapConfig = GAME_CONFIG.MAP;
   if (gameState.mapEnemies.length < mapConfig.MAX_ENEMIES) {
     // 随机补充敌人，补充到 MIN_ENEMIES 到 MAX_ENEMIES 之间的随机数量
@@ -233,16 +250,30 @@ export const refreshMapEnemies = (gameState, playerLevel, mapLevel = 1) => {
     const yRange = mapConfig.ENEMY_Y_RANGE.max - mapConfig.ENEMY_Y_RANGE.min;
 
     for (let i = 0; i < refreshCount; i++) {
-      const randomEnemyIndex = getRandomEnemyIndex(mapLevel);
+      const randomEnemyIndex = getRandomEnemyIndex(gameState.mapLevel || 1);
       const randomEnemy = ENEMIES_CONFIG[randomEnemyIndex];
       const enemyAttrs = generateEnemyRandomAttributes();
-      const levelBonus = applyMapLevelBonus(randomEnemy, mapLevel);
+      const levelBonus = applyMapLevelBonus(randomEnemy, gameState.mapLevel || 1);
+      
+      // 生成敌人位置，确保与玩家保持安全距离
+      let enemyX, enemyY;
+      let attempts = 0;
+      const maxAttempts = 100; // 最大尝试次数，避免死循环
+      do {
+        enemyX = mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange;
+        enemyY = mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange;
+        attempts++;
+      } while (gameState.player.x !== null 
+        && gameState.player.y !== null 
+        && isTooClose(enemyX, enemyY, gameState.player.x, gameState.player.y, mapConfig.ENEMY_SAFE_DISTANCE)
+        && attempts < maxAttempts);
+      
       gameState.mapEnemies.push({
         ...randomEnemy,
         ...levelBonus,
         id: `enemy_${Date.now()}_${i}`,
-        x: mapConfig.ENEMY_X_RANGE.min + Math.random() * xRange,
-        y: mapConfig.ENEMY_Y_RANGE.min + Math.random() * yRange,
+        x: enemyX,
+        y: enemyY,
         maxMp: levelBonus.maxMp || 0,
         mp: levelBonus.mp || 0,
         buffs: [],

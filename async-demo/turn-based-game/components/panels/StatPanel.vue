@@ -206,10 +206,10 @@ const getEquipmentBonus = (key) => {
 
 <style scoped lang="scss">
 .stat-panel {
-  flex: 1;
+  width: 440px;
+  flex-shrink: 0;
   min-width: 350px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
   padding: 20px;
   overflow: auto;
 }

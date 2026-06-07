@@ -37,7 +37,6 @@ const props = defineProps({
   flex: 1;
   min-width: 350px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
   padding: 20px;
   overflow: auto;
 }
