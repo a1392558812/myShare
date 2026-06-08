@@ -42,24 +42,50 @@ const executeWithRetry = (command, description) => {
   }
 };
 
+const hasStagedChanges = () => {
+  try {
+    const output = execSync("git diff --cached --name-only", { encoding: "utf-8" });
+    return output.trim() !== "";
+  } catch {
+    return false;
+  }
+};
+
+const hasUncommittedChanges = () => {
+  try {
+    const output = execSync("git status --porcelain", { encoding: "utf-8" });
+    return output.trim() !== "";
+  } catch {
+    return false;
+  }
+};
+
 // 主函数
 const main = () => {
   console.log("=== Git 自动提交脚本 ===\n");
 
-  if (!executeCommand("git add ./", "git add ./")) {
-    console.error("添加文件失败，脚本终止");
-    process.exit(1);
+  if (hasStagedChanges()) {
+    console.log("检测到已有暂存文件，跳过 git add ./\n");
+  } else {
+    if (!executeCommand("git add ./", "git add ./")) {
+      console.error("添加文件失败，脚本终止");
+      process.exit(1);
+    }
   }
 
-  const commitMessage = getCurrentTime();
-  if (
-    !executeCommand(
-      `git commit -m "${commitMessage}"`,
-      `git commit -m "${commitMessage}"`,
-    )
-  ) {
-    console.error("提交失败，脚本终止");
-    process.exit(1);
+  if (!hasUncommittedChanges()) {
+    console.log("检测到工作区已干净（无未提交更改），跳过 git commit\n");
+  } else {
+    const commitMessage = getCurrentTime();
+    if (
+      !executeCommand(
+        `git commit -m "${commitMessage}"`,
+        `git commit -m "${commitMessage}"`,
+      )
+    ) {
+      console.error("提交失败，脚本终止");
+      process.exit(1);
+    }
   }
 
   const giteeUrl = "https://gitee.com/a1392558812/miscellaneous.git";

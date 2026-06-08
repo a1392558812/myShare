@@ -15,6 +15,7 @@ import {
   calculateSkillEnhanceCost,
   calculateSkillEnhanceReducePercent,
   getStatName,
+  getBonusStatName,
 } from "../../../stores/utils.js";
 
 export function useShop() {
@@ -133,8 +134,8 @@ export function useShop() {
   const refreshSingleBonusAffix = (index, stat) => {
     const result = gameActions.refreshSingleBonusAffix(index, stat);
     if (result.success) {
-      const oldName = getStatName(result.oldStat);
-      const newName = getStatName(result.newStat);
+      const oldName = getBonusStatName(result.oldStat);
+      const newName = getBonusStatName(result.newStat);
       return { success: true, message: `刷新成功！${oldName} 已替换为 ${newName} +${result.newValue}` };
     } else {
       return { success: false, message: result.message || "刷新失败！" };
