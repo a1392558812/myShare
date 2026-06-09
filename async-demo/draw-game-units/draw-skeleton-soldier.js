@@ -1,0 +1,228 @@
+/**
+ * 绘制骷髅士兵怪物
+ * @param {CanvasElement} canvasRef canvas元素
+ * @param {Object} currentUnit 骷髅士兵位置和状态
+ * @param {Number} currentUnit.x 骷髅士兵x坐标
+ * @param {Number} currentUnit.y 骷髅士兵y坐标
+ * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
+ * @param {Number} currentUnit.frame 动画帧 0-1
+ * @param {Number} currentUnit.isMoving 是否在移动
+ * @param {Number} currentUnit.size 怪物大小(px)
+ */
+
+export const config = {
+  IDLE_SPEED: 0.004, // 待机动画速度
+  WALK_SPEED: 0.08,  // 行走动画速度
+}
+
+// 骷髅士兵颜色定义
+const SKELETON_COLORS = {
+  bone: '#F5F5DC',          // 骨头主色（米白色）
+  boneLight: '#FFFFF0',     // 骨头亮色
+  boneDark: '#D3D3B8',      // 骨头深色
+  boneShadow: '#A8A890',    // 骨头阴影
+  eye: '#FF4500',           // 眼睛红色
+  eyeGlow: '#FF0000',       // 眼睛发光
+  helmet: '#708090',        // 头盔灰色
+  helmetLight: '#A9A9A9',   // 头盔亮色
+  helmetDark: '#4A4A4A',    // 头盔深色
+  armor: '#696969',         // 盔甲灰色
+  armorLight: '#808080',    // 盔甲亮色
+  armorDark: '#363636',     // 盔甲深色
+  cloth: '#8B0000',         // 暗红色披风/衣物
+  clothDark: '#5C0000',     // 深红色
+  weapon: '#C0C0C0',        // 武器银色
+  weaponDark: '#708090',    // 武器深色
+  shield: '#4A4A4A',        // 盾牌
+  shieldGold: '#B8860B',    // 盾牌金边
+  rib: '#E8E8D0',           // 肋骨色
+  highlight: '#FFFFFF',     // 高光
+};
+
+// 向下面朝 - 正面
+const SKELETON_FACE_DOWN = [
+  // 头顶
+  [5, 1, SKELETON_COLORS.boneLight], [6, 1, SKELETON_COLORS.boneLight], [7, 1, SKELETON_COLORS.boneLight], [8, 1, SKELETON_COLORS.boneLight],
+  [4, 2, SKELETON_COLORS.bone], [5, 2, SKELETON_COLORS.boneLight], [6, 2, SKELETON_COLORS.boneLight], [7, 2, SKELETON_COLORS.boneLight], [8, 2, SKELETON_COLORS.boneLight], [9, 2, SKELETON_COLORS.bone],
+  // 头部骨头
+  [4, 3, SKELETON_COLORS.bone], [5, 3, SKELETON_COLORS.bone], [6, 3, SKELETON_COLORS.bone], [7, 3, SKELETON_COLORS.bone], [8, 3, SKELETON_COLORS.bone], [9, 3, SKELETON_COLORS.bone],
+  [3, 4, SKELETON_COLORS.boneDark], [4, 4, SKELETON_COLORS.bone], [5, 4, SKELETON_COLORS.bone], [6, 4, SKELETON_COLORS.bone], [7, 4, SKELETON_COLORS.bone], [8, 4, SKELETON_COLORS.bone], [9, 4, SKELETON_COLORS.bone], [10, 4, SKELETON_COLORS.boneDark],
+  // 眼睛（红色发光）
+  [4, 5, SKELETON_COLORS.bone], [5, 5, SKELETON_COLORS.eye], [6, 5, SKELETON_COLORS.boneShadow], [7, 5, SKELETON_COLORS.boneShadow], [8, 5, SKELETON_COLORS.eye], [9, 5, SKELETON_COLORS.bone],
+  // 鼻子
+  [4, 6, SKELETON_COLORS.bone], [5, 6, SKELETON_COLORS.boneDark], [6, 6, SKELETON_COLORS.boneShadow], [7, 6, SKELETON_COLORS.boneShadow], [8, 6, SKELETON_COLORS.boneDark], [9, 6, SKELETON_COLORS.bone],
+  // 牙齿/嘴
+  [4, 7, SKELETON_COLORS.bone], [5, 7, SKELETON_COLORS.boneLight], [6, 7, SKELETON_COLORS.bone], [7, 7, SKELETON_COLORS.bone], [8, 7, SKELETON_COLORS.boneLight], [9, 7, SKELETON_COLORS.bone],
+  [4, 8, SKELETON_COLORS.boneDark], [5, 8, SKELETON_COLORS.bone], [6, 8, SKELETON_COLORS.bone], [7, 8, SKELETON_COLORS.bone], [8, 8, SKELETON_COLORS.bone], [9, 8, SKELETON_COLORS.boneDark],
+  // 下颚
+  [5, 9, SKELETON_COLORS.boneShadow], [6, 9, SKELETON_COLORS.bone], [7, 9, SKELETON_COLORS.bone], [8, 9, SKELETON_COLORS.boneShadow],
+  // 脖子
+  [6, 10, SKELETON_COLORS.boneDark], [7, 10, SKELETON_COLORS.boneDark],
+  // 盔甲身体
+  [4, 11, SKELETON_COLORS.armor], [5, 11, SKELETON_COLORS.armorLight], [6, 11, SKELETON_COLORS.armor], [7, 11, SKELETON_COLORS.armor], [8, 11, SKELETON_COLORS.armorLight], [9, 11, SKELETON_COLORS.armor],
+  [3, 12, SKELETON_COLORS.armorDark], [4, 12, SKELETON_COLORS.armor], [5, 12, SKELETON_COLORS.armor], [6, 12, SKELETON_COLORS.armorLight], [7, 12, SKELETON_COLORS.armorLight], [8, 12, SKELETON_COLORS.armor], [9, 12, SKELETON_COLORS.armor], [10, 12, SKELETON_COLORS.armorDark],
+  [3, 13, SKELETON_COLORS.armorDark], [4, 13, SKELETON_COLORS.armor], [5, 13, SKELETON_COLORS.armorDark], [6, 13, SKELETON_COLORS.armor], [7, 13, SKELETON_COLORS.armor], [8, 13, SKELETON_COLORS.armorDark], [9, 13, SKELETON_COLORS.armor], [10, 13, SKELETON_COLORS.armorDark],
+  // 腰带
+  [4, 14, SKELETON_COLORS.armorDark], [5, 14, SKELETON_COLORS.shieldGold], [6, 14, SKELETON_COLORS.armorDark], [7, 14, SKELETON_COLORS.armorDark], [8, 14, SKELETON_COLORS.shieldGold], [9, 14, SKELETON_COLORS.armorDark],
+  // 骨头腿
+  [5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.boneDark], [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.bone],
+  // 双手（骨头手）
+  [2, 11, SKELETON_COLORS.bone], [2, 12, SKELETON_COLORS.boneDark], [2, 13, SKELETON_COLORS.bone],
+  [11, 11, SKELETON_COLORS.bone], [11, 12, SKELETON_COLORS.boneDark], [11, 13, SKELETON_COLORS.bone],
+];
+
+// 向上面朝 - 背面
+const SKELETON_FACE_UP = [
+  // 头盔顶
+  [4, 1, SKELETON_COLORS.helmet], [5, 1, SKELETON_COLORS.helmetLight], [6, 1, SKELETON_COLORS.helmetLight], [7, 1, SKELETON_COLORS.helmetLight], [8, 1, SKELETON_COLORS.helmetLight], [9, 1, SKELETON_COLORS.helmet],
+  [4, 2, SKELETON_COLORS.helmet], [5, 2, SKELETON_COLORS.helmetLight], [6, 2, SKELETON_COLORS.helmet], [7, 2, SKELETON_COLORS.helmet], [8, 2, SKELETON_COLORS.helmetLight], [9, 2, SKELETON_COLORS.helmet],
+  // 头盔后部
+  [3, 3, SKELETON_COLORS.helmetDark], [4, 3, SKELETON_COLORS.helmet], [5, 3, SKELETON_COLORS.helmet], [6, 3, SKELETON_COLORS.helmetLight], [7, 3, SKELETON_COLORS.helmetLight], [8, 3, SKELETON_COLORS.helmet], [9, 3, SKELETON_COLORS.helmet], [10, 3, SKELETON_COLORS.helmetDark],
+  [3, 4, SKELETON_COLORS.helmetDark], [4, 4, SKELETON_COLORS.helmet], [5, 4, SKELETON_COLORS.helmet], [6, 4, SKELETON_COLORS.helmet], [7, 4, SKELETON_COLORS.helmet], [8, 4, SKELETON_COLORS.helmet], [9, 4, SKELETON_COLORS.helmet], [10, 4, SKELETON_COLORS.helmetDark],
+  // 披风
+  [3, 5, SKELETON_COLORS.cloth], [4, 5, SKELETON_COLORS.cloth], [5, 5, SKELETON_COLORS.clothDark], [6, 5, SKELETON_COLORS.cloth], [7, 5, SKELETON_COLORS.cloth], [8, 5, SKELETON_COLORS.clothDark], [9, 5, SKELETON_COLORS.cloth], [10, 5, SKELETON_COLORS.cloth],
+  [3, 6, SKELETON_COLORS.clothDark], [4, 6, SKELETON_COLORS.cloth], [5, 6, SKELETON_COLORS.cloth], [6, 6, SKELETON_COLORS.clothDark], [7, 6, SKELETON_COLORS.clothDark], [8, 6, SKELETON_COLORS.cloth], [9, 6, SKELETON_COLORS.cloth], [10, 6, SKELETON_COLORS.clothDark],
+  [4, 7, SKELETON_COLORS.cloth], [5, 7, SKELETON_COLORS.cloth], [6, 7, SKELETON_COLORS.clothDark], [7, 7, SKELETON_COLORS.clothDark], [8, 7, SKELETON_COLORS.cloth], [9, 7, SKELETON_COLORS.cloth],
+  // 盔甲背部
+  [4, 8, SKELETON_COLORS.armor], [5, 8, SKELETON_COLORS.armorLight], [6, 8, SKELETON_COLORS.armor], [7, 8, SKELETON_COLORS.armor], [8, 8, SKELETON_COLORS.armorLight], [9, 8, SKELETON_COLORS.armor],
+  [3, 9, SKELETON_COLORS.armorDark], [4, 9, SKELETON_COLORS.armor], [5, 9, SKELETON_COLORS.armor], [6, 9, SKELETON_COLORS.armorLight], [7, 9, SKELETON_COLORS.armorLight], [8, 9, SKELETON_COLORS.armor], [9, 9, SKELETON_COLORS.armor], [10, 9, SKELETON_COLORS.armorDark],
+  [3, 10, SKELETON_COLORS.armorDark], [4, 10, SKELETON_COLORS.armor], [5, 10, SKELETON_COLORS.armorDark], [6, 10, SKELETON_COLORS.armor], [7, 10, SKELETON_COLORS.armor], [8, 10, SKELETON_COLORS.armorDark], [9, 10, SKELETON_COLORS.armor], [10, 10, SKELETON_COLORS.armorDark],
+  [3, 11, SKELETON_COLORS.armorDark], [4, 11, SKELETON_COLORS.armor], [5, 11, SKELETON_COLORS.armorDark], [6, 11, SKELETON_COLORS.armor], [7, 11, SKELETON_COLORS.armor], [8, 11, SKELETON_COLORS.armorDark], [9, 11, SKELETON_COLORS.armor], [10, 11, SKELETON_COLORS.armorDark],
+  // 腰带
+  [4, 12, SKELETON_COLORS.armorDark], [5, 12, SKELETON_COLORS.shieldGold], [6, 12, SKELETON_COLORS.armorDark], [7, 12, SKELETON_COLORS.armorDark], [8, 12, SKELETON_COLORS.shieldGold], [9, 12, SKELETON_COLORS.armorDark],
+  // 骨头腿
+  [4, 13, SKELETON_COLORS.bone], [5, 13, SKELETON_COLORS.boneDark], [8, 13, SKELETON_COLORS.boneDark], [9, 13, SKELETON_COLORS.bone],
+  [4, 14, SKELETON_COLORS.boneDark], [5, 14, SKELETON_COLORS.bone], [8, 14, SKELETON_COLORS.bone], [9, 14, SKELETON_COLORS.boneDark],
+  [5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.boneDark], [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.bone],
+  // 双手（骨头手）
+  [2, 9, SKELETON_COLORS.bone], [2, 10, SKELETON_COLORS.boneDark], [2, 11, SKELETON_COLORS.bone],
+  [11, 9, SKELETON_COLORS.bone], [11, 10, SKELETON_COLORS.boneDark], [11, 11, SKELETON_COLORS.bone],
+];
+
+// 向左面朝
+const SKELETON_FACE_LEFT = [
+  // 头部（侧面）
+  [5, 1, SKELETON_COLORS.boneLight], [6, 1, SKELETON_COLORS.boneLight], [7, 1, SKELETON_COLORS.boneLight],
+  [4, 2, SKELETON_COLORS.bone], [5, 2, SKELETON_COLORS.boneLight], [6, 2, SKELETON_COLORS.bone], [7, 2, SKELETON_COLORS.bone],
+  [3, 3, SKELETON_COLORS.boneDark], [4, 3, SKELETON_COLORS.bone], [5, 3, SKELETON_COLORS.bone], [6, 3, SKELETON_COLORS.bone], [7, 3, SKELETON_COLORS.bone],
+  // 眼睛（侧面单个）
+  [3, 4, SKELETON_COLORS.bone], [4, 4, SKELETON_COLORS.eye], [5, 4, SKELETON_COLORS.bone], [6, 4, SKELETON_COLORS.boneShadow], [7, 4, SKELETON_COLORS.bone],
+  // 鼻子（侧面）
+  [3, 5, SKELETON_COLORS.bone], [4, 5, SKELETON_COLORS.boneDark], [5, 5, SKELETON_COLORS.bone], [6, 5, SKELETON_COLORS.boneShadow],
+  // 嘴（侧面）
+  [3, 6, SKELETON_COLORS.bone], [4, 6, SKELETON_COLORS.boneLight], [5, 6, SKELETON_COLORS.bone], [6, 6, SKELETON_COLORS.bone],
+  [3, 7, SKELETON_COLORS.boneDark], [4, 7, SKELETON_COLORS.bone], [5, 7, SKELETON_COLORS.boneShadow],
+  // 下颚
+  [4, 8, SKELETON_COLORS.bone], [5, 8, SKELETON_COLORS.boneShadow],
+  // 脖子
+  [5, 9, SKELETON_COLORS.boneDark], [6, 9, SKELETON_COLORS.boneDark],
+  // 盔甲身体（侧面）
+  [4, 10, SKELETON_COLORS.armorLight], [5, 10, SKELETON_COLORS.armor], [6, 10, SKELETON_COLORS.armorDark], [7, 10, SKELETON_COLORS.armorDark],
+  [3, 11, SKELETON_COLORS.armor], [4, 11, SKELETON_COLORS.armor], [5, 11, SKELETON_COLORS.armorLight], [6, 11, SKELETON_COLORS.armor], [7, 11, SKELETON_COLORS.armorDark],
+  [3, 12, SKELETON_COLORS.armorDark], [4, 12, SKELETON_COLORS.armor], [5, 12, SKELETON_COLORS.armor], [6, 12, SKELETON_COLORS.armorDark], [7, 12, SKELETON_COLORS.armorDark],
+  [3, 13, SKELETON_COLORS.armorDark], [4, 13, SKELETON_COLORS.armorDark], [5, 13, SKELETON_COLORS.armorDark], [6, 13, SKELETON_COLORS.armorDark],
+  // 腰带
+  [4, 14, SKELETON_COLORS.shieldGold], [5, 14, SKELETON_COLORS.armorDark], [6, 14, SKELETON_COLORS.armorDark],
+  // 腿（侧面）
+  [5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.boneDark],
+  // 左手（侧面更长，骨头手）
+  [2, 10, SKELETON_COLORS.bone], [2, 11, SKELETON_COLORS.boneDark], [2, 12, SKELETON_COLORS.bone], [2, 13, SKELETON_COLORS.boneDark],
+];
+
+// 向右面朝
+const SKELETON_FACE_RIGHT = [
+  // 头部（侧面）
+  [6, 1, SKELETON_COLORS.boneLight], [7, 1, SKELETON_COLORS.boneLight], [8, 1, SKELETON_COLORS.boneLight],
+  [6, 2, SKELETON_COLORS.bone], [7, 2, SKELETON_COLORS.bone], [8, 2, SKELETON_COLORS.boneLight], [9, 2, SKELETON_COLORS.bone],
+  [6, 3, SKELETON_COLORS.bone], [7, 3, SKELETON_COLORS.bone], [8, 3, SKELETON_COLORS.bone], [9, 3, SKELETON_COLORS.bone], [10, 3, SKELETON_COLORS.boneDark],
+  // 眼睛（侧面单个）
+  [6, 4, SKELETON_COLORS.boneShadow], [7, 4, SKELETON_COLORS.bone], [8, 4, SKELETON_COLORS.bone], [9, 4, SKELETON_COLORS.eye], [10, 4, SKELETON_COLORS.bone],
+  // 鼻子（侧面）
+  [7, 5, SKELETON_COLORS.boneShadow], [8, 5, SKELETON_COLORS.bone], [9, 5, SKELETON_COLORS.boneDark], [10, 5, SKELETON_COLORS.bone],
+  // 嘴（侧面）
+  [7, 6, SKELETON_COLORS.bone], [8, 6, SKELETON_COLORS.bone], [9, 6, SKELETON_COLORS.boneLight], [10, 6, SKELETON_COLORS.bone],
+  [8, 7, SKELETON_COLORS.boneShadow], [9, 7, SKELETON_COLORS.bone], [10, 7, SKELETON_COLORS.boneDark],
+  // 下颚
+  [8, 8, SKELETON_COLORS.boneShadow], [9, 8, SKELETON_COLORS.bone],
+  // 脖子
+  [7, 9, SKELETON_COLORS.boneDark], [8, 9, SKELETON_COLORS.boneDark],
+  // 盔甲身体（侧面）
+  [6, 10, SKELETON_COLORS.armorDark], [7, 10, SKELETON_COLORS.armorDark], [8, 10, SKELETON_COLORS.armor], [9, 10, SKELETON_COLORS.armorLight],
+  [6, 11, SKELETON_COLORS.armorDark], [7, 11, SKELETON_COLORS.armor], [8, 11, SKELETON_COLORS.armorLight], [9, 11, SKELETON_COLORS.armor], [10, 11, SKELETON_COLORS.armor],
+  [6, 12, SKELETON_COLORS.armorDark], [7, 12, SKELETON_COLORS.armorDark], [8, 12, SKELETON_COLORS.armor], [9, 12, SKELETON_COLORS.armor], [10, 12, SKELETON_COLORS.armorDark],
+  [6, 13, SKELETON_COLORS.armorDark], [7, 13, SKELETON_COLORS.armorDark], [8, 13, SKELETON_COLORS.armorDark], [9, 13, SKELETON_COLORS.armorDark],
+  // 腰带
+  [7, 14, SKELETON_COLORS.armorDark], [8, 14, SKELETON_COLORS.armorDark], [9, 14, SKELETON_COLORS.shieldGold],
+  // 腿（侧面）
+  [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.bone],
+  // 右手（侧面更长，骨头手）
+  [11, 10, SKELETON_COLORS.bone], [11, 11, SKELETON_COLORS.boneDark], [11, 12, SKELETON_COLORS.bone], [11, 13, SKELETON_COLORS.boneDark],
+];
+
+// 待机动画帧
+const SKELETON_IDLE_FRAMES = [
+  // 帧0：正常姿态
+  [
+    { pixels: [[5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.boneDark], [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.bone]] }
+  ],
+  // 帧1：微微下沉（呼吸效果）
+  [
+    { pixels: [[4, 15, SKELETON_COLORS.bone], [5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.boneDark], [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.bone], [9, 15, SKELETON_COLORS.bone]] }
+  ]
+];
+
+// 行走动画帧
+const SKELETON_WALK_FRAMES = [
+  // 帧0：左脚在前
+  [
+    { pixels: [[4, 15, SKELETON_COLORS.boneDark], [5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.bone], [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.boneDark]] }
+  ],
+  // 帧1：中间
+  [
+    { pixels: [[5, 15, SKELETON_COLORS.bone], [6, 15, SKELETON_COLORS.boneDark], [7, 15, SKELETON_COLORS.boneDark], [8, 15, SKELETON_COLORS.bone]] }
+  ],
+  // 帧2：右脚在前
+  [
+    { pixels: [[5, 15, SKELETON_COLORS.boneDark], [6, 15, SKELETON_COLORS.boneDark], [7, 15, SKELETON_COLORS.bone], [8, 15, SKELETON_COLORS.bone], [9, 15, SKELETON_COLORS.boneDark]] }
+  ]
+];
+
+export const drawSkeletonSoldier = (canvasRef, currentUnit) => {
+  if (!canvasRef) return;
+  const ctx = canvasRef.getContext('2d');
+  const x = currentUnit.x;
+  const y = currentUnit.y;
+  const unit = currentUnit.size / 16;
+  const direction = currentUnit.direction || 'down';
+  const frame = currentUnit.frame || 0;
+
+  ctx.imageSmoothingEnabled = false;
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
+  };
+
+  // 选择基础像素数据
+  let basePixels = SKELETON_FACE_DOWN;
+  if (direction === 'up') basePixels = SKELETON_FACE_UP;
+  else if (direction === 'left') basePixels = SKELETON_FACE_LEFT;
+  else if (direction === 'right') basePixels = SKELETON_FACE_RIGHT;
+
+  // 绘制基础角色
+  for (let i = 0; i < basePixels.length; i++) {
+    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2]);
+  }
+
+  // 绘制腿部动画
+  const isMoving = currentUnit.isMoving || false;
+  const frames = isMoving ? SKELETON_WALK_FRAMES : SKELETON_IDLE_FRAMES;
+  const frameIndex = Math.floor(frame) % frames.length;
+  const currentFrame = frames[frameIndex];
+
+  for (const layer of currentFrame) {
+    for (const pixel of layer.pixels) {
+      drawPixel(pixel[0], pixel[1], pixel[2]);
+    }
+  }
+};
