@@ -64,7 +64,48 @@ const LORD_COLORS = {
   // 漂浮光晕
   floatGlow: '#2A1A3A',      // 漂浮光晕
   floatGlowLight: '#4A2A5A', // 漂浮光晕亮
+  highlight: '#FFFFFF',          // 高光
 }
+
+// 暗影领主高精度头像（16x16网格，聚焦骷髅头部特写）
+const LORD_AVATAR = [
+  // ===== 兜帽顶部边缘 =====
+  [4, 0, LORD_COLORS.hoodDark], [5, 0, LORD_COLORS.hood], [6, 0, LORD_COLORS.hoodLight], [7, 0, LORD_COLORS.hoodLight], [8, 0, LORD_COLORS.hood], [9, 0, LORD_COLORS.hoodDark],
+  [3, 1, LORD_COLORS.hood], [4, 1, LORD_COLORS.hoodLight], [5, 1, LORD_COLORS.hood], [6, 1, LORD_COLORS.hoodPurple], [7, 1, LORD_COLORS.hoodPurple], [8, 1, LORD_COLORS.hood], [9, 1, LORD_COLORS.hoodLight], [10, 1, LORD_COLORS.hood],
+  [3, 2, LORD_COLORS.hoodDark], [4, 2, LORD_COLORS.hood], [5, 2, LORD_COLORS.hoodLight], [6, 2, LORD_COLORS.hood], [7, 2, LORD_COLORS.hood], [8, 2, LORD_COLORS.hoodLight], [9, 2, LORD_COLORS.hood], [10, 2, LORD_COLORS.hoodDark],
+
+  // ===== 兜帽开口处（骷髅头从中露出）=====
+  [4, 3, LORD_COLORS.hood], [5, 3, LORD_COLORS.collarLight], [6, 3, LORD_COLORS.collar], [7, 3, LORD_COLORS.collar], [8, 3, LORD_COLORS.collarLight], [9, 3, LORD_COLORS.hood],
+  [3, 4, LORD_COLORS.hoodDark], [4, 4, LORD_COLORS.hood], [5, 4, LORD_COLORS.skullShadow], [6, 4, LORD_COLORS.skull], [7, 4, LORD_COLORS.skull], [8, 4, LORD_COLORS.skullShadow], [9, 4, LORD_COLORS.hood], [10, 4, LORD_COLORS.hoodDark],
+
+  // ===== 骷髅头主体 =====
+  [3, 5, LORD_COLORS.skull], [4, 5, LORD_COLORS.skullLight], [5, 5, LORD_COLORS.skull], [6, 5, LORD_COLORS.skull], [7, 5, LORD_COLORS.skull], [8, 5, LORD_COLORS.skullLight], [9, 5, LORD_COLORS.skull], [10, 5, LORD_COLORS.skullDark],
+  [3, 6, LORD_COLORS.skullDark], [4, 6, LORD_COLORS.skull], [5, 6, LORD_COLORS.skullLight], [6, 6, LORD_COLORS.skull], [7, 6, LORD_COLORS.skull], [8, 6, LORD_COLORS.skullLight], [9, 6, LORD_COLORS.skull], [10, 6, LORD_COLORS.skullDark],
+
+  // ===== 眼眶（紫色发光）=====
+  [3, 7, LORD_COLORS.skullDark], [4, 7, LORD_COLORS.skull], [5, 7, LORD_COLORS.eyeHole], [6, 7, LORD_COLORS.eyeGlow], [7, 7, LORD_COLORS.eyeGlow], [8, 7, LORD_COLORS.eyeHole], [9, 7, LORD_COLORS.skull], [10, 7, LORD_COLORS.skullDark],
+  [4, 8, LORD_COLORS.skullDark], [5, 8, LORD_COLORS.eyeGlow], [6, 8, LORD_COLORS.eyeCore], [7, 8, LORD_COLORS.eyeCore], [8, 8, LORD_COLORS.eyeGlow], [9, 8, LORD_COLORS.skullDark],
+  // 眼睛高光
+  [6, 7, LORD_COLORS.highlight], [7, 7, LORD_COLORS.highlight],
+  [6, 8, LORD_COLORS.highlight], [7, 8, LORD_COLORS.highlight],
+
+  // ===== 眼睛下方细节 =====
+  [3, 8, LORD_COLORS.skull], [4, 8, LORD_COLORS.eyeGlowLight], [5, 8, LORD_COLORS.eyeGlow], [9, 8, LORD_COLORS.eyeGlowLight], [10, 8, LORD_COLORS.skull],
+  [3, 9, LORD_COLORS.skullDark], [4, 9, LORD_COLORS.skull], [5, 9, LORD_COLORS.skullShadow], [6, 9, LORD_COLORS.skullShadow], [7, 9, LORD_COLORS.skullShadow], [8, 9, LORD_COLORS.skullShadow], [9, 9, LORD_COLORS.skull], [10, 9, LORD_COLORS.skullDark],
+
+  // ===== 鼻梁和面颊 =====
+  [4, 10, LORD_COLORS.skull], [5, 10, LORD_COLORS.skullDark], [6, 10, LORD_COLORS.skullShadow], [7, 10, LORD_COLORS.skullShadow], [8, 10, LORD_COLORS.skullDark], [9, 10, LORD_COLORS.skull],
+  [4, 11, LORD_COLORS.skullDark], [5, 11, LORD_COLORS.skull], [6, 11, LORD_COLORS.skullDark], [7, 11, LORD_COLORS.skullDark], [8, 11, LORD_COLORS.skull], [9, 11, LORD_COLORS.skullDark],
+
+  // ===== 牙齿 =====
+  [5, 12, LORD_COLORS.tooth], [6, 12, LORD_COLORS.tooth], [7, 12, LORD_COLORS.tooth], [8, 12, LORD_COLORS.tooth],
+  [4, 13, LORD_COLORS.toothDark], [5, 13, LORD_COLORS.tooth], [6, 13, LORD_COLORS.toothDark], [7, 13, LORD_COLORS.toothDark], [8, 13, LORD_COLORS.tooth], [9, 13, LORD_COLORS.toothDark],
+  [5, 14, LORD_COLORS.toothDark], [6, 14, LORD_COLORS.tooth], [7, 14, LORD_COLORS.tooth], [8, 14, LORD_COLORS.toothDark],
+
+  // ===== 收紧的领口 =====
+  [4, 15, LORD_COLORS.hood], [5, 15, LORD_COLORS.collarLight], [6, 15, LORD_COLORS.collar], [7, 15, LORD_COLORS.collar], [8, 15, LORD_COLORS.collarLight], [9, 15, LORD_COLORS.hood],
+  [3, 16, LORD_COLORS.hoodDark], [4, 16, LORD_COLORS.collarDark], [5, 16, LORD_COLORS.collar], [6, 16, LORD_COLORS.collar], [7, 16, LORD_COLORS.collar], [8, 16, LORD_COLORS.collarDark], [9, 16, LORD_COLORS.hoodDark],
+]
 
 // 向下面朝 - 正面（兜帽戴起，黑气身体，下摆散开）
 const LORD_FACE_DOWN = [
@@ -311,5 +352,24 @@ export const drawShadowLord = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawShadowLordAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < LORD_AVATAR.length; i++) {
+    drawPixel(LORD_AVATAR[i][0], LORD_AVATAR[i][1], LORD_AVATAR[i][2])
   }
 }

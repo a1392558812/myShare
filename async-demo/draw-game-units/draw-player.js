@@ -78,8 +78,81 @@ const COLORS = {
     yellow: '#FFD700',
     dark: '#DC143C',
     highlight: '#FF6B6B'
-  }
+  },
+  highlight: '#FFFFFF'
 };
+
+// 玩家勇者高精度头像（16x16网格，聚焦面部特写）
+const PLAYER_AVATAR = [
+  // ===== 头盔顶部边缘 =====
+  [5, 0, COLORS.helmet.darkGold], [6, 0, COLORS.helmet.darkGold], [7, 0, COLORS.helmet.darkGold], [8, 0, COLORS.helmet.darkGold],
+  [4, 0, COLORS.helmet.gold], [9, 0, COLORS.helmet.gold],
+  [3, 0, COLORS.helmet.highlight], [10, 0, COLORS.helmet.highlight],
+
+  // ===== 头盔第二层 + 羽毛 =====
+  [2, 1, COLORS.feather.red], [3, 1, COLORS.helmet.gold], [4, 1, COLORS.helmet.gold],
+  [5, 1, COLORS.helmet.gold], [6, 1, COLORS.helmet.gold], [7, 1, COLORS.helmet.gold], [8, 1, COLORS.helmet.gold],
+  [9, 1, COLORS.helmet.gold], [10, 1, COLORS.helmet.gold], [11, 1, COLORS.helmet.gold], [12, 1, COLORS.feather.red],
+  [1, 1, COLORS.feather.orange], [13, 1, COLORS.feather.orange],
+  [0, 1, COLORS.feather.yellow], [14, 1, COLORS.feather.yellow],
+
+  // ===== 头盔第三层 + 羽毛高光 =====
+  [2, 2, COLORS.feather.dark], [3, 2, COLORS.helmet.darkGold], [4, 2, COLORS.helmet.darkGold],
+  [5, 2, COLORS.helmet.bronze], [6, 2, COLORS.helmet.bronze], [7, 2, COLORS.helmet.bronze], [8, 2, COLORS.helmet.bronze],
+  [9, 2, COLORS.helmet.bronze], [10, 2, COLORS.helmet.darkGold], [11, 2, COLORS.helmet.darkGold], [12, 2, COLORS.feather.dark],
+  [1, 2, COLORS.feather.red], [13, 2, COLORS.feather.red],
+
+  // ===== 头盔 + 头部 + 刘海 =====
+  [2, 3, COLORS.helmet.gold], [3, 3, COLORS.helmet.gold], [4, 3, COLORS.hair.brown],
+  [5, 3, COLORS.hair.brown], [6, 3, COLORS.hair.dark], [7, 3, COLORS.hair.dark], [8, 3, COLORS.hair.dark],
+  [9, 3, COLORS.hair.brown], [10, 3, COLORS.hair.brown], [11, 3, COLORS.helmet.gold], [12, 3, COLORS.helmet.gold],
+  [1, 3, COLORS.feather.orange], [13, 3, COLORS.feather.orange],
+
+  // ===== 刘海 + 脸部 =====
+  [2, 4, COLORS.hair.light], [3, 4, COLORS.hair.brown], [4, 4, COLORS.hair.brown],
+  [5, 4, COLORS.skin.light], [6, 4, COLORS.skin.normal], [7, 4, COLORS.skin.normal], [8, 4, COLORS.skin.normal],
+  [9, 4, COLORS.skin.light], [10, 4, COLORS.hair.brown], [11, 4, COLORS.hair.brown], [12, 4, COLORS.hair.light],
+  [1, 4, COLORS.feather.highlight], [13, 4, COLORS.feather.highlight],
+
+  // ===== 眼睛行 =====
+  [3, 5, COLORS.skin.normal], [4, 5, COLORS.face.eye], [5, 5, COLORS.skin.light],
+  [6, 5, COLORS.skin.normal], [7, 5, COLORS.skin.normal], [8, 5, COLORS.skin.normal],
+  [9, 5, COLORS.skin.light], [10, 5, COLORS.face.eye], [11, 5, COLORS.skin.normal],
+  // 眉毛
+  [3, 5, COLORS.face.brow], [4, 5, COLORS.face.brow], [10, 5, COLORS.face.brow], [11, 5, COLORS.face.brow],
+  // 眼睛高光
+  [4, 4, COLORS.highlight], [5, 4, COLORS.highlight], [9, 4, COLORS.highlight], [10, 4, COLORS.highlight],
+  [4, 5, COLORS.highlight], [10, 5, COLORS.highlight],
+
+  // ===== 嘴巴 + 腮红 =====
+  [4, 6, COLORS.skin.normal], [5, 6, COLORS.face.mouth], [6, 6, COLORS.face.mouth],
+  [7, 6, COLORS.skin.normal], [8, 6, COLORS.skin.normal], [9, 6, COLORS.face.mouth], [10, 6, COLORS.face.mouth],
+  // 腮红
+  [4, 6, COLORS.face.blush], [11, 6, COLORS.face.blush],
+
+  // ===== 下巴 =====
+  [4, 7, COLORS.skin.shadow], [5, 7, COLORS.skin.normal], [6, 7, COLORS.skin.normal],
+  [7, 7, COLORS.skin.normal], [8, 7, COLORS.skin.normal], [9, 7, COLORS.skin.normal], [10, 7, COLORS.skin.shadow],
+
+  // ===== 颈部 + 领口 =====
+  [5, 8, COLORS.armor.blue], [6, 8, COLORS.armor.blue], [7, 8, COLORS.armor.blue], [8, 8, COLORS.armor.blue], [9, 8, COLORS.armor.blue],
+  [4, 8, COLORS.skin.shadow], [10, 8, COLORS.skin.shadow],
+
+  // ===== 盔甲上层 =====
+  [4, 9, COLORS.armor.dark], [5, 9, COLORS.armor.blue], [6, 9, COLORS.armor.light],
+  [7, 9, COLORS.armor.light], [8, 9, COLORS.armor.light], [9, 9, COLORS.armor.blue], [10, 9, COLORS.armor.dark],
+  [3, 9, COLORS.armor.dark], [11, 9, COLORS.armor.dark],
+
+  // ===== 盔甲中层 + 腰带 =====
+  [3, 10, COLORS.armor.blue], [4, 10, COLORS.armor.blue], [5, 10, COLORS.armor.blue],
+  [6, 10, COLORS.belt.gold], [7, 10, COLORS.belt.yellow], [8, 10, COLORS.belt.yellow],
+  [9, 10, COLORS.armor.blue], [10, 10, COLORS.armor.blue], [11, 10, COLORS.armor.blue],
+
+  // ===== 盔甲下层 =====
+  [3, 11, COLORS.armor.blue], [4, 11, COLORS.armor.detail], [5, 11, COLORS.armor.blue],
+  [6, 11, COLORS.armor.blue], [7, 11, COLORS.armor.blue], [8, 11, COLORS.armor.blue],
+  [9, 11, COLORS.armor.detail], [10, 11, COLORS.armor.blue], [11, 11, COLORS.armor.blue],
+]
 
 // 向下面朝 - 精细正面
 const FACE_DOWN = [
@@ -522,5 +595,24 @@ export const drawPlayer = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2]);
     }
+  }
+}
+
+export const drawPlayerAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < PLAYER_AVATAR.length; i++) {
+    drawPixel(PLAYER_AVATAR[i][0], PLAYER_AVATAR[i][1], PLAYER_AVATAR[i][2])
   }
 }

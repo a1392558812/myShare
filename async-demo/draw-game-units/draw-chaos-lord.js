@@ -75,7 +75,54 @@ const LORD_COLORS = {
   shieldDark: '#2A2A3A',  // 盾暗
   shieldLight: '#5A5A6A', // 盾亮
   shieldChaos: '#FF4400', // 盾混沌符文
+  highlight: '#FFFFFF',      // 高光
 }
+
+// 混沌领主高精度头像（16x16网格，聚焦头盔头部特写）
+const LORD_AVATAR = [
+  // ===== 头顶角（顶部）=====
+  [5, 0, LORD_COLORS.hornDark], [6, 0, LORD_COLORS.horn], [7, 0, LORD_COLORS.horn], [8, 0, LORD_COLORS.hornDark],
+  [4, 1, LORD_COLORS.horn], [5, 1, LORD_COLORS.hornLight], [6, 1, LORD_COLORS.hornTip], [7, 1, LORD_COLORS.hornTip], [8, 1, LORD_COLORS.hornLight], [9, 1, LORD_COLORS.horn],
+  [3, 2, LORD_COLORS.hornDark], [4, 2, LORD_COLORS.hornLight], [5, 2, LORD_COLORS.horn], [6, 2, LORD_COLORS.hornTip], [7, 2, LORD_COLORS.hornTip], [8, 2, LORD_COLORS.horn], [9, 2, LORD_COLORS.hornLight], [10, 2, LORD_COLORS.hornDark],
+
+  // ===== 头盔主体第一层 =====
+  [2, 3, LORD_COLORS.helmDark], [3, 3, LORD_COLORS.helm], [4, 3, LORD_COLORS.helmLight], [5, 3, LORD_COLORS.helm], [6, 3, LORD_COLORS.helmAccent], [7, 3, LORD_COLORS.helmAccent], [8, 3, LORD_COLORS.helmLight], [9, 3, LORD_COLORS.helm], [10, 3, LORD_COLORS.helmDark],
+  [2, 4, LORD_COLORS.helmDark], [3, 4, LORD_COLORS.helm], [4, 4, LORD_COLORS.helmLight], [5, 4, LORD_COLORS.helm], [6, 4, LORD_COLORS.helmAccent], [7, 4, LORD_COLORS.helmAccent], [8, 4, LORD_COLORS.helmLight], [9, 4, LORD_COLORS.helm], [10, 4, LORD_COLORS.helmDark],
+
+  // ===== 眼睛行（混沌橙红）=====
+  [2, 5, LORD_COLORS.helmDark], [3, 5, LORD_COLORS.helm], [4, 5, LORD_COLORS.eye], [5, 5, LORD_COLORS.eyeGlow], [6, 5, LORD_COLORS.eye], [7, 5, LORD_COLORS.eye], [8, 5, LORD_COLORS.eyeGlow], [9, 5, LORD_COLORS.eye], [10, 5, LORD_COLORS.helm], [11, 5, LORD_COLORS.helmDark],
+  // 眼睛高光
+  [4, 4, LORD_COLORS.highlight], [5, 4, LORD_COLORS.highlight], [8, 4, LORD_COLORS.highlight], [9, 4, LORD_COLORS.highlight],
+  [4, 5, LORD_COLORS.highlight], [8, 5, LORD_COLORS.highlight],
+  // 眼睛内核发光
+  [4, 5, LORD_COLORS.eyeInner], [5, 5, LORD_COLORS.eyeInner], [8, 5, LORD_COLORS.eyeInner], [9, 5, LORD_COLORS.eyeInner],
+
+  // ===== 眼睛下方细节 =====
+  [2, 6, LORD_COLORS.helmDark], [3, 6, LORD_COLORS.helm], [4, 6, LORD_COLORS.eyeGlow], [5, 6, LORD_COLORS.eyeInner], [6, 6, LORD_COLORS.eyeInner], [7, 6, LORD_COLORS.eyeInner], [8, 6, LORD_COLORS.eyeGlow], [9, 6, LORD_COLORS.helm], [10, 6, LORD_COLORS.helmDark],
+  [3, 7, LORD_COLORS.helmDark], [4, 7, LORD_COLORS.helm], [5, 7, LORD_COLORS.eyeGlow], [6, 7, LORD_COLORS.eyeGlow], [7, 7, LORD_COLORS.eyeGlow], [8, 7, LORD_COLORS.eyeGlow], [9, 7, LORD_COLORS.helm], [10, 7, LORD_COLORS.helmDark],
+
+  // ===== 头盔底部边缘 =====
+  [3, 8, LORD_COLORS.helm], [4, 8, LORD_COLORS.helmDark], [5, 8, LORD_COLORS.helm], [6, 8, LORD_COLORS.helmAccent], [7, 8, LORD_COLORS.helmAccent], [8, 8, LORD_COLORS.helm], [9, 8, LORD_COLORS.helmDark], [10, 8, LORD_COLORS.helm],
+  [4, 9, LORD_COLORS.helmDark], [5, 9, LORD_COLORS.helm], [6, 9, LORD_COLORS.helmAccent], [7, 9, LORD_COLORS.helmAccent], [8, 9, LORD_COLORS.helm], [9, 9, LORD_COLORS.helmDark],
+
+  // ===== 肩甲/颈部 =====
+  [2, 10, LORD_COLORS.armorDark], [3, 10, LORD_COLORS.armor], [4, 10, LORD_COLORS.armorPlateLight], [5, 10, LORD_COLORS.armorPlate], [6, 10, LORD_COLORS.chaos], [7, 10, LORD_COLORS.chaos], [8, 10, LORD_COLORS.armorPlate], [9, 10, LORD_COLORS.armorPlateLight], [10, 10, LORD_COLORS.armor], [11, 10, LORD_COLORS.armorDark],
+  [2, 11, LORD_COLORS.armorDark], [3, 11, LORD_COLORS.armorPlate], [4, 11, LORD_COLORS.armorPlateLight], [5, 11, LORD_COLORS.armorPlate], [6, 11, LORD_COLORS.armorPlateLight], [7, 11, LORD_COLORS.armorPlateLight], [8, 11, LORD_COLORS.armorPlate], [9, 11, LORD_COLORS.armorPlateLight], [10, 11, LORD_COLORS.armorPlate], [11, 11, LORD_COLORS.armorDark],
+
+  // ===== 胸甲领口 =====
+  [2, 12, LORD_COLORS.armorDark], [3, 12, LORD_COLORS.armor], [4, 12, LORD_COLORS.armorPlate], [5, 12, LORD_COLORS.chaosGlow], [6, 12, LORD_COLORS.armorPlateLight], [7, 12, LORD_COLORS.armorPlateLight], [8, 12, LORD_COLORS.chaosGlow], [9, 12, LORD_COLORS.armorPlate], [10, 12, LORD_COLORS.armor], [11, 12, LORD_COLORS.armorDark],
+
+  // ===== 混沌符文装饰 =====
+  [5, 10, LORD_COLORS.chaosGlow], [6, 10, LORD_COLORS.spark],
+  [8, 10, LORD_COLORS.chaosGlow], [9, 10, LORD_COLORS.spark],
+  [5, 12, LORD_COLORS.runeGlow], [8, 12, LORD_COLORS.runeGlow],
+  [6, 11, LORD_COLORS.chaos], [7, 11, LORD_COLORS.chaos],
+
+  // ===== 头盔下巴/护面 =====
+  [4, 13, LORD_COLORS.helmDark], [5, 13, LORD_COLORS.helm], [6, 13, LORD_COLORS.helmAccent], [7, 13, LORD_COLORS.helmAccent], [8, 13, LORD_COLORS.helm], [9, 13, LORD_COLORS.helmDark],
+  [4, 14, LORD_COLORS.helm], [5, 14, LORD_COLORS.helmLight], [6, 14, LORD_COLORS.helm], [7, 14, LORD_COLORS.helm], [8, 14, LORD_COLORS.helmLight], [9, 14, LORD_COLORS.helm],
+  [5, 15, LORD_COLORS.helmDark], [6, 15, LORD_COLORS.helm], [7, 15, LORD_COLORS.helm], [8, 15, LORD_COLORS.helmDark],
+]
 
 // 向下面朝 - 正面
 const LORD_FACE_DOWN = [
@@ -359,5 +406,24 @@ export const drawChaosLord = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawChaosLordAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < LORD_AVATAR.length; i++) {
+    drawPixel(LORD_AVATAR[i][0], LORD_AVATAR[i][1], LORD_AVATAR[i][2])
   }
 }

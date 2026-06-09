@@ -76,7 +76,49 @@ const LICH_COLORS = {
   shieldDark: '#1A2A4A',    // 盾暗
   shieldLight: '#5A6A8A',   // 盾亮
   shieldRune: '#00FFFF',    // 盾符文
+  highlight: '#FFFFFF',      // 高光
 }
+
+// 巫妖王高精度头像（16x16网格，聚焦头部特写）
+const LICH_AVATAR = [
+  // ===== 皇冠顶部 + 角 =====
+  [3, 0, LICH_COLORS.hornDark], [4, 0, LICH_COLORS.horn], [5, 0, LICH_COLORS.crown], [6, 0, LICH_COLORS.crownGem], [7, 0, LICH_COLORS.crownGem], [8, 0, LICH_COLORS.crownGem], [9, 0, LICH_COLORS.crown], [10, 0, LICH_COLORS.horn], [11, 0, LICH_COLORS.hornDark],
+  [3, 1, LICH_COLORS.horn], [4, 1, LICH_COLORS.crownDark], [5, 1, LICH_COLORS.crown], [6, 1, LICH_COLORS.crownGemGlow], [7, 1, LICH_COLORS.crownGemGlow], [8, 1, LICH_COLORS.crownGemGlow], [9, 1, LICH_COLORS.crown], [10, 1, LICH_COLORS.crownDark], [11, 1, LICH_COLORS.horn],
+  [3, 2, LICH_COLORS.hornDark], [4, 2, LICH_COLORS.crown], [5, 2, LICH_COLORS.crownLight], [6, 2, LICH_COLORS.crownGem], [7, 2, LICH_COLORS.crownGem], [8, 2, LICH_COLORS.crownGem], [9, 2, LICH_COLORS.crownLight], [10, 2, LICH_COLORS.crown], [11, 2, LICH_COLORS.hornDark],
+
+  // ===== 头盔/骷髅头部 =====
+  [2, 3, LICH_COLORS.armorDark], [3, 3, LICH_COLORS.armor], [4, 3, LICH_COLORS.skullLight], [5, 3, LICH_COLORS.skull], [6, 3, LICH_COLORS.skull], [7, 3, LICH_COLORS.skull], [8, 3, LICH_COLORS.skull], [9, 3, LICH_COLORS.skullLight], [10, 3, LICH_COLORS.armor], [11, 3, LICH_COLORS.armorDark],
+  [2, 4, LICH_COLORS.armorDark], [3, 4, LICH_COLORS.armor], [4, 4, LICH_COLORS.skullLight], [5, 4, LICH_COLORS.eye], [6, 4, LICH_COLORS.eyeGlow], [7, 4, LICH_COLORS.eyeGlow], [8, 4, LICH_COLORS.eyeGlow], [9, 4, LICH_COLORS.eye], [10, 4, LICH_COLORS.skullLight], [11, 4, LICH_COLORS.armor], [12, 4, LICH_COLORS.armorDark],
+  [2, 5, LICH_COLORS.armorDark], [3, 5, LICH_COLORS.skull], [4, 5, LICH_COLORS.eyeGlow], [5, 5, LICH_COLORS.eyeInner], [6, 5, LICH_COLORS.eyeInner], [7, 5, LICH_COLORS.eyeInner], [8, 5, LICH_COLORS.eyeInner], [9, 5, LICH_COLORS.eyeGlow], [10, 5, LICH_COLORS.skull], [11, 5, LICH_COLORS.armorDark],
+  // 眼睛高光
+  [5, 4, LICH_COLORS.highlight], [6, 4, LICH_COLORS.highlight], [8, 4, LICH_COLORS.highlight], [9, 4, LICH_COLORS.highlight],
+  [5, 5, LICH_COLORS.highlight], [9, 5, LICH_COLORS.highlight],
+
+  // ===== 鼻梁和面部 =====
+  [3, 6, LICH_COLORS.armorDark], [4, 6, LICH_COLORS.skull], [5, 6, LICH_COLORS.skull], [6, 6, LICH_COLORS.skullDark], [7, 6, LICH_COLORS.skullDark], [8, 6, LICH_COLORS.skull], [9, 6, LICH_COLORS.skull], [10, 6, LICH_COLORS.armorDark],
+  [4, 7, LICH_COLORS.skullDark], [5, 7, LICH_COLORS.skull], [6, 7, LICH_COLORS.skullDark], [7, 7, LICH_COLORS.skullDark], [8, 7, LICH_COLORS.skull], [9, 7, LICH_COLORS.skullDark],
+  [4, 8, LICH_COLORS.skullDark], [5, 8, LICH_COLORS.skull], [6, 8, LICH_COLORS.skullDark], [7, 8, LICH_COLORS.skullDark], [8, 8, LICH_COLORS.skull], [9, 8, LICH_COLORS.skullDark],
+
+  // ===== 下颚和牙齿 =====
+  [5, 9, LICH_COLORS.jaw], [6, 9, LICH_COLORS.skullDark], [7, 9, LICH_COLORS.skullDark], [8, 9, LICH_COLORS.jaw],
+  [4, 10, LICH_COLORS.skullDark], [5, 10, LICH_COLORS.skull], [6, 10, LICH_COLORS.skull], [7, 10, LICH_COLORS.skull], [8, 10, LICH_COLORS.skull], [9, 10, LICH_COLORS.skullDark],
+  [5, 11, LICH_COLORS.skull], [6, 11, LICH_COLORS.skullDark], [7, 11, LICH_COLORS.skullDark], [8, 11, LICH_COLORS.skull],
+
+  // ===== 肩甲 =====
+  [2, 10, LICH_COLORS.armorDark], [3, 10, LICH_COLORS.armor], [4, 10, LICH_COLORS.plate], [5, 10, LICH_COLORS.plateLight], [6, 10, LICH_COLORS.rune], [7, 10, LICH_COLORS.rune], [8, 10, LICH_COLORS.plateLight], [9, 10, LICH_COLORS.plate], [10, 10, LICH_COLORS.armor], [11, 10, LICH_COLORS.armorDark],
+  [2, 11, LICH_COLORS.armorDark], [3, 11, LICH_COLORS.armor], [4, 11, LICH_COLORS.plateLight], [5, 11, LICH_COLORS.plate], [6, 11, LICH_COLORS.runeGlow], [7, 11, LICH_COLORS.runeGlow], [8, 11, LICH_COLORS.plate], [9, 11, LICH_COLORS.plateLight], [10, 11, LICH_COLORS.armor], [11, 11, LICH_COLORS.armorDark],
+
+  // ===== 符文装饰 =====
+  [5, 10, LICH_COLORS.spark], [6, 10, LICH_COLORS.spark], [9, 10, LICH_COLORS.spark], [10, 10, LICH_COLORS.spark],
+  [5, 11, LICH_COLORS.frostLight], [10, 11, LICH_COLORS.frostLight],
+
+  // ===== 胸甲领口 =====
+  [3, 12, LICH_COLORS.armorDark], [4, 12, LICH_COLORS.armor], [5, 12, LICH_COLORS.plate], [6, 12, LICH_COLORS.plateLight], [7, 12, LICH_COLORS.plateLight], [8, 12, LICH_COLORS.plate], [9, 12, LICH_COLORS.armor], [10, 12, LICH_COLORS.armorDark],
+  [4, 13, LICH_COLORS.armor], [5, 13, LICH_COLORS.plateLight], [6, 13, LICH_COLORS.plate], [7, 13, LICH_COLORS.plate], [8, 13, LICH_COLORS.plateLight], [9, 13, LICH_COLORS.plate], [10, 13, LICH_COLORS.armor],
+
+  // ===== 头盔底部边缘 =====
+  [4, 14, LICH_COLORS.armorDark], [5, 14, LICH_COLORS.armor], [6, 14, LICH_COLORS.armorLight], [7, 14, LICH_COLORS.armorLight], [8, 14, LICH_COLORS.armor], [9, 14, LICH_COLORS.armorDark],
+]
 
 // 向下面朝 - 正面
 const LICH_FACE_DOWN = [
@@ -347,5 +389,24 @@ export const drawLichKing = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawLichKingAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < LICH_AVATAR.length; i++) {
+    drawPixel(LICH_AVATAR[i][0], LICH_AVATAR[i][1], LICH_AVATAR[i][2])
   }
 }

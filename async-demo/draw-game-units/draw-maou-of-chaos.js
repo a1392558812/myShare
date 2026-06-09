@@ -89,7 +89,52 @@ const LORD_COLORS = {
   // 牙齿/獠牙
   fang: '#F8F0E0',         // 獠牙 - 白
   fangDark: '#C8B8A0',     // 獠牙暗
+  highlight: '#FFFFFF',        // 高光
 }
+
+// 混沌魔王高精度头像（16x16网格，聚焦魔王面部特写）
+const LORD_AVATAR = [
+  // ===== 王冠顶部 =====
+  [5, 0, LORD_COLORS.crownDark], [6, 0, LORD_COLORS.crown], [7, 0, LORD_COLORS.crown], [8, 0, LORD_COLORS.crown], [9, 0, LORD_COLORS.crownDark],
+  [4, 1, LORD_COLORS.crown], [5, 1, LORD_COLORS.crownLight], [6, 1, LORD_COLORS.crownGem], [7, 1, LORD_COLORS.crownGemGlow], [8, 1, LORD_COLORS.crownGem], [9, 1, LORD_COLORS.crownLight], [10, 1, LORD_COLORS.crown],
+  [3, 2, LORD_COLORS.crownDark], [4, 2, LORD_COLORS.crown], [5, 2, LORD_COLORS.crownLight], [6, 2, LORD_COLORS.crown], [7, 2, LORD_COLORS.crownLight], [8, 2, LORD_COLORS.crown], [9, 2, LORD_COLORS.crownLight], [10, 2, LORD_COLORS.crown], [11, 2, LORD_COLORS.crownDark],
+
+  // ===== 恶魔角 =====
+  [2, 0, LORD_COLORS.hornDark], [3, 0, LORD_COLORS.horn], [10, 0, LORD_COLORS.horn], [11, 0, LORD_COLORS.hornDark],
+  [2, 1, LORD_COLORS.horn], [3, 1, LORD_COLORS.hornLight], [4, 1, LORD_COLORS.horn], [9, 1, LORD_COLORS.horn], [10, 1, LORD_COLORS.hornLight], [11, 1, LORD_COLORS.horn],
+  [2, 2, LORD_COLORS.hornDark], [3, 2, LORD_COLORS.horn], [4, 2, LORD_COLORS.hornLight], [9, 2, LORD_COLORS.hornLight], [10, 2, LORD_COLORS.horn], [11, 2, LORD_COLORS.hornDark],
+  [3, 3, LORD_COLORS.hornDark], [4, 3, LORD_COLORS.horn], [9, 3, LORD_COLORS.horn], [10, 3, LORD_COLORS.hornDark],
+
+  // ===== 头发/头部装饰 =====
+  [3, 3, LORD_COLORS.hair], [4, 3, LORD_COLORS.hairLight], [5, 3, LORD_COLORS.hairDark], [6, 3, LORD_COLORS.hair], [7, 3, LORD_COLORS.hair], [8, 3, LORD_COLORS.hairDark], [9, 3, LORD_COLORS.hairLight], [10, 3, LORD_COLORS.hair],
+  [2, 4, LORD_COLORS.hairDark], [3, 4, LORD_COLORS.hair], [4, 4, LORD_COLORS.hairLight], [5, 4, LORD_COLORS.hair], [6, 4, LORD_COLORS.hairDark], [7, 4, LORD_COLORS.hairDark], [8, 4, LORD_COLORS.hair], [9, 4, LORD_COLORS.hairLight], [10, 4, LORD_COLORS.hair], [11, 4, LORD_COLORS.hairDark],
+  [2, 5, LORD_COLORS.hair], [3, 5, LORD_COLORS.hairLight], [4, 5, LORD_COLORS.hair], [5, 5, LORD_COLORS.hairDark], [6, 5, LORD_COLORS.hair], [7, 5, LORD_COLORS.hair], [8, 5, LORD_COLORS.hairDark], [9, 5, LORD_COLORS.hair], [10, 5, LORD_COLORS.hairLight], [11, 5, LORD_COLORS.hair],
+
+  // ===== 脸部 =====
+  [3, 6, LORD_COLORS.face], [4, 6, LORD_COLORS.faceLight], [5, 6, LORD_COLORS.face], [6, 6, LORD_COLORS.face], [7, 6, LORD_COLORS.face], [8, 6, LORD_COLORS.faceLight], [9, 6, LORD_COLORS.face], [10, 6, LORD_COLORS.face],
+  [3, 7, LORD_COLORS.faceLight], [4, 7, LORD_COLORS.eye], [5, 7, LORD_COLORS.eyeGlow], [6, 7, LORD_COLORS.eye], [7, 7, LORD_COLORS.eye], [8, 7, LORD_COLORS.eyeGlow], [9, 7, LORD_COLORS.eye], [10, 7, LORD_COLORS.faceLight],
+
+  // ===== 眼睛（血红发光）=====
+  [3, 8, LORD_COLORS.face], [4, 8, LORD_COLORS.eyeGlow], [5, 8, LORD_COLORS.eyeInner], [6, 8, LORD_COLORS.eyeInner], [7, 8, LORD_COLORS.eyeInner], [8, 8, LORD_COLORS.eyeInner], [9, 8, LORD_COLORS.eyeGlow], [10, 8, LORD_COLORS.face],
+  // 眼睛高光
+  [4, 7, LORD_COLORS.highlight], [5, 7, LORD_COLORS.highlight], [8, 7, LORD_COLORS.highlight], [9, 7, LORD_COLORS.highlight],
+  [4, 8, LORD_COLORS.highlight], [9, 8, LORD_COLORS.highlight],
+
+  // ===== 眼睛下方细节 =====
+  [3, 9, LORD_COLORS.face], [4, 9, LORD_COLORS.eyeGlow], [5, 9, LORD_COLORS.eyeGlow], [6, 9, LORD_COLORS.eyeGlow], [7, 9, LORD_COLORS.eyeGlow], [8, 9, LORD_COLORS.eyeGlow], [9, 9, LORD_COLORS.eyeGlow], [10, 9, LORD_COLORS.face],
+  [4, 10, LORD_COLORS.faceDark], [5, 10, LORD_COLORS.face], [6, 10, LORD_COLORS.faceDark], [7, 10, LORD_COLORS.faceDark], [8, 10, LORD_COLORS.face], [9, 10, LORD_COLORS.faceDark],
+
+  // ===== 獠牙 =====
+  [5, 11, LORD_COLORS.fang], [6, 11, LORD_COLORS.faceDark], [7, 11, LORD_COLORS.faceDark], [8, 11, LORD_COLORS.fang],
+  [4, 12, LORD_COLORS.fangDark], [5, 12, LORD_COLORS.fang], [6, 12, LORD_COLORS.fang], [7, 12, LORD_COLORS.fang], [8, 12, LORD_COLORS.fang], [9, 12, LORD_COLORS.fangDark],
+
+  // ===== 金项链 + 红宝石 =====
+  [4, 13, LORD_COLORS.gold], [5, 13, LORD_COLORS.gemRedGlow], [6, 13, LORD_COLORS.goldLight], [7, 13, LORD_COLORS.goldLight], [8, 13, LORD_COLORS.gemRedGlow], [9, 13, LORD_COLORS.gold],
+  [5, 14, LORD_COLORS.goldDark], [6, 14, LORD_COLORS.gemRed], [7, 14, LORD_COLORS.gemRed], [8, 14, LORD_COLORS.gemRed], [9, 14, LORD_COLORS.goldDark],
+
+  // ===== 长袍领口 =====
+  [3, 15, LORD_COLORS.cape], [4, 15, LORD_COLORS.capeLight], [5, 15, LORD_COLORS.capePurple], [6, 15, LORD_COLORS.rune], [7, 15, LORD_COLORS.rune], [8, 15, LORD_COLORS.capePurple], [9, 15, LORD_COLORS.capeLight], [10, 15, LORD_COLORS.cape],
+]
 
 // 向下面朝 - 正面
 const LORD_FACE_DOWN = [
@@ -378,5 +423,24 @@ export const drawMaouOfChaos = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawMaouOfChaosAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < LORD_AVATAR.length; i++) {
+    drawPixel(LORD_AVATAR[i][0], LORD_AVATAR[i][1], LORD_AVATAR[i][2])
   }
 }

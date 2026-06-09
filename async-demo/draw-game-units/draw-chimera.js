@@ -43,7 +43,50 @@ const CHIMERA_COLORS = {
   flameLight: '#FFA500',      // 火焰亮
   nose: '#8B0000',            // 鼻子
   tongue: '#DC143C',          // 舌头
+  highlight: '#ffffff',       // 高光
+  snakeHead: '#228B22',       // 蛇头
 }
+
+// 奇美拉高精度头像（16x16网格，聚焦狮子头部特写）
+const CHIMERA_AVATAR = [
+  // ===== 双角（顶部）=====
+  [5, 0, CHIMERA_COLORS.horn], [6, 0, CHIMERA_COLORS.horn], [9, 0, CHIMERA_COLORS.horn], [10, 0, CHIMERA_COLORS.horn],
+  [4, 1, CHIMERA_COLORS.hornDark], [5, 1, CHIMERA_COLORS.horn], [6, 1, CHIMERA_COLORS.lionFurLight], [9, 1, CHIMERA_COLORS.lionFurLight], [10, 1, CHIMERA_COLORS.horn], [11, 1, CHIMERA_COLORS.hornDark],
+  [4, 2, CHIMERA_COLORS.horn], [5, 2, CHIMERA_COLORS.lionFurLight], [6, 2, CHIMERA_COLORS.lionFur], [9, 2, CHIMERA_COLORS.lionFur], [10, 2, CHIMERA_COLORS.lionFurLight], [11, 2, CHIMERA_COLORS.horn],
+
+  // ===== 鬃毛（顶部多层）=====
+  [3, 2, CHIMERA_COLORS.lionManeDark], [4, 2, CHIMERA_COLORS.lionMane], [11, 2, CHIMERA_COLORS.lionMane], [12, 2, CHIMERA_COLORS.lionManeDark],
+  [2, 3, CHIMERA_COLORS.lionManeDark], [3, 3, CHIMERA_COLORS.lionMane], [4, 3, CHIMERA_COLORS.lionFur], [5, 3, CHIMERA_COLORS.lionFurLight], [6, 3, CHIMERA_COLORS.lionFur], [7, 3, CHIMERA_COLORS.lionFurLight], [8, 3, CHIMERA_COLORS.lionFurLight], [9, 3, CHIMERA_COLORS.lionFur], [10, 3, CHIMERA_COLORS.lionFurLight], [11, 3, CHIMERA_COLORS.lionFur], [12, 3, CHIMERA_COLORS.lionMane], [13, 3, CHIMERA_COLORS.lionManeDark],
+  [2, 4, CHIMERA_COLORS.lionManeDark], [3, 4, CHIMERA_COLORS.lionMane], [4, 4, CHIMERA_COLORS.lionFur], [5, 4, CHIMERA_COLORS.lionFurLight], [6, 4, CHIMERA_COLORS.lionFur], [7, 4, CHIMERA_COLORS.lionFurLight], [8, 4, CHIMERA_COLORS.lionFurLight], [9, 4, CHIMERA_COLORS.lionFur], [10, 4, CHIMERA_COLORS.lionFurLight], [11, 4, CHIMERA_COLORS.lionFur], [12, 4, CHIMERA_COLORS.lionMane], [13, 4, CHIMERA_COLORS.lionManeDark],
+
+  // ===== 眼睛行 ======
+  [2, 5, CHIMERA_COLORS.lionManeDark], [3, 5, CHIMERA_COLORS.lionMane], [4, 5, CHIMERA_COLORS.eye], [5, 5, CHIMERA_COLORS.lionFur], [6, 5, CHIMERA_COLORS.lionFurLight], [7, 5, CHIMERA_COLORS.lionFurLight], [8, 5, CHIMERA_COLORS.lionFurLight], [9, 5, CHIMERA_COLORS.lionFur], [10, 5, CHIMERA_COLORS.eye], [11, 5, CHIMERA_COLORS.lionMane], [12, 5, CHIMERA_COLORS.lionManeDark],
+  // 眼睛高光
+  [4, 4, CHIMERA_COLORS.highlight], [5, 4, CHIMERA_COLORS.highlight], [10, 4, CHIMERA_COLORS.highlight], [11, 4, CHIMERA_COLORS.highlight],
+  // 眼睛发光
+  [4, 5, CHIMERA_COLORS.eyeGlow], [5, 5, CHIMERA_COLORS.eyeGlow], [10, 5, CHIMERA_COLORS.eyeGlow], [11, 5, CHIMERA_COLORS.eyeGlow],
+
+  // ===== 鼻子和嘴巴 ======
+  [3, 6, CHIMERA_COLORS.lionMane], [4, 6, CHIMERA_COLORS.lionFur], [5, 6, CHIMERA_COLORS.eyeGlow], [6, 6, CHIMERA_COLORS.nose], [7, 6, CHIMERA_COLORS.nose], [8, 6, CHIMERA_COLORS.nose], [9, 6, CHIMERA_COLORS.eyeGlow], [10, 6, CHIMERA_COLORS.lionFur], [11, 6, CHIMERA_COLORS.lionMane],
+  [4, 7, CHIMERA_COLORS.lionFurDark], [5, 7, CHIMERA_COLORS.teeth], [6, 7, CHIMERA_COLORS.teeth], [7, 7, CHIMERA_COLORS.nose], [8, 7, CHIMERA_COLORS.teeth], [9, 7, CHIMERA_COLORS.teeth], [10, 7, CHIMERA_COLORS.lionFurDark],
+  [5, 8, CHIMERA_COLORS.teeth], [6, 8, CHIMERA_COLORS.teeth], [7, 8, CHIMERA_COLORS.tongue], [8, 8, CHIMERA_COLORS.tongue], [9, 8, CHIMERA_COLORS.teeth],
+
+  // ===== 牙齿和舌头 ======
+  [4, 9, CHIMERA_COLORS.lionFurDark], [5, 9, CHIMERA_COLORS.teeth], [6, 9, CHIMERA_COLORS.teeth], [7, 9, CHIMERA_COLORS.tongue], [8, 9, CHIMERA_COLORS.tongue], [9, 9, CHIMERA_COLORS.teeth], [10, 9, CHIMERA_COLORS.teeth], [11, 9, CHIMERA_COLORS.lionFurDark],
+  [5, 10, CHIMERA_COLORS.teeth], [6, 10, CHIMERA_COLORS.tongue], [7, 10, CHIMERA_COLORS.tongue], [8, 10, CHIMERA_COLORS.tongue], [9, 10, CHIMERA_COLORS.teeth], [10, 10, CHIMERA_COLORS.teeth],
+
+  // ===== 下巴毛发 ======
+  [4, 11, CHIMERA_COLORS.lionFurDark], [5, 11, CHIMERA_COLORS.lionFur], [6, 11, CHIMERA_COLORS.lionFur], [7, 11, CHIMERA_COLORS.lionFur], [8, 11, CHIMERA_COLORS.lionFur], [9, 11, CHIMERA_COLORS.lionFur], [10, 11, CHIMERA_COLORS.lionFurDark],
+  [5, 12, CHIMERA_COLORS.lionFur], [6, 12, CHIMERA_COLORS.lionFurDark], [7, 12, CHIMERA_COLORS.lionFurDark], [8, 12, CHIMERA_COLORS.lionFurDark], [9, 12, CHIMERA_COLORS.lionFur],
+
+  // ===== 鬃毛底部 ======
+  [4, 13, CHIMERA_COLORS.lionMane], [5, 13, CHIMERA_COLORS.lionFur], [6, 13, CHIMERA_COLORS.lionFur], [7, 13, CHIMERA_COLORS.lionFur], [8, 13, CHIMERA_COLORS.lionFur], [9, 13, CHIMERA_COLORS.lionFur], [10, 13, CHIMERA_COLORS.lionMane],
+  [5, 14, CHIMERA_COLORS.lionManeDark], [6, 14, CHIMERA_COLORS.lionMane], [7, 14, CHIMERA_COLORS.lionMane], [8, 14, CHIMERA_COLORS.lionMane], [9, 14, CHIMERA_COLORS.lionManeDark],
+
+  // ===== 火焰装饰 ======
+  [6, 8, CHIMERA_COLORS.flame], [7, 8, CHIMERA_COLORS.flameLight],
+  [6, 7, CHIMERA_COLORS.flameLight], [7, 7, CHIMERA_COLORS.flame],
+]
 
 // 向左面朝 - 奇美拉（头部在左，蛇尾在右）
 const CHIMERA_FACE_LEFT = [
@@ -341,5 +384,24 @@ export const drawChimera = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawChimeraAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < CHIMERA_AVATAR.length; i++) {
+    drawPixel(CHIMERA_AVATAR[i][0], CHIMERA_AVATAR[i][1], CHIMERA_AVATAR[i][2])
   }
 }

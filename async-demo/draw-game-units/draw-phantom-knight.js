@@ -61,7 +61,52 @@ const KNIGHT_COLORS = {
   aura: '#80FFCC',          // 灵气
   auraLight: '#B8FFE0',     // 灵气亮
   spark: '#FFFFFF',         // 粒子
+  highlight: '#FFFFFF',      // 高光
 }
+
+// 幽灵骑士高精度头像（16x16网格，聚焦头部特写）
+const KNIGHT_AVATAR = [
+  // ===== 头盔顶部边缘 =====
+  [4, 0, KNIGHT_COLORS.helmetDark], [5, 0, KNIGHT_COLORS.helmet], [6, 0, KNIGHT_COLORS.helmetLight], [7, 0, KNIGHT_COLORS.helmetLight], [8, 0, KNIGHT_COLORS.helmetLight], [9, 0, KNIGHT_COLORS.helmet], [10, 0, KNIGHT_COLORS.helmetDark],
+  [4, 1, KNIGHT_COLORS.helmet], [5, 1, KNIGHT_COLORS.helmetLight], [6, 1, KNIGHT_COLORS.helmet], [7, 1, KNIGHT_COLORS.helmetLight], [8, 1, KNIGHT_COLORS.helmetLight], [9, 1, KNIGHT_COLORS.helmet], [10, 1, KNIGHT_COLORS.helmetLight], [11, 1, KNIGHT_COLORS.helmet],
+
+  // ===== 头盔第一层 =====
+  [3, 2, KNIGHT_COLORS.helmetDark], [4, 2, KNIGHT_COLORS.helmet], [5, 2, KNIGHT_COLORS.helmetLight], [6, 2, KNIGHT_COLORS.helmet], [7, 2, KNIGHT_COLORS.helmetLight], [8, 2, KNIGHT_COLORS.helmetLight], [9, 2, KNIGHT_COLORS.helmet], [10, 2, KNIGHT_COLORS.helmetLight], [11, 2, KNIGHT_COLORS.helmet], [12, 2, KNIGHT_COLORS.helmetDark],
+  [3, 3, KNIGHT_COLORS.helmetDark], [4, 3, KNIGHT_COLORS.helmet], [5, 3, KNIGHT_COLORS.helmetLight], [6, 3, KNIGHT_COLORS.helmet], [7, 3, KNIGHT_COLORS.helmetLight], [8, 3, KNIGHT_COLORS.helmetLight], [9, 3, KNIGHT_COLORS.helmet], [10, 3, KNIGHT_COLORS.helmetLight], [11, 3, KNIGHT_COLORS.helmet], [12, 3, KNIGHT_COLORS.helmetDark],
+
+  // ===== 头盔主体 =====
+  [2, 4, KNIGHT_COLORS.helmetDark], [3, 4, KNIGHT_COLORS.helmet], [4, 4, KNIGHT_COLORS.helmet], [5, 4, KNIGHT_COLORS.helmetLight], [6, 4, KNIGHT_COLORS.helmet], [7, 4, KNIGHT_COLORS.helmetLight], [8, 4, KNIGHT_COLORS.helmetLight], [9, 4, KNIGHT_COLORS.helmet], [10, 4, KNIGHT_COLORS.helmetLight], [11, 4, KNIGHT_COLORS.helmet], [12, 4, KNIGHT_COLORS.helmet], [13, 4, KNIGHT_COLORS.helmetDark],
+  [2, 5, KNIGHT_COLORS.helmetDark], [3, 5, KNIGHT_COLORS.helmet], [4, 5, KNIGHT_COLORS.helmetLight], [5, 5, KNIGHT_COLORS.helmet], [6, 5, KNIGHT_COLORS.helmetLight], [7, 5, KNIGHT_COLORS.helmet], [8, 5, KNIGHT_COLORS.helmet], [9, 5, KNIGHT_COLORS.helmetLight], [10, 5, KNIGHT_COLORS.helmet], [11, 5, KNIGHT_COLORS.helmetLight], [12, 5, KNIGHT_COLORS.helmet], [13, 5, KNIGHT_COLORS.helmetDark],
+
+  // ===== 护目镜区域 =====
+  [2, 6, KNIGHT_COLORS.helmetDark], [3, 6, KNIGHT_COLORS.helmet], [4, 6, KNIGHT_COLORS.visor], [5, 6, KNIGHT_COLORS.visorGlow], [6, 6, KNIGHT_COLORS.visorGlow], [7, 6, KNIGHT_COLORS.visorGlow], [8, 6, KNIGHT_COLORS.visorGlow], [9, 6, KNIGHT_COLORS.visor], [10, 6, KNIGHT_COLORS.visorGlow], [11, 6, KNIGHT_COLORS.helmet], [12, 6, KNIGHT_COLORS.helmetDark],
+  [3, 7, KNIGHT_COLORS.helmetDark], [4, 7, KNIGHT_COLORS.visorGlow], [5, 7, KNIGHT_COLORS.visor], [6, 7, KNIGHT_COLORS.visor], [7, 7, KNIGHT_COLORS.visor], [8, 7, KNIGHT_COLORS.visor], [9, 7, KNIGHT_COLORS.visorGlow], [10, 7, KNIGHT_COLORS.visor], [11, 7, KNIGHT_COLORS.helmetDark],
+  // 护目镜高光
+  [4, 6, KNIGHT_COLORS.highlight], [5, 6, KNIGHT_COLORS.highlight], [9, 6, KNIGHT_COLORS.highlight], [10, 6, KNIGHT_COLORS.highlight],
+  [4, 7, KNIGHT_COLORS.highlight], [9, 7, KNIGHT_COLORS.highlight],
+
+  // ===== 头盔底部 =====
+  [3, 8, KNIGHT_COLORS.armorEdge], [4, 8, KNIGHT_COLORS.helmetDark], [5, 8, KNIGHT_COLORS.helmet], [6, 8, KNIGHT_COLORS.helmet], [7, 8, KNIGHT_COLORS.helmet], [8, 8, KNIGHT_COLORS.helmet], [9, 8, KNIGHT_COLORS.helmetDark], [10, 8, KNIGHT_COLORS.armorEdge],
+
+  // ===== 肩甲 =====
+  [2, 9, KNIGHT_COLORS.armorDark], [3, 9, KNIGHT_COLORS.armor], [4, 9, KNIGHT_COLORS.plate], [5, 9, KNIGHT_COLORS.plateLight], [6, 9, KNIGHT_COLORS.plate], [7, 9, KNIGHT_COLORS.plateLight], [8, 9, KNIGHT_COLORS.plate], [9, 9, KNIGHT_COLORS.plateLight], [10, 9, KNIGHT_COLORS.plate], [11, 9, KNIGHT_COLORS.armor], [12, 9, KNIGHT_COLORS.armorDark],
+
+  // ===== 胸甲领口 =====
+  [2, 10, KNIGHT_COLORS.armorDark], [3, 10, KNIGHT_COLORS.armor], [4, 10, KNIGHT_COLORS.armorLight], [5, 10, KNIGHT_COLORS.plate], [6, 10, KNIGHT_COLORS.plateLight], [7, 10, KNIGHT_COLORS.plateLight], [8, 10, KNIGHT_COLORS.plateLight], [9, 10, KNIGHT_COLORS.plate], [10, 10, KNIGHT_COLORS.armorLight], [11, 10, KNIGHT_COLORS.armor], [12, 10, KNIGHT_COLORS.armorDark],
+  [3, 11, KNIGHT_COLORS.armorDark], [4, 11, KNIGHT_COLORS.armor], [5, 11, KNIGHT_COLORS.plateLight], [6, 11, KNIGHT_COLORS.plate], [7, 11, KNIGHT_COLORS.plate], [8, 11, KNIGHT_COLORS.plate], [9, 11, KNIGHT_COLORS.plateLight], [10, 11, KNIGHT_COLORS.armor], [11, 11, KNIGHT_COLORS.armorDark],
+
+  // ===== 幽魂光芒装饰 =====
+  [4, 10, KNIGHT_COLORS.phantomGlow], [5, 10, KNIGHT_COLORS.aura],
+  [10, 10, KNIGHT_COLORS.phantomGlow], [9, 10, KNIGHT_COLORS.aura],
+  [5, 11, KNIGHT_COLORS.auraLight], [10, 11, KNIGHT_COLORS.auraLight],
+
+  // ===== 胸甲底部 =====
+  [4, 12, KNIGHT_COLORS.belt], [5, 12, KNIGHT_COLORS.plateLight], [6, 12, KNIGHT_COLORS.plate], [7, 12, KNIGHT_COLORS.plate], [8, 12, KNIGHT_COLORS.plateLight], [9, 12, KNIGHT_COLORS.plate], [10, 12, KNIGHT_COLORS.belt],
+  [4, 13, KNIGHT_COLORS.armorDark], [5, 13, KNIGHT_COLORS.armor], [6, 13, KNIGHT_COLORS.plateLight], [7, 13, KNIGHT_COLORS.plateLight], [8, 13, KNIGHT_COLORS.plateLight], [9, 13, KNIGHT_COLORS.armor], [10, 13, KNIGHT_COLORS.armorDark],
+
+  // ===== 头盔底部边缘 =====
+  [5, 14, KNIGHT_COLORS.helmetDark], [6, 14, KNIGHT_COLORS.helmet], [7, 14, KNIGHT_COLORS.helmetLight], [8, 14, KNIGHT_COLORS.helmetLight], [9, 14, KNIGHT_COLORS.helmet], [10, 14, KNIGHT_COLORS.helmetDark],
+]
 
 // 向下面朝 - 正面
 const KNIGHT_FACE_DOWN = [
@@ -331,5 +376,24 @@ export const drawPhantomKnight = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawPhantomKnightAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < KNIGHT_AVATAR.length; i++) {
+    drawPixel(KNIGHT_AVATAR[i][0], KNIGHT_AVATAR[i][1], KNIGHT_AVATAR[i][2])
   }
 }

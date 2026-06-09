@@ -73,7 +73,54 @@ const QUEEN_COLORS = {
   staffLight: '#F0F4F8',  // 权杖亮
   staffGem: '#80D0FF',    // 权杖宝石
   staffGemGlow: '#A0E8FF', // 宝石发光
+  highlight: '#FFFFFF',        // 高光
 }
+
+// 冰雪女王高精度头像（16x16网格，聚焦女王面部特写）
+const QUEEN_AVATAR = [
+  // ===== 皇冠顶部 =====
+  [4, 0, QUEEN_COLORS.crownDark], [5, 0, QUEEN_COLORS.crown], [6, 0, QUEEN_COLORS.crownLight], [7, 0, QUEEN_COLORS.crownLight], [8, 0, QUEEN_COLORS.crownLight], [9, 0, QUEEN_COLORS.crown], [10, 0, QUEEN_COLORS.crownDark],
+  [3, 1, QUEEN_COLORS.crown], [4, 1, QUEEN_COLORS.crownLight], [5, 1, QUEEN_COLORS.crown], [6, 1, QUEEN_COLORS.crownGem], [7, 1, QUEEN_COLORS.crownGemGlow], [8, 1, QUEEN_COLORS.crownGem], [9, 1, QUEEN_COLORS.crownLight], [10, 1, QUEEN_COLORS.crown], [11, 1, QUEEN_COLORS.crownDark],
+  [3, 2, QUEEN_COLORS.crownDark], [4, 2, QUEEN_COLORS.crown], [5, 2, QUEEN_COLORS.crownLight], [6, 2, QUEEN_COLORS.crown], [7, 2, QUEEN_COLORS.crownLight], [8, 2, QUEEN_COLORS.crown], [9, 2, QUEEN_COLORS.crownLight], [10, 2, QUEEN_COLORS.crown], [11, 2, QUEEN_COLORS.crownDark],
+
+  // ===== 头发 + 脸部 =====
+  [2, 3, QUEEN_COLORS.hairDark], [3, 3, QUEEN_COLORS.hair], [4, 3, QUEEN_COLORS.hairLight], [5, 3, QUEEN_COLORS.hair], [6, 3, QUEEN_COLORS.skin], [7, 3, QUEEN_COLORS.skin], [8, 3, QUEEN_COLORS.skin], [9, 3, QUEEN_COLORS.hair], [10, 3, QUEEN_COLORS.hairLight], [11, 3, QUEEN_COLORS.hair], [12, 3, QUEEN_COLORS.hairDark],
+  [2, 4, QUEEN_COLORS.hair], [3, 4, QUEEN_COLORS.hairLight], [4, 4, QUEEN_COLORS.hair], [5, 4, QUEEN_COLORS.hairLight], [6, 4, QUEEN_COLORS.skinLight], [7, 4, QUEEN_COLORS.skin], [8, 4, QUEEN_COLORS.skin], [9, 4, QUEEN_COLORS.skinLight], [10, 4, QUEEN_COLORS.hairLight], [11, 4, QUEEN_COLORS.hair], [12, 4, QUEEN_COLORS.hairDark],
+
+  // ===== 眼睛行（冰蓝发光）=====
+  [2, 5, QUEEN_COLORS.hairDark], [3, 5, QUEEN_COLORS.hair], [4, 5, QUEEN_COLORS.eye], [5, 5, QUEEN_COLORS.eyeGlow], [6, 5, QUEEN_COLORS.skin], [7, 5, QUEEN_COLORS.skin], [8, 5, QUEEN_COLORS.skin], [9, 5, QUEEN_COLORS.eye], [10, 5, QUEEN_COLORS.eyeGlow], [11, 5, QUEEN_COLORS.hair], [12, 5, QUEEN_COLORS.hairDark],
+  // 眼睛高光
+  [4, 4, QUEEN_COLORS.highlight], [5, 4, QUEEN_COLORS.highlight], [9, 4, QUEEN_COLORS.highlight], [10, 4, QUEEN_COLORS.highlight],
+  [4, 5, QUEEN_COLORS.highlight], [10, 5, QUEEN_COLORS.highlight],
+
+  // ===== 眼睛发光效果 =====
+  [4, 5, QUEEN_COLORS.eyeGlow], [5, 5, QUEEN_COLORS.eyeGlow], [9, 5, QUEEN_COLORS.eyeGlow], [10, 5, QUEEN_COLORS.eyeGlow],
+  [4, 6, QUEEN_COLORS.eyeInner], [5, 6, QUEEN_COLORS.eyeInner], [9, 6, QUEEN_COLORS.eyeInner], [10, 6, QUEEN_COLORS.eyeInner],
+
+  // ===== 眼睛下方细节 =====
+  [2, 6, QUEEN_COLORS.hair], [3, 6, QUEEN_COLORS.hairLight], [4, 6, QUEEN_COLORS.eyeGlow], [5, 6, QUEEN_COLORS.eyeInner], [6, 6, QUEEN_COLORS.skin], [7, 6, QUEEN_COLORS.skin], [8, 6, QUEEN_COLORS.skin], [9, 6, QUEEN_COLORS.eyeInner], [10, 6, QUEEN_COLORS.eyeGlow], [11, 6, QUEEN_COLORS.hairLight], [12, 6, QUEEN_COLORS.hair],
+  [3, 7, QUEEN_COLORS.hairDark], [4, 7, QUEEN_COLORS.hair], [5, 7, QUEEN_COLORS.eyeGlow], [6, 7, QUEEN_COLORS.skinLight], [7, 7, QUEEN_COLORS.skinDark], [8, 7, QUEEN_COLORS.skinDark], [9, 7, QUEEN_COLORS.skinLight], [10, 7, QUEEN_COLORS.eyeGlow], [11, 7, QUEEN_COLORS.hair], [12, 7, QUEEN_COLORS.hairDark],
+
+  // ===== 鼻梁和面颊 =====
+  [3, 8, QUEEN_COLORS.hair], [4, 8, QUEEN_COLORS.hairLight], [5, 8, QUEEN_COLORS.skin], [6, 8, QUEEN_COLORS.skinDark], [7, 8, QUEEN_COLORS.skin], [8, 8, QUEEN_COLORS.skin], [9, 8, QUEEN_COLORS.skinDark], [10, 8, QUEEN_COLORS.skin], [11, 8, QUEEN_COLORS.hairLight], [12, 8, QUEEN_COLORS.hair],
+  [4, 9, QUEEN_COLORS.hairDark], [5, 9, QUEEN_COLORS.skinLight], [6, 9, QUEEN_COLORS.skin], [7, 9, QUEEN_COLORS.skin], [8, 9, QUEEN_COLORS.skin], [9, 9, QUEEN_COLORS.skin], [10, 9, QUEEN_COLORS.skinLight], [11, 9, QUEEN_COLORS.hairDark],
+
+  // ===== 嘴唇 + 项链 =====
+  [4, 10, QUEEN_COLORS.hair], [5, 10, QUEEN_COLORS.skin], [6, 10, QUEEN_COLORS.skinLight], [7, 10, QUEEN_COLORS.crownGemLight], [8, 10, QUEEN_COLORS.skinLight], [9, 10, QUEEN_COLORS.skin], [10, 10, QUEEN_COLORS.hair],
+  [5, 11, QUEEN_COLORS.crownGem], [6, 11, QUEEN_COLORS.crownGemGlow], [7, 11, QUEEN_COLORS.crownGemGlow], [8, 11, QUEEN_COLORS.crownGemGlow], [9, 11, QUEEN_COLORS.crownGem],
+
+  // ===== 肩颈 =====
+  [3, 12, QUEEN_COLORS.dressLight], [4, 12, QUEEN_COLORS.dress], [5, 12, QUEEN_COLORS.dressIce], [6, 12, QUEEN_COLORS.crystal], [7, 12, QUEEN_COLORS.crystalGlow], [8, 12, QUEEN_COLORS.crystal], [9, 12, QUEEN_COLORS.dressIce], [10, 12, QUEEN_COLORS.dress], [11, 12, QUEEN_COLORS.dressLight],
+  [2, 13, QUEEN_COLORS.dressDark], [3, 13, QUEEN_COLORS.dress], [4, 13, QUEEN_COLORS.dressIce], [5, 13, QUEEN_COLORS.dressLight], [6, 13, QUEEN_COLORS.crystalGlow], [7, 13, QUEEN_COLORS.crystalLight], [8, 13, QUEEN_COLORS.crystalGlow], [9, 13, QUEEN_COLORS.dressLight], [10, 13, QUEEN_COLORS.dressIce], [11, 13, QUEEN_COLORS.dress], [12, 13, QUEEN_COLORS.dressDark],
+
+  // ===== 冰晶装饰 =====
+  [6, 12, QUEEN_COLORS.sparkleLight], [7, 12, QUEEN_COLORS.sparkle], [8, 12, QUEEN_COLORS.sparkleLight],
+  [6, 13, QUEEN_COLORS.sparkle], [7, 13, QUEEN_COLORS.snow], [8, 13, QUEEN_COLORS.sparkle],
+
+  // ===== 长裙领口 =====
+  [4, 14, QUEEN_COLORS.dressDark], [5, 14, QUEEN_COLORS.dress], [6, 14, QUEEN_COLORS.dressLight], [7, 14, QUEEN_COLORS.crystalGlow], [8, 14, QUEEN_COLORS.dressLight], [9, 14, QUEEN_COLORS.dress], [10, 14, QUEEN_COLORS.dressDark],
+  [4, 15, QUEEN_COLORS.dress], [5, 15, QUEEN_COLORS.dressIce], [6, 15, QUEEN_COLORS.crystal], [7, 15, QUEEN_COLORS.crystalGlow], [8, 15, QUEEN_COLORS.crystal], [9, 15, QUEEN_COLORS.dressIce], [10, 15, QUEEN_COLORS.dress],
+]
 
 // 向下面朝 - 正面
 const QUEEN_FACE_DOWN = [
@@ -321,5 +368,24 @@ export const drawFrostQueen = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawFrostQueenAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < QUEEN_AVATAR.length; i++) {
+    drawPixel(QUEEN_AVATAR[i][0], QUEEN_AVATAR[i][1], QUEEN_AVATAR[i][2])
   }
 }

@@ -82,7 +82,59 @@ const LORD_COLORS = {
   // 鳞片
   plateScale: '#7A6A3A',    // 身鳞
   plateScaleLight: '#9A8A5A', // 身鳞亮
+  highlight: '#FFFFFF',       // 高光
 }
+
+// 剧毒领主高精度头像（16x16网格，聚焦蛇头特写）
+const LORD_AVATAR = [
+  // ===== 头顶骨刺/角 =====
+  [5, 0, LORD_COLORS.hornDark], [6, 0, LORD_COLORS.horn], [7, 0, LORD_COLORS.horn], [8, 0, LORD_COLORS.hornDark],
+  [4, 1, LORD_COLORS.horn], [5, 1, LORD_COLORS.hornLight], [6, 1, LORD_COLORS.scale], [7, 1, LORD_COLORS.scale], [8, 1, LORD_COLORS.hornLight], [9, 1, LORD_COLORS.horn],
+  [3, 2, LORD_COLORS.hornDark], [4, 2, LORD_COLORS.horn], [5, 2, LORD_COLORS.scaleLight], [6, 2, LORD_COLORS.scale], [7, 2, LORD_COLORS.scale], [8, 2, LORD_COLORS.scaleLight], [9, 2, LORD_COLORS.horn], [10, 2, LORD_COLORS.hornDark],
+
+  // ===== 蛇头主体 =====
+  [2, 3, LORD_COLORS.scaleDark], [3, 3, LORD_COLORS.scale], [4, 3, LORD_COLORS.scaleLight], [5, 3, LORD_COLORS.scale], [6, 3, LORD_COLORS.scaleLight], [7, 3, LORD_COLORS.scale], [8, 3, LORD_COLORS.scaleLight], [9, 3, LORD_COLORS.scale], [10, 3, LORD_COLORS.scaleDark],
+  [2, 4, LORD_COLORS.scaleDark], [3, 4, LORD_COLORS.scale], [4, 4, LORD_COLORS.scaleLight], [5, 4, LORD_COLORS.scale], [6, 4, LORD_COLORS.scaleLight], [7, 4, LORD_COLORS.scale], [8, 4, LORD_COLORS.scaleLight], [9, 4, LORD_COLORS.scale], [10, 4, LORD_COLORS.scaleDark],
+
+  // ===== 眼睛行（竖瞳毒眼）=====
+  [2, 5, LORD_COLORS.scaleDark], [3, 5, LORD_COLORS.scale], [4, 5, LORD_COLORS.eye], [5, 5, LORD_COLORS.eyeGlow], [6, 5, LORD_COLORS.eyeGlow], [7, 5, LORD_COLORS.eye], [8, 5, LORD_COLORS.eyeGlow], [9, 5, LORD_COLORS.eyeGlow], [10, 5, LORD_COLORS.scale], [11, 5, LORD_COLORS.scaleDark],
+  // 眼睛高光
+  [4, 4, LORD_COLORS.highlight], [5, 4, LORD_COLORS.highlight], [8, 4, LORD_COLORS.highlight], [9, 4, LORD_COLORS.highlight],
+  // 竖瞳效果
+  [4, 5, LORD_COLORS.eyeSlit], [5, 5, LORD_COLORS.eyeSlit], [8, 5, LORD_COLORS.eyeSlit], [9, 5, LORD_COLORS.eyeSlit],
+  // 眼睛内核发光
+  [4, 5, LORD_COLORS.eyeInner], [5, 5, LORD_COLORS.eyeInner], [8, 5, LORD_COLORS.eyeInner], [9, 5, LORD_COLORS.eyeInner],
+
+  // ===== 鼻部/鳞纹 =====
+  [3, 6, LORD_COLORS.scale], [4, 6, LORD_COLORS.scaleDark], [5, 6, LORD_COLORS.scale], [6, 6, LORD_COLORS.scaleDark], [7, 6, LORD_COLORS.scale], [8, 6, LORD_COLORS.scaleDark], [9, 6, LORD_COLORS.scale], [10, 6, LORD_COLORS.scaleDark],
+  [3, 7, LORD_COLORS.scaleDark], [4, 7, LORD_COLORS.scale], [5, 7, LORD_COLORS.scaleLight], [6, 7, LORD_COLORS.scale], [7, 7, LORD_COLORS.scaleLight], [8, 7, LORD_COLORS.scale], [9, 7, LORD_COLORS.scaleLight], [10, 7, LORD_COLORS.scale],
+
+  // ===== 嘴巴/毒牙 =====
+  [4, 8, LORD_COLORS.scaleDark], [5, 8, LORD_COLORS.fang], [6, 8, LORD_COLORS.fang], [7, 8, LORD_COLORS.tongue], [8, 8, LORD_COLORS.tongue], [9, 8, LORD_COLORS.fang], [10, 8, LORD_COLORS.fang], [11, 8, LORD_COLORS.scaleDark],
+  [5, 9, LORD_COLORS.fangDark], [6, 9, LORD_COLORS.fang], [7, 9, LORD_COLORS.tongueDark], [8, 9, LORD_COLORS.tongueDark], [9, 9, LORD_COLORS.fang], [10, 9, LORD_COLORS.fangDark],
+  [5, 10, LORD_COLORS.fang], [6, 10, LORD_COLORS.fang], [7, 10, LORD_COLORS.tongue], [8, 10, LORD_COLORS.tongue], [9, 10, LORD_COLORS.fang], [10, 10, LORD_COLORS.fang],
+
+  // ===== 下颚 =====
+  [4, 11, LORD_COLORS.scaleDark], [5, 11, LORD_COLORS.scale], [6, 11, LORD_COLORS.scale], [7, 11, LORD_COLORS.scaleDark], [8, 11, LORD_COLORS.scale], [9, 11, LORD_COLORS.scale], [10, 11, LORD_COLORS.scaleDark],
+  [5, 12, LORD_COLORS.scale], [6, 12, LORD_COLORS.scaleDark], [7, 12, LORD_COLORS.scaleDark], [8, 12, LORD_COLORS.scaleDark], [9, 12, LORD_COLORS.scale],
+
+  // ===== 颈部 =====
+  [4, 13, LORD_COLORS.scale], [5, 13, LORD_COLORS.belly], [6, 13, LORD_COLORS.bellyLight], [7, 13, LORD_COLORS.bellyLight], [8, 13, LORD_COLORS.belly], [9, 13, LORD_COLORS.scale],
+  [5, 14, LORD_COLORS.scaleDark], [6, 14, LORD_COLORS.belly], [7, 14, LORD_COLORS.bellyLight], [8, 14, LORD_COLORS.belly], [9, 14, LORD_COLORS.scaleDark],
+
+  // ===== 羽毛头饰 =====
+  [2, 2, LORD_COLORS.feather], [3, 2, LORD_COLORS.featherLight],
+  [11, 2, LORD_COLORS.feather2], [12, 2, LORD_COLORS.featherDark],
+
+  // ===== 毒液符文 =====
+  [5, 10, LORD_COLORS.venomGlow], [6, 10, LORD_COLORS.rune],
+  [9, 10, LORD_COLORS.rune], [10, 10, LORD_COLORS.venomGlow],
+  [6, 11, LORD_COLORS.venom], [9, 11, LORD_COLORS.venom],
+
+  // ===== 毒液滴 =====
+  [5, 9, LORD_COLORS.droplet], [10, 9, LORD_COLORS.droplet],
+  [6, 8, LORD_COLORS.spark], [9, 8, LORD_COLORS.spark],
+]
 
 // 向下面朝 - 蛇首正面
 const LORD_FACE_DOWN = [
@@ -401,5 +453,24 @@ export const drawVenomousLord = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawVenomousLordAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < LORD_AVATAR.length; i++) {
+    drawPixel(LORD_AVATAR[i][0], LORD_AVATAR[i][1], LORD_AVATAR[i][2])
   }
 }

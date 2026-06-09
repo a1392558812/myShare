@@ -51,7 +51,49 @@ const LORD_COLORS = {
   // 其他
   vein: '#4A2A4A',          // 血管
   veinGlow: '#6622AA',     // 血管发光
+  highlight: '#FFFFFF',          // 高光
 }
+
+// 深渊魔王高精度头像（16x16网格，聚焦克苏鲁大眼特写）
+const LORD_AVATAR = [
+  // ===== 顶部触手 =====
+  [4, 0, LORD_COLORS.tentacleDark], [5, 0, LORD_COLORS.tentacle], [6, 0, LORD_COLORS.tentacleLight], [7, 0, LORD_COLORS.tentacleTip], [8, 0, LORD_COLORS.tentacleTip], [9, 0, LORD_COLORS.tentacleLight], [10, 0, LORD_COLORS.tentacle], [11, 0, LORD_COLORS.tentacleDark],
+  [3, 1, LORD_COLORS.tentacle], [4, 1, LORD_COLORS.tentacleLight], [5, 1, LORD_COLORS.tentacle], [6, 1, LORD_COLORS.tentacleTip], [7, 1, LORD_COLORS.tentacleSuction], [8, 1, LORD_COLORS.tentacleSuction], [9, 1, LORD_COLORS.tentacleTip], [10, 1, LORD_COLORS.tentacle], [11, 1, LORD_COLORS.tentacleLight], [12, 1, LORD_COLORS.tentacle],
+  [3, 2, LORD_COLORS.tentacleDark], [4, 2, LORD_COLORS.tentacle], [5, 2, LORD_COLORS.tentacleLight], [6, 2, LORD_COLORS.tentacle], [7, 2, LORD_COLORS.tentacleTip], [8, 2, LORD_COLORS.tentacleTip], [9, 2, LORD_COLORS.tentacle], [10, 2, LORD_COLORS.tentacleLight], [11, 2, LORD_COLORS.tentacle], [12, 2, LORD_COLORS.tentacleDark],
+
+  // ===== 主眼睛（中心大眼）=====
+  [2, 3, LORD_COLORS.fleshDark], [3, 3, LORD_COLORS.flesh], [4, 3, LORD_COLORS.eyeWhite], [5, 3, LORD_COLORS.eyeWhite], [6, 3, LORD_COLORS.eyeWhite], [7, 3, LORD_COLORS.eyeWhite], [8, 3, LORD_COLORS.eyeWhite], [9, 3, LORD_COLORS.eyeWhite], [10, 3, LORD_COLORS.eyeWhite], [11, 3, LORD_COLORS.eyeWhite], [12, 3, LORD_COLORS.flesh], [13, 3, LORD_COLORS.fleshDark],
+  [2, 4, LORD_COLORS.flesh], [3, 4, LORD_COLORS.eyeWhiteDark], [4, 4, LORD_COLORS.eyeWhite], [5, 4, LORD_COLORS.pupil], [6, 4, LORD_COLORS.pupilGlow], [7, 4, LORD_COLORS.pupilCore], [8, 4, LORD_COLORS.pupilCore], [9, 4, LORD_COLORS.pupilGlow], [10, 4, LORD_COLORS.pupil], [11, 4, LORD_COLORS.eyeWhite], [12, 4, LORD_COLORS.eyeWhiteDark], [13, 4, LORD_COLORS.flesh],
+  // 眼睛高光
+  [5, 3, LORD_COLORS.highlight], [6, 3, LORD_COLORS.highlight], [9, 3, LORD_COLORS.highlight], [10, 3, LORD_COLORS.highlight],
+  [5, 4, LORD_COLORS.highlight], [10, 4, LORD_COLORS.highlight],
+
+  // ===== 眼睛发光效果 =====
+  [5, 4, LORD_COLORS.pupilGlow], [6, 4, LORD_COLORS.pupilGlow], [9, 4, LORD_COLORS.pupilGlow], [10, 4, LORD_COLORS.pupilGlow],
+  [5, 5, LORD_COLORS.pupilCore], [6, 5, LORD_COLORS.pupilCore], [9, 5, LORD_COLORS.pupilCore], [10, 5, LORD_COLORS.pupilCore],
+
+  [2, 5, LORD_COLORS.fleshDark], [3, 5, LORD_COLORS.eyeWhite], [4, 5, LORD_COLORS.eyeWhite], [5, 5, LORD_COLORS.pupilGlow], [6, 5, LORD_COLORS.pupilCore], [7, 5, LORD_COLORS.pupilGlow], [8, 5, LORD_COLORS.pupilGlow], [9, 5, LORD_COLORS.pupilCore], [10, 5, LORD_COLORS.pupilGlow], [11, 5, LORD_COLORS.eyeWhite], [12, 5, LORD_COLORS.eyeWhite], [13, 5, LORD_COLORS.fleshDark],
+  [2, 6, LORD_COLORS.flesh], [3, 6, LORD_COLORS.eyeWhiteDark], [4, 6, LORD_COLORS.eyeWhite], [5, 6, LORD_COLORS.pupil], [6, 6, LORD_COLORS.pupilGlow], [7, 6, LORD_COLORS.pupil], [8, 6, LORD_COLORS.pupil], [9, 6, LORD_COLORS.pupilGlow], [10, 6, LORD_COLORS.pupil], [11, 6, LORD_COLORS.eyeWhite], [12, 6, LORD_COLORS.eyeWhiteDark], [13, 6, LORD_COLORS.flesh],
+  [3, 7, LORD_COLORS.fleshDark], [4, 7, LORD_COLORS.fleshMid], [5, 7, LORD_COLORS.eyeWhiteDark], [6, 7, LORD_COLORS.pupilGlow], [7, 7, LORD_COLORS.pupilCore], [8, 7, LORD_COLORS.pupilCore], [9, 7, LORD_COLORS.pupilGlow], [10, 7, LORD_COLORS.eyeWhiteDark], [11, 7, LORD_COLORS.fleshMid], [12, 7, LORD_COLORS.fleshDark],
+
+  // ===== 小眼睛群 =====
+  [5, 8, LORD_COLORS.eyeWhiteDark], [6, 8, LORD_COLORS.eyeWhite], [7, 8, LORD_COLORS.pupilGlow], [8, 8, LORD_COLORS.eyeWhite], [9, 8, LORD_COLORS.eyeWhiteDark],
+  [5, 9, LORD_COLORS.eyeWhite], [6, 9, LORD_COLORS.pupil], [7, 9, LORD_COLORS.pupilGlow], [8, 9, LORD_COLORS.pupil], [9, 9, LORD_COLORS.eyeWhite],
+  [5, 10, LORD_COLORS.eyeWhiteDark], [6, 10, LORD_COLORS.eyeWhite], [7, 10, LORD_COLORS.pupil], [8, 10, LORD_COLORS.eyeWhite], [9, 10, LORD_COLORS.eyeWhiteDark],
+
+  // ===== 主体肉块 + 触手 =====
+  [2, 8, LORD_COLORS.tentacleDark], [3, 8, LORD_COLORS.tentacle], [4, 8, LORD_COLORS.fleshMid], [10, 8, LORD_COLORS.fleshMid], [11, 8, LORD_COLORS.tentacle], [12, 8, LORD_COLORS.tentacleDark],
+  [2, 9, LORD_COLORS.tentacle], [3, 9, LORD_COLORS.tentacleLight], [4, 9, LORD_COLORS.tentacleSuction], [10, 9, LORD_COLORS.tentacleSuction], [11, 9, LORD_COLORS.tentacleLight], [12, 9, LORD_COLORS.tentacle],
+  [3, 10, LORD_COLORS.tentacleDark], [4, 10, LORD_COLORS.tentacle], [5, 10, LORD_COLORS.tentacleTip], [6, 10, LORD_COLORS.slimeGlow], [7, 10, LORD_COLORS.slimeGlow], [8, 10, LORD_COLORS.slimeGlow], [9, 10, LORD_COLORS.tentacleTip], [10, 10, LORD_COLORS.tentacle], [11, 10, LORD_COLORS.tentacleDark],
+
+  // ===== 底部触手 =====
+  [3, 11, LORD_COLORS.tentacle], [4, 11, LORD_COLORS.tentacleLight], [5, 11, LORD_COLORS.tentacleTip], [6, 11, LORD_COLORS.slimeGlow], [7, 11, LORD_COLORS.tentacleTip], [8, 11, LORD_COLORS.slimeGlow], [9, 11, LORD_COLORS.tentacleTip], [10, 11, LORD_COLORS.tentacleLight], [11, 11, LORD_COLORS.tentacle],
+  [4, 12, LORD_COLORS.tentacleDark], [5, 12, LORD_COLORS.tentacle], [6, 12, LORD_COLORS.slimeGlow], [7, 12, LORD_COLORS.tentacleTip], [8, 12, LORD_COLORS.tentacleTip], [9, 12, LORD_COLORS.slimeGlow], [10, 12, LORD_COLORS.tentacle], [11, 12, LORD_COLORS.tentacleDark],
+
+  // ===== 漂浮粒子 =====
+  [0, 5, LORD_COLORS.particle], [1, 7, LORD_COLORS.particleLight], [14, 5, LORD_COLORS.particle], [13, 7, LORD_COLORS.particleLight],
+  [0, 6, LORD_COLORS.spark], [14, 6, LORD_COLORS.spark],
+]
 
 // 向下面朝 - 正面（克苏鲁大眼怪正面）
 const LORD_FACE_DOWN = [
@@ -271,5 +313,24 @@ export const drawPitLord = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawPitLordAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < LORD_AVATAR.length; i++) {
+    drawPixel(LORD_AVATAR[i][0], LORD_AVATAR[i][1], LORD_AVATAR[i][2])
   }
 }

@@ -34,7 +34,54 @@ const WOLF_COLORS = {
   tailTip: '#6633ff',    // 尾巴尖紫色
   earInner: '#3a3a5c',   // 耳朵内侧
   earOuter: '#1a1a2e',   // 耳朵外侧
+  highlight: '#ffffff',   // 高光
 }
+
+// 影狼高精度头像（16x16网格，聚焦头部特写）
+const WOLF_AVATAR = [
+  // ===== 耳朵（顶部）=====
+  [3, 0, WOLF_COLORS.earOuter], [4, 0, WOLF_COLORS.earOuter], [11, 0, WOLF_COLORS.earOuter], [12, 0, WOLF_COLORS.earOuter],
+  [2, 1, WOLF_COLORS.earOuter], [3, 1, WOLF_COLORS.earInner], [4, 1, WOLF_COLORS.earInner], [11, 1, WOLF_COLORS.earInner], [12, 1, WOLF_COLORS.earInner], [13, 1, WOLF_COLORS.earOuter],
+  [2, 2, WOLF_COLORS.earOuter], [3, 2, WOLF_COLORS.earInner], [4, 2, WOLF_COLORS.earInner], [11, 2, WOLF_COLORS.earInner], [12, 2, WOLF_COLORS.earInner], [13, 2, WOLF_COLORS.earOuter],
+  [2, 3, WOLF_COLORS.earOuter], [3, 3, WOLF_COLORS.earInner], [4, 3, WOLF_COLORS.earInner], [11, 3, WOLF_COLORS.earInner], [12, 3, WOLF_COLORS.earInner], [13, 3, WOLF_COLORS.earOuter],
+
+  // ===== 头顶毛发 ======
+  [4, 2, WOLF_COLORS.furLight], [5, 2, WOLF_COLORS.furLight], [6, 2, WOLF_COLORS.fur], [7, 2, WOLF_COLORS.fur], [8, 2, WOLF_COLORS.fur], [9, 2, WOLF_COLORS.furLight], [10, 2, WOLF_COLORS.furLight], [11, 2, WOLF_COLORS.furLight],
+  [3, 3, WOLF_COLORS.fur], [4, 3, WOLF_COLORS.furLight], [5, 3, WOLF_COLORS.fur], [6, 3, WOLF_COLORS.furLight], [7, 3, WOLF_COLORS.fur], [8, 3, WOLF_COLORS.furLight], [9, 3, WOLF_COLORS.fur], [10, 3, WOLF_COLORS.furLight], [11, 3, WOLF_COLORS.fur], [12, 3, WOLF_COLORS.fur],
+
+  // ===== 头部两侧毛发 =====
+  [2, 4, WOLF_COLORS.furDark], [3, 4, WOLF_COLORS.fur], [4, 4, WOLF_COLORS.fur], [5, 4, WOLF_COLORS.furLight], [6, 4, WOLF_COLORS.fur], [7, 4, WOLF_COLORS.fur], [8, 4, WOLF_COLORS.furLight], [9, 4, WOLF_COLORS.fur], [10, 4, WOLF_COLORS.furLight], [11, 4, WOLF_COLORS.fur], [12, 4, WOLF_COLORS.fur], [13, 4, WOLF_COLORS.furDark],
+
+  // ===== 眼睛行 =====
+  [2, 5, WOLF_COLORS.furDark], [3, 5, WOLF_COLORS.fur], [4, 5, WOLF_COLORS.eye], [5, 5, WOLF_COLORS.fur], [6, 5, WOLF_COLORS.furLight], [7, 5, WOLF_COLORS.fur], [8, 5, WOLF_COLORS.furLight], [9, 5, WOLF_COLORS.fur], [10, 5, WOLF_COLORS.furLight], [11, 5, WOLF_COLORS.eye], [12, 5, WOLF_COLORS.fur], [13, 5, WOLF_COLORS.furDark],
+  // 眼睛高光
+  [4, 4, WOLF_COLORS.highlight], [5, 4, WOLF_COLORS.highlight], [10, 4, WOLF_COLORS.highlight], [11, 4, WOLF_COLORS.highlight],
+  // 眼睛发光效果
+  [4, 5, WOLF_COLORS.eyeGlow], [5, 5, WOLF_COLORS.eyeGlow], [10, 5, WOLF_COLORS.eyeGlow], [11, 5, WOLF_COLORS.eyeGlow],
+
+  // ===== 鼻子区域 =====
+  [3, 6, WOLF_COLORS.fur], [4, 6, WOLF_COLORS.fur], [5, 6, WOLF_COLORS.nose], [6, 6, WOLF_COLORS.nose], [7, 6, WOLF_COLORS.nose], [8, 6, WOLF_COLORS.nose], [9, 6, WOLF_COLORS.nose], [10, 6, WOLF_COLORS.nose], [11, 6, WOLF_COLORS.fur], [12, 6, WOLF_COLORS.fur],
+  [4, 7, WOLF_COLORS.fur], [5, 7, WOLF_COLORS.nose], [6, 7, WOLF_COLORS.nose], [7, 7, WOLF_COLORS.nose], [8, 7, WOLF_COLORS.nose], [9, 7, WOLF_COLORS.nose], [10, 7, WOLF_COLORS.fur],
+
+  // ===== 嘴巴 + 牙齿 =====
+  [3, 8, WOLF_COLORS.furDark], [4, 8, WOLF_COLORS.teeth], [5, 8, WOLF_COLORS.teeth], [6, 8, WOLF_COLORS.teeth], [7, 8, WOLF_COLORS.tongue], [8, 8, WOLF_COLORS.tongue], [9, 8, WOLF_COLORS.teeth], [10, 8, WOLF_COLORS.teeth], [11, 8, WOLF_COLORS.teeth], [12, 8, WOLF_COLORS.furDark],
+  [4, 9, WOLF_COLORS.teeth], [5, 9, WOLF_COLORS.teeth], [6, 9, WOLF_COLORS.teeth], [7, 9, WOLF_COLORS.tongue], [8, 9, WOLF_COLORS.tongue], [9, 9, WOLF_COLORS.teeth], [10, 9, WOLF_COLORS.teeth], [11, 9, WOLF_COLORS.teeth],
+  [5, 10, WOLF_COLORS.teeth], [6, 10, WOLF_COLORS.tongue], [7, 10, WOLF_COLORS.tongue], [8, 10, WOLF_COLORS.tongue], [9, 10, WOLF_COLORS.teeth], [10, 10, WOLF_COLORS.teeth],
+
+  // ===== 下巴毛发 =====
+  [4, 11, WOLF_COLORS.furDark], [5, 11, WOLF_COLORS.fur], [6, 11, WOLF_COLORS.fur], [7, 11, WOLF_COLORS.fur], [8, 11, WOLF_COLORS.fur], [9, 11, WOLF_COLORS.fur], [10, 11, WOLF_COLORS.fur], [11, 11, WOLF_COLORS.furDark],
+  [5, 12, WOLF_COLORS.fur], [6, 12, WOLF_COLORS.furDark], [7, 12, WOLF_COLORS.furDark], [8, 12, WOLF_COLORS.furDark], [9, 12, WOLF_COLORS.fur], [10, 12, WOLF_COLORS.fur],
+
+  // ===== 颈部毛发 =====
+  [4, 13, WOLF_COLORS.fur], [5, 13, WOLF_COLORS.furLight], [6, 13, WOLF_COLORS.fur], [7, 13, WOLF_COLORS.fur], [8, 13, WOLF_COLORS.fur], [9, 13, WOLF_COLORS.furLight], [10, 13, WOLF_COLORS.fur],
+  [5, 14, WOLF_COLORS.furDark], [6, 14, WOLF_COLORS.fur], [7, 14, WOLF_COLORS.furLight], [8, 14, WOLF_COLORS.furLight], [9, 14, WOLF_COLORS.fur], [10, 14, WOLF_COLORS.furDark],
+
+  // ===== 紫色发光装饰 =====
+  [3, 5, WOLF_COLORS.glow], [12, 5, WOLF_COLORS.glow],
+  [4, 6, WOLF_COLORS.glowLight], [11, 6, WOLF_COLORS.glowLight],
+  [5, 7, WOLF_COLORS.glow], [10, 7, WOLF_COLORS.glow],
+  [6, 8, WOLF_COLORS.glowLight], [9, 8, WOLF_COLORS.glowLight],
+]
 
 // ============================================================
 // 向左面朝 - 狼左侧（头部在左，尾巴在右）
@@ -362,5 +409,25 @@ export const drawShadowWolf = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+
+export const drawShadowWolfAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < WOLF_AVATAR.length; i++) {
+    drawPixel(WOLF_AVATAR[i][0], WOLF_AVATAR[i][1], WOLF_AVATAR[i][2])
   }
 }

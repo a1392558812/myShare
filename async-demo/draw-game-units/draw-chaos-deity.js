@@ -99,7 +99,53 @@ const DEITY_COLORS = {
   // 混沌侵蚀裂缝
   crack: '#0A001A',          // 裂缝
   crackGlow: '#CC00CC',      // 裂缝发光
+  highlight: '#FFFFFF',          // 高光
 }
+
+// 混沌之神高精度头像（16x16网格，聚焦被混沌夺舍的战神头盔特写）
+const DEITY_AVATAR = [
+  // ===== 厚重头盔顶部边缘 =====
+  [3, 0, DEITY_COLORS.helmDark], [4, 0, DEITY_COLORS.helmDark], [5, 0, DEITY_COLORS.helm], [6, 0, DEITY_COLORS.helm], [7, 0, DEITY_COLORS.helm], [8, 0, DEITY_COLORS.helm], [9, 0, DEITY_COLORS.helmDark], [10, 0, DEITY_COLORS.helmDark], [11, 0, DEITY_COLORS.helmRust],
+  [2, 1, DEITY_COLORS.helmDark], [3, 1, DEITY_COLORS.helm], [4, 1, DEITY_COLORS.helmLight], [5, 1, DEITY_COLORS.helm], [6, 1, DEITY_COLORS.helm], [7, 1, DEITY_COLORS.helm], [8, 1, DEITY_COLORS.helm], [9, 1, DEITY_COLORS.helmLight], [10, 1, DEITY_COLORS.helm], [11, 1, DEITY_COLORS.helmDark], [12, 1, DEITY_COLORS.helmRust],
+  [2, 2, DEITY_COLORS.helmDark], [3, 2, DEITY_COLORS.helmGold], [4, 2, DEITY_COLORS.helm], [5, 2, DEITY_COLORS.helmLight], [6, 2, DEITY_COLORS.helmLight], [7, 2, DEITY_COLORS.helmLight], [8, 2, DEITY_COLORS.helm], [9, 2, DEITY_COLORS.helmGold], [10, 2, DEITY_COLORS.helmDark], [11, 2, DEITY_COLORS.helmRust], [12, 2, DEITY_COLORS.helmRust],
+
+  // ===== 头盔主体 + 金饰 =====
+  [1, 3, DEITY_COLORS.helmDark], [2, 3, DEITY_COLORS.helm], [3, 3, DEITY_COLORS.helmGold], [4, 3, DEITY_COLORS.helm], [5, 3, DEITY_COLORS.helmLight], [6, 3, DEITY_COLORS.helm], [7, 3, DEITY_COLORS.helm], [8, 3, DEITY_COLORS.helmLight], [9, 3, DEITY_COLORS.helm], [10, 3, DEITY_COLORS.helmGold], [11, 3, DEITY_COLORS.helm], [12, 3, DEITY_COLORS.helmDark], [13, 3, DEITY_COLORS.helmRust],
+  [1, 4, DEITY_COLORS.helmDark], [2, 4, DEITY_COLORS.helm], [3, 4, DEITY_COLORS.helmLight], [4, 4, DEITY_COLORS.helm], [5, 4, DEITY_COLORS.helmLight], [6, 4, DEITY_COLORS.helm], [7, 4, DEITY_COLORS.helm], [8, 4, DEITY_COLORS.helmLight], [9, 4, DEITY_COLORS.helm], [10, 4, DEITY_COLORS.helmLight], [11, 4, DEITY_COLORS.helm], [12, 4, DEITY_COLORS.helmDark], [13, 4, DEITY_COLORS.helmRust],
+
+  // ===== 混沌之眼 =====
+  [1, 5, DEITY_COLORS.helmDark], [2, 5, DEITY_COLORS.helm], [3, 5, DEITY_COLORS.eyeChaos], [4, 5, DEITY_COLORS.eyeChaosGlow], [5, 5, DEITY_COLORS.eyeGlow], [6, 5, DEITY_COLORS.eyeGlow], [7, 5, DEITY_COLORS.eyeGlow], [8, 5, DEITY_COLORS.eyeGlow], [9, 5, DEITY_COLORS.eyeChaosGlow], [10, 5, DEITY_COLORS.eyeChaos], [11, 5, DEITY_COLORS.helm], [12, 5, DEITY_COLORS.helmDark], [13, 5, DEITY_COLORS.helmRust],
+  // 眼睛高光
+  [4, 4, DEITY_COLORS.highlight], [5, 4, DEITY_COLORS.highlight], [9, 4, DEITY_COLORS.highlight], [10, 4, DEITY_COLORS.highlight],
+  [4, 5, DEITY_COLORS.highlight], [10, 5, DEITY_COLORS.highlight],
+
+  // ===== 眼睛发光效果 =====
+  [4, 5, DEITY_COLORS.eyeChaosGlow], [5, 5, DEITY_COLORS.eyeChaosGlow], [9, 5, DEITY_COLORS.eyeChaosGlow], [10, 5, DEITY_COLORS.eyeChaosGlow],
+  [4, 6, DEITY_COLORS.eyeInner], [5, 6, DEITY_COLORS.eyeInner], [9, 6, DEITY_COLORS.eyeInner], [10, 6, DEITY_COLORS.eyeInner],
+
+  [1, 6, DEITY_COLORS.helmDark], [2, 6, DEITY_COLORS.helm], [3, 6, DEITY_COLORS.eyeChaosGlow], [4, 6, DEITY_COLORS.eyeInner], [5, 6, DEITY_COLORS.eyeInner], [6, 6, DEITY_COLORS.eye], [7, 6, DEITY_COLORS.eye], [8, 6, DEITY_COLORS.eye], [9, 6, DEITY_COLORS.eyeInner], [10, 6, DEITY_COLORS.eyeInner], [11, 6, DEITY_COLORS.eyeChaosGlow], [12, 6, DEITY_COLORS.helm], [13, 6, DEITY_COLORS.helmDark],
+  [2, 7, DEITY_COLORS.helmDark], [3, 7, DEITY_COLORS.helm], [4, 7, DEITY_COLORS.chaosDark], [5, 7, DEITY_COLORS.chaos], [6, 7, DEITY_COLORS.chaosDark], [7, 7, DEITY_COLORS.chaosDark], [8, 7, DEITY_COLORS.chaosDark], [9, 7, DEITY_COLORS.chaos], [10, 7, DEITY_COLORS.chaosDark], [11, 7, DEITY_COLORS.helm], [12, 7, DEITY_COLORS.helmDark],
+
+  // ===== 混沌侵蚀细节 =====
+  [2, 8, DEITY_COLORS.helmRust], [3, 8, DEITY_COLORS.helmDark], [4, 8, DEITY_COLORS.chaosGlow], [5, 8, DEITY_COLORS.chaosDark], [6, 8, DEITY_COLORS.chaos], [7, 8, DEITY_COLORS.chaos], [8, 8, DEITY_COLORS.chaos], [9, 8, DEITY_COLORS.chaosDark], [10, 8, DEITY_COLORS.chaosGlow], [11, 8, DEITY_COLORS.helmDark], [12, 8, DEITY_COLORS.helmRust],
+  [3, 9, DEITY_COLORS.helmRust], [4, 9, DEITY_COLORS.helmDirt], [5, 9, DEITY_COLORS.chaos], [6, 9, DEITY_COLORS.chaosDark], [7, 9, DEITY_COLORS.chaosDark], [8, 9, DEITY_COLORS.chaosDark], [9, 9, DEITY_COLORS.chaos], [10, 9, DEITY_COLORS.chaosDark], [11, 9, DEITY_COLORS.helmDirt], [12, 9, DEITY_COLORS.helmRust],
+
+  // ===== 厚重肩甲 =====
+  [0, 10, DEITY_COLORS.armorDark], [1, 10, DEITY_COLORS.armor], [2, 10, DEITY_COLORS.armorPlate], [3, 10, DEITY_COLORS.armorPlateLight], [4, 10, DEITY_COLORS.chaos], [5, 10, DEITY_COLORS.chaosGlow], [6, 10, DEITY_COLORS.chaosGlow], [7, 10, DEITY_COLORS.chaosGlow], [8, 10, DEITY_COLORS.chaosGlow], [9, 10, DEITY_COLORS.chaos], [10, 10, DEITY_COLORS.armorPlateLight], [11, 10, DEITY_COLORS.armorPlate], [12, 10, DEITY_COLORS.armor], [13, 10, DEITY_COLORS.armorDark], [14, 10, DEITY_COLORS.armorDark],
+  [0, 11, DEITY_COLORS.armorDark], [1, 11, DEITY_COLORS.armor], [2, 11, DEITY_COLORS.armorPlate], [3, 11, DEITY_COLORS.armorPlateLight], [4, 11, DEITY_COLORS.chaosDark], [5, 11, DEITY_COLORS.chaos], [6, 11, DEITY_COLORS.chaos], [7, 11, DEITY_COLORS.chaos], [8, 11, DEITY_COLORS.chaos], [9, 11, DEITY_COLORS.chaosDark], [10, 11, DEITY_COLORS.armorPlateLight], [11, 11, DEITY_COLORS.armorPlate], [12, 11, DEITY_COLORS.armor], [13, 11, DEITY_COLORS.armorDark], [14, 11, DEITY_COLORS.armorDark],
+
+  // ===== 混沌裂缝装饰 =====
+  [4, 8, DEITY_COLORS.crackGlow], [5, 9, DEITY_COLORS.crack], [9, 9, DEITY_COLORS.crack], [10, 8, DEITY_COLORS.crackGlow],
+  [5, 10, DEITY_COLORS.sparkWhite], [6, 10, DEITY_COLORS.spark], [9, 10, DEITY_COLORS.spark], [10, 10, DEITY_COLORS.sparkWhite],
+
+  // ===== 胸甲领口 =====
+  [2, 12, DEITY_COLORS.armorDark], [3, 12, DEITY_COLORS.armor], [4, 12, DEITY_COLORS.armorPlate], [5, 12, DEITY_COLORS.chaosGlow], [6, 12, DEITY_COLORS.armorPlateLight], [7, 12, DEITY_COLORS.armorPlateLight], [8, 12, DEITY_COLORS.armorPlateLight], [9, 12, DEITY_COLORS.chaosGlow], [10, 12, DEITY_COLORS.armorPlate], [11, 12, DEITY_COLORS.armor], [12, 12, DEITY_COLORS.armorDark],
+  [2, 13, DEITY_COLORS.armorDark], [3, 13, DEITY_COLORS.armorDark], [4, 13, DEITY_COLORS.armor], [5, 13, DEITY_COLORS.chaos], [6, 13, DEITY_COLORS.chaosDark], [7, 13, DEITY_COLORS.chaosDark], [8, 13, DEITY_COLORS.chaosDark], [9, 13, DEITY_COLORS.chaos], [10, 13, DEITY_COLORS.armor], [11, 13, DEITY_COLORS.armorDark], [12, 13, DEITY_COLORS.armorDark],
+
+  // ===== 宽大腰带 =====
+  [3, 14, DEITY_COLORS.belt], [4, 14, DEITY_COLORS.belt], [5, 14, DEITY_COLORS.beltGold], [6, 14, DEITY_COLORS.beltBuckle], [7, 14, DEITY_COLORS.beltBuckle], [8, 14, DEITY_COLORS.beltGold], [9, 14, DEITY_COLORS.belt], [10, 14, DEITY_COLORS.belt],
+  [4, 15, DEITY_COLORS.armorDark], [5, 15, DEITY_COLORS.armor], [6, 15, DEITY_COLORS.armorRust], [7, 15, DEITY_COLORS.armorRust], [8, 15, DEITY_COLORS.armor], [9, 15, DEITY_COLORS.armorDark],
+]
 
 const DEITY_FACE_DOWN = [
   // ===== 厚重头盔顶部 =====
@@ -392,5 +438,24 @@ export const drawChaosDeity = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawChaosDeityAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < DEITY_AVATAR.length; i++) {
+    drawPixel(DEITY_AVATAR[i][0], DEITY_AVATAR[i][1], DEITY_AVATAR[i][2])
   }
 }

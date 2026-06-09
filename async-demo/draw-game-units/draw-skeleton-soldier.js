@@ -37,7 +37,48 @@ const SKELETON_COLORS = {
   shieldGold: '#B8860B',    // 盾牌金边
   rib: '#E8E8D0',           // 肋骨色
   highlight: '#FFFFFF',     // 高光
+  eyeInner: '#FFFF00',      // 眼睛内部黄色
+  teeth: '#FFFFF0',         // 牙齿亮色
 };
+
+// 骷髅士兵高精度头像（16x16网格，更丰富细节）
+const SKELETON_AVATAR = [
+  // ===== 头盔顶部边缘
+  [4, 0, SKELETON_COLORS.helmetDark], [5, 0, SKELETON_COLORS.helmet], [6, 0, SKELETON_COLORS.helmetLight], [7, 0, SKELETON_COLORS.helmetLight], [8, 0, SKELETON_COLORS.helmetLight], [9, 0, SKELETON_COLORS.helmet], [10, 0, SKELETON_COLORS.helmetDark],
+  // ===== 头盔第一层
+  [3, 1, SKELETON_COLORS.helmetDark], [4, 1, SKELETON_COLORS.helmet], [5, 1, SKELETON_COLORS.helmetLight], [6, 1, SKELETON_COLORS.helmetLight], [7, 1, SKELETON_COLORS.helmetLight], [8, 1, SKELETON_COLORS.helmetLight], [9, 1, SKELETON_COLORS.helmetLight], [10, 1, SKELETON_COLORS.helmet], [11, 1, SKELETON_COLORS.helmetDark],
+  // ===== 头顶骨头（额头区域）
+  [5, 2, SKELETON_COLORS.boneLight], [6, 2, SKELETON_COLORS.boneLight], [7, 2, SKELETON_COLORS.boneLight], [8, 2, SKELETON_COLORS.boneLight],
+  [4, 3, SKELETON_COLORS.bone], [5, 3, SKELETON_COLORS.boneLight], [6, 3, SKELETON_COLORS.boneLight], [7, 3, SKELETON_COLORS.boneLight], [8, 3, SKELETON_COLORS.boneLight], [9, 3, SKELETON_COLORS.bone],
+  // ===== 头顶骨头高光
+  [5, 2, SKELETON_COLORS.highlight], [6, 2, SKELETON_COLORS.highlight], [7, 2, SKELETON_COLORS.highlight], [8, 2, SKELETON_COLORS.highlight],
+  // ===== 头部骨头（完整头部）
+  [3, 4, SKELETON_COLORS.boneDark], [4, 4, SKELETON_COLORS.bone], [5, 4, SKELETON_COLORS.bone], [6, 4, SKELETON_COLORS.bone], [7, 4, SKELETON_COLORS.bone], [8, 4, SKELETON_COLORS.bone], [9, 4, SKELETON_COLORS.bone], [10, 4, SKELETON_COLORS.boneDark],
+  [3, 5, SKELETON_COLORS.bone], [4, 5, SKELETON_COLORS.bone], [5, 5, SKELETON_COLORS.bone], [6, 5, SKELETON_COLORS.bone], [7, 5, SKELETON_COLORS.bone], [8, 5, SKELETON_COLORS.bone], [9, 5, SKELETON_COLORS.bone], [10, 5, SKELETON_COLORS.bone],
+  // ===== 眼眶骨骼
+  [3, 5, SKELETON_COLORS.boneDark], [10, 5, SKELETON_COLORS.boneDark],
+  // ===== 眼睛区域（红色发光）
+  [3, 6, SKELETON_COLORS.bone], [4, 6, SKELETON_COLORS.eye], [5, 6, SKELETON_COLORS.eye], [6, 6, SKELETON_COLORS.boneShadow], [7, 6, SKELETON_COLORS.boneShadow], [8, 6, SKELETON_COLORS.eye], [9, 6, SKELETON_COLORS.eye], [10, 6, SKELETON_COLORS.bone],
+  // ===== 眼睛高光（发光效果）
+  [4, 5, SKELETON_COLORS.highlight], [5, 5, SKELETON_COLORS.highlight], [8, 5, SKELETON_COLORS.highlight], [9, 5, SKELETON_COLORS.highlight],
+  [4, 6, SKELETON_COLORS.eyeInner], [5, 6, SKELETON_COLORS.eyeInner], [8, 6, SKELETON_COLORS.eyeInner], [9, 6, SKELETON_COLORS.eyeInner],
+  // ===== 鼻梁骨骼
+  [4, 7, SKELETON_COLORS.bone], [5, 7, SKELETON_COLORS.boneDark], [6, 7, SKELETON_COLORS.boneShadow], [7, 7, SKELETON_COLORS.boneShadow], [8, 7, SKELETON_COLORS.boneDark], [9, 7, SKELETON_COLORS.bone],
+  // ===== 上牙齿
+  [4, 8, SKELETON_COLORS.bone], [5, 8, SKELETON_COLORS.teeth], [6, 8, SKELETON_COLORS.bone], [7, 8, SKELETON_COLORS.bone], [8, 8, SKELETON_COLORS.teeth], [9, 8, SKELETON_COLORS.bone],
+  [4, 9, SKELETON_COLORS.boneDark], [5, 9, SKELETON_COLORS.bone], [6, 9, SKELETON_COLORS.bone], [7, 9, SKELETON_COLORS.bone], [8, 9, SKELETON_COLORS.bone], [9, 9, SKELETON_COLORS.boneDark],
+  // ===== 下牙齿
+  [5, 10, SKELETON_COLORS.teeth], [6, 10, SKELETON_COLORS.teeth], [7, 10, SKELETON_COLORS.teeth], [8, 10, SKELETON_COLORS.teeth],
+  // ===== 下颚骨骼
+  [5, 11, SKELETON_COLORS.boneShadow], [6, 11, SKELETON_COLORS.bone], [7, 11, SKELETON_COLORS.bone], [8, 11, SKELETON_COLORS.boneShadow],
+  // ===== 颈部盔甲
+  [4, 12, SKELETON_COLORS.armor], [5, 12, SKELETON_COLORS.armorLight], [6, 12, SKELETON_COLORS.armorLight], [7, 12, SKELETON_COLORS.armorLight], [8, 12, SKELETON_COLORS.armorLight], [9, 12, SKELETON_COLORS.armor],
+  // ===== 盔甲边缘
+  [3, 13, SKELETON_COLORS.armorDark], [4, 13, SKELETON_COLORS.armor], [5, 13, SKELETON_COLORS.armorLight], [6, 13, SKELETON_COLORS.armor], [7, 13, SKELETON_COLORS.armor], [8, 13, SKELETON_COLORS.armorLight], [9, 13, SKELETON_COLORS.armor], [10, 13, SKELETON_COLORS.armorDark],
+  // ===== 盔甲装饰（骷髅图标）
+  [4, 14, SKELETON_COLORS.armorDark], [5, 14, SKELETON_COLORS.bone], [6, 14, SKELETON_COLORS.bone], [7, 14, SKELETON_COLORS.bone], [8, 14, SKELETON_COLORS.bone], [9, 14, SKELETON_COLORS.armorDark],
+  [5, 15, SKELETON_COLORS.armor], [6, 15, SKELETON_COLORS.armorDark], [7, 15, SKELETON_COLORS.armorDark], [8, 15, SKELETON_COLORS.armor],
+];
 
 // 向下面朝 - 正面
 const SKELETON_FACE_DOWN = [
@@ -224,5 +265,25 @@ export const drawSkeletonSoldier = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2]);
     }
+  }
+};
+
+
+export const drawSkeletonSoldierAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return;
+  const ctx = canvasRef.getContext('2d');
+  const x = avatarPos.x;
+  const y = avatarPos.y;
+  const unit = currentUnit.size / 16;
+
+  ctx.imageSmoothingEnabled = false;
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
+  };
+
+  for (let i = 0; i < SKELETON_AVATAR.length; i++) {
+    drawPixel(SKELETON_AVATAR[i][0], SKELETON_AVATAR[i][1], SKELETON_AVATAR[i][2]);
   }
 };

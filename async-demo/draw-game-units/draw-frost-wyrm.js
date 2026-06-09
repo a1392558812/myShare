@@ -53,13 +53,63 @@ const WYRM_COLORS = {
   magicLight: '#80FFFF',   // 魔法亮
   rune: '#00CCFF',         // 符文
   spark: '#FFFFFF',        // 粒子
-  // 尾/脊
-  tail: '#A0C8E0',         // 尾
-  tailLight: '#D0E8F8',    // 尾亮
-  tailDark: '#6A8FB0',     // 尾暗
-  // 阴影（轮廓）
-  outline: '#4A6A8A',      // 外轮廓
+  highlight: '#FFFFFF',      // 高光
 }
+
+// 冰霜巨龙高精度头像（16x16网格，聚焦龙头特写）
+const WYRM_AVATAR = [
+  // ===== 头顶角（顶部）=====
+  [4, 0, WYRM_COLORS.hornDark], [5, 0, WYRM_COLORS.horn], [6, 0, WYRM_COLORS.horn], [9, 0, WYRM_COLORS.horn], [10, 0, WYRM_COLORS.horn], [11, 0, WYRM_COLORS.hornDark],
+  [4, 1, WYRM_COLORS.horn], [5, 1, WYRM_COLORS.hornDark], [6, 1, WYRM_COLORS.hornDark], [9, 1, WYRM_COLORS.hornDark], [10, 1, WYRM_COLORS.hornDark], [11, 1, WYRM_COLORS.horn],
+
+  // ===== 头顶鳞片/毛发 =====
+  [3, 2, WYRM_COLORS.bodyDark], [4, 2, WYRM_COLORS.body], [5, 2, WYRM_COLORS.bodyLight], [6, 2, WYRM_COLORS.body], [7, 2, WYRM_COLORS.bodyLight], [8, 2, WYRM_COLORS.bodyLight], [9, 2, WYRM_COLORS.body], [10, 2, WYRM_COLORS.bodyLight], [11, 2, WYRM_COLORS.body], [12, 2, WYRM_COLORS.bodyDark],
+  [3, 3, WYRM_COLORS.body], [4, 3, WYRM_COLORS.bodyLight], [5, 3, WYRM_COLORS.body], [6, 3, WYRM_COLORS.bodyLight], [7, 3, WYRM_COLORS.body], [8, 3, WYRM_COLORS.bodyLight], [9, 3, WYRM_COLORS.body], [10, 3, WYRM_COLORS.bodyLight], [11, 3, WYRM_COLORS.body], [12, 3, WYRM_COLORS.bodyDark],
+
+  // ===== 眼睛行 =====
+  [2, 4, WYRM_COLORS.bodyDark], [3, 4, WYRM_COLORS.body], [4, 4, WYRM_COLORS.eye], [5, 4, WYRM_COLORS.eyeGlow], [6, 4, WYRM_COLORS.body], [7, 4, WYRM_COLORS.body], [8, 4, WYRM_COLORS.body], [9, 4, WYRM_COLORS.eyeGlow], [10, 4, WYRM_COLORS.eye], [11, 4, WYRM_COLORS.body], [12, 4, WYRM_COLORS.bodyDark],
+  // 眼睛高光
+  [4, 3, WYRM_COLORS.highlight], [5, 3, WYRM_COLORS.highlight], [9, 3, WYRM_COLORS.highlight], [10, 3, WYRM_COLORS.highlight],
+  [4, 4, WYRM_COLORS.highlight], [10, 4, WYRM_COLORS.highlight],
+
+  // ===== 眼睛发光效果 =====
+  [4, 4, WYRM_COLORS.eyeGlow], [5, 4, WYRM_COLORS.eyeGlow], [9, 4, WYRM_COLORS.eyeGlow], [10, 4, WYRM_COLORS.eyeGlow],
+  [5, 5, WYRM_COLORS.eyeInner], [6, 5, WYRM_COLORS.eyeInner], [9, 5, WYRM_COLORS.eyeInner], [10, 5, WYRM_COLORS.eyeInner],
+
+  // ===== 鼻部/嘴部 =====
+  [3, 5, WYRM_COLORS.body], [4, 5, WYRM_COLORS.bodyLight], [5, 5, WYRM_COLORS.body], [6, 5, WYRM_COLORS.body], [7, 5, WYRM_COLORS.bodyLight], [8, 5, WYRM_COLORS.bodyLight], [9, 5, WYRM_COLORS.body], [10, 5, WYRM_COLORS.body], [11, 5, WYRM_COLORS.bodyDark],
+  [3, 6, WYRM_COLORS.bodyLight], [4, 6, WYRM_COLORS.body], [5, 6, WYRM_COLORS.body], [6, 6, WYRM_COLORS.bodyLight], [7, 6, WYRM_COLORS.bodyLight], [8, 6, WYRM_COLORS.bodyLight], [9, 6, WYRM_COLORS.body], [10, 6, WYRM_COLORS.body], [11, 6, WYRM_COLORS.bodyLight],
+
+  // ===== 牙齿 =====
+  [4, 7, WYRM_COLORS.teeth], [5, 7, WYRM_COLORS.teeth], [6, 7, WYRM_COLORS.teeth], [7, 7, WYRM_COLORS.teeth], [8, 7, WYRM_COLORS.teeth], [9, 7, WYRM_COLORS.teeth], [10, 7, WYRM_COLORS.teeth],
+  [5, 8, WYRM_COLORS.teeth], [6, 8, WYRM_COLORS.teeth], [7, 8, WYRM_COLORS.teeth], [8, 8, WYRM_COLORS.teeth], [9, 8, WYRM_COLORS.teeth],
+
+  // ===== 下颚 =====
+  [4, 9, WYRM_COLORS.bodyDark], [5, 9, WYRM_COLORS.body], [6, 9, WYRM_COLORS.body], [7, 9, WYRM_COLORS.bodyLight], [8, 9, WYRM_COLORS.body], [9, 9, WYRM_COLORS.body], [10, 9, WYRM_COLORS.bodyDark],
+  [5, 10, WYRM_COLORS.body], [6, 10, WYRM_COLORS.bodyLight], [7, 10, WYRM_COLORS.body], [8, 10, WYRM_COLORS.bodyLight], [9, 10, WYRM_COLORS.body],
+
+  // ===== 颈部 =====
+  [4, 11, WYRM_COLORS.body], [5, 11, WYRM_COLORS.bodyLight], [6, 11, WYRM_COLORS.body], [7, 11, WYRM_COLORS.body], [8, 11, WYRM_COLORS.bodyLight], [9, 11, WYRM_COLORS.body],
+  [5, 12, WYRM_COLORS.bodyDark], [6, 12, WYRM_COLORS.body], [7, 12, WYRM_COLORS.bodyLight], [8, 12, WYRM_COLORS.body], [9, 12, WYRM_COLORS.bodyDark],
+
+  // ===== 冰霜鬃毛 =====
+  [3, 10, WYRM_COLORS.frost], [4, 10, WYRM_COLORS.frostLight],
+  [3, 11, WYRM_COLORS.frostLight], [4, 11, WYRM_COLORS.frost],
+  [10, 10, WYRM_COLORS.frostLight], [11, 10, WYRM_COLORS.frost],
+  [10, 11, WYRM_COLORS.frost], [11, 11, WYRM_COLORS.frostLight],
+
+  // ===== 魔法符文装饰 =====
+  [5, 12, WYRM_COLORS.rune], [6, 12, WYRM_COLORS.magicLight],
+  [9, 12, WYRM_COLORS.magicLight], [10, 12, WYRM_COLORS.rune],
+
+  // ===== 腹部 =====
+  [5, 13, WYRM_COLORS.belly], [6, 13, WYRM_COLORS.bellyLight], [7, 13, WYRM_COLORS.belly], [8, 13, WYRM_COLORS.bellyLight], [9, 13, WYRM_COLORS.belly],
+  [6, 14, WYRM_COLORS.bellyLight], [7, 14, WYRM_COLORS.belly], [8, 14, WYRM_COLORS.bellyLight],
+
+  // ===== 冰霜粒子 =====
+  [4, 6, WYRM_COLORS.frostLight], [11, 6, WYRM_COLORS.frostLight],
+  [3, 8, WYRM_COLORS.frost], [12, 8, WYRM_COLORS.frost],
+]
 
 // 向左面朝 - 冰霜巨龙（头部在左，尾部在右）
 const WYRM_FACE_LEFT = [
@@ -376,5 +426,24 @@ export const drawFrostWyrm = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawFrostWyrmAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < WYRM_AVATAR.length; i++) {
+    drawPixel(WYRM_AVATAR[i][0], WYRM_AVATAR[i][1], WYRM_AVATAR[i][2])
   }
 }

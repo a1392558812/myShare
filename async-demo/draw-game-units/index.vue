@@ -20,25 +20,26 @@
 </template>
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
-import { drawPlayer, config as playerConfig } from './draw-player.js'
+import { drawPlayer, config as playerConfig, drawPlayerAvatar } from './draw-player.js'
+import { drawPet, config as petConfig, drawPetAvatar } from './draw-pet.js'
 import { drawSlime, config as slimeConfig, drawSlimeAvatar } from './draw-slime.js'
 import { drawGoblin, config as goblinConfig, drawGoblinAvatar } from './draw-goblin.js'
-import { drawSkeletonSoldier, config as skeletonSoldierConfig } from './draw-skeleton-soldier.js'
-import { drawShadowWolf, config as shadowWolfConfig } from './draw-shadow-wolf.js'
-import { drawChimera, config as chimeraConfig } from './draw-chimera.js'
-import { drawShadowSorcerer, config as shadowSorcererConfig } from './draw-shadow-sorcerer.js'
-import { drawPhantomKnight, config as phantomKnightConfig } from './draw-phantom-knight.js'
-import { drawLichKing, config as lichKingConfig } from './draw-lich-king.js'
-import { drawFrostWyrm, config as frostWyrmConfig } from './draw-frost-wyrm.js'
-import { drawVenomousLord, config as venomousLordConfig } from './draw-venomous-lord.js'
-import { drawDarknessBinder, config as darknessBinderConfig } from './draw-darkness-binder.js'
-import { drawChaosLord, config as chaosLordConfig } from './draw-chaos-lord.js'
-import { drawMaouOfChaos, config as maouOfChaosConfig } from './draw-maou-of-chaos.js'
-import { drawShadowLord, config as shadowLordConfig } from './draw-shadow-lord.js'
-import { drawBlackKnight, config as blackKnightConfig } from './draw-black-knight.js'
-import { drawFrostQueen, config as frostQueenConfig } from './draw-frost-queen.js'
-import { drawPitLord, config as pitLordConfig } from './draw-pit-lord.js'
-import { drawChaosDeity, config as chaosDeityConfig } from './draw-chaos-deity.js'
+import { drawSkeletonSoldier, config as skeletonSoldierConfig, drawSkeletonSoldierAvatar } from './draw-skeleton-soldier.js'
+import { drawShadowWolf, config as shadowWolfConfig, drawShadowWolfAvatar } from './draw-shadow-wolf.js'
+import { drawChimera, config as chimeraConfig, drawChimeraAvatar } from './draw-chimera.js'
+import { drawShadowSorcerer, config as shadowSorcererConfig, drawShadowSorcererAvatar } from './draw-shadow-sorcerer.js'
+import { drawPhantomKnight, config as phantomKnightConfig, drawPhantomKnightAvatar } from './draw-phantom-knight.js'
+import { drawLichKing, config as lichKingConfig, drawLichKingAvatar } from './draw-lich-king.js'
+import { drawFrostWyrm, config as frostWyrmConfig, drawFrostWyrmAvatar } from './draw-frost-wyrm.js'
+import { drawVenomousLord, config as venomousLordConfig, drawVenomousLordAvatar } from './draw-venomous-lord.js'
+import { drawDarknessBinder, config as darknessBinderConfig, drawDarknessBinderAvatar } from './draw-darkness-binder.js'
+import { drawChaosLord, config as chaosLordConfig, drawChaosLordAvatar } from './draw-chaos-lord.js'
+import { drawMaouOfChaos, config as maouOfChaosConfig, drawMaouOfChaosAvatar } from './draw-maou-of-chaos.js'
+import { drawShadowLord, config as shadowLordConfig, drawShadowLordAvatar } from './draw-shadow-lord.js'
+import { drawBlackKnight, config as blackKnightConfig, drawBlackKnightAvatar } from './draw-black-knight.js'
+import { drawFrostQueen, config as frostQueenConfig, drawFrostQueenAvatar } from './draw-frost-queen.js'
+import { drawPitLord, config as pitLordConfig, drawPitLordAvatar } from './draw-pit-lord.js'
+import { drawChaosDeity, config as chaosDeityConfig, drawChaosDeityAvatar } from './draw-chaos-deity.js'
 
 import { frameRateManager } from './frame-rate.js'
 
@@ -59,6 +60,7 @@ const units = ref({
     size: 40,
     config: playerConfig,
     drawUnit: drawPlayer,
+    drawAvatar: drawPlayerAvatar,
   },
   slime: {
     name: '史莱姆',
@@ -97,6 +99,7 @@ const units = ref({
     size: 40,
     config: skeletonSoldierConfig,
     drawUnit: drawSkeletonSoldier,
+    drawAvatar: drawSkeletonSoldierAvatar,
   },
   shadowWolf: {
     name: '暗影狼',
@@ -109,6 +112,7 @@ const units = ref({
     size: 40,
     config: shadowWolfConfig,
     drawUnit: drawShadowWolf,
+    drawAvatar: drawShadowWolfAvatar,
   },
   chimera: {
     name: '石像鬼',
@@ -121,6 +125,7 @@ const units = ref({
     size: 40,
     config: chimeraConfig,
     drawUnit: drawChimera,
+    drawAvatar: drawChimeraAvatar,
   },
   shadowSorcerer: {
     name: '暗影法师',
@@ -133,6 +138,7 @@ const units = ref({
     size: 40,
     config: shadowSorcererConfig,
     drawUnit: drawShadowSorcerer,
+    drawAvatar: drawShadowSorcererAvatar,
   },
   phantomKnight: {
     name: '幽灵骑士',
@@ -145,6 +151,7 @@ const units = ref({
     size: 40,
     config: phantomKnightConfig,
     drawUnit: drawPhantomKnight,
+    drawAvatar: drawPhantomKnightAvatar,
   },
   lichKing: {
     name: '巫妖王',
@@ -157,6 +164,7 @@ const units = ref({
     size: 40,
     config: lichKingConfig,
     drawUnit: drawLichKing,
+    drawAvatar: drawLichKingAvatar,
   },
   frostWyrm: {
     name: '冰霜巨龙',
@@ -169,6 +177,7 @@ const units = ref({
     size: 40,
     config: frostWyrmConfig,
     drawUnit: drawFrostWyrm,
+    drawAvatar: drawFrostWyrmAvatar,
   },
   venomousLord: {
     name: '剧毒领主',
@@ -181,6 +190,7 @@ const units = ref({
     size: 40,
     config: venomousLordConfig,
     drawUnit: drawVenomousLord,
+    drawAvatar: drawVenomousLordAvatar,
   },
   darknessBinder: {
     name: '黑暗封印师',
@@ -193,6 +203,7 @@ const units = ref({
     size: 40,
     config: darknessBinderConfig,
     drawUnit: drawDarknessBinder,
+    drawAvatar: drawDarknessBinderAvatar,
   },
   chaosLord: {
     name: '混沌领主',
@@ -205,6 +216,7 @@ const units = ref({
     size: 40,
     config: chaosLordConfig,
     drawUnit: drawChaosLord,
+    drawAvatar: drawChaosLordAvatar,
   },
   maouOfChaos: {
     name: '混沌魔王',
@@ -217,6 +229,7 @@ const units = ref({
     size: 40,
     config: maouOfChaosConfig,
     drawUnit: drawMaouOfChaos,
+    drawAvatar: drawMaouOfChaosAvatar,
   },
   shadowLord: {
     name: '暗影领主',
@@ -229,6 +242,7 @@ const units = ref({
     size: 40,
     config: shadowLordConfig,
     drawUnit: drawShadowLord,
+    drawAvatar: drawShadowLordAvatar,
   },
   blackKnight: {
     name: '暗黑骑士',
@@ -241,6 +255,7 @@ const units = ref({
     size: 40,
     config: blackKnightConfig,
     drawUnit: drawBlackKnight,
+    drawAvatar: drawBlackKnightAvatar,
   },
   frostQueen: {
     name: '冰雪女王',
@@ -253,6 +268,7 @@ const units = ref({
     size: 40,
     config: frostQueenConfig,
     drawUnit: drawFrostQueen,
+    drawAvatar: drawFrostQueenAvatar,
   },
   pitLord: {
     name: '深渊魔王',
@@ -265,6 +281,7 @@ const units = ref({
     size: 40,
     config: pitLordConfig,
     drawUnit: drawPitLord,
+    drawAvatar: drawPitLordAvatar,
   },
   chaosDeity: {
     name: '混沌之神',
@@ -277,6 +294,20 @@ const units = ref({
     size: 40,
     config: chaosDeityConfig,
     drawUnit: drawChaosDeity,
+    drawAvatar: drawChaosDeityAvatar,
+  },
+  pet: {
+    name: '宠物',
+    x: 200,
+    y: 450,
+    speed: 5,
+    direction: 'down',
+    frame: 0,
+    isMoving: false,
+    size: 40,
+    config: petConfig,
+    drawUnit: drawPet,
+    drawAvatar: drawPetAvatar,
   },
 })
 
@@ -370,7 +401,7 @@ const drawFrame = (deltaTime) => {
   for (const [key, unit] of Object.entries(units.value)) {
     unit.drawUnit(canvasRef.value, unit);
     if (unit.drawAvatar) {
-      const avatarPos = { x: unit.x + 200, y: unit.y, size: unitSize }
+      const avatarPos = { x: unit.x + 250, y: unit.y, size: unitSize }
       unit.drawAvatar(canvasRef.value, unit, avatarPos);
       drawBorder(ctx, avatarPos, key);
     }

@@ -51,7 +51,48 @@ const SORCERER_COLORS = {
   // 符文/装饰
   rune: '#9966FF',        // 符文
   runeGlow: '#CC99FF',    // 符文发光
+  highlight: '#ffffff',   // 高光
 }
+
+// 暗影法师高精度头像（16x16网格，聚焦头部特写）
+const SORCERER_AVATAR = [
+  // ===== 兜帽顶部边缘 =====
+  [4, 0, SORCERER_COLORS.hoodDark], [5, 0, SORCERER_COLORS.hood], [6, 0, SORCERER_COLORS.hoodLight], [7, 0, SORCERER_COLORS.hoodLight], [8, 0, SORCERER_COLORS.hoodLight], [9, 0, SORCERER_COLORS.hood], [10, 0, SORCERER_COLORS.hoodDark],
+  [4, 1, SORCERER_COLORS.hood], [5, 1, SORCERER_COLORS.hoodLight], [6, 1, SORCERER_COLORS.hood], [7, 1, SORCERER_COLORS.hoodLight], [8, 1, SORCERER_COLORS.hoodLight], [9, 1, SORCERER_COLORS.hood], [10, 1, SORCERER_COLORS.hoodLight], [11, 1, SORCERER_COLORS.hood],
+
+  // ===== 兜帽第一层 =====
+  [3, 2, SORCERER_COLORS.hoodDark], [4, 2, SORCERER_COLORS.hood], [5, 2, SORCERER_COLORS.hoodLight], [6, 2, SORCERER_COLORS.hood], [7, 2, SORCERER_COLORS.hoodLight], [8, 2, SORCERER_COLORS.hoodLight], [9, 2, SORCERER_COLORS.hood], [10, 2, SORCERER_COLORS.hoodLight], [11, 2, SORCERER_COLORS.hood], [12, 2, SORCERER_COLORS.hoodDark],
+  [3, 3, SORCERER_COLORS.hoodDark], [4, 3, SORCERER_COLORS.hood], [5, 3, SORCERER_COLORS.hoodLight], [6, 3, SORCERER_COLORS.hood], [7, 3, SORCERER_COLORS.hoodLight], [8, 3, SORCERER_COLORS.hoodLight], [9, 3, SORCERER_COLORS.hood], [10, 3, SORCERER_COLORS.hoodLight], [11, 3, SORCERER_COLORS.hood], [12, 3, SORCERER_COLORS.hoodDark],
+
+  // ===== 兜帽主体 =====
+  [2, 4, SORCERER_COLORS.hoodDark], [3, 4, SORCERER_COLORS.hood], [4, 4, SORCERER_COLORS.hood], [5, 4, SORCERER_COLORS.hoodLight], [6, 4, SORCERER_COLORS.hood], [7, 4, SORCERER_COLORS.hoodLight], [8, 4, SORCERER_COLORS.hoodLight], [9, 4, SORCERER_COLORS.hood], [10, 4, SORCERER_COLORS.hoodLight], [11, 4, SORCERER_COLORS.hood], [12, 4, SORCERER_COLORS.hood], [13, 4, SORCERER_COLORS.hoodDark],
+  [2, 5, SORCERER_COLORS.hoodDark], [3, 5, SORCERER_COLORS.hood], [4, 5, SORCERER_COLORS.hoodLight], [5, 5, SORCERER_COLORS.hood], [6, 5, SORCERER_COLORS.hoodLight], [7, 5, SORCERER_COLORS.hood], [8, 5, SORCERER_COLORS.hood], [9, 5, SORCERER_COLORS.hoodLight], [10, 5, SORCERER_COLORS.hood], [11, 5, SORCERER_COLORS.hoodLight], [12, 5, SORCERER_COLORS.hood], [13, 5, SORCERER_COLORS.hoodDark],
+
+  // ===== 面巾区域 =====
+  [3, 6, SORCERER_COLORS.hoodDark], [4, 6, SORCERER_COLORS.veil], [5, 6, SORCERER_COLORS.eye], [6, 6, SORCERER_COLORS.eyeGlow], [7, 6, SORCERER_COLORS.eyeGlow], [8, 6, SORCERER_COLORS.eyeGlow], [9, 6, SORCERER_COLORS.eye], [10, 6, SORCERER_COLORS.veil], [11, 6, SORCERER_COLORS.hoodDark],
+  [4, 7, SORCERER_COLORS.veil], [5, 7, SORCERER_COLORS.eyeGlow], [6, 7, SORCERER_COLORS.eye], [7, 7, SORCERER_COLORS.eye], [8, 7, SORCERER_COLORS.eye], [9, 7, SORCERER_COLORS.eyeGlow], [10, 7, SORCERER_COLORS.veil],
+  // 眼睛高光
+  [5, 6, SORCERER_COLORS.highlight], [6, 6, SORCERER_COLORS.highlight], [9, 6, SORCERER_COLORS.highlight], [10, 6, SORCERER_COLORS.highlight],
+  [5, 7, SORCERER_COLORS.highlight], [9, 7, SORCERER_COLORS.highlight],
+
+  // ===== 嘴部面巾 =====
+  [3, 8, SORCERER_COLORS.hoodDark], [4, 8, SORCERER_COLORS.veil], [5, 8, SORCERER_COLORS.veil], [6, 8, SORCERER_COLORS.veil], [7, 8, SORCERER_COLORS.veil], [8, 8, SORCERER_COLORS.veil], [9, 8, SORCERER_COLORS.veil], [10, 8, SORCERER_COLORS.veil], [11, 8, SORCERER_COLORS.hoodDark],
+
+  // ===== 颈部 =====
+  [4, 9, SORCERER_COLORS.robe], [5, 9, SORCERER_COLORS.robeLight], [6, 9, SORCERER_COLORS.rune], [7, 9, SORCERER_COLORS.runeGlow], [8, 9, SORCERER_COLORS.runeGlow], [9, 9, SORCERER_COLORS.rune], [10, 9, SORCERER_COLORS.robeLight], [11, 9, SORCERER_COLORS.robe],
+
+  // ===== 长袍领口 =====
+  [3, 10, SORCERER_COLORS.robeDark], [4, 10, SORCERER_COLORS.robe], [5, 10, SORCERER_COLORS.robeLight], [6, 10, SORCERER_COLORS.robe], [7, 10, SORCERER_COLORS.robe], [8, 10, SORCERER_COLORS.robe], [9, 10, SORCERER_COLORS.robeLight], [10, 10, SORCERER_COLORS.robe], [11, 10, SORCERER_COLORS.robeDark],
+  [3, 11, SORCERER_COLORS.robeDark], [4, 11, SORCERER_COLORS.robe], [5, 11, SORCERER_COLORS.robeLight], [6, 11, SORCERER_COLORS.rune], [7, 11, SORCERER_COLORS.rune], [8, 11, SORCERER_COLORS.rune], [9, 11, SORCERER_COLORS.robeLight], [10, 11, SORCERER_COLORS.robe], [11, 11, SORCERER_COLORS.robeDark],
+
+  // ===== 魔法符文装饰 =====
+  [5, 10, SORCERER_COLORS.magicSpark], [6, 10, SORCERER_COLORS.magicLight], [9, 10, SORCERER_COLORS.magicLight], [10, 10, SORCERER_COLORS.magicSpark],
+  [6, 9, SORCERER_COLORS.magicSpark], [9, 9, SORCERER_COLORS.magicSpark],
+
+  // ===== 兜帽底部边缘 =====
+  [4, 12, SORCERER_COLORS.hoodDark], [5, 12, SORCERER_COLORS.hood], [6, 12, SORCERER_COLORS.hoodLight], [7, 12, SORCERER_COLORS.hood], [8, 12, SORCERER_COLORS.hoodLight], [9, 12, SORCERER_COLORS.hood], [10, 12, SORCERER_COLORS.hoodDark],
+  [5, 13, SORCERER_COLORS.hoodDark], [6, 13, SORCERER_COLORS.hood], [7, 13, SORCERER_COLORS.hoodLight], [8, 13, SORCERER_COLORS.hoodLight], [9, 13, SORCERER_COLORS.hood], [10, 13, SORCERER_COLORS.hoodDark],
+]
 
 // 正面 - 向下面朝
 const SORCERER_FACE_DOWN = [
@@ -296,5 +337,25 @@ export const drawShadowSorcerer = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+
+export const drawShadowSorcererAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < SORCERER_AVATAR.length; i++) {
+    drawPixel(SORCERER_AVATAR[i][0], SORCERER_AVATAR[i][1], SORCERER_AVATAR[i][2])
   }
 }

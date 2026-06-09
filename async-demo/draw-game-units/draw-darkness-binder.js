@@ -65,7 +65,57 @@ const BINDER_COLORS = {
   rune: '#FF00FF',           // 符文 - 紫红
   runeGlow: '#FF66FF',      // 符文发光
   runeDark: '#AA00AA',      // 符文暗
+  highlight: '#FFFFFF',       // 高光
 }
+
+// 黑暗封印师高精度头像（16x16网格，聚焦兜帽头部特写）
+const BINDER_AVATAR = [
+  // ===== 兜帽顶部边缘 =====
+  [4, 0, BINDER_COLORS.hoodDark], [5, 0, BINDER_COLORS.hood], [6, 0, BINDER_COLORS.hood], [7, 0, BINDER_COLORS.hood], [8, 0, BINDER_COLORS.hood], [9, 0, BINDER_COLORS.hood], [10, 0, BINDER_COLORS.hoodDark],
+  [3, 1, BINDER_COLORS.hoodDark], [4, 1, BINDER_COLORS.hood], [5, 1, BINDER_COLORS.hoodLight], [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hood], [8, 1, BINDER_COLORS.hoodLight], [9, 1, BINDER_COLORS.hood], [10, 1, BINDER_COLORS.hoodLight], [11, 1, BINDER_COLORS.hood], [12, 1, BINDER_COLORS.hoodDark],
+
+  // ===== 兜帽第一层 =====
+  [3, 2, BINDER_COLORS.hoodDark], [4, 2, BINDER_COLORS.hood], [5, 2, BINDER_COLORS.hoodGlow], [6, 2, BINDER_COLORS.hood], [7, 2, BINDER_COLORS.hood], [8, 2, BINDER_COLORS.hood], [9, 2, BINDER_COLORS.hoodGlow], [10, 2, BINDER_COLORS.hood], [11, 2, BINDER_COLORS.hoodDark],
+  [3, 3, BINDER_COLORS.hoodDark], [4, 3, BINDER_COLORS.hood], [5, 3, BINDER_COLORS.hoodLight], [6, 3, BINDER_COLORS.hood], [7, 3, BINDER_COLORS.hoodGlow], [8, 3, BINDER_COLORS.hoodGlow], [9, 3, BINDER_COLORS.hood], [10, 3, BINDER_COLORS.hoodLight], [11, 3, BINDER_COLORS.hood], [12, 3, BINDER_COLORS.hoodDark],
+
+  // ===== 脸部区域（阴影遮蔽）=====
+  [2, 4, BINDER_COLORS.hoodDark], [3, 4, BINDER_COLORS.hood], [4, 4, BINDER_COLORS.faceShadow], [5, 4, BINDER_COLORS.faceShadow], [6, 4, BINDER_COLORS.faceShadow], [7, 4, BINDER_COLORS.faceShadow], [8, 4, BINDER_COLORS.faceShadow], [9, 4, BINDER_COLORS.faceShadow], [10, 4, BINDER_COLORS.faceShadow], [11, 4, BINDER_COLORS.hood], [12, 4, BINDER_COLORS.hoodDark],
+  [2, 5, BINDER_COLORS.hoodDark], [3, 5, BINDER_COLORS.hood], [4, 5, BINDER_COLORS.faceShadow], [5, 5, BINDER_COLORS.eye], [6, 5, BINDER_COLORS.eyeGlow], [7, 5, BINDER_COLORS.eyeGlow], [8, 5, BINDER_COLORS.eyeGlow], [9, 5, BINDER_COLORS.eyeGlow], [10, 5, BINDER_COLORS.eye], [11, 5, BINDER_COLORS.faceShadow], [12, 5, BINDER_COLORS.hood], [13, 5, BINDER_COLORS.hoodDark],
+
+  // ===== 眼睛高光 =====
+  [5, 4, BINDER_COLORS.highlight], [6, 4, BINDER_COLORS.highlight], [8, 4, BINDER_COLORS.highlight], [9, 4, BINDER_COLORS.highlight],
+  [5, 5, BINDER_COLORS.highlight], [9, 5, BINDER_COLORS.highlight],
+
+  // ===== 眼睛内核发光 =====
+  [5, 5, BINDER_COLORS.eyeInner], [6, 5, BINDER_COLORS.eyeInner], [8, 5, BINDER_COLORS.eyeInner], [9, 5, BINDER_COLORS.eyeInner],
+
+  // ===== 面部阴影 + 嘴巴区域 =====
+  [3, 6, BINDER_COLORS.hoodDark], [4, 6, BINDER_COLORS.faceShadow], [5, 6, BINDER_COLORS.faceShadow], [6, 6, BINDER_COLORS.faceShadow], [7, 6, BINDER_COLORS.faceShadow], [8, 6, BINDER_COLORS.faceShadow], [9, 6, BINDER_COLORS.faceShadow], [10, 6, BINDER_COLORS.faceShadow], [11, 6, BINDER_COLORS.hoodDark],
+  [4, 7, BINDER_COLORS.faceShadow], [5, 7, BINDER_COLORS.faceShadow], [6, 7, BINDER_COLORS.faceShadow], [7, 7, BINDER_COLORS.faceShadow], [8, 7, BINDER_COLORS.faceShadow], [9, 7, BINDER_COLORS.faceShadow], [10, 7, BINDER_COLORS.faceShadow],
+
+  // ===== 兜帽底部 + 颈部 =====
+  [3, 8, BINDER_COLORS.hoodDark], [4, 8, BINDER_COLORS.hood], [5, 8, BINDER_COLORS.hoodLight], [6, 8, BINDER_COLORS.hood], [7, 8, BINDER_COLORS.hood], [8, 8, BINDER_COLORS.hood], [9, 8, BINDER_COLORS.hoodLight], [10, 8, BINDER_COLORS.hood], [11, 8, BINDER_COLORS.hoodDark],
+  [4, 9, BINDER_COLORS.hood], [5, 9, BINDER_COLORS.hoodLight], [6, 9, BINDER_COLORS.hoodGlow], [7, 9, BINDER_COLORS.hoodGlow], [8, 9, BINDER_COLORS.hoodGlow], [9, 9, BINDER_COLORS.hoodGlow], [10, 9, BINDER_COLORS.hoodLight], [11, 9, BINDER_COLORS.hood],
+
+  // ===== 十字架项链 =====
+  [5, 10, BINDER_COLORS.chain], [6, 10, BINDER_COLORS.chain], [7, 10, BINDER_COLORS.chain], [8, 10, BINDER_COLORS.chain], [9, 10, BINDER_COLORS.chain],
+  [6, 11, BINDER_COLORS.cross], [7, 11, BINDER_COLORS.cross], [8, 11, BINDER_COLORS.cross],
+  [5, 12, BINDER_COLORS.cross], [6, 12, BINDER_COLORS.crossDark], [7, 12, BINDER_COLORS.crossDark], [8, 12, BINDER_COLORS.crossDark], [9, 12, BINDER_COLORS.cross],
+  [6, 13, BINDER_COLORS.crossLight], [7, 13, BINDER_COLORS.crossLight], [8, 13, BINDER_COLORS.crossLight],
+
+  // ===== 长袍领口 =====
+  [3, 10, BINDER_COLORS.robeDark], [4, 10, BINDER_COLORS.robe], [5, 10, BINDER_COLORS.robeLight], [10, 10, BINDER_COLORS.robeLight], [11, 10, BINDER_COLORS.robe], [12, 10, BINDER_COLORS.robeDark],
+  [2, 11, BINDER_COLORS.robeDark], [3, 11, BINDER_COLORS.robe], [4, 11, BINDER_COLORS.robeLight], [11, 11, BINDER_COLORS.robeLight], [12, 11, BINDER_COLORS.robe], [13, 11, BINDER_COLORS.robeDark],
+
+  // ===== 符文装饰 =====
+  [5, 10, BINDER_COLORS.rune], [6, 10, BINDER_COLORS.runeGlow], [9, 10, BINDER_COLORS.runeGlow], [10, 10, BINDER_COLORS.rune],
+  [6, 11, BINDER_COLORS.runeGlow], [9, 11, BINDER_COLORS.runeGlow],
+  [5, 11, BINDER_COLORS.darknessGlow], [10, 11, BINDER_COLORS.darknessGlow],
+
+  // ===== 兜帽底部边缘 =====
+  [4, 14, BINDER_COLORS.hoodDark], [5, 14, BINDER_COLORS.hood], [6, 14, BINDER_COLORS.hoodLight], [7, 14, BINDER_COLORS.hoodLight], [8, 14, BINDER_COLORS.hoodLight], [9, 14, BINDER_COLORS.hood], [10, 14, BINDER_COLORS.hoodDark],
+  [5, 15, BINDER_COLORS.hoodDark], [6, 15, BINDER_COLORS.hood], [7, 15, BINDER_COLORS.hood], [8, 15, BINDER_COLORS.hood], [9, 15, BINDER_COLORS.hoodDark],
+]
 
 // 向下面朝 - 正面
 const BINDER_FACE_DOWN = [
@@ -348,5 +398,24 @@ export const drawDarknessBinder = (canvasRef, currentUnit) => {
     for (const pixel of layer.pixels) {
       drawPixel(pixel[0], pixel[1], pixel[2])
     }
+  }
+}
+
+export const drawDarknessBinderAvatar = (canvasRef, currentUnit, avatarPos) => {
+  if (!canvasRef) return
+  const ctx = canvasRef.getContext('2d')
+  const x = avatarPos.x
+  const y = avatarPos.y
+  const unit = currentUnit.size / 16
+
+  ctx.imageSmoothingEnabled = false
+
+  const drawPixel = (px, py, color) => {
+    ctx.fillStyle = color
+    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
+  }
+
+  for (let i = 0; i < BINDER_AVATAR.length; i++) {
+    drawPixel(BINDER_AVATAR[i][0], BINDER_AVATAR[i][1], BINDER_AVATAR[i][2])
   }
 }
