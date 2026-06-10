@@ -1,13 +1,4 @@
-/**
- * 绘制黑暗封印师怪物 - 堕落修道士风格，手持黑暗魔法书
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 黑暗封印师位置和状态
- * @param {Number} currentUnit.x 黑暗封印师x坐标
- * @param {Number} currentUnit.y 黑暗封印师y坐标
- * @param {Number} currentUnit.size 黑暗封印师大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.003,
@@ -361,61 +352,13 @@ const BINDER_WALK_FRAMES = [
   ],
 ]
 
-export const drawDarknessBinder = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 16
-  const direction = currentUnit.direction || 'down'
-  const frame = currentUnit.frame || 0
+export const drawDarknessBinder = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: BINDER_FACE_DOWN,
+  up: BINDER_FACE_UP,
+  left: BINDER_FACE_LEFT,
+  right: BINDER_FACE_RIGHT,
+  walk: BINDER_WALK_FRAMES,
+  idle: BINDER_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  // 选择基础像素数据
-  let basePixels = BINDER_FACE_DOWN
-  if (direction === 'up') basePixels = BINDER_FACE_UP
-  else if (direction === 'left') basePixels = BINDER_FACE_LEFT
-  else if (direction === 'right') basePixels = BINDER_FACE_RIGHT
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  // 绘制动画层
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? BINDER_WALK_FRAMES : BINDER_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawDarknessBinderAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < BINDER_AVATAR.length; i++) {
-    drawPixel(BINDER_AVATAR[i][0], BINDER_AVATAR[i][1], BINDER_AVATAR[i][2])
-  }
-}
+export const drawDarknessBinderAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, BINDER_AVATAR)

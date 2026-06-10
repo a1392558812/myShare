@@ -1,13 +1,4 @@
-/**
- * 绘制暗黑骑士怪物 - 被黑魔法侵蚀的王国骑士团长
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 暗黑骑士位置和状态
- * @param {Number} currentUnit.x 暗黑骑士x坐标
- * @param {Number} currentUnit.y 暗黑骑士y坐标
- * @param {Number} currentUnit.size 暗黑骑士大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.003,
@@ -320,108 +311,73 @@ const KNIGHT_FACE_RIGHT = [
   [7, 15, KNIGHT_COLORS.spark],
 ]
 
-// 待机动画帧（眼睛发光 + 侵蚀脉动）
+// 待机动画帧（眼睛发光 + 侵蚀脉动 + 脚下能量）
 const KNIGHT_IDLE_FRAMES = [
-  // 帧0 - 暗
+  // 帧0 - 暗（正常状态，无额外像素覆盖）
   [
     { pixels: [
-      [6, 4, KNIGHT_COLORS.eye], [7, 4, KNIGHT_COLORS.eye],
+      // 侵蚀正常色 - 眼睛周围
       [6, 3, KNIGHT_COLORS.corruption], [7, 3, KNIGHT_COLORS.corruption],
+      [6, 6, KNIGHT_COLORS.corruption], [7, 6, KNIGHT_COLORS.corruption],
       [6, 7, KNIGHT_COLORS.corruption], [7, 7, KNIGHT_COLORS.corruption],
-      [6, 9, KNIGHT_COLORS.corruption], [7, 9, KNIGHT_COLORS.corruption],
-      [6, 15, KNIGHT_COLORS.darkEnergy], [7, 15, KNIGHT_COLORS.darkEnergy],
+      [5, 8, KNIGHT_COLORS.corruptionDark], [6, 8, KNIGHT_COLORS.corruption], [7, 8, KNIGHT_COLORS.corruption], [8, 8, KNIGHT_COLORS.corruptionDark],
+      [5, 9, KNIGHT_COLORS.corruptionGlow], [6, 9, KNIGHT_COLORS.corruptionDark], [7, 9, KNIGHT_COLORS.corruptionDark], [8, 9, KNIGHT_COLORS.corruptionGlow],
     ] }
   ],
-  // 帧1 - 亮（侵蚀发光 + 能量爆发）
+  // 帧1 - 亮（侵蚀发光 + 脚下能量）
   [
     { pixels: [
-      [6, 4, KNIGHT_COLORS.eyeGlow], [7, 4, KNIGHT_COLORS.eyeGlow],
+      // 侵蚀发光
       [6, 3, KNIGHT_COLORS.corruptionGlow], [7, 3, KNIGHT_COLORS.corruptionGlow],
+      [6, 6, KNIGHT_COLORS.corruptionGlow], [7, 6, KNIGHT_COLORS.corruptionGlow],
       [6, 7, KNIGHT_COLORS.corruptionGlow], [7, 7, KNIGHT_COLORS.corruptionGlow],
-      [6, 9, KNIGHT_COLORS.corruptionGlow], [7, 9, KNIGHT_COLORS.corruptionGlow],
-      [6, 15, KNIGHT_COLORS.darkEnergyGlow], [7, 15, KNIGHT_COLORS.darkEnergyGlow],
-      [5, 17, KNIGHT_COLORS.spark], [8, 17, KNIGHT_COLORS.spark],
+      [5, 8, KNIGHT_COLORS.corruptionGlow], [6, 8, KNIGHT_COLORS.corruptionGlow], [7, 8, KNIGHT_COLORS.corruptionGlow], [8, 8, KNIGHT_COLORS.corruptionGlow],
+      [5, 9, KNIGHT_COLORS.corruptionGlow], [6, 9, KNIGHT_COLORS.corruption], [7, 9, KNIGHT_COLORS.corruption], [8, 9, KNIGHT_COLORS.corruptionGlow],
+      // 脚下黑魔法能量
+      [6, 16, KNIGHT_COLORS.darkEnergy],
+      [5, 16, KNIGHT_COLORS.spark], [7, 16, KNIGHT_COLORS.spark],
     ] }
   ],
 ]
 
-// 行走动画帧（步伐）
+// 行走动画帧（步伐 + 脚下能量）
 const KNIGHT_WALK_FRAMES = [
-  // 帧0 - 左脚前
+  // 帧0 - 左脚抬起
   [
     { pixels: [
-      [5, 15, KNIGHT_COLORS.bootDark], [6, 15, KNIGHT_COLORS.boot], [7, 15, KNIGHT_COLORS.bootDark], [8, 15, KNIGHT_COLORS.boot],
+      // 左脚靴子颜色变暗（抬脚）
+      [5, 15, KNIGHT_COLORS.bootDark], [6, 15, KNIGHT_COLORS.boot], [7, 15, KNIGHT_COLORS.bootLight], [8, 15, KNIGHT_COLORS.boot],
+      // 脚下能量
+      [6, 16, KNIGHT_COLORS.darkEnergy],
+      [5, 16, KNIGHT_COLORS.spark],
     ] }
   ],
-  // 帧1 - 中间
+  // 帧1 - 脚落地（略微抬起右脚）
   [
     { pixels: [
-      [5, 15, KNIGHT_COLORS.boot], [6, 15, KNIGHT_COLORS.bootDark], [7, 15, KNIGHT_COLORS.bootDark], [8, 15, KNIGHT_COLORS.boot],
+      // 右脚靴子颜色变暗
+      [5, 15, KNIGHT_COLORS.boot], [6, 15, KNIGHT_COLORS.bootLight], [7, 15, KNIGHT_COLORS.boot], [8, 15, KNIGHT_COLORS.bootDark],
+      // 脚下能量
+      [7, 16, KNIGHT_COLORS.darkEnergy],
+      [6, 16, KNIGHT_COLORS.spark], [8, 16, KNIGHT_COLORS.spark],
     ] }
   ],
-  // 帧2 - 右脚前
+  // 帧2 - 中间帧（脚并拢）
   [
     { pixels: [
-      [5, 15, KNIGHT_COLORS.boot], [6, 15, KNIGHT_COLORS.boot], [7, 15, KNIGHT_COLORS.bootDark], [8, 15, KNIGHT_COLORS.bootDark],
+      // 两只脚颜色正常
+      [5, 15, KNIGHT_COLORS.bootLight], [6, 15, KNIGHT_COLORS.boot], [7, 15, KNIGHT_COLORS.boot], [8, 15, KNIGHT_COLORS.bootLight],
     ] }
   ],
 ]
 
-export const drawBlackKnight = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 16
-  const direction = currentUnit.direction || 'down'
-  const frame = currentUnit.frame || 0
+export const drawBlackKnight = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: KNIGHT_FACE_DOWN,
+  up: KNIGHT_FACE_UP,
+  left: KNIGHT_FACE_LEFT,
+  right: KNIGHT_FACE_RIGHT,
+  walk: KNIGHT_WALK_FRAMES,
+  idle: KNIGHT_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  // 选择基础像素数据
-  let basePixels = KNIGHT_FACE_DOWN
-  if (direction === 'up') basePixels = KNIGHT_FACE_UP
-  else if (direction === 'left') basePixels = KNIGHT_FACE_LEFT
-  else if (direction === 'right') basePixels = KNIGHT_FACE_RIGHT
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  // 绘制动画层
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? KNIGHT_WALK_FRAMES : KNIGHT_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawBlackKnightAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < KNIGHT_AVATAR.length; i++) {
-    drawPixel(KNIGHT_AVATAR[i][0], KNIGHT_AVATAR[i][1], KNIGHT_AVATAR[i][2])
-  }
-}
+export const drawBlackKnightAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, KNIGHT_AVATAR)

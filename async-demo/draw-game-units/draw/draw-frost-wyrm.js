@@ -1,13 +1,4 @@
-/**
- * 绘制冰霜巨龙怪物
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 冰霜巨龙位置和状态
- * @param {Number} currentUnit.x 冰霜巨龙x坐标
- * @param {Number} currentUnit.y 冰霜巨龙y坐标
- * @param {Number} currentUnit.size 冰霜巨龙大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.004,
@@ -389,61 +380,13 @@ const WYRM_WALK_FRAMES = [
   ],
 ]
 
-export const drawFrostWyrm = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 16
-  const direction = currentUnit.direction || 'left'
-  const frame = currentUnit.frame || 0
+export const drawFrostWyrm = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: WYRM_FACE_DOWN,
+  up: WYRM_FACE_UP,
+  left: WYRM_FACE_LEFT,
+  right: WYRM_FACE_RIGHT,
+  walk: WYRM_WALK_FRAMES,
+  idle: WYRM_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  // 选择基础像素数据
-  let basePixels = WYRM_FACE_LEFT
-  if (direction === 'up') basePixels = WYRM_FACE_UP
-  else if (direction === 'down') basePixels = WYRM_FACE_DOWN
-  else if (direction === 'right') basePixels = WYRM_FACE_RIGHT
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  // 绘制动画层
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? WYRM_WALK_FRAMES : WYRM_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawFrostWyrmAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < WYRM_AVATAR.length; i++) {
-    drawPixel(WYRM_AVATAR[i][0], WYRM_AVATAR[i][1], WYRM_AVATAR[i][2])
-  }
-}
+export const drawFrostWyrmAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, WYRM_AVATAR)

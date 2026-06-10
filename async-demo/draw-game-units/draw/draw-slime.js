@@ -100,9 +100,7 @@ const SLIME_FRAMES = [
   }
 ];
 
-export const drawSlime = (canvasRef, currentUnit) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
+export const drawSlime = (ctx, currentUnit) => {
   const x = currentUnit.x;
   const y = currentUnit.y;
   const unit = currentUnit.size / 12;
@@ -136,9 +134,7 @@ export const drawSlime = (canvasRef, currentUnit) => {
 };
 
 
-export const drawSlimeAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
+export const drawSlimeAvatar = (ctx, currentUnit, avatarPos) => {
   const x = avatarPos.x;
   const y = avatarPos.y;
   const unit = currentUnit.size / 12;

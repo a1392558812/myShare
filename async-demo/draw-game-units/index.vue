@@ -20,28 +20,30 @@
 </template>
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
-import { drawPlayer, config as playerConfig, drawPlayerAvatar } from './draw-player.js'
-import { drawPet, config as petConfig, drawPetAvatar } from './draw-pet.js'
-import { drawSlime, config as slimeConfig, drawSlimeAvatar } from './draw-slime.js'
-import { drawGoblin, config as goblinConfig, drawGoblinAvatar } from './draw-goblin.js'
-import { drawSkeletonSoldier, config as skeletonSoldierConfig, drawSkeletonSoldierAvatar } from './draw-skeleton-soldier.js'
-import { drawShadowWolf, config as shadowWolfConfig, drawShadowWolfAvatar } from './draw-shadow-wolf.js'
-import { drawChimera, config as chimeraConfig, drawChimeraAvatar } from './draw-chimera.js'
-import { drawShadowSorcerer, config as shadowSorcererConfig, drawShadowSorcererAvatar } from './draw-shadow-sorcerer.js'
-import { drawPhantomKnight, config as phantomKnightConfig, drawPhantomKnightAvatar } from './draw-phantom-knight.js'
-import { drawLichKing, config as lichKingConfig, drawLichKingAvatar } from './draw-lich-king.js'
-import { drawFrostWyrm, config as frostWyrmConfig, drawFrostWyrmAvatar } from './draw-frost-wyrm.js'
-import { drawVenomousLord, config as venomousLordConfig, drawVenomousLordAvatar } from './draw-venomous-lord.js'
-import { drawDarknessBinder, config as darknessBinderConfig, drawDarknessBinderAvatar } from './draw-darkness-binder.js'
-import { drawChaosLord, config as chaosLordConfig, drawChaosLordAvatar } from './draw-chaos-lord.js'
-import { drawMaouOfChaos, config as maouOfChaosConfig, drawMaouOfChaosAvatar } from './draw-maou-of-chaos.js'
-import { drawShadowLord, config as shadowLordConfig, drawShadowLordAvatar } from './draw-shadow-lord.js'
-import { drawBlackKnight, config as blackKnightConfig, drawBlackKnightAvatar } from './draw-black-knight.js'
-import { drawFrostQueen, config as frostQueenConfig, drawFrostQueenAvatar } from './draw-frost-queen.js'
-import { drawPitLord, config as pitLordConfig, drawPitLordAvatar } from './draw-pit-lord.js'
-import { drawChaosDeity, config as chaosDeityConfig, drawChaosDeityAvatar } from './draw-chaos-deity.js'
+
+import { drawPlayer, config as playerConfig, drawPlayerAvatar } from './draw/draw-player.js'
+import { drawPet, config as petConfig, drawPetAvatar } from './draw/draw-pet.js'
+import { drawSlime, config as slimeConfig, drawSlimeAvatar } from './draw/draw-slime.js'
+import { drawGoblin, config as goblinConfig, drawGoblinAvatar } from './draw/draw-goblin.js'
+import { drawSkeletonSoldier, config as skeletonSoldierConfig, drawSkeletonSoldierAvatar } from './draw/draw-skeleton-soldier.js'
+import { drawShadowWolf, config as shadowWolfConfig, drawShadowWolfAvatar } from './draw/draw-shadow-wolf.js'
+import { drawChimera, config as chimeraConfig, drawChimeraAvatar } from './draw/draw-chimera.js'
+import { drawShadowSorcerer, config as shadowSorcererConfig, drawShadowSorcererAvatar } from './draw/draw-shadow-sorcerer.js'
+import { drawPhantomKnight, config as phantomKnightConfig, drawPhantomKnightAvatar } from './draw/draw-phantom-knight.js'
+import { drawLichKing, config as lichKingConfig, drawLichKingAvatar } from './draw/draw-lich-king.js'
+import { drawFrostWyrm, config as frostWyrmConfig, drawFrostWyrmAvatar } from './draw/draw-frost-wyrm.js'
+import { drawVenomousLord, config as venomousLordConfig, drawVenomousLordAvatar } from './draw/draw-venomous-lord.js'
+import { drawDarknessBinder, config as darknessBinderConfig, drawDarknessBinderAvatar } from './draw/draw-darkness-binder.js'
+import { drawChaosLord, config as chaosLordConfig, drawChaosLordAvatar } from './draw/draw-chaos-lord.js'
+import { drawMaouOfChaos, config as maouOfChaosConfig, drawMaouOfChaosAvatar } from './draw/draw-maou-of-chaos.js'
+import { drawShadowLord, config as shadowLordConfig, drawShadowLordAvatar } from './draw/draw-shadow-lord.js'
+import { drawBlackKnight, config as blackKnightConfig, drawBlackKnightAvatar } from './draw/draw-black-knight.js'
+import { drawFrostQueen, config as frostQueenConfig, drawFrostQueenAvatar } from './draw/draw-frost-queen.js'
+import { drawPitLord, config as pitLordConfig, drawPitLordAvatar } from './draw/draw-pit-lord.js'
+import { drawChaosDeity, config as chaosDeityConfig, drawChaosDeityAvatar } from './draw/draw-chaos-deity.js'
 
 import { frameRateManager } from './frame-rate.js'
+import { drawSelectionHighlight, drawBorder, drawHealthBar } from './draw-utils.js'
 
 const canvasRef = ref(null)
 const gameContainerRef = ref(null)
@@ -51,8 +53,13 @@ const selectedUnit = ref('player')
 const units = ref({
   player: {
     name: '玩家',
-    x: 50,
-    y: 50,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    maxMp: 100,
+    mp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -64,8 +71,13 @@ const units = ref({
   },
   slime: {
     name: '史莱姆',
-    x: 100,
-    y: 50,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    maxMp: 100,
+    mp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 3,
     direction: 'down',
     frame: 0,
@@ -77,8 +89,11 @@ const units = ref({
   },
   goblin: {
     name: '哥布林',
-    x: 150,
-    y: 50,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -90,8 +105,11 @@ const units = ref({
   },
   skeletonSoldier: {
     name: '骷髅士兵',
-    x: 200,
-    y: 50,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -103,8 +121,11 @@ const units = ref({
   },
   shadowWolf: {
     name: '暗影狼',
-    x: 50,
-    y: 150,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -116,8 +137,11 @@ const units = ref({
   },
   chimera: {
     name: '石像鬼',
-    x: 100,
-    y: 150,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -129,8 +153,11 @@ const units = ref({
   },
   shadowSorcerer: {
     name: '暗影法师',
-    x: 150,
-    y: 150,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -142,8 +169,11 @@ const units = ref({
   },
   phantomKnight: {
     name: '幽灵骑士',
-    x: 200,
-    y: 150,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -155,8 +185,11 @@ const units = ref({
   },
   lichKing: {
     name: '巫妖王',
-    x: 50,
-    y: 250,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -168,8 +201,11 @@ const units = ref({
   },
   frostWyrm: {
     name: '冰霜巨龙',
-    x: 100,
-    y: 250,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -181,8 +217,11 @@ const units = ref({
   },
   venomousLord: {
     name: '剧毒领主',
-    x: 150,
-    y: 250,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -194,8 +233,11 @@ const units = ref({
   },
   darknessBinder: {
     name: '黑暗封印师',
-    x: 200,
-    y: 250,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -207,8 +249,11 @@ const units = ref({
   },
   chaosLord: {
     name: '混沌领主',
-    x: 50,
-    y: 350,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -220,8 +265,11 @@ const units = ref({
   },
   maouOfChaos: {
     name: '混沌魔王',
-    x: 100,
-    y: 350,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -233,8 +281,11 @@ const units = ref({
   },
   shadowLord: {
     name: '暗影领主',
-    x: 150,
-    y: 350,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -246,8 +297,11 @@ const units = ref({
   },
   blackKnight: {
     name: '暗黑骑士',
-    x: 200,
-    y: 350,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -259,8 +313,11 @@ const units = ref({
   },
   frostQueen: {
     name: '冰雪女王',
-    x: 50,
-    y: 450,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -272,8 +329,11 @@ const units = ref({
   },
   pitLord: {
     name: '深渊魔王',
-    x: 100,
-    y: 450,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -285,8 +345,11 @@ const units = ref({
   },
   chaosDeity: {
     name: '混沌之神',
-    x: 150,
-    y: 450,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -298,8 +361,13 @@ const units = ref({
   },
   pet: {
     name: '宠物',
-    x: 200,
-    y: 450,
+    x: 0,
+    y: 0,
+    maxHp: 100,
+    hp: 50,
+    maxMp: 100,
+    mp: 50,
+    avatarPos: { x: 0, y: 0 },
     speed: 5,
     direction: 'down',
     frame: 0,
@@ -311,44 +379,31 @@ const units = ref({
   },
 })
 
+// 按键状态数组 - 存储当前按下的键
+const keyMapDirection = {
+  w: {
+    direction: 'up',
+    axis: 'y',
+    plusMinus: -1,
+  },
+  s: {
+    direction: 'down',
+    axis: 'y',
+    plusMinus: 1,
 
-// 按键状态
-const keys = ref({
-  w: false,
-  a: false,
-  s: false,
-  d: false
-})
-
-// 绘制单位判定边框
-const drawBorder = (ctx, unit, unitKey) => {
-  const size = unit.size || 40;
-  const padding = 0; // 可配置加大判断范围
-
-  ctx.beginPath();
-  ctx.moveTo(unit.x - padding, unit.y - padding);
-  ctx.lineTo(unit.x + size + padding, unit.y - padding);
-  ctx.lineTo(unit.x + size + padding, unit.y + size + padding);
-  ctx.lineTo(unit.x - padding, unit.y + size + padding);
-  ctx.lineTo(unit.x - padding, unit.y - padding)
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.closePath();
+  },
+  a: {
+    direction: 'left',
+    axis: 'x',
+    plusMinus: -1,
+  },
+  d: {
+    direction: 'right',
+    axis: 'x',
+    plusMinus: 1,
+  },
 }
-
-// 绘制选择高亮
-const drawSelectionHighlight = (ctx, unit, unitKey) => {const size = unit.size || 40;
-  const padding = 4;
-  
-  // 绘制选择指示器（顶部三角形）
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.moveTo(unit.x + size / 2 - 6, unit.y - padding - 8);
-  ctx.lineTo(unit.x + size / 2 + 6, unit.y - padding - 8);
-  ctx.lineTo(unit.x + size / 2, unit.y - padding - 2);
-  ctx.closePath();
-  ctx.fill();
-}
+const keyDownList = ref([])
 
 // 绘制回调
 const drawFrame = (deltaTime) => {
@@ -363,31 +418,19 @@ const drawFrame = (deltaTime) => {
   const unitSize = currentUnit.size || 50;
   
   // 判断是否在移动
-  const isMoving = keys.value.w || keys.value.a || keys.value.s || keys.value.d;
+  const isMoving = keyDownList.value.length > 0;
   
   // 更新所有单位的移动状态和位置
   for (const [key, unit] of Object.entries(units.value)) {
     const isCurrentSelected = key === selectedUnit.value;
     unit.isMoving = isCurrentSelected && isMoving;
     
-    // 只有选中的单位响应移动
     if (isCurrentSelected && isMoving) {
-      if (keys.value.w) {
-        unit.y -= unit.speed;
-        if (unit.direction) unit.direction = 'up';
-      }
-      if (keys.value.s) {
-        unit.y += unit.speed;
-        if (unit.direction) unit.direction = 'down';
-      }
-      if (keys.value.a) {
-        unit.x -= unit.speed;
-        if (unit.direction) unit.direction = 'left';
-      }
-      if (keys.value.d) {
-        unit.x += unit.speed;
-        if (unit.direction) unit.direction = 'right';
-      }
+      const currentKey = keyDownList.value[keyDownList.value.length - 1]
+      const targetKeyMap = keyMapDirection[currentKey];
+
+      unit[targetKeyMap.axis] += unit.speed * targetKeyMap.plusMinus;
+      unit.direction = targetKeyMap.direction;
       
       // 边界检测
       unit.x = Math.max(0, Math.min(canvasRef.value.width - unitSize, unit.x));
@@ -399,12 +442,14 @@ const drawFrame = (deltaTime) => {
   
   // 绘制所有单位
   for (const [key, unit] of Object.entries(units.value)) {
-    unit.drawUnit(canvasRef.value, unit);
-    if (unit.drawAvatar) {
-      const avatarPos = { x: unit.x + 250, y: unit.y, size: unitSize }
-      unit.drawAvatar(canvasRef.value, unit, avatarPos);
-      drawBorder(ctx, avatarPos, key);
-    }
+    unit.drawUnit(ctx, unit);
+    drawHealthBar(ctx, unit, { x: unit.x, y: unit.y });
+
+    const avatarPos = Object.assign({ size: unitSize }, unit.avatarPos);
+    unit.drawAvatar(ctx, unit, avatarPos);
+    drawHealthBar(ctx, unit, avatarPos);
+    drawBorder(ctx, avatarPos, key);
+    
     if (selectedUnit.value === key){
       drawSelectionHighlight(ctx, unit, key);
       drawBorder(ctx, unit, key);
@@ -436,11 +481,12 @@ const handleCanvasClick = (e) => {
 // 键盘按下
 const handleKeyDown = (e) => {
   const key = e.key.toLowerCase();
-  if (keys.value.hasOwnProperty(key)) {
-    keys.value[key] = true;
+  if (Object.keys(keyMapDirection).includes(key) && !keyDownList.value.includes(key)) {
+    keyDownList.value.push(key);
   }
+  
   // Tab 键切换单位
-  if (e.key === 'Tab') {
+  if (key === 'tab') {
     e.preventDefault();
     const unitKeys = Object.keys(units.value);
     const currentIndex = unitKeys.indexOf(selectedUnit.value);
@@ -452,10 +498,39 @@ const handleKeyDown = (e) => {
 // 键盘释放
 const handleKeyUp = (e) => {
   const key = e.key.toLowerCase();
-  if (keys.value.hasOwnProperty(key)) {
-    keys.value[key] = false;
+  const validKeys = ['w', 'a', 's', 'd'];
+  
+  // 如果是有效的方向键，则从列表中移除
+  if (validKeys.includes(key)) {
+    const index = keyDownList.value.indexOf(key);
+    if (index !== -1) {
+      keyDownList.value.splice(index, 1);
+    }
   }
 }
+
+const onInit = () => {
+  let col = 3
+  let row = 0
+  Object.keys(units.value).forEach((key, index) => {
+    const unit = units.value[key]
+    const colIndex = index % col
+    if (colIndex === 0) {
+      row++
+    }
+    const unitX = colIndex * (unit.size + 10) + unit.size
+    const unitY = row * unit.size * 2
+
+    unit.x = unitX
+    unit.y = unitY
+    unit.avatarPos = {
+      x: unitX + (col + 1) * unit.size,
+      y: unitY
+    }
+  })
+}
+
+onInit()
 
 onMounted(() => {
   canvasRef.value.width = gameContainerRef.value.clientWidth;

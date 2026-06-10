@@ -1,13 +1,4 @@
-/**
- * 绘制深渊魔王怪物 - 克苏鲁系非人形态，突出眼睛主题
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 深渊魔王位置和状态
- * @param {Number} currentUnit.x 深渊魔王x坐标
- * @param {Number} currentUnit.y 深渊魔王y坐标
- * @param {Number} currentUnit.size 深渊魔王大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.006,
@@ -276,61 +267,13 @@ const LORD_WALK_FRAMES = [
   ],
 ]
 
-export const drawPitLord = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 16
-  const direction = currentUnit.direction || 'down'
-  const frame = currentUnit.frame || 0
+export const drawPitLord = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: LORD_FACE_DOWN,
+  up: LORD_FACE_UP,
+  left: LORD_FACE_LEFT,
+  right: LORD_FACE_RIGHT,
+  walk: LORD_WALK_FRAMES,
+  idle: LORD_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  // 选择基础像素数据
-  let basePixels = LORD_FACE_DOWN
-  if (direction === 'up') basePixels = LORD_FACE_UP
-  else if (direction === 'left') basePixels = LORD_FACE_LEFT
-  else if (direction === 'right') basePixels = LORD_FACE_RIGHT
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  // 绘制动画层
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? LORD_WALK_FRAMES : LORD_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawPitLordAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < LORD_AVATAR.length; i++) {
-    drawPixel(LORD_AVATAR[i][0], LORD_AVATAR[i][1], LORD_AVATAR[i][2])
-  }
-}
+export const drawPitLordAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, LORD_AVATAR)

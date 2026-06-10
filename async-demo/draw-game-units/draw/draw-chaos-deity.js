@@ -1,14 +1,4 @@
-/**
- * 绘制混沌之神怪物 - 混沌力量夺舍的战神
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 混沌之神位置和状态
- * @param {Number} currentUnit.x 混沌之神x坐标
- * @param {Number} currentUnit.y 混沌之神y坐标
- * @param {Number} currentUnit.size 混沌之神大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
-
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 export const config = {
   IDLE_SPEED: 0.004,
   WALK_SPEED: 0.1,
@@ -404,58 +394,14 @@ const DEITY_WALK_FRAMES = [
   ],
 ]
 
-export const drawChaosDeity = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 18
-  const direction = currentUnit.direction || 'down'
-  const frame = currentUnit.frame || 0
+export const drawChaosDeity = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: DEITY_FACE_DOWN,
+  up: DEITY_FACE_UP,
+  left: DEITY_FACE_LEFT,
+  right: DEITY_FACE_RIGHT,
+  walk: DEITY_WALK_FRAMES,
+  idle: DEITY_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
 
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  let basePixels = DEITY_FACE_DOWN
-  if (direction === 'up') basePixels = DEITY_FACE_UP
-  else if (direction === 'left') basePixels = DEITY_FACE_LEFT
-  else if (direction === 'right') basePixels = DEITY_FACE_RIGHT
-
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? DEITY_WALK_FRAMES : DEITY_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawChaosDeityAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < DEITY_AVATAR.length; i++) {
-    drawPixel(DEITY_AVATAR[i][0], DEITY_AVATAR[i][1], DEITY_AVATAR[i][2])
-  }
-}
+export const drawChaosDeityAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, DEITY_AVATAR)

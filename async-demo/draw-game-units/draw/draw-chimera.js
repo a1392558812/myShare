@@ -1,14 +1,4 @@
-/**
- * 绘制奇美拉怪物（狮子头 + 山羊身 + 蛇尾）
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 奇美拉位置和状态
- * @param {Number} currentUnit.x 奇美拉x坐标
- * @param {Number} currentUnit.y 奇美拉y坐标
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- * @param {Number} currentUnit.isMoving 是否在移动
- * @param {Number} currentUnit.size 怪物大小(px)
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.005,
@@ -347,61 +337,13 @@ const CHIMERA_WALK_FRAMES = [
   ]
 ]
 
-export const drawChimera = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 16
-  const direction = currentUnit.direction || 'left'
-  const frame = currentUnit.frame || 0
+export const drawChimera = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: CHIMERA_FACE_DOWN,
+  up: CHIMERA_FACE_UP,
+  left: CHIMERA_FACE_LEFT,
+  right: CHIMERA_FACE_RIGHT,
+  walk: CHIMERA_WALK_FRAMES,
+  idle: CHIMERA_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  // 选择基础像素数据
-  let basePixels = CHIMERA_FACE_LEFT
-  if (direction === 'up') basePixels = CHIMERA_FACE_UP
-  else if (direction === 'down') basePixels = CHIMERA_FACE_DOWN
-  else if (direction === 'right') basePixels = CHIMERA_FACE_RIGHT
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  // 绘制动画层
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? CHIMERA_WALK_FRAMES : CHIMERA_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawChimeraAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < CHIMERA_AVATAR.length; i++) {
-    drawPixel(CHIMERA_AVATAR[i][0], CHIMERA_AVATAR[i][1], CHIMERA_AVATAR[i][2])
-  }
-}
+export const drawChimeraAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, CHIMERA_AVATAR)

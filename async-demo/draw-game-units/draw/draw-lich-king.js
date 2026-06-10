@@ -1,13 +1,4 @@
-/**
- * 绘制巫妖王怪物
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 巫妖王位置和状态
- * @param {Number} currentUnit.x 巫妖王x坐标
- * @param {Number} currentUnit.y 巫妖王y坐标
- * @param {Number} currentUnit.size 巫妖王大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.003,
@@ -352,61 +343,13 @@ const LICH_WALK_FRAMES = [
   ],
 ]
 
-export const drawLichKing = (canvasRef, currentUnit) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = currentUnit.x
-  const y = currentUnit.y
-  const unit = currentUnit.size / 16
-  const direction = currentUnit.direction || 'down'
-  const frame = currentUnit.frame || 0
+export const drawLichKing = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: LICH_FACE_DOWN,
+  up: LICH_FACE_UP,
+  left: LICH_FACE_LEFT,
+  right: LICH_FACE_RIGHT,
+  walk: LICH_WALK_FRAMES,
+  idle: LICH_IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  // 选择基础像素数据
-  let basePixels = LICH_FACE_DOWN
-  if (direction === 'up') basePixels = LICH_FACE_UP
-  else if (direction === 'left') basePixels = LICH_FACE_LEFT
-  else if (direction === 'right') basePixels = LICH_FACE_RIGHT
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2])
-  }
-
-  // 绘制动画层
-  const isMoving = currentUnit.isMoving || false
-  const frames = isMoving ? LICH_WALK_FRAMES : LICH_IDLE_FRAMES
-  const frameIndex = Math.floor(frame) % frames.length
-  const currentFrame = frames[frameIndex]
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2])
-    }
-  }
-}
-
-export const drawLichKingAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < LICH_AVATAR.length; i++) {
-    drawPixel(LICH_AVATAR[i][0], LICH_AVATAR[i][1], LICH_AVATAR[i][2])
-  }
-}
+export const drawLichKingAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, LICH_AVATAR)

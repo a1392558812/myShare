@@ -1,12 +1,4 @@
-/**
- * 绘制玩家 - 精细灵动版勇者
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit player 玩家位置
- * @param {Number} currentUnit.x 玩家x坐标
- * @param {Number} currentUnit.y 玩家y坐标
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.008,
@@ -561,58 +553,13 @@ const WALK_FRAMES = [
   ],
 ];
 
-export const drawPlayer = (canvasRef, currentUnit) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
-  const x = currentUnit.x;
-  const y = currentUnit.y;
-  const unit = currentUnit.size / 16;
-  const direction = currentUnit.direction || 'down';
-  const frame = currentUnit.frame || 0;
+export const drawPlayer = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: FACE_DOWN,
+  up: FACE_UP,
+  left: FACE_LEFT,
+  right: FACE_RIGHT,
+  walk: WALK_FRAMES,
+  idle: IDLE_FRAMES,
+})
 
-  ctx.imageSmoothingEnabled = false;
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
-  };
-
-  let basePixels = FACE_DOWN;
-  if (direction === 'up') basePixels = FACE_UP;
-  else if (direction === 'left') basePixels = FACE_LEFT;
-  else if (direction === 'right') basePixels = FACE_RIGHT;
-
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2]);
-  }
-
-  const isMoving = currentUnit.isMoving || false;
-  const frames = isMoving ? WALK_FRAMES : IDLE_FRAMES;
-  const frameIndex = Math.floor(frame) % frames.length;
-  const currentFrame = frames[frameIndex];
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2]);
-    }
-  }
-}
-
-export const drawPlayerAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return
-  const ctx = canvasRef.getContext('2d')
-  const x = avatarPos.x
-  const y = avatarPos.y
-  const unit = currentUnit.size / 16
-
-  ctx.imageSmoothingEnabled = false
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit)
-  }
-
-  for (let i = 0; i < PLAYER_AVATAR.length; i++) {
-    drawPixel(PLAYER_AVATAR[i][0], PLAYER_AVATAR[i][1], PLAYER_AVATAR[i][2])
-  }
-}
+export const drawPlayerAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, PLAYER_AVATAR)

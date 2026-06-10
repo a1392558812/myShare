@@ -1,13 +1,4 @@
-/**
- * 绘制哥布林怪物
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 哥布林位置和状态
- * @param {Number} currentUnit.x 哥布林x坐标
- * @param {Number} currentUnit.y 哥布林y坐标
- * @param {Number} currentUnit.size 哥布林大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.004,
@@ -143,42 +134,14 @@ const GOBLIN_WALK_FRAMES = [
   ]
 ];
 
-export const drawGoblin = (canvasRef, currentUnit) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
-  const x = currentUnit.x;
-  const y = currentUnit.y;
-  const unit = currentUnit.size / 16;
-  const direction = currentUnit.direction || 'down';
-  const frame = currentUnit.frame || 0;
-
-  ctx.imageSmoothingEnabled = false;
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
-  };
-
-  let basePixels = GOBLIN_FACE_DOWN;
-  if (direction === 'up') basePixels = GOBLIN_FACE_UP;
-  else if (direction === 'left') basePixels = GOBLIN_FACE_LEFT;
-  else if (direction === 'right') basePixels = GOBLIN_FACE_RIGHT;
-
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2]);
-  }
-
-  const isMoving = currentUnit.isMoving || false;
-  const frames = isMoving ? GOBLIN_WALK_FRAMES : GOBLIN_IDLE_FRAMES;
-  const frameIndex = Math.floor(frame) % frames.length;
-  const currentFrame = frames[frameIndex];
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2]);
-    }
-  }
-};
+export const drawGoblin = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: GOBLIN_FACE_DOWN,
+  up: GOBLIN_FACE_UP,
+  left: GOBLIN_FACE_LEFT,
+  right: GOBLIN_FACE_RIGHT,
+  walk: GOBLIN_WALK_FRAMES,
+  idle: GOBLIN_IDLE_FRAMES,
+})
 
 
 const GOBLIN_AVATAR = [
@@ -225,21 +188,4 @@ const GOBLIN_AVATAR = [
   [4, 15, GOBLIN_COLORS.cloth], [5, 15, GOBLIN_COLORS.clothDark], [6, 15, GOBLIN_COLORS.cloth], [7, 15, GOBLIN_COLORS.cloth], [8, 15, GOBLIN_COLORS.cloth], [9, 15, GOBLIN_COLORS.cloth], [10, 15, GOBLIN_COLORS.clothDark], [11, 15, GOBLIN_COLORS.cloth],
 ];
 
-export const drawGoblinAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
-  const x = avatarPos.x;
-  const y = avatarPos.y;
-  const unit = currentUnit.size / 16;
-
-  ctx.imageSmoothingEnabled = false;
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
-  };
-
-  for (let i = 0; i < GOBLIN_AVATAR.length; i++) {
-    drawPixel(GOBLIN_AVATAR[i][0], GOBLIN_AVATAR[i][1], GOBLIN_AVATAR[i][2]);
-  }
-};
+export const drawGoblinAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, GOBLIN_AVATAR)

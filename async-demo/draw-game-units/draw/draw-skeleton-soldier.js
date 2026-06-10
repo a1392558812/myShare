@@ -1,14 +1,4 @@
-/**
- * 绘制骷髅士兵怪物
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 骷髅士兵位置和状态
- * @param {Number} currentUnit.x 骷髅士兵x坐标
- * @param {Number} currentUnit.y 骷髅士兵y坐标
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- * @param {Number} currentUnit.isMoving 是否在移动
- * @param {Number} currentUnit.size 怪物大小(px)
- */
+import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
   IDLE_SPEED: 0.004, // 待机动画速度
@@ -228,62 +218,14 @@ const SKELETON_WALK_FRAMES = [
   ]
 ];
 
-export const drawSkeletonSoldier = (canvasRef, currentUnit) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
-  const x = currentUnit.x;
-  const y = currentUnit.y;
-  const unit = currentUnit.size / 16;
-  const direction = currentUnit.direction || 'down';
-  const frame = currentUnit.frame || 0;
-
-  ctx.imageSmoothingEnabled = false;
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
-  };
-
-  // 选择基础像素数据
-  let basePixels = SKELETON_FACE_DOWN;
-  if (direction === 'up') basePixels = SKELETON_FACE_UP;
-  else if (direction === 'left') basePixels = SKELETON_FACE_LEFT;
-  else if (direction === 'right') basePixels = SKELETON_FACE_RIGHT;
-
-  // 绘制基础角色
-  for (let i = 0; i < basePixels.length; i++) {
-    drawPixel(basePixels[i][0], basePixels[i][1], basePixels[i][2]);
-  }
-
-  // 绘制腿部动画
-  const isMoving = currentUnit.isMoving || false;
-  const frames = isMoving ? SKELETON_WALK_FRAMES : SKELETON_IDLE_FRAMES;
-  const frameIndex = Math.floor(frame) % frames.length;
-  const currentFrame = frames[frameIndex];
-
-  for (const layer of currentFrame) {
-    for (const pixel of layer.pixels) {
-      drawPixel(pixel[0], pixel[1], pixel[2]);
-    }
-  }
-};
+export const drawSkeletonSoldier = (ctx, currentUnit) => drawUnit(ctx, currentUnit, {
+  down: SKELETON_FACE_DOWN,
+  up: SKELETON_FACE_UP,
+  left: SKELETON_FACE_LEFT,
+  right: SKELETON_FACE_RIGHT,
+  idle: SKELETON_IDLE_FRAMES,
+  walk: SKELETON_WALK_FRAMES,
+})
 
 
-export const drawSkeletonSoldierAvatar = (canvasRef, currentUnit, avatarPos) => {
-  if (!canvasRef) return;
-  const ctx = canvasRef.getContext('2d');
-  const x = avatarPos.x;
-  const y = avatarPos.y;
-  const unit = currentUnit.size / 16;
-
-  ctx.imageSmoothingEnabled = false;
-
-  const drawPixel = (px, py, color) => {
-    ctx.fillStyle = color;
-    ctx.fillRect(x + px * unit, y + py * unit, unit, unit);
-  };
-
-  for (let i = 0; i < SKELETON_AVATAR.length; i++) {
-    drawPixel(SKELETON_AVATAR[i][0], SKELETON_AVATAR[i][1], SKELETON_AVATAR[i][2]);
-  }
-};
+export const drawSkeletonSoldierAvatar = (ctx, currentUnit, avatarPos) => drawAvatar(ctx, currentUnit, avatarPos, SKELETON_AVATAR)
