@@ -108,246 +108,246 @@ const BINDER_AVATAR = [
   [5, 15, BINDER_COLORS.hoodDark], [6, 15, BINDER_COLORS.hood], [7, 15, BINDER_COLORS.hood], [8, 15, BINDER_COLORS.hood], [9, 15, BINDER_COLORS.hoodDark],
 ]
 
-// 向下面朝 - 正面
+// 向下面朝 - 正面（已居中，x偏移+2）
 const BINDER_FACE_DOWN = [
   // ===== 兜帽顶部 =====
-  [5, 0, BINDER_COLORS.hoodDark], [6, 0, BINDER_COLORS.hood], [7, 0, BINDER_COLORS.hood], [8, 0, BINDER_COLORS.hoodDark],
-  [4, 1, BINDER_COLORS.hood], [5, 1, BINDER_COLORS.hoodLight], [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hood], [8, 1, BINDER_COLORS.hoodLight], [9, 1, BINDER_COLORS.hood],
-  [3, 2, BINDER_COLORS.hoodDark], [4, 2, BINDER_COLORS.hood], [5, 2, BINDER_COLORS.hoodGlow], [6, 2, BINDER_COLORS.faceShadow], [7, 2, BINDER_COLORS.faceShadow], [8, 2, BINDER_COLORS.hoodGlow], [9, 2, BINDER_COLORS.hood], [10, 2, BINDER_COLORS.hoodDark],
+  [7, 0, BINDER_COLORS.hoodDark], [8, 0, BINDER_COLORS.hood], [9, 0, BINDER_COLORS.hood], [10, 0, BINDER_COLORS.hoodDark],
+  [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hoodLight], [8, 1, BINDER_COLORS.hood], [9, 1, BINDER_COLORS.hood], [10, 1, BINDER_COLORS.hoodLight], [11, 1, BINDER_COLORS.hood],
+  [5, 2, BINDER_COLORS.hoodDark], [6, 2, BINDER_COLORS.hood], [7, 2, BINDER_COLORS.hoodGlow], [8, 2, BINDER_COLORS.faceShadow], [9, 2, BINDER_COLORS.faceShadow], [10, 2, BINDER_COLORS.hoodGlow], [11, 2, BINDER_COLORS.hood], [12, 2, BINDER_COLORS.hoodDark],
 
   // ===== 脸部区域（阴影 + 眼睛）=====
-  [4, 3, BINDER_COLORS.hood], [5, 3, BINDER_COLORS.faceShadow], [6, 3, BINDER_COLORS.eye], [7, 3, BINDER_COLORS.eye], [8, 3, BINDER_COLORS.faceShadow], [9, 3, BINDER_COLORS.hood],
-  [4, 4, BINDER_COLORS.hoodDark], [5, 4, BINDER_COLORS.faceShadow], [6, 4, BINDER_COLORS.eyeGlow], [7, 4, BINDER_COLORS.eyeGlow], [8, 4, BINDER_COLORS.faceShadow], [9, 4, BINDER_COLORS.hoodDark],
-  [5, 5, BINDER_COLORS.eyeInner], [6, 5, BINDER_COLORS.faceShadow], [7, 5, BINDER_COLORS.faceShadow], [8, 5, BINDER_COLORS.eyeInner],
-  [4, 6, BINDER_COLORS.hood], [5, 6, BINDER_COLORS.faceShadow], [6, 6, BINDER_COLORS.faceShadow], [7, 6, BINDER_COLORS.faceShadow], [8, 6, BINDER_COLORS.faceShadow], [9, 6, BINDER_COLORS.hood],
+  [6, 3, BINDER_COLORS.hood], [7, 3, BINDER_COLORS.faceShadow], [8, 3, BINDER_COLORS.eye], [9, 3, BINDER_COLORS.eye], [10, 3, BINDER_COLORS.faceShadow], [11, 3, BINDER_COLORS.hood],
+  [6, 4, BINDER_COLORS.hoodDark], [7, 4, BINDER_COLORS.faceShadow], [8, 4, BINDER_COLORS.eyeGlow], [9, 4, BINDER_COLORS.eyeGlow], [10, 4, BINDER_COLORS.faceShadow], [11, 4, BINDER_COLORS.hoodDark],
+  [7, 5, BINDER_COLORS.eyeInner], [8, 5, BINDER_COLORS.faceShadow], [9, 5, BINDER_COLORS.faceShadow], [10, 5, BINDER_COLORS.eyeInner],
+  [6, 6, BINDER_COLORS.hood], [7, 6, BINDER_COLORS.faceShadow], [8, 6, BINDER_COLORS.faceShadow], [9, 6, BINDER_COLORS.faceShadow], [10, 6, BINDER_COLORS.faceShadow], [11, 6, BINDER_COLORS.hood],
 
   // ===== 十字架项链 =====
-  [6, 7, BINDER_COLORS.chain], [7, 7, BINDER_COLORS.chain],
-  [6, 8, BINDER_COLORS.cross], [7, 8, BINDER_COLORS.cross],
-  [5, 9, BINDER_COLORS.cross], [6, 9, BINDER_COLORS.crossDark], [7, 9, BINDER_COLORS.crossDark], [8, 9, BINDER_COLORS.cross],
+  [8, 7, BINDER_COLORS.chain], [9, 7, BINDER_COLORS.chain],
+  [8, 8, BINDER_COLORS.cross], [9, 8, BINDER_COLORS.cross],
+  [7, 9, BINDER_COLORS.cross], [8, 9, BINDER_COLORS.crossDark], [9, 9, BINDER_COLORS.crossDark], [10, 9, BINDER_COLORS.cross],
 
   // ===== 长袍上身 =====
-  [3, 6, BINDER_COLORS.robeDark], [4, 6, BINDER_COLORS.robe], [5, 6, BINDER_COLORS.robeLight], [9, 6, BINDER_COLORS.robeLight], [10, 6, BINDER_COLORS.robe], [11, 6, BINDER_COLORS.robeDark],
-  [2, 7, BINDER_COLORS.robeDark], [3, 7, BINDER_COLORS.robe], [4, 7, BINDER_COLORS.robeLight], [5, 7, BINDER_COLORS.robe], [6, 7, BINDER_COLORS.robePurple], [7, 7, BINDER_COLORS.robePurple], [8, 7, BINDER_COLORS.robe], [9, 7, BINDER_COLORS.robeLight], [10, 7, BINDER_COLORS.robe], [11, 7, BINDER_COLORS.robeDark], [12, 7, BINDER_COLORS.robeDark],
-  [2, 8, BINDER_COLORS.robeDark], [3, 8, BINDER_COLORS.robe], [4, 8, BINDER_COLORS.robeLight], [5, 8, BINDER_COLORS.robe], [6, 8, BINDER_COLORS.rune], [7, 8, BINDER_COLORS.rune], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robeLight], [10, 8, BINDER_COLORS.robe], [11, 8, BINDER_COLORS.robeDark], [12, 8, BINDER_COLORS.robeDark],
-  [2, 9, BINDER_COLORS.robeDark], [3, 9, BINDER_COLORS.robe], [4, 9, BINDER_COLORS.robe], [5, 9, BINDER_COLORS.robeLight], [6, 9, BINDER_COLORS.robe], [7, 9, BINDER_COLORS.robe], [8, 9, BINDER_COLORS.robeLight], [9, 9, BINDER_COLORS.robe], [10, 9, BINDER_COLORS.robe], [11, 9, BINDER_COLORS.robeDark], [12, 9, BINDER_COLORS.robeDark],
+  [5, 6, BINDER_COLORS.robeDark], [6, 6, BINDER_COLORS.robe], [7, 6, BINDER_COLORS.robeLight], [11, 6, BINDER_COLORS.robeLight], [12, 6, BINDER_COLORS.robe], [13, 6, BINDER_COLORS.robeDark],
+  [4, 7, BINDER_COLORS.robeDark], [5, 7, BINDER_COLORS.robe], [6, 7, BINDER_COLORS.robeLight], [7, 7, BINDER_COLORS.robe], [8, 7, BINDER_COLORS.robePurple], [9, 7, BINDER_COLORS.robePurple], [10, 7, BINDER_COLORS.robe], [11, 7, BINDER_COLORS.robeLight], [12, 7, BINDER_COLORS.robe], [13, 7, BINDER_COLORS.robeDark], [14, 7, BINDER_COLORS.robeDark],
+  [4, 8, BINDER_COLORS.robeDark], [5, 8, BINDER_COLORS.robe], [6, 8, BINDER_COLORS.robeLight], [7, 8, BINDER_COLORS.robe], [8, 8, BINDER_COLORS.rune], [9, 8, BINDER_COLORS.rune], [10, 8, BINDER_COLORS.robe], [11, 8, BINDER_COLORS.robeLight], [12, 8, BINDER_COLORS.robe], [13, 8, BINDER_COLORS.robeDark], [14, 8, BINDER_COLORS.robeDark],
+  [4, 9, BINDER_COLORS.robeDark], [5, 9, BINDER_COLORS.robe], [6, 9, BINDER_COLORS.robe], [7, 9, BINDER_COLORS.robeLight], [8, 9, BINDER_COLORS.robe], [9, 9, BINDER_COLORS.robe], [10, 9, BINDER_COLORS.robeLight], [11, 9, BINDER_COLORS.robe], [12, 9, BINDER_COLORS.robe], [13, 9, BINDER_COLORS.robeDark], [14, 9, BINDER_COLORS.robeDark],
 
   // ===== 长袍下摆 =====
-  [3, 10, BINDER_COLORS.robe], [4, 10, BINDER_COLORS.robeDark], [5, 10, BINDER_COLORS.robe], [6, 10, BINDER_COLORS.runeGlow], [7, 10, BINDER_COLORS.runeGlow], [8, 10, BINDER_COLORS.robe], [9, 10, BINDER_COLORS.robeDark], [10, 10, BINDER_COLORS.robe],
-  [3, 11, BINDER_COLORS.robeDark], [4, 11, BINDER_COLORS.robe], [5, 11, BINDER_COLORS.robeLight], [6, 11, BINDER_COLORS.robe], [7, 11, BINDER_COLORS.robe], [8, 11, BINDER_COLORS.robeLight], [9, 11, BINDER_COLORS.robe], [10, 11, BINDER_COLORS.robeDark],
-  [4, 12, BINDER_COLORS.robe], [5, 12, BINDER_COLORS.robeDark], [6, 12, BINDER_COLORS.robe], [7, 12, BINDER_COLORS.robe], [8, 12, BINDER_COLORS.robe], [9, 12, BINDER_COLORS.robeDark], [10, 12, BINDER_COLORS.robe],
+  [5, 10, BINDER_COLORS.robe], [6, 10, BINDER_COLORS.robeDark], [7, 10, BINDER_COLORS.robe], [8, 10, BINDER_COLORS.runeGlow], [9, 10, BINDER_COLORS.runeGlow], [10, 10, BINDER_COLORS.robe], [11, 10, BINDER_COLORS.robeDark], [12, 10, BINDER_COLORS.robe],
+  [5, 11, BINDER_COLORS.robeDark], [6, 11, BINDER_COLORS.robe], [7, 11, BINDER_COLORS.robeLight], [8, 11, BINDER_COLORS.robe], [9, 11, BINDER_COLORS.robe], [10, 11, BINDER_COLORS.robeLight], [11, 11, BINDER_COLORS.robe], [12, 11, BINDER_COLORS.robeDark],
+  [6, 12, BINDER_COLORS.robe], [7, 12, BINDER_COLORS.robeDark], [8, 12, BINDER_COLORS.robe], [9, 12, BINDER_COLORS.robe], [10, 12, BINDER_COLORS.robe], [11, 12, BINDER_COLORS.robeDark], [12, 12, BINDER_COLORS.robe],
 
   // ===== 靴子 =====
-  [5, 13, BINDER_COLORS.boot], [6, 13, BINDER_COLORS.bootLight], [7, 13, BINDER_COLORS.bootLight], [8, 13, BINDER_COLORS.boot],
-  [5, 14, BINDER_COLORS.bootDark], [6, 14, BINDER_COLORS.boot], [7, 14, BINDER_COLORS.boot], [8, 14, BINDER_COLORS.bootDark],
-  [5, 15, BINDER_COLORS.boot], [6, 15, BINDER_COLORS.bootLight], [7, 15, BINDER_COLORS.bootLight], [8, 15, BINDER_COLORS.boot],
+  [7, 13, BINDER_COLORS.boot], [8, 13, BINDER_COLORS.bootLight], [9, 13, BINDER_COLORS.bootLight], [10, 13, BINDER_COLORS.boot],
+  [7, 14, BINDER_COLORS.bootDark], [8, 14, BINDER_COLORS.boot], [9, 14, BINDER_COLORS.boot], [10, 14, BINDER_COLORS.bootDark],
+  [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.bootLight], [9, 15, BINDER_COLORS.bootLight], [10, 15, BINDER_COLORS.boot],
 
   // ===== 左手（持魔法书）=====
-  [0, 7, BINDER_COLORS.hand], [1, 7, BINDER_COLORS.handDark],
-  [0, 8, BINDER_COLORS.hand], [1, 8, BINDER_COLORS.hand],
-  [0, 9, BINDER_COLORS.handDark], [1, 9, BINDER_COLORS.hand],
+  [2, 7, BINDER_COLORS.hand], [3, 7, BINDER_COLORS.handDark],
+  [2, 8, BINDER_COLORS.hand], [3, 8, BINDER_COLORS.hand],
+  [2, 9, BINDER_COLORS.handDark], [3, 9, BINDER_COLORS.hand],
 
   // ===== 黑暗魔法书（打开状态）=====
-  [0, 10, BINDER_COLORS.book], [1, 10, BINDER_COLORS.bookGold], [2, 10, BINDER_COLORS.bookDark],
-  [0, 11, BINDER_COLORS.page], [1, 11, BINDER_COLORS.pageRune], [2, 11, BINDER_COLORS.page],
-  [0, 12, BINDER_COLORS.book], [1, 12, BINDER_COLORS.bookRune], [2, 12, BINDER_COLORS.book],
-  [0, 13, BINDER_COLORS.bookDark], [1, 13, BINDER_COLORS.bookGold], [2, 13, BINDER_COLORS.bookDark],
+  [2, 10, BINDER_COLORS.book], [3, 10, BINDER_COLORS.bookGold], [4, 10, BINDER_COLORS.bookDark],
+  [2, 11, BINDER_COLORS.page], [3, 11, BINDER_COLORS.pageRune], [4, 11, BINDER_COLORS.page],
+  [2, 12, BINDER_COLORS.book], [3, 12, BINDER_COLORS.bookRune], [4, 12, BINDER_COLORS.book],
+  [2, 13, BINDER_COLORS.bookDark], [3, 13, BINDER_COLORS.bookGold], [4, 13, BINDER_COLORS.bookDark],
 
   // ===== 右手（伸出施法）=====
-  [12, 7, BINDER_COLORS.hand], [13, 7, BINDER_COLORS.handDark],
-  [12, 8, BINDER_COLORS.hand], [13, 8, BINDER_COLORS.hand],
-  [12, 9, BINDER_COLORS.handDark], [13, 9, BINDER_COLORS.hand],
-  [13, 10, BINDER_COLORS.runeGlow],
-  [13, 11, BINDER_COLORS.rune],
+  [14, 7, BINDER_COLORS.hand], [15, 7, BINDER_COLORS.handDark],
+  [14, 8, BINDER_COLORS.hand], [15, 8, BINDER_COLORS.hand],
+  [14, 9, BINDER_COLORS.handDark], [15, 9, BINDER_COLORS.hand],
+  [15, 10, BINDER_COLORS.runeGlow],
+  [15, 11, BINDER_COLORS.rune],
 
   // ===== 黑暗灵气 =====
-  [4, 15, BINDER_COLORS.darkMist], [9, 15, BINDER_COLORS.darkMist],
-  [5, 15, BINDER_COLORS.darknessGlow], [8, 15, BINDER_COLORS.darknessGlow],
+  [6, 15, BINDER_COLORS.darkMist], [11, 15, BINDER_COLORS.darkMist],
+  [7, 15, BINDER_COLORS.darknessGlow], [10, 15, BINDER_COLORS.darknessGlow],
 ]
 
-// 向上面朝 - 背面
+// 向上面朝 - 背面（已居中，x偏移+2）
 const BINDER_FACE_UP = [
   // ===== 兜帽顶部 =====
-  [5, 0, BINDER_COLORS.hoodDark], [6, 0, BINDER_COLORS.hood], [7, 0, BINDER_COLORS.hood], [8, 0, BINDER_COLORS.hoodDark],
-  [4, 1, BINDER_COLORS.hood], [5, 1, BINDER_COLORS.hoodLight], [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hood], [8, 1, BINDER_COLORS.hoodLight], [9, 1, BINDER_COLORS.hood],
-  [3, 2, BINDER_COLORS.hoodDark], [4, 2, BINDER_COLORS.hood], [5, 2, BINDER_COLORS.hood], [6, 2, BINDER_COLORS.hoodGlow], [7, 2, BINDER_COLORS.hoodGlow], [8, 2, BINDER_COLORS.hood], [9, 2, BINDER_COLORS.hood], [10, 2, BINDER_COLORS.hoodDark],
+  [7, 0, BINDER_COLORS.hoodDark], [8, 0, BINDER_COLORS.hood], [9, 0, BINDER_COLORS.hood], [10, 0, BINDER_COLORS.hoodDark],
+  [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hoodLight], [8, 1, BINDER_COLORS.hood], [9, 1, BINDER_COLORS.hood], [10, 1, BINDER_COLORS.hoodLight], [11, 1, BINDER_COLORS.hood],
+  [5, 2, BINDER_COLORS.hoodDark], [6, 2, BINDER_COLORS.hood], [7, 2, BINDER_COLORS.hood], [8, 2, BINDER_COLORS.hoodGlow], [9, 2, BINDER_COLORS.hoodGlow], [10, 2, BINDER_COLORS.hood], [11, 2, BINDER_COLORS.hood], [12, 2, BINDER_COLORS.hoodDark],
 
   // ===== 兜帽背面 =====
-  [4, 3, BINDER_COLORS.hood], [5, 3, BINDER_COLORS.hoodLight], [6, 3, BINDER_COLORS.hood], [7, 3, BINDER_COLORS.hood], [8, 3, BINDER_COLORS.hoodLight], [9, 3, BINDER_COLORS.hood],
-  [4, 4, BINDER_COLORS.hoodDark], [5, 4, BINDER_COLORS.hood], [6, 4, BINDER_COLORS.hoodLight], [7, 4, BINDER_COLORS.hoodLight], [8, 4, BINDER_COLORS.hood], [9, 4, BINDER_COLORS.hoodDark],
-  [5, 5, BINDER_COLORS.hood], [6, 5, BINDER_COLORS.hoodDark], [7, 5, BINDER_COLORS.hoodDark], [8, 5, BINDER_COLORS.hood],
+  [6, 3, BINDER_COLORS.hood], [7, 3, BINDER_COLORS.hoodLight], [8, 3, BINDER_COLORS.hood], [9, 3, BINDER_COLORS.hood], [10, 3, BINDER_COLORS.hoodLight], [11, 3, BINDER_COLORS.hood],
+  [6, 4, BINDER_COLORS.hoodDark], [7, 4, BINDER_COLORS.hood], [8, 4, BINDER_COLORS.hoodLight], [9, 4, BINDER_COLORS.hoodLight], [10, 4, BINDER_COLORS.hood], [11, 4, BINDER_COLORS.hoodDark],
+  [7, 5, BINDER_COLORS.hood], [8, 5, BINDER_COLORS.hoodDark], [9, 5, BINDER_COLORS.hoodDark], [10, 5, BINDER_COLORS.hood],
 
   // ===== 长袍背面 =====
-  [2, 6, BINDER_COLORS.robeDark], [3, 6, BINDER_COLORS.robe], [4, 6, BINDER_COLORS.robeLight], [5, 6, BINDER_COLORS.robe], [6, 6, BINDER_COLORS.rune], [7, 6, BINDER_COLORS.rune], [8, 6, BINDER_COLORS.robe], [9, 6, BINDER_COLORS.robeLight], [10, 6, BINDER_COLORS.robe], [11, 6, BINDER_COLORS.robeDark], [12, 6, BINDER_COLORS.robeDark],
-  [2, 7, BINDER_COLORS.robeDark], [3, 7, BINDER_COLORS.robe], [4, 7, BINDER_COLORS.robe], [5, 7, BINDER_COLORS.robeLight], [6, 7, BINDER_COLORS.runeGlow], [7, 7, BINDER_COLORS.runeGlow], [8, 7, BINDER_COLORS.robeLight], [9, 7, BINDER_COLORS.robe], [10, 7, BINDER_COLORS.robe], [11, 7, BINDER_COLORS.robeDark], [12, 7, BINDER_COLORS.robeDark],
-  [2, 8, BINDER_COLORS.robeDark], [3, 8, BINDER_COLORS.robe], [4, 8, BINDER_COLORS.robeLight], [5, 8, BINDER_COLORS.robe], [6, 8, BINDER_COLORS.robe], [7, 8, BINDER_COLORS.robe], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robeLight], [10, 8, BINDER_COLORS.robe], [11, 8, BINDER_COLORS.robeDark], [12, 8, BINDER_COLORS.robeDark],
-  [3, 9, BINDER_COLORS.robe], [4, 9, BINDER_COLORS.robeDark], [5, 9, BINDER_COLORS.robe], [6, 9, BINDER_COLORS.robeLight], [7, 9, BINDER_COLORS.robeLight], [8, 9, BINDER_COLORS.robe], [9, 9, BINDER_COLORS.robeDark], [10, 9, BINDER_COLORS.robe],
+  [4, 6, BINDER_COLORS.robeDark], [5, 6, BINDER_COLORS.robe], [6, 6, BINDER_COLORS.robeLight], [7, 6, BINDER_COLORS.robe], [8, 6, BINDER_COLORS.rune], [9, 6, BINDER_COLORS.rune], [10, 6, BINDER_COLORS.robe], [11, 6, BINDER_COLORS.robeLight], [12, 6, BINDER_COLORS.robe], [13, 6, BINDER_COLORS.robeDark], [14, 6, BINDER_COLORS.robeDark],
+  [4, 7, BINDER_COLORS.robeDark], [5, 7, BINDER_COLORS.robe], [6, 7, BINDER_COLORS.robe], [7, 7, BINDER_COLORS.robeLight], [8, 7, BINDER_COLORS.runeGlow], [9, 7, BINDER_COLORS.runeGlow], [10, 7, BINDER_COLORS.robeLight], [11, 7, BINDER_COLORS.robe], [12, 7, BINDER_COLORS.robe], [13, 7, BINDER_COLORS.robeDark], [14, 7, BINDER_COLORS.robeDark],
+  [4, 8, BINDER_COLORS.robeDark], [5, 8, BINDER_COLORS.robe], [6, 8, BINDER_COLORS.robeLight], [7, 8, BINDER_COLORS.robe], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robe], [10, 8, BINDER_COLORS.robe], [11, 8, BINDER_COLORS.robeLight], [12, 8, BINDER_COLORS.robe], [13, 8, BINDER_COLORS.robeDark], [14, 8, BINDER_COLORS.robeDark],
+  [5, 9, BINDER_COLORS.robe], [6, 9, BINDER_COLORS.robeDark], [7, 9, BINDER_COLORS.robe], [8, 9, BINDER_COLORS.robeLight], [9, 9, BINDER_COLORS.robeLight], [10, 9, BINDER_COLORS.robe], [11, 9, BINDER_COLORS.robeDark], [12, 9, BINDER_COLORS.robe],
 
   // ===== 长袍下摆 =====
-  [3, 10, BINDER_COLORS.robeDark], [4, 10, BINDER_COLORS.robe], [5, 10, BINDER_COLORS.robeLight], [6, 10, BINDER_COLORS.robe], [7, 10, BINDER_COLORS.robe], [8, 10, BINDER_COLORS.robeLight], [9, 10, BINDER_COLORS.robe], [10, 10, BINDER_COLORS.robeDark],
-  [4, 11, BINDER_COLORS.robe], [5, 11, BINDER_COLORS.robeDark], [6, 11, BINDER_COLORS.robe], [7, 11, BINDER_COLORS.robe], [8, 11, BINDER_COLORS.robe], [9, 11, BINDER_COLORS.robeDark], [10, 11, BINDER_COLORS.robe],
-  [5, 12, BINDER_COLORS.robeDark], [6, 12, BINDER_COLORS.robe], [7, 12, BINDER_COLORS.robe], [8, 12, BINDER_COLORS.robe], [9, 12, BINDER_COLORS.robeDark],
+  [5, 10, BINDER_COLORS.robeDark], [6, 10, BINDER_COLORS.robe], [7, 10, BINDER_COLORS.robeLight], [8, 10, BINDER_COLORS.robe], [9, 10, BINDER_COLORS.robe], [10, 10, BINDER_COLORS.robeLight], [11, 10, BINDER_COLORS.robe], [12, 10, BINDER_COLORS.robeDark],
+  [6, 11, BINDER_COLORS.robe], [7, 11, BINDER_COLORS.robeDark], [8, 11, BINDER_COLORS.robe], [9, 11, BINDER_COLORS.robe], [10, 11, BINDER_COLORS.robe], [11, 11, BINDER_COLORS.robeDark], [12, 11, BINDER_COLORS.robe],
+  [7, 12, BINDER_COLORS.robeDark], [8, 12, BINDER_COLORS.robe], [9, 12, BINDER_COLORS.robe], [10, 12, BINDER_COLORS.robe], [11, 12, BINDER_COLORS.robeDark],
 
   // ===== 靴子 =====
-  [5, 13, BINDER_COLORS.boot], [6, 13, BINDER_COLORS.bootLight], [7, 13, BINDER_COLORS.bootLight], [8, 13, BINDER_COLORS.boot],
-  [5, 14, BINDER_COLORS.bootDark], [6, 14, BINDER_COLORS.boot], [7, 14, BINDER_COLORS.boot], [8, 14, BINDER_COLORS.bootDark],
-  [5, 15, BINDER_COLORS.boot], [6, 15, BINDER_COLORS.bootLight], [7, 15, BINDER_COLORS.bootLight], [8, 15, BINDER_COLORS.boot],
+  [7, 13, BINDER_COLORS.boot], [8, 13, BINDER_COLORS.bootLight], [9, 13, BINDER_COLORS.bootLight], [10, 13, BINDER_COLORS.boot],
+  [7, 14, BINDER_COLORS.bootDark], [8, 14, BINDER_COLORS.boot], [9, 14, BINDER_COLORS.boot], [10, 14, BINDER_COLORS.bootDark],
+  [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.bootLight], [9, 15, BINDER_COLORS.bootLight], [10, 15, BINDER_COLORS.boot],
 
   // ===== 魔法书（背在身后）=====
-  [13, 6, BINDER_COLORS.book],
-  [13, 7, BINDER_COLORS.bookDark],
-  [13, 8, BINDER_COLORS.bookGold],
-  [13, 9, BINDER_COLORS.book],
-  [13, 10, BINDER_COLORS.bookRune],
+  [15, 6, BINDER_COLORS.book],
+  [15, 7, BINDER_COLORS.bookDark],
+  [15, 8, BINDER_COLORS.bookGold],
+  [15, 9, BINDER_COLORS.book],
+  [15, 10, BINDER_COLORS.bookRune],
 
   // ===== 手臂（背面）=====
-  [2, 5, BINDER_COLORS.robeDark], [1, 5, BINDER_COLORS.robe],
-  [2, 6, BINDER_COLORS.robe], [1, 6, BINDER_COLORS.robeDark],
+  [4, 5, BINDER_COLORS.robeDark], [3, 5, BINDER_COLORS.robe],
+  [4, 6, BINDER_COLORS.robe], [3, 6, BINDER_COLORS.robeDark],
 
-  [11, 5, BINDER_COLORS.robeDark], [12, 5, BINDER_COLORS.robe],
-  [11, 6, BINDER_COLORS.robe], [12, 6, BINDER_COLORS.robeDark],
+  [13, 5, BINDER_COLORS.robeDark], [14, 5, BINDER_COLORS.robe],
+  [13, 6, BINDER_COLORS.robe], [14, 6, BINDER_COLORS.robeDark],
 
   // ===== 黑暗灵气 =====
-  [5, 15, BINDER_COLORS.darkMist], [8, 15, BINDER_COLORS.darkMist],
+  [7, 15, BINDER_COLORS.darkMist], [10, 15, BINDER_COLORS.darkMist],
 ]
 
-// 向左面朝 - 侧面
+// 向左面朝 - 侧面（已居中，x偏移+2）
 const BINDER_FACE_LEFT = [
   // ===== 兜帽侧面 =====
-  [4, 0, BINDER_COLORS.hood], [5, 0, BINDER_COLORS.hoodDark],
-  [3, 1, BINDER_COLORS.hoodLight], [4, 1, BINDER_COLORS.hood], [5, 1, BINDER_COLORS.hood], [6, 1, BINDER_COLORS.hoodDark],
-  [3, 2, BINDER_COLORS.hood], [4, 2, BINDER_COLORS.hoodGlow], [5, 2, BINDER_COLORS.faceShadow], [6, 2, BINDER_COLORS.hood],
-  [3, 3, BINDER_COLORS.hoodDark], [4, 3, BINDER_COLORS.faceShadow], [5, 3, BINDER_COLORS.eye], [6, 3, BINDER_COLORS.hood],
+  [6, 0, BINDER_COLORS.hood], [7, 0, BINDER_COLORS.hoodDark],
+  [5, 1, BINDER_COLORS.hoodLight], [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hood], [8, 1, BINDER_COLORS.hoodDark],
+  [5, 2, BINDER_COLORS.hood], [6, 2, BINDER_COLORS.hoodGlow], [7, 2, BINDER_COLORS.faceShadow], [8, 2, BINDER_COLORS.hood],
+  [5, 3, BINDER_COLORS.hoodDark], [6, 3, BINDER_COLORS.faceShadow], [7, 3, BINDER_COLORS.eye], [8, 3, BINDER_COLORS.hood],
 
   // ===== 脸部侧面 =====
-  [3, 4, BINDER_COLORS.hood], [4, 4, BINDER_COLORS.eyeGlow], [5, 4, BINDER_COLORS.eyeInner], [6, 4, BINDER_COLORS.hood],
-  [3, 5, BINDER_COLORS.hoodDark], [4, 5, BINDER_COLORS.faceShadow], [5, 5, BINDER_COLORS.faceShadow], [6, 5, BINDER_COLORS.hoodDark],
-
-  // ===== 长袍侧面 =====
-  [2, 5, BINDER_COLORS.robeDark], [3, 5, BINDER_COLORS.robe], [4, 5, BINDER_COLORS.robeLight], [5, 5, BINDER_COLORS.robe], [6, 5, BINDER_COLORS.robeDark],
-  [2, 6, BINDER_COLORS.robeDark], [3, 6, BINDER_COLORS.robe], [4, 6, BINDER_COLORS.rune], [5, 6, BINDER_COLORS.robe], [6, 6, BINDER_COLORS.robeLight], [7, 6, BINDER_COLORS.robe], [8, 6, BINDER_COLORS.robeDark],
-  [2, 7, BINDER_COLORS.robeDark], [3, 7, BINDER_COLORS.robe], [4, 7, BINDER_COLORS.runeGlow], [5, 7, BINDER_COLORS.robe], [6, 7, BINDER_COLORS.robeLight], [7, 7, BINDER_COLORS.robe], [8, 7, BINDER_COLORS.robeDark],
-  [2, 8, BINDER_COLORS.robeDark], [3, 8, BINDER_COLORS.robe], [4, 8, BINDER_COLORS.robeLight], [5, 8, BINDER_COLORS.robe], [6, 8, BINDER_COLORS.robe], [7, 8, BINDER_COLORS.robeLight], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robeDark],
-
-  // ===== 长袍下摆 =====
-  [3, 9, BINDER_COLORS.robe], [4, 9, BINDER_COLORS.robeDark], [5, 9, BINDER_COLORS.robe], [6, 9, BINDER_COLORS.robe], [7, 9, BINDER_COLORS.robeDark], [8, 9, BINDER_COLORS.robe],
-  [4, 10, BINDER_COLORS.robeDark], [5, 10, BINDER_COLORS.robe], [6, 10, BINDER_COLORS.robe], [7, 10, BINDER_COLORS.robe], [8, 10, BINDER_COLORS.robeDark],
-  [5, 11, BINDER_COLORS.robe], [6, 11, BINDER_COLORS.robeDark], [7, 11, BINDER_COLORS.robe],
-
-  // ===== 靴子 =====
-  [5, 12, BINDER_COLORS.boot], [6, 12, BINDER_COLORS.bootLight], [7, 12, BINDER_COLORS.boot],
-  [5, 13, BINDER_COLORS.bootDark], [6, 13, BINDER_COLORS.boot], [7, 13, BINDER_COLORS.bootDark],
-  [5, 14, BINDER_COLORS.boot], [6, 14, BINDER_COLORS.bootLight], [7, 14, BINDER_COLORS.boot],
-  [5, 15, BINDER_COLORS.boot], [6, 15, BINDER_COLORS.bootLight], [7, 15, BINDER_COLORS.boot],
-
-  // ===== 左手（前伸持魔法书）=====
-  [0, 5, BINDER_COLORS.hand],
-  [0, 6, BINDER_COLORS.handDark],
-  [0, 7, BINDER_COLORS.hand], [1, 7, BINDER_COLORS.book],
-  [0, 8, BINDER_COLORS.hand], [1, 8, BINDER_COLORS.page], [2, 8, BINDER_COLORS.pageRune],
-  [1, 9, BINDER_COLORS.bookDark], [2, 9, BINDER_COLORS.bookRune],
-  [1, 10, BINDER_COLORS.bookGold],
-
-  // ===== 右手（后方施法）=====
-  [8, 6, BINDER_COLORS.hand], [9, 6, BINDER_COLORS.handDark],
-  [8, 7, BINDER_COLORS.hand], [9, 7, BINDER_COLORS.hand],
-  [9, 8, BINDER_COLORS.runeGlow],
-  [9, 9, BINDER_COLORS.rune],
-
-  // ===== 黑暗灵气 =====
-  [5, 15, BINDER_COLORS.darkMist],
-  [6, 15, BINDER_COLORS.darknessGlow],
-]
-
-// 向右面朝 - 侧面镜像
-const BINDER_FACE_RIGHT = [
-  // ===== 兜帽侧面 =====
-  [5, 0, BINDER_COLORS.hoodDark], [6, 0, BINDER_COLORS.hood],
-  [4, 1, BINDER_COLORS.hoodDark], [5, 1, BINDER_COLORS.hood], [6, 1, BINDER_COLORS.hood], [7, 1, BINDER_COLORS.hoodLight],
-  [4, 2, BINDER_COLORS.hood], [5, 2, BINDER_COLORS.faceShadow], [6, 2, BINDER_COLORS.hoodGlow], [7, 2, BINDER_COLORS.hood],
-  [4, 3, BINDER_COLORS.hood], [5, 3, BINDER_COLORS.eye], [6, 3, BINDER_COLORS.faceShadow], [7, 3, BINDER_COLORS.hoodDark],
-
-  // ===== 脸部侧面 =====
-  [4, 4, BINDER_COLORS.hood], [5, 4, BINDER_COLORS.eyeInner], [6, 4, BINDER_COLORS.eyeGlow], [7, 4, BINDER_COLORS.hood],
-  [4, 5, BINDER_COLORS.hoodDark], [5, 5, BINDER_COLORS.faceShadow], [6, 5, BINDER_COLORS.faceShadow], [7, 5, BINDER_COLORS.hoodDark],
+  [5, 4, BINDER_COLORS.hood], [6, 4, BINDER_COLORS.eyeGlow], [7, 4, BINDER_COLORS.eyeInner], [8, 4, BINDER_COLORS.hood],
+  [5, 5, BINDER_COLORS.hoodDark], [6, 5, BINDER_COLORS.faceShadow], [7, 5, BINDER_COLORS.faceShadow], [8, 5, BINDER_COLORS.hoodDark],
 
   // ===== 长袍侧面 =====
   [4, 5, BINDER_COLORS.robeDark], [5, 5, BINDER_COLORS.robe], [6, 5, BINDER_COLORS.robeLight], [7, 5, BINDER_COLORS.robe], [8, 5, BINDER_COLORS.robeDark],
-  [4, 6, BINDER_COLORS.robeDark], [5, 6, BINDER_COLORS.robe], [6, 6, BINDER_COLORS.robeLight], [7, 6, BINDER_COLORS.robe], [8, 6, BINDER_COLORS.rune], [9, 6, BINDER_COLORS.robe], [10, 6, BINDER_COLORS.robeDark],
-  [4, 7, BINDER_COLORS.robeDark], [5, 7, BINDER_COLORS.robe], [6, 7, BINDER_COLORS.robeLight], [7, 7, BINDER_COLORS.robe], [8, 7, BINDER_COLORS.runeGlow], [9, 7, BINDER_COLORS.robe], [10, 7, BINDER_COLORS.robeDark],
-  [5, 8, BINDER_COLORS.robeDark], [6, 8, BINDER_COLORS.robe], [7, 8, BINDER_COLORS.robeLight], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robe], [10, 8, BINDER_COLORS.robeLight], [11, 8, BINDER_COLORS.robe], [12, 8, BINDER_COLORS.robeDark],
+  [4, 6, BINDER_COLORS.robeDark], [5, 6, BINDER_COLORS.robe], [6, 6, BINDER_COLORS.rune], [7, 6, BINDER_COLORS.robe], [8, 6, BINDER_COLORS.robeLight], [9, 6, BINDER_COLORS.robe], [10, 6, BINDER_COLORS.robeDark],
+  [4, 7, BINDER_COLORS.robeDark], [5, 7, BINDER_COLORS.robe], [6, 7, BINDER_COLORS.runeGlow], [7, 7, BINDER_COLORS.robe], [8, 7, BINDER_COLORS.robeLight], [9, 7, BINDER_COLORS.robe], [10, 7, BINDER_COLORS.robeDark],
+  [4, 8, BINDER_COLORS.robeDark], [5, 8, BINDER_COLORS.robe], [6, 8, BINDER_COLORS.robeLight], [7, 8, BINDER_COLORS.robe], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robeLight], [10, 8, BINDER_COLORS.robe], [11, 8, BINDER_COLORS.robeDark],
 
   // ===== 长袍下摆 =====
-  [4, 9, BINDER_COLORS.robe], [5, 9, BINDER_COLORS.robeDark], [6, 9, BINDER_COLORS.robe], [7, 9, BINDER_COLORS.robe], [8, 9, BINDER_COLORS.robeDark], [9, 9, BINDER_COLORS.robe],
-  [5, 10, BINDER_COLORS.robeDark], [6, 10, BINDER_COLORS.robe], [7, 10, BINDER_COLORS.robe], [8, 10, BINDER_COLORS.robe], [9, 10, BINDER_COLORS.robeDark],
-  [6, 11, BINDER_COLORS.robe], [7, 11, BINDER_COLORS.robeDark], [8, 11, BINDER_COLORS.robe],
+  [5, 9, BINDER_COLORS.robe], [6, 9, BINDER_COLORS.robeDark], [7, 9, BINDER_COLORS.robe], [8, 9, BINDER_COLORS.robe], [9, 9, BINDER_COLORS.robeDark], [10, 9, BINDER_COLORS.robe],
+  [6, 10, BINDER_COLORS.robeDark], [7, 10, BINDER_COLORS.robe], [8, 10, BINDER_COLORS.robe], [9, 10, BINDER_COLORS.robe], [10, 10, BINDER_COLORS.robeDark],
+  [7, 11, BINDER_COLORS.robe], [8, 11, BINDER_COLORS.robeDark], [9, 11, BINDER_COLORS.robe],
 
   // ===== 靴子 =====
-  [6, 12, BINDER_COLORS.boot], [7, 12, BINDER_COLORS.bootLight], [8, 12, BINDER_COLORS.boot],
-  [6, 13, BINDER_COLORS.bootDark], [7, 13, BINDER_COLORS.boot], [8, 13, BINDER_COLORS.bootDark],
-  [6, 14, BINDER_COLORS.boot], [7, 14, BINDER_COLORS.bootLight], [8, 14, BINDER_COLORS.boot],
-  [6, 15, BINDER_COLORS.boot], [7, 15, BINDER_COLORS.bootLight], [8, 15, BINDER_COLORS.boot],
+  [7, 12, BINDER_COLORS.boot], [8, 12, BINDER_COLORS.bootLight], [9, 12, BINDER_COLORS.boot],
+  [7, 13, BINDER_COLORS.bootDark], [8, 13, BINDER_COLORS.boot], [9, 13, BINDER_COLORS.bootDark],
+  [7, 14, BINDER_COLORS.boot], [8, 14, BINDER_COLORS.bootLight], [9, 14, BINDER_COLORS.boot],
+  [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.bootLight], [9, 15, BINDER_COLORS.boot],
 
-  // ===== 左手（后方施法）=====
-  [4, 6, BINDER_COLORS.hand], [3, 6, BINDER_COLORS.handDark],
-  [4, 7, BINDER_COLORS.hand], [3, 7, BINDER_COLORS.hand],
-  [3, 8, BINDER_COLORS.runeGlow],
-  [3, 9, BINDER_COLORS.rune],
+  // ===== 左手（前伸持魔法书）=====
+  [2, 5, BINDER_COLORS.hand],
+  [2, 6, BINDER_COLORS.handDark],
+  [2, 7, BINDER_COLORS.hand], [3, 7, BINDER_COLORS.book],
+  [2, 8, BINDER_COLORS.hand], [3, 8, BINDER_COLORS.page], [4, 8, BINDER_COLORS.pageRune],
+  [3, 9, BINDER_COLORS.bookDark], [4, 9, BINDER_COLORS.bookRune],
+  [3, 10, BINDER_COLORS.bookGold],
 
-  // ===== 右手（前伸持魔法书）=====
-  [10, 5, BINDER_COLORS.hand],
-  [10, 6, BINDER_COLORS.handDark],
-  [10, 7, BINDER_COLORS.hand], [11, 7, BINDER_COLORS.book],
-  [10, 8, BINDER_COLORS.hand], [11, 8, BINDER_COLORS.page], [12, 8, BINDER_COLORS.pageRune],
-  [11, 9, BINDER_COLORS.bookDark], [12, 9, BINDER_COLORS.bookRune],
-  [11, 10, BINDER_COLORS.bookGold],
+  // ===== 右手（后方施法）=====
+  [10, 6, BINDER_COLORS.hand], [11, 6, BINDER_COLORS.handDark],
+  [10, 7, BINDER_COLORS.hand], [11, 7, BINDER_COLORS.hand],
+  [11, 8, BINDER_COLORS.runeGlow],
+  [11, 9, BINDER_COLORS.rune],
 
   // ===== 黑暗灵气 =====
   [7, 15, BINDER_COLORS.darkMist],
   [8, 15, BINDER_COLORS.darknessGlow],
 ]
 
-// 待机动画帧（魔法书翻动 + 眼睛发光）
+// 向右面朝 - 侧面镜像（已居中，x偏移+2）
+const BINDER_FACE_RIGHT = [
+  // ===== 兜帽侧面 =====
+  [7, 0, BINDER_COLORS.hoodDark], [8, 0, BINDER_COLORS.hood],
+  [6, 1, BINDER_COLORS.hoodDark], [7, 1, BINDER_COLORS.hood], [8, 1, BINDER_COLORS.hood], [9, 1, BINDER_COLORS.hoodLight],
+  [6, 2, BINDER_COLORS.hood], [7, 2, BINDER_COLORS.faceShadow], [8, 2, BINDER_COLORS.hoodGlow], [9, 2, BINDER_COLORS.hood],
+  [6, 3, BINDER_COLORS.hood], [7, 3, BINDER_COLORS.eye], [8, 3, BINDER_COLORS.faceShadow], [9, 3, BINDER_COLORS.hoodDark],
+
+  // ===== 脸部侧面 =====
+  [6, 4, BINDER_COLORS.hood], [7, 4, BINDER_COLORS.eyeInner], [8, 4, BINDER_COLORS.eyeGlow], [9, 4, BINDER_COLORS.hood],
+  [6, 5, BINDER_COLORS.hoodDark], [7, 5, BINDER_COLORS.faceShadow], [8, 5, BINDER_COLORS.faceShadow], [9, 5, BINDER_COLORS.hoodDark],
+
+  // ===== 长袍侧面 =====
+  [6, 5, BINDER_COLORS.robeDark], [7, 5, BINDER_COLORS.robe], [8, 5, BINDER_COLORS.robeLight], [9, 5, BINDER_COLORS.robe], [10, 5, BINDER_COLORS.robeDark],
+  [6, 6, BINDER_COLORS.robeDark], [7, 6, BINDER_COLORS.robe], [8, 6, BINDER_COLORS.robeLight], [9, 6, BINDER_COLORS.robe], [10, 6, BINDER_COLORS.rune], [11, 6, BINDER_COLORS.robe], [12, 6, BINDER_COLORS.robeDark],
+  [6, 7, BINDER_COLORS.robeDark], [7, 7, BINDER_COLORS.robe], [8, 7, BINDER_COLORS.robeLight], [9, 7, BINDER_COLORS.robe], [10, 7, BINDER_COLORS.runeGlow], [11, 7, BINDER_COLORS.robe], [12, 7, BINDER_COLORS.robeDark],
+  [7, 8, BINDER_COLORS.robeDark], [8, 8, BINDER_COLORS.robe], [9, 8, BINDER_COLORS.robeLight], [10, 8, BINDER_COLORS.robe], [11, 8, BINDER_COLORS.robe], [12, 8, BINDER_COLORS.robeLight], [13, 8, BINDER_COLORS.robe], [14, 8, BINDER_COLORS.robeDark],
+
+  // ===== 长袍下摆 =====
+  [6, 9, BINDER_COLORS.robe], [7, 9, BINDER_COLORS.robeDark], [8, 9, BINDER_COLORS.robe], [9, 9, BINDER_COLORS.robe], [10, 9, BINDER_COLORS.robeDark], [11, 9, BINDER_COLORS.robe],
+  [7, 10, BINDER_COLORS.robeDark], [8, 10, BINDER_COLORS.robe], [9, 10, BINDER_COLORS.robe], [10, 10, BINDER_COLORS.robe], [11, 10, BINDER_COLORS.robeDark],
+  [8, 11, BINDER_COLORS.robe], [9, 11, BINDER_COLORS.robeDark], [10, 11, BINDER_COLORS.robe],
+
+  // ===== 靴子 =====
+  [8, 12, BINDER_COLORS.boot], [9, 12, BINDER_COLORS.bootLight], [10, 12, BINDER_COLORS.boot],
+  [8, 13, BINDER_COLORS.bootDark], [9, 13, BINDER_COLORS.boot], [10, 13, BINDER_COLORS.bootDark],
+  [8, 14, BINDER_COLORS.boot], [9, 14, BINDER_COLORS.bootLight], [10, 14, BINDER_COLORS.boot],
+  [8, 15, BINDER_COLORS.boot], [9, 15, BINDER_COLORS.bootLight], [10, 15, BINDER_COLORS.boot],
+
+  // ===== 左手（后方施法）=====
+  [6, 6, BINDER_COLORS.hand], [5, 6, BINDER_COLORS.handDark],
+  [6, 7, BINDER_COLORS.hand], [5, 7, BINDER_COLORS.hand],
+  [5, 8, BINDER_COLORS.runeGlow],
+  [5, 9, BINDER_COLORS.rune],
+
+  // ===== 右手（前伸持魔法书）=====
+  [12, 5, BINDER_COLORS.hand],
+  [12, 6, BINDER_COLORS.handDark],
+  [12, 7, BINDER_COLORS.hand], [13, 7, BINDER_COLORS.book],
+  [12, 8, BINDER_COLORS.hand], [13, 8, BINDER_COLORS.page], [14, 8, BINDER_COLORS.pageRune],
+  [13, 9, BINDER_COLORS.bookDark], [14, 9, BINDER_COLORS.bookRune],
+  [13, 10, BINDER_COLORS.bookGold],
+
+  // ===== 黑暗灵气 =====
+  [9, 15, BINDER_COLORS.darkMist],
+  [10, 15, BINDER_COLORS.darknessGlow],
+]
+
+// 待机动画帧（魔法书翻动 + 眼睛发光）（已居中，x偏移+2）
 const BINDER_IDLE_FRAMES = [
   // 帧0 - 暗
   [
     { pixels: [
-      [6, 3, BINDER_COLORS.eye], [7, 3, BINDER_COLORS.eye],
-      [6, 10, BINDER_COLORS.rune], [7, 10, BINDER_COLORS.rune],
-      [1, 11, BINDER_COLORS.page], [2, 11, BINDER_COLORS.pageRune],
-      [5, 15, BINDER_COLORS.darkMist], [8, 15, BINDER_COLORS.darkMist],
+      [8, 3, BINDER_COLORS.eye], [9, 3, BINDER_COLORS.eye],
+      [8, 10, BINDER_COLORS.rune], [9, 10, BINDER_COLORS.rune],
+      [3, 11, BINDER_COLORS.page], [4, 11, BINDER_COLORS.pageRune],
+      [7, 15, BINDER_COLORS.darkMist], [10, 15, BINDER_COLORS.darkMist],
     ] }
   ],
   // 帧1 - 亮（眼睛发光 + 魔法书翻页 + 符文发光）
   [
     { pixels: [
-      [6, 3, BINDER_COLORS.eyeGlow], [7, 3, BINDER_COLORS.eyeGlow],
-      [6, 10, BINDER_COLORS.runeGlow], [7, 10, BINDER_COLORS.runeGlow],
-      [1, 11, BINDER_COLORS.pageDark], [2, 11, BINDER_COLORS.bookRune],
-      [5, 15, BINDER_COLORS.darknessGlow], [8, 15, BINDER_COLORS.darknessGlow],
-      [6, 15, BINDER_COLORS.spark], [7, 15, BINDER_COLORS.spark],
+      [8, 3, BINDER_COLORS.eyeGlow], [9, 3, BINDER_COLORS.eyeGlow],
+      [8, 10, BINDER_COLORS.runeGlow], [9, 10, BINDER_COLORS.runeGlow],
+      [3, 11, BINDER_COLORS.pageDark], [4, 11, BINDER_COLORS.bookRune],
+      [7, 15, BINDER_COLORS.darknessGlow], [10, 15, BINDER_COLORS.darknessGlow],
+      [8, 15, BINDER_COLORS.spark], [9, 15, BINDER_COLORS.spark],
     ] }
   ],
 ]
 
-// 行走动画帧（步伐）
+// 行走动画帧（步伐）（已居中，x偏移+2）
 const BINDER_WALK_FRAMES = [
   // 帧0 - 左脚前
   [
     { pixels: [
-      [5, 15, BINDER_COLORS.bootDark], [6, 15, BINDER_COLORS.boot], [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.bootDark],
+      [7, 15, BINDER_COLORS.bootDark], [8, 15, BINDER_COLORS.boot], [9, 15, BINDER_COLORS.boot], [10, 15, BINDER_COLORS.bootDark],
     ] }
   ],
   // 帧1 - 中间
   [
     { pixels: [
-      [5, 15, BINDER_COLORS.boot], [6, 15, BINDER_COLORS.bootDark], [7, 15, BINDER_COLORS.bootDark], [8, 15, BINDER_COLORS.boot],
+      [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.bootDark], [9, 15, BINDER_COLORS.bootDark], [10, 15, BINDER_COLORS.boot],
     ] }
   ],
   // 帧2 - 右脚前
   [
     { pixels: [
-      [5, 15, BINDER_COLORS.boot], [6, 15, BINDER_COLORS.boot], [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.bootDark],
+      [7, 15, BINDER_COLORS.boot], [8, 15, BINDER_COLORS.boot], [9, 15, BINDER_COLORS.boot], [10, 15, BINDER_COLORS.bootDark],
     ] }
   ],
 ]

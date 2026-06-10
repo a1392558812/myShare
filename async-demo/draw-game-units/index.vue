@@ -15,6 +15,11 @@
       >
         <option  v-for="(unit, key) in units" :key="key" :value="key">{{ unit.name }}</option>
       </select>
+      <div>
+        <div class="input-wrap" v-for="(keyVal, index) in ['hp', 'mp']" :key="index">
+          {{ keyVal }}:<input style="width: 3em" type="number" v-model.number="units[selectedUnit][keyVal]"/>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -443,7 +448,7 @@ const drawFrame = (deltaTime) => {
   // 绘制所有单位
   for (const [key, unit] of Object.entries(units.value)) {
     unit.drawUnit(ctx, unit);
-    drawHealthBar(ctx, unit, { x: unit.x, y: unit.y });
+    drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: '#00CCFF' });
 
     const avatarPos = Object.assign({ size: unitSize }, unit.avatarPos);
     unit.drawAvatar(ctx, unit, avatarPos);
@@ -578,10 +583,18 @@ onUnmounted(() => {
     top: 20px;
     right: 20px;
     display: flex;
+    flex-direction: column;
     gap: 10px;
     background-color: rgba(95, 95, 95, 0.7);
     padding: 10px;
     border-radius: 8px;
+    color: #fff;
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      line-height: 1;
+      gap: 5px;
+    }
   }
 }
 </style>

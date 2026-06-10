@@ -105,19 +105,18 @@ export const drawBorder = (ctx, unit, unitKey) => {
  * @param {Number} position.y 单位y坐标
  * @returns 
  */
-export const drawHealthBar = (ctx, unit, position) => {
+export const drawHealthBar = (ctx, unit, config) => {
   const marginTop = 4
   const marginLeft = 4
   const marginRight = 4
-
 
   const size = unit.size || 40
   const barWidth = size - marginLeft - marginRight
   const barHeight = 2
   const barGap = 1
   
-  const x = position.x
-  const y = position.y
+  const x = config.x
+  const y = config.y
   
   // 血条参数
   const maxHp = unit.maxHp || 100
@@ -150,4 +149,15 @@ export const drawHealthBar = (ctx, unit, position) => {
   // 绘制蓝条当前值
   ctx.fillStyle = '#2196F3'
   ctx.fillRect(barX, mpBarY, barWidth * mpRatio, barHeight)
+
+  ctx.fillStyle = config.textColor || '#333';
+  ctx.font = '8px sans-serif';
+  ctx.textAlign = 'center';   
+  ctx.textBaseline = 'top'; 
+
+  ctx.fillText(
+    unit.name,
+    barX + barWidth / 2,
+    hpBarY + barHeight * 2 + 4
+  );
 }

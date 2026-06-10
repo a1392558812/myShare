@@ -115,247 +115,247 @@ const LORD_AVATAR = [
   [5, 15, LORD_COLORS.helmDark], [6, 15, LORD_COLORS.helm], [7, 15, LORD_COLORS.helm], [8, 15, LORD_COLORS.helmDark],
 ]
 
-// 向下面朝 - 正面
+// 向下面朝 - 正面（已居中，x偏移+2）
 const LORD_FACE_DOWN = [
   // ===== 头盔顶部 + 角 =====
-  [5, 0, LORD_COLORS.hornDark], [6, 0, LORD_COLORS.horn], [7, 0, LORD_COLORS.horn], [8, 0, LORD_COLORS.hornDark],
-  [4, 1, LORD_COLORS.horn], [5, 1, LORD_COLORS.hornLight], [6, 1, LORD_COLORS.hornTip], [7, 1, LORD_COLORS.hornTip], [8, 1, LORD_COLORS.hornLight], [9, 1, LORD_COLORS.horn],
-  [3, 2, LORD_COLORS.hornDark], [4, 2, LORD_COLORS.hornLight], [5, 2, LORD_COLORS.horn], [6, 2, LORD_COLORS.hornTip], [7, 2, LORD_COLORS.hornTip], [8, 2, LORD_COLORS.horn], [9, 2, LORD_COLORS.hornLight], [10, 2, LORD_COLORS.hornDark],
+  [7, 0, LORD_COLORS.hornDark], [8, 0, LORD_COLORS.horn], [9, 0, LORD_COLORS.horn], [10, 0, LORD_COLORS.hornDark],
+  [6, 1, LORD_COLORS.horn], [7, 1, LORD_COLORS.hornLight], [8, 1, LORD_COLORS.hornTip], [9, 1, LORD_COLORS.hornTip], [10, 1, LORD_COLORS.hornLight], [11, 1, LORD_COLORS.horn],
+  [5, 2, LORD_COLORS.hornDark], [6, 2, LORD_COLORS.hornLight], [7, 2, LORD_COLORS.horn], [8, 2, LORD_COLORS.hornTip], [9, 2, LORD_COLORS.hornTip], [10, 2, LORD_COLORS.horn], [11, 2, LORD_COLORS.hornLight], [12, 2, LORD_COLORS.hornDark],
 
   // ===== 头盔主体 =====
-  [3, 3, LORD_COLORS.helmDark], [4, 3, LORD_COLORS.helm], [5, 3, LORD_COLORS.helmLight], [6, 3, LORD_COLORS.helmAccent], [7, 3, LORD_COLORS.helmAccent], [8, 3, LORD_COLORS.helmLight], [9, 3, LORD_COLORS.helm], [10, 3, LORD_COLORS.helmDark],
-  [3, 4, LORD_COLORS.helmDark], [4, 4, LORD_COLORS.helm], [5, 4, LORD_COLORS.eye], [6, 4, LORD_COLORS.eyeGlow], [7, 4, LORD_COLORS.eyeGlow], [8, 4, LORD_COLORS.eye], [9, 4, LORD_COLORS.helm], [10, 4, LORD_COLORS.helmDark],
-  [3, 5, LORD_COLORS.helmDark], [4, 5, LORD_COLORS.helm], [5, 5, LORD_COLORS.eyeGlow], [6, 5, LORD_COLORS.eyeInner], [7, 5, LORD_COLORS.eyeInner], [8, 5, LORD_COLORS.eyeGlow], [9, 5, LORD_COLORS.helm], [10, 5, LORD_COLORS.helmDark],
-  [4, 6, LORD_COLORS.helm], [5, 6, LORD_COLORS.helmDark], [6, 6, LORD_COLORS.helm], [7, 6, LORD_COLORS.helm], [8, 6, LORD_COLORS.helmDark], [9, 6, LORD_COLORS.helm],
-  [4, 7, LORD_COLORS.helmDark], [5, 7, LORD_COLORS.helm], [6, 7, LORD_COLORS.helmAccent], [7, 7, LORD_COLORS.helmAccent], [8, 7, LORD_COLORS.helm], [9, 7, LORD_COLORS.helmDark],
+  [5, 3, LORD_COLORS.helmDark], [6, 3, LORD_COLORS.helm], [7, 3, LORD_COLORS.helmLight], [8, 3, LORD_COLORS.helmAccent], [9, 3, LORD_COLORS.helmAccent], [10, 3, LORD_COLORS.helmLight], [11, 3, LORD_COLORS.helm], [12, 3, LORD_COLORS.helmDark],
+  [5, 4, LORD_COLORS.helmDark], [6, 4, LORD_COLORS.helm], [7, 4, LORD_COLORS.eye], [8, 4, LORD_COLORS.eyeGlow], [9, 4, LORD_COLORS.eyeGlow], [10, 4, LORD_COLORS.eye], [11, 4, LORD_COLORS.helm], [12, 4, LORD_COLORS.helmDark],
+  [5, 5, LORD_COLORS.helmDark], [6, 5, LORD_COLORS.helm], [7, 5, LORD_COLORS.eyeGlow], [8, 5, LORD_COLORS.eyeInner], [9, 5, LORD_COLORS.eyeInner], [10, 5, LORD_COLORS.eyeGlow], [11, 5, LORD_COLORS.helm], [12, 5, LORD_COLORS.helmDark],
+  [6, 6, LORD_COLORS.helm], [7, 6, LORD_COLORS.helmDark], [8, 6, LORD_COLORS.helm], [9, 6, LORD_COLORS.helm], [10, 6, LORD_COLORS.helmDark], [11, 6, LORD_COLORS.helm],
+  [6, 7, LORD_COLORS.helmDark], [7, 7, LORD_COLORS.helm], [8, 7, LORD_COLORS.helmAccent], [9, 7, LORD_COLORS.helmAccent], [10, 7, LORD_COLORS.helm], [11, 7, LORD_COLORS.helmDark],
 
   // ===== 肩甲 + 颈 =====
-  [2, 8, LORD_COLORS.armorDark], [3, 8, LORD_COLORS.armor], [4, 8, LORD_COLORS.armorPlateLight], [5, 8, LORD_COLORS.armorPlate], [6, 8, LORD_COLORS.chaos], [7, 8, LORD_COLORS.chaos], [8, 8, LORD_COLORS.armorPlate], [9, 8, LORD_COLORS.armorPlateLight], [10, 8, LORD_COLORS.armor], [11, 8, LORD_COLORS.armorDark],
-  [2, 9, LORD_COLORS.armorDark], [3, 9, LORD_COLORS.armorPlate], [4, 9, LORD_COLORS.armorPlateLight], [5, 9, LORD_COLORS.armorPlate], [6, 9, LORD_COLORS.armorPlateLight], [7, 9, LORD_COLORS.armorPlateLight], [8, 9, LORD_COLORS.armorPlate], [9, 9, LORD_COLORS.armorPlateLight], [10, 9, LORD_COLORS.armorPlate], [11, 9, LORD_COLORS.armorDark],
+  [4, 8, LORD_COLORS.armorDark], [5, 8, LORD_COLORS.armor], [6, 8, LORD_COLORS.armorPlateLight], [7, 8, LORD_COLORS.armorPlate], [8, 8, LORD_COLORS.chaos], [9, 8, LORD_COLORS.chaos], [10, 8, LORD_COLORS.armorPlate], [11, 8, LORD_COLORS.armorPlateLight], [12, 8, LORD_COLORS.armor], [13, 8, LORD_COLORS.armorDark],
+  [4, 9, LORD_COLORS.armorDark], [5, 9, LORD_COLORS.armorPlate], [6, 9, LORD_COLORS.armorPlateLight], [7, 9, LORD_COLORS.armorPlate], [8, 9, LORD_COLORS.armorPlateLight], [9, 9, LORD_COLORS.armorPlateLight], [10, 9, LORD_COLORS.armorPlate], [11, 9, LORD_COLORS.armorPlateLight], [12, 9, LORD_COLORS.armorPlate], [13, 9, LORD_COLORS.armorDark],
 
   // ===== 胸甲 =====
-  [2, 10, LORD_COLORS.armorDark], [3, 10, LORD_COLORS.armor], [4, 10, LORD_COLORS.armorPlate], [5, 10, LORD_COLORS.chaosGlow], [6, 10, LORD_COLORS.armorPlateLight], [7, 10, LORD_COLORS.armorPlateLight], [8, 10, LORD_COLORS.chaosGlow], [9, 10, LORD_COLORS.armorPlate], [10, 10, LORD_COLORS.armor], [11, 10, LORD_COLORS.armorDark],
-  [2, 11, LORD_COLORS.armorDark], [3, 11, LORD_COLORS.armor], [4, 11, LORD_COLORS.armorPlateLight], [5, 11, LORD_COLORS.armorPlate], [6, 11, LORD_COLORS.chaos], [7, 11, LORD_COLORS.chaos], [8, 11, LORD_COLORS.armorPlate], [9, 11, LORD_COLORS.armorPlateLight], [10, 11, LORD_COLORS.armor], [11, 11, LORD_COLORS.armorDark],
+  [4, 10, LORD_COLORS.armorDark], [5, 10, LORD_COLORS.armor], [6, 10, LORD_COLORS.armorPlate], [7, 10, LORD_COLORS.chaosGlow], [8, 10, LORD_COLORS.armorPlateLight], [9, 10, LORD_COLORS.armorPlateLight], [10, 10, LORD_COLORS.chaosGlow], [11, 10, LORD_COLORS.armorPlate], [12, 10, LORD_COLORS.armor], [13, 10, LORD_COLORS.armorDark],
+  [4, 11, LORD_COLORS.armorDark], [5, 11, LORD_COLORS.armor], [6, 11, LORD_COLORS.armorPlateLight], [7, 11, LORD_COLORS.armorPlate], [8, 11, LORD_COLORS.chaos], [9, 11, LORD_COLORS.chaos], [10, 11, LORD_COLORS.armorPlate], [11, 11, LORD_COLORS.armorPlateLight], [12, 11, LORD_COLORS.armor], [13, 11, LORD_COLORS.armorDark],
 
   // ===== 腰带 =====
-  [3, 12, LORD_COLORS.belt], [4, 12, LORD_COLORS.armorPlate], [5, 12, LORD_COLORS.armorPlateLight], [6, 12, LORD_COLORS.chaos], [7, 12, LORD_COLORS.chaos], [8, 12, LORD_COLORS.armorPlateLight], [9, 12, LORD_COLORS.armorPlate], [10, 12, LORD_COLORS.belt],
+  [5, 12, LORD_COLORS.belt], [6, 12, LORD_COLORS.armorPlate], [7, 12, LORD_COLORS.armorPlateLight], [8, 12, LORD_COLORS.chaos], [9, 12, LORD_COLORS.chaos], [10, 12, LORD_COLORS.armorPlateLight], [11, 12, LORD_COLORS.armorPlate], [12, 12, LORD_COLORS.belt],
 
   // ===== 腿甲 =====
-  [4, 13, LORD_COLORS.armorDark], [5, 13, LORD_COLORS.armorPlate], [6, 13, LORD_COLORS.armorPlateLight], [7, 13, LORD_COLORS.armorPlateLight], [8, 13, LORD_COLORS.armorPlate], [9, 13, LORD_COLORS.armorDark],
-  [4, 14, LORD_COLORS.boot], [5, 14, LORD_COLORS.bootLight], [6, 14, LORD_COLORS.boot], [7, 14, LORD_COLORS.boot], [8, 14, LORD_COLORS.bootLight], [9, 14, LORD_COLORS.boot],
-  [4, 15, LORD_COLORS.bootDark], [5, 15, LORD_COLORS.bootLight], [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.boot], [8, 15, LORD_COLORS.bootLight], [9, 15, LORD_COLORS.bootDark],
+  [6, 13, LORD_COLORS.armorDark], [7, 13, LORD_COLORS.armorPlate], [8, 13, LORD_COLORS.armorPlateLight], [9, 13, LORD_COLORS.armorPlateLight], [10, 13, LORD_COLORS.armorPlate], [11, 13, LORD_COLORS.armorDark],
+  [6, 14, LORD_COLORS.boot], [7, 14, LORD_COLORS.bootLight], [8, 14, LORD_COLORS.boot], [9, 14, LORD_COLORS.boot], [10, 14, LORD_COLORS.bootLight], [11, 14, LORD_COLORS.boot],
+  [6, 15, LORD_COLORS.bootDark], [7, 15, LORD_COLORS.bootLight], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.boot], [10, 15, LORD_COLORS.bootLight], [11, 15, LORD_COLORS.bootDark],
 
   // ===== 左手（持战锤）=====
-  [0, 9, LORD_COLORS.gauntlet], [1, 9, LORD_COLORS.gauntletDark],
-  [0, 10, LORD_COLORS.gauntletLight], [1, 10, LORD_COLORS.gauntlet],
-  [0, 11, LORD_COLORS.gauntlet], [1, 11, LORD_COLORS.gauntletDark],
-  [0, 12, LORD_COLORS.hammerDark],
-  [0, 13, LORD_COLORS.hammer],
-  [0, 14, LORD_COLORS.hammerDark],
-  [0, 15, LORD_COLORS.hammerHeadDark],
-  [1, 15, LORD_COLORS.hammerHead], [2, 15, LORD_COLORS.hammerHeadLight],
-  [0, 16, LORD_COLORS.hammerHead], [2, 16, LORD_COLORS.hammerRune],
-  [1, 17, LORD_COLORS.hammerHeadLight],
+  [2, 9, LORD_COLORS.gauntlet], [3, 9, LORD_COLORS.gauntletDark],
+  [2, 10, LORD_COLORS.gauntletLight], [3, 10, LORD_COLORS.gauntlet],
+  [2, 11, LORD_COLORS.gauntlet], [3, 11, LORD_COLORS.gauntletDark],
+  [2, 12, LORD_COLORS.hammerDark],
+  [2, 13, LORD_COLORS.hammer],
+  [2, 14, LORD_COLORS.hammerDark],
+  [2, 15, LORD_COLORS.hammerHeadDark],
+  [3, 15, LORD_COLORS.hammerHead], [4, 15, LORD_COLORS.hammerHeadLight],
+  [2, 16, LORD_COLORS.hammerHead], [4, 16, LORD_COLORS.hammerRune],
+  [3, 17, LORD_COLORS.hammerHeadLight],
 
   // ===== 右手（持盾）=====
-  [12, 9, LORD_COLORS.gauntletDark], [13, 9, LORD_COLORS.gauntlet],
-  [12, 10, LORD_COLORS.gauntlet], [13, 10, LORD_COLORS.gauntletLight],
-  [12, 11, LORD_COLORS.gauntletDark], [13, 11, LORD_COLORS.gauntlet],
-  [13, 12, LORD_COLORS.shieldDark],
-  [13, 13, LORD_COLORS.shield],
-  [13, 14, LORD_COLORS.shieldLight],
-  [13, 15, LORD_COLORS.shieldChaos],
+  [14, 9, LORD_COLORS.gauntletDark], [15, 9, LORD_COLORS.gauntlet],
+  [14, 10, LORD_COLORS.gauntlet], [15, 10, LORD_COLORS.gauntletLight],
+  [14, 11, LORD_COLORS.gauntletDark], [15, 11, LORD_COLORS.gauntlet],
+  [15, 12, LORD_COLORS.shieldDark],
+  [15, 13, LORD_COLORS.shield],
+  [15, 14, LORD_COLORS.shieldLight],
+  [15, 15, LORD_COLORS.shieldChaos],
 
   // ===== 混沌能量 =====
-  [5, 15, LORD_COLORS.energy], [8, 15, LORD_COLORS.energy],
-  [6, 15, LORD_COLORS.energyLight], [7, 15, LORD_COLORS.energyLight],
+  [7, 15, LORD_COLORS.energy], [10, 15, LORD_COLORS.energy],
+  [8, 15, LORD_COLORS.energyLight], [9, 15, LORD_COLORS.energyLight],
 ]
 
-// 向上面朝 - 背面
+// 向上面朝 - 背面（已居中，x偏移+2）
 const LORD_FACE_UP = [
   // ===== 头盔顶部 + 角 =====
-  [5, 0, LORD_COLORS.hornDark], [6, 0, LORD_COLORS.horn], [7, 0, LORD_COLORS.horn], [8, 0, LORD_COLORS.hornDark],
-  [4, 1, LORD_COLORS.horn], [5, 1, LORD_COLORS.hornLight], [6, 1, LORD_COLORS.hornTip], [7, 1, LORD_COLORS.hornTip], [8, 1, LORD_COLORS.hornLight], [9, 1, LORD_COLORS.horn],
-  [3, 2, LORD_COLORS.hornDark], [4, 2, LORD_COLORS.hornLight], [5, 2, LORD_COLORS.horn], [6, 2, LORD_COLORS.hornTip], [7, 2, LORD_COLORS.hornTip], [8, 2, LORD_COLORS.horn], [9, 2, LORD_COLORS.hornLight], [10, 2, LORD_COLORS.hornDark],
+  [7, 0, LORD_COLORS.hornDark], [8, 0, LORD_COLORS.horn], [9, 0, LORD_COLORS.horn], [10, 0, LORD_COLORS.hornDark],
+  [6, 1, LORD_COLORS.horn], [7, 1, LORD_COLORS.hornLight], [8, 1, LORD_COLORS.hornTip], [9, 1, LORD_COLORS.hornTip], [10, 1, LORD_COLORS.hornLight], [11, 1, LORD_COLORS.horn],
+  [5, 2, LORD_COLORS.hornDark], [6, 2, LORD_COLORS.hornLight], [7, 2, LORD_COLORS.horn], [8, 2, LORD_COLORS.hornTip], [9, 2, LORD_COLORS.hornTip], [10, 2, LORD_COLORS.horn], [11, 2, LORD_COLORS.hornLight], [12, 2, LORD_COLORS.hornDark],
 
   // ===== 头盔背面 =====
-  [3, 3, LORD_COLORS.helmDark], [4, 3, LORD_COLORS.helm], [5, 3, LORD_COLORS.helmLight], [6, 3, LORD_COLORS.helm], [7, 3, LORD_COLORS.helm], [8, 3, LORD_COLORS.helmLight], [9, 3, LORD_COLORS.helm], [10, 3, LORD_COLORS.helmDark],
-  [3, 4, LORD_COLORS.helmDark], [4, 4, LORD_COLORS.helm], [5, 4, LORD_COLORS.helmLight], [6, 4, LORD_COLORS.helmAccent], [7, 4, LORD_COLORS.helmAccent], [8, 4, LORD_COLORS.helmLight], [9, 4, LORD_COLORS.helm], [10, 4, LORD_COLORS.helmDark],
-  [4, 5, LORD_COLORS.helm], [5, 5, LORD_COLORS.helmDark], [6, 5, LORD_COLORS.helm], [7, 5, LORD_COLORS.helm], [8, 5, LORD_COLORS.helmDark], [9, 5, LORD_COLORS.helm],
-  [4, 6, LORD_COLORS.helmDark], [5, 6, LORD_COLORS.helm], [6, 6, LORD_COLORS.helmAccent], [7, 6, LORD_COLORS.helmAccent], [8, 6, LORD_COLORS.helm], [9, 6, LORD_COLORS.helmDark],
+  [5, 3, LORD_COLORS.helmDark], [6, 3, LORD_COLORS.helm], [7, 3, LORD_COLORS.helmLight], [8, 3, LORD_COLORS.helm], [9, 3, LORD_COLORS.helm], [10, 3, LORD_COLORS.helmLight], [11, 3, LORD_COLORS.helm], [12, 3, LORD_COLORS.helmDark],
+  [5, 4, LORD_COLORS.helmDark], [6, 4, LORD_COLORS.helm], [7, 4, LORD_COLORS.helmLight], [8, 4, LORD_COLORS.helmAccent], [9, 4, LORD_COLORS.helmAccent], [10, 4, LORD_COLORS.helmLight], [11, 4, LORD_COLORS.helm], [12, 4, LORD_COLORS.helmDark],
+  [6, 5, LORD_COLORS.helm], [7, 5, LORD_COLORS.helmDark], [8, 5, LORD_COLORS.helm], [9, 5, LORD_COLORS.helm], [10, 5, LORD_COLORS.helmDark], [11, 5, LORD_COLORS.helm],
+  [6, 6, LORD_COLORS.helmDark], [7, 6, LORD_COLORS.helm], [8, 6, LORD_COLORS.helmAccent], [9, 6, LORD_COLORS.helmAccent], [10, 6, LORD_COLORS.helm], [11, 6, LORD_COLORS.helmDark],
 
   // ===== 披风 =====
-  [1, 7, LORD_COLORS.capeDark], [2, 7, LORD_COLORS.cape], [3, 7, LORD_COLORS.capeLight], [4, 7, LORD_COLORS.capeEdge], [5, 7, LORD_COLORS.cape], [6, 7, LORD_COLORS.chaos], [7, 7, LORD_COLORS.chaos], [8, 7, LORD_COLORS.cape], [9, 7, LORD_COLORS.capeEdge], [10, 7, LORD_COLORS.capeLight], [11, 7, LORD_COLORS.cape], [12, 7, LORD_COLORS.capeDark],
-  [1, 8, LORD_COLORS.capeDark], [2, 8, LORD_COLORS.cape], [3, 8, LORD_COLORS.capeLight], [4, 8, LORD_COLORS.cape], [5, 8, LORD_COLORS.capeEdge], [6, 8, LORD_COLORS.chaosGlow], [7, 8, LORD_COLORS.chaosGlow], [8, 8, LORD_COLORS.capeEdge], [9, 8, LORD_COLORS.cape], [10, 8, LORD_COLORS.capeLight], [11, 8, LORD_COLORS.cape], [12, 8, LORD_COLORS.capeDark],
-  [2, 9, LORD_COLORS.capeDark], [3, 9, LORD_COLORS.cape], [4, 9, LORD_COLORS.capeLight], [5, 9, LORD_COLORS.cape], [6, 9, LORD_COLORS.cape], [7, 9, LORD_COLORS.cape], [8, 9, LORD_COLORS.cape], [9, 9, LORD_COLORS.capeLight], [10, 9, LORD_COLORS.cape], [11, 9, LORD_COLORS.capeDark],
-  [2, 10, LORD_COLORS.capeDark], [3, 10, LORD_COLORS.cape], [4, 10, LORD_COLORS.capeLight], [5, 10, LORD_COLORS.cape], [6, 10, LORD_COLORS.rune], [7, 10, LORD_COLORS.rune], [8, 10, LORD_COLORS.cape], [9, 10, LORD_COLORS.capeLight], [10, 10, LORD_COLORS.cape], [11, 10, LORD_COLORS.capeDark],
-  [3, 11, LORD_COLORS.capeDark], [4, 11, LORD_COLORS.cape], [5, 11, LORD_COLORS.capeLight], [6, 11, LORD_COLORS.cape], [7, 11, LORD_COLORS.cape], [8, 11, LORD_COLORS.capeLight], [9, 11, LORD_COLORS.cape], [10, 11, LORD_COLORS.capeDark],
+  [3, 7, LORD_COLORS.capeDark], [4, 7, LORD_COLORS.cape], [5, 7, LORD_COLORS.capeLight], [6, 7, LORD_COLORS.capeEdge], [7, 7, LORD_COLORS.cape], [8, 7, LORD_COLORS.chaos], [9, 7, LORD_COLORS.chaos], [10, 7, LORD_COLORS.cape], [11, 7, LORD_COLORS.capeEdge], [12, 7, LORD_COLORS.capeLight], [13, 7, LORD_COLORS.cape], [14, 7, LORD_COLORS.capeDark],
+  [3, 8, LORD_COLORS.capeDark], [4, 8, LORD_COLORS.cape], [5, 8, LORD_COLORS.capeLight], [6, 8, LORD_COLORS.cape], [7, 8, LORD_COLORS.capeEdge], [8, 8, LORD_COLORS.chaosGlow], [9, 8, LORD_COLORS.chaosGlow], [10, 8, LORD_COLORS.capeEdge], [11, 8, LORD_COLORS.cape], [12, 8, LORD_COLORS.capeLight], [13, 8, LORD_COLORS.cape], [14, 8, LORD_COLORS.capeDark],
+  [4, 9, LORD_COLORS.capeDark], [5, 9, LORD_COLORS.cape], [6, 9, LORD_COLORS.capeLight], [7, 9, LORD_COLORS.cape], [8, 9, LORD_COLORS.cape], [9, 9, LORD_COLORS.cape], [10, 9, LORD_COLORS.cape], [11, 9, LORD_COLORS.capeLight], [12, 9, LORD_COLORS.cape], [13, 9, LORD_COLORS.capeDark],
+  [4, 10, LORD_COLORS.capeDark], [5, 10, LORD_COLORS.cape], [6, 10, LORD_COLORS.capeLight], [7, 10, LORD_COLORS.cape], [8, 10, LORD_COLORS.rune], [9, 10, LORD_COLORS.rune], [10, 10, LORD_COLORS.cape], [11, 10, LORD_COLORS.capeLight], [12, 10, LORD_COLORS.cape], [13, 10, LORD_COLORS.capeDark],
+  [5, 11, LORD_COLORS.capeDark], [6, 11, LORD_COLORS.cape], [7, 11, LORD_COLORS.capeLight], [8, 11, LORD_COLORS.cape], [9, 11, LORD_COLORS.cape], [10, 11, LORD_COLORS.capeLight], [11, 11, LORD_COLORS.cape], [12, 11, LORD_COLORS.capeDark],
 
   // ===== 背甲 + 腿 =====
-  [3, 12, LORD_COLORS.armorDark], [4, 12, LORD_COLORS.armorPlate], [5, 12, LORD_COLORS.armorPlateLight], [6, 12, LORD_COLORS.chaos], [7, 12, LORD_COLORS.chaos], [8, 12, LORD_COLORS.armorPlateLight], [9, 12, LORD_COLORS.armorPlate], [10, 12, LORD_COLORS.armorDark],
-  [4, 13, LORD_COLORS.armorDark], [5, 13, LORD_COLORS.armorPlate], [6, 13, LORD_COLORS.armorPlateLight], [7, 13, LORD_COLORS.armorPlateLight], [8, 13, LORD_COLORS.armorPlate], [9, 13, LORD_COLORS.armorDark],
-  [4, 14, LORD_COLORS.boot], [5, 14, LORD_COLORS.bootLight], [6, 14, LORD_COLORS.boot], [7, 14, LORD_COLORS.boot], [8, 14, LORD_COLORS.bootLight], [9, 14, LORD_COLORS.boot],
-  [4, 15, LORD_COLORS.bootDark], [5, 15, LORD_COLORS.bootLight], [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.boot], [8, 15, LORD_COLORS.bootLight], [9, 15, LORD_COLORS.bootDark],
+  [5, 12, LORD_COLORS.armorDark], [6, 12, LORD_COLORS.armorPlate], [7, 12, LORD_COLORS.armorPlateLight], [8, 12, LORD_COLORS.chaos], [9, 12, LORD_COLORS.chaos], [10, 12, LORD_COLORS.armorPlateLight], [11, 12, LORD_COLORS.armorPlate], [12, 12, LORD_COLORS.armorDark],
+  [6, 13, LORD_COLORS.armorDark], [7, 13, LORD_COLORS.armorPlate], [8, 13, LORD_COLORS.armorPlateLight], [9, 13, LORD_COLORS.armorPlateLight], [10, 13, LORD_COLORS.armorPlate], [11, 13, LORD_COLORS.armorDark],
+  [6, 14, LORD_COLORS.boot], [7, 14, LORD_COLORS.bootLight], [8, 14, LORD_COLORS.boot], [9, 14, LORD_COLORS.boot], [10, 14, LORD_COLORS.bootLight], [11, 14, LORD_COLORS.boot],
+  [6, 15, LORD_COLORS.bootDark], [7, 15, LORD_COLORS.bootLight], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.boot], [10, 15, LORD_COLORS.bootLight], [11, 15, LORD_COLORS.bootDark],
 
   // ===== 武器（战锤背在身后）=====
-  [13, 8, LORD_COLORS.hammerHead],
-  [13, 9, LORD_COLORS.hammerRune],
-  [13, 10, LORD_COLORS.hammerHeadLight],
-  [13, 11, LORD_COLORS.hammerDark],
-  [13, 12, LORD_COLORS.hammer],
-  [13, 13, LORD_COLORS.hammerDark],
+  [15, 8, LORD_COLORS.hammerHead],
+  [15, 9, LORD_COLORS.hammerRune],
+  [15, 10, LORD_COLORS.hammerHeadLight],
+  [15, 11, LORD_COLORS.hammerDark],
+  [15, 12, LORD_COLORS.hammer],
+  [15, 13, LORD_COLORS.hammerDark],
 
   // ===== 混沌能量 =====
-  [5, 15, LORD_COLORS.energy], [8, 15, LORD_COLORS.energy],
+  [7, 15, LORD_COLORS.energy], [10, 15, LORD_COLORS.energy],
 ]
 
-// 向左面朝 - 侧面
+// 向左面朝 - 侧面（已居中，x偏移+2）
 const LORD_FACE_LEFT = [
   // ===== 头盔侧面 + 角 =====
-  [5, 0, LORD_COLORS.horn], [6, 0, LORD_COLORS.hornDark],
-  [4, 1, LORD_COLORS.hornLight], [5, 1, LORD_COLORS.horn], [6, 1, LORD_COLORS.hornTip],
-  [4, 2, LORD_COLORS.hornDark], [5, 2, LORD_COLORS.hornLight], [6, 2, LORD_COLORS.hornTip],
-  [4, 3, LORD_COLORS.helmDark], [5, 3, LORD_COLORS.helm], [6, 3, LORD_COLORS.helmLight], [7, 3, LORD_COLORS.helmDark],
+  [7, 0, LORD_COLORS.horn], [8, 0, LORD_COLORS.hornDark],
+  [6, 1, LORD_COLORS.hornLight], [7, 1, LORD_COLORS.horn], [8, 1, LORD_COLORS.hornTip],
+  [6, 2, LORD_COLORS.hornDark], [7, 2, LORD_COLORS.hornLight], [8, 2, LORD_COLORS.hornTip],
+  [6, 3, LORD_COLORS.helmDark], [7, 3, LORD_COLORS.helm], [8, 3, LORD_COLORS.helmLight], [9, 3, LORD_COLORS.helmDark],
 
   // ===== 头盔侧面 =====
-  [4, 4, LORD_COLORS.helmDark], [5, 4, LORD_COLORS.eye], [6, 4, LORD_COLORS.eyeGlow], [7, 4, LORD_COLORS.helm],
-  [4, 5, LORD_COLORS.helmDark], [5, 5, LORD_COLORS.eyeGlow], [6, 5, LORD_COLORS.eyeInner], [7, 5, LORD_COLORS.helmDark],
-  [4, 6, LORD_COLORS.helm], [5, 6, LORD_COLORS.helmDark], [6, 6, LORD_COLORS.helm], [7, 6, LORD_COLORS.helmDark],
+  [6, 4, LORD_COLORS.helmDark], [7, 4, LORD_COLORS.eye], [8, 4, LORD_COLORS.eyeGlow], [9, 4, LORD_COLORS.helm],
+  [6, 5, LORD_COLORS.helmDark], [7, 5, LORD_COLORS.eyeGlow], [8, 5, LORD_COLORS.eyeInner], [9, 5, LORD_COLORS.helmDark],
+  [6, 6, LORD_COLORS.helm], [7, 6, LORD_COLORS.helmDark], [8, 6, LORD_COLORS.helm], [9, 6, LORD_COLORS.helmDark],
 
   // ===== 肩甲 =====
-  [3, 7, LORD_COLORS.armorDark], [4, 7, LORD_COLORS.armorPlateLight], [5, 7, LORD_COLORS.armorPlate], [6, 7, LORD_COLORS.chaos], [7, 7, LORD_COLORS.armorPlate], [8, 7, LORD_COLORS.armorDark],
-  [2, 8, LORD_COLORS.armorDark], [3, 8, LORD_COLORS.armor], [4, 8, LORD_COLORS.armorPlateLight], [5, 8, LORD_COLORS.armorPlate], [6, 8, LORD_COLORS.armorPlateLight], [7, 8, LORD_COLORS.chaosGlow], [8, 8, LORD_COLORS.armorPlate], [9, 8, LORD_COLORS.armorDark],
+  [5, 7, LORD_COLORS.armorDark], [6, 7, LORD_COLORS.armorPlateLight], [7, 7, LORD_COLORS.armorPlate], [8, 7, LORD_COLORS.chaos], [9, 7, LORD_COLORS.armorPlate], [10, 7, LORD_COLORS.armorDark],
+  [4, 8, LORD_COLORS.armorDark], [5, 8, LORD_COLORS.armor], [6, 8, LORD_COLORS.armorPlateLight], [7, 8, LORD_COLORS.armorPlate], [8, 8, LORD_COLORS.armorPlateLight], [9, 8, LORD_COLORS.chaosGlow], [10, 8, LORD_COLORS.armorPlate], [11, 8, LORD_COLORS.armorDark],
 
   // ===== 胸甲侧面 =====
-  [2, 9, LORD_COLORS.armorDark], [3, 9, LORD_COLORS.armorPlate], [4, 9, LORD_COLORS.armorPlateLight], [5, 9, LORD_COLORS.armorPlate], [6, 9, LORD_COLORS.chaos], [7, 9, LORD_COLORS.armorPlateLight], [8, 9, LORD_COLORS.armorPlate], [9, 9, LORD_COLORS.armorDark],
-  [2, 10, LORD_COLORS.armorDark], [3, 10, LORD_COLORS.armor], [4, 10, LORD_COLORS.armorPlateLight], [5, 10, LORD_COLORS.armorPlate], [6, 10, LORD_COLORS.chaosGlow], [7, 10, LORD_COLORS.armorPlate], [8, 10, LORD_COLORS.armorPlateLight], [9, 10, LORD_COLORS.armor], [10, 10, LORD_COLORS.armorDark],
+  [4, 9, LORD_COLORS.armorDark], [5, 9, LORD_COLORS.armorPlate], [6, 9, LORD_COLORS.armorPlateLight], [7, 9, LORD_COLORS.armorPlate], [8, 9, LORD_COLORS.chaos], [9, 9, LORD_COLORS.armorPlateLight], [10, 9, LORD_COLORS.armorPlate], [11, 9, LORD_COLORS.armorDark],
+  [4, 10, LORD_COLORS.armorDark], [5, 10, LORD_COLORS.armor], [6, 10, LORD_COLORS.armorPlateLight], [7, 10, LORD_COLORS.armorPlate], [8, 10, LORD_COLORS.chaosGlow], [9, 10, LORD_COLORS.armorPlate], [10, 10, LORD_COLORS.armorPlateLight], [11, 10, LORD_COLORS.armor], [12, 10, LORD_COLORS.armorDark],
 
   // ===== 腰带 =====
-  [3, 11, LORD_COLORS.belt], [4, 11, LORD_COLORS.armorPlate], [5, 11, LORD_COLORS.chaos], [6, 11, LORD_COLORS.armorPlateLight], [7, 11, LORD_COLORS.armorPlate], [8, 11, LORD_COLORS.belt], [9, 11, LORD_COLORS.belt],
+  [5, 11, LORD_COLORS.belt], [6, 11, LORD_COLORS.armorPlate], [7, 11, LORD_COLORS.chaos], [8, 11, LORD_COLORS.armorPlateLight], [9, 11, LORD_COLORS.armorPlate], [10, 11, LORD_COLORS.belt], [11, 11, LORD_COLORS.belt],
 
   // ===== 腿甲 =====
-  [4, 12, LORD_COLORS.armorDark], [5, 12, LORD_COLORS.armorPlate], [6, 12, LORD_COLORS.armorPlateLight], [7, 12, LORD_COLORS.armorPlate], [8, 12, LORD_COLORS.armorDark],
-  [4, 13, LORD_COLORS.boot], [5, 13, LORD_COLORS.bootLight], [6, 13, LORD_COLORS.boot], [7, 13, LORD_COLORS.bootLight], [8, 13, LORD_COLORS.boot],
-  [4, 14, LORD_COLORS.bootDark], [5, 14, LORD_COLORS.boot], [6, 14, LORD_COLORS.boot], [7, 14, LORD_COLORS.boot], [8, 14, LORD_COLORS.bootDark],
-  [4, 15, LORD_COLORS.boot], [5, 15, LORD_COLORS.bootLight], [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootLight], [8, 15, LORD_COLORS.boot],
+  [6, 12, LORD_COLORS.armorDark], [7, 12, LORD_COLORS.armorPlate], [8, 12, LORD_COLORS.armorPlateLight], [9, 12, LORD_COLORS.armorPlate], [10, 12, LORD_COLORS.armorDark],
+  [6, 13, LORD_COLORS.boot], [7, 13, LORD_COLORS.bootLight], [8, 13, LORD_COLORS.boot], [9, 13, LORD_COLORS.bootLight], [10, 13, LORD_COLORS.boot],
+  [6, 14, LORD_COLORS.bootDark], [7, 14, LORD_COLORS.boot], [8, 14, LORD_COLORS.boot], [9, 14, LORD_COLORS.boot], [10, 14, LORD_COLORS.bootDark],
+  [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootLight], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.bootLight], [10, 15, LORD_COLORS.boot],
 
   // ===== 左手（前伸持战锤）=====
-  [0, 8, LORD_COLORS.gauntlet],
-  [0, 9, LORD_COLORS.gauntletLight], [1, 9, LORD_COLORS.hammerDark],
-  [0, 10, LORD_COLORS.gauntlet], [1, 10, LORD_COLORS.hammer],
-  [0, 11, LORD_COLORS.gauntletDark], [1, 11, LORD_COLORS.hammerDark],
-  [1, 12, LORD_COLORS.hammer], [2, 12, LORD_COLORS.hammerDark],
-  [1, 13, LORD_COLORS.hammerDark], [2, 13, LORD_COLORS.hammerHeadDark],
-  [2, 14, LORD_COLORS.hammerHead], [3, 14, LORD_COLORS.hammerRune],
-  [2, 15, LORD_COLORS.hammerHeadLight],
+  [2, 8, LORD_COLORS.gauntlet],
+  [2, 9, LORD_COLORS.gauntletLight], [3, 9, LORD_COLORS.hammerDark],
+  [2, 10, LORD_COLORS.gauntlet], [3, 10, LORD_COLORS.hammer],
+  [2, 11, LORD_COLORS.gauntletDark], [3, 11, LORD_COLORS.hammerDark],
+  [3, 12, LORD_COLORS.hammer], [4, 12, LORD_COLORS.hammerDark],
+  [3, 13, LORD_COLORS.hammerDark], [4, 13, LORD_COLORS.hammerHeadDark],
+  [4, 14, LORD_COLORS.hammerHead], [5, 14, LORD_COLORS.hammerRune],
+  [4, 15, LORD_COLORS.hammerHeadLight],
 
   // ===== 右手（盾在身后）=====
-  [9, 9, LORD_COLORS.gauntlet], [10, 9, LORD_COLORS.gauntletDark],
-  [9, 10, LORD_COLORS.gauntletLight], [10, 10, LORD_COLORS.gauntlet],
-  [10, 11, LORD_COLORS.shieldDark],
-  [10, 12, LORD_COLORS.shield],
-  [10, 13, LORD_COLORS.shieldLight],
-  [10, 14, LORD_COLORS.shieldChaos],
+  [11, 9, LORD_COLORS.gauntlet], [12, 9, LORD_COLORS.gauntletDark],
+  [11, 10, LORD_COLORS.gauntletLight], [12, 10, LORD_COLORS.gauntlet],
+  [12, 11, LORD_COLORS.shieldDark],
+  [12, 12, LORD_COLORS.shield],
+  [12, 13, LORD_COLORS.shieldLight],
+  [12, 14, LORD_COLORS.shieldChaos],
 
   // ===== 混沌能量 =====
-  [5, 15, LORD_COLORS.energy],
-  [6, 15, LORD_COLORS.energyLight],
+  [7, 15, LORD_COLORS.energy],
+  [8, 15, LORD_COLORS.energyLight],
 ]
 
-// 向右面朝 - 侧面镜像
+// 向右面朝 - 侧面镜像（已居中，x偏移+2）
 const LORD_FACE_RIGHT = [
   // ===== 头盔侧面 + 角 =====
-  [5, 0, LORD_COLORS.hornDark], [6, 0, LORD_COLORS.horn],
-  [5, 1, LORD_COLORS.hornTip], [6, 1, LORD_COLORS.horn], [7, 1, LORD_COLORS.hornLight],
-  [5, 2, LORD_COLORS.hornTip], [6, 2, LORD_COLORS.hornLight], [7, 2, LORD_COLORS.hornDark],
-  [4, 3, LORD_COLORS.helmDark], [5, 3, LORD_COLORS.helmLight], [6, 3, LORD_COLORS.helm], [7, 3, LORD_COLORS.helmDark],
+  [7, 0, LORD_COLORS.hornDark], [8, 0, LORD_COLORS.horn],
+  [7, 1, LORD_COLORS.hornTip], [8, 1, LORD_COLORS.horn], [9, 1, LORD_COLORS.hornLight],
+  [7, 2, LORD_COLORS.hornTip], [8, 2, LORD_COLORS.hornLight], [9, 2, LORD_COLORS.hornDark],
+  [6, 3, LORD_COLORS.helmDark], [7, 3, LORD_COLORS.helmLight], [8, 3, LORD_COLORS.helm], [9, 3, LORD_COLORS.helmDark],
 
   // ===== 头盔侧面 =====
-  [4, 4, LORD_COLORS.helm], [5, 4, LORD_COLORS.eyeGlow], [6, 4, LORD_COLORS.eye], [7, 4, LORD_COLORS.helmDark],
-  [4, 5, LORD_COLORS.helmDark], [5, 5, LORD_COLORS.eyeInner], [6, 5, LORD_COLORS.eyeGlow], [7, 5, LORD_COLORS.helmDark],
-  [4, 6, LORD_COLORS.helmDark], [5, 6, LORD_COLORS.helm], [6, 6, LORD_COLORS.helmDark], [7, 6, LORD_COLORS.helm],
+  [6, 4, LORD_COLORS.helm], [7, 4, LORD_COLORS.eyeGlow], [8, 4, LORD_COLORS.eye], [9, 4, LORD_COLORS.helmDark],
+  [6, 5, LORD_COLORS.helmDark], [7, 5, LORD_COLORS.eyeInner], [8, 5, LORD_COLORS.eyeGlow], [9, 5, LORD_COLORS.helmDark],
+  [6, 6, LORD_COLORS.helmDark], [7, 6, LORD_COLORS.helm], [8, 6, LORD_COLORS.helmDark], [9, 6, LORD_COLORS.helm],
 
   // ===== 肩甲 =====
-  [4, 7, LORD_COLORS.armorDark], [5, 7, LORD_COLORS.armorPlate], [6, 7, LORD_COLORS.chaos], [7, 7, LORD_COLORS.armorPlateLight], [8, 7, LORD_COLORS.armorPlate], [9, 7, LORD_COLORS.armorDark],
-  [3, 8, LORD_COLORS.armorDark], [4, 8, LORD_COLORS.armorPlate], [5, 8, LORD_COLORS.chaosGlow], [6, 8, LORD_COLORS.armorPlateLight], [7, 8, LORD_COLORS.armorPlate], [8, 8, LORD_COLORS.armorPlateLight], [9, 8, LORD_COLORS.armor], [10, 8, LORD_COLORS.armorDark],
+  [6, 7, LORD_COLORS.armorDark], [7, 7, LORD_COLORS.armorPlate], [8, 7, LORD_COLORS.chaos], [9, 7, LORD_COLORS.armorPlateLight], [10, 7, LORD_COLORS.armorPlate], [11, 7, LORD_COLORS.armorDark],
+  [5, 8, LORD_COLORS.armorDark], [6, 8, LORD_COLORS.armorPlate], [7, 8, LORD_COLORS.chaosGlow], [8, 8, LORD_COLORS.armorPlateLight], [9, 8, LORD_COLORS.armorPlate], [10, 8, LORD_COLORS.armorPlateLight], [11, 8, LORD_COLORS.armor], [12, 8, LORD_COLORS.armorDark],
 
   // ===== 胸甲侧面 =====
-  [3, 9, LORD_COLORS.armorDark], [4, 9, LORD_COLORS.armorPlate], [5, 9, LORD_COLORS.armorPlateLight], [6, 9, LORD_COLORS.chaos], [7, 9, LORD_COLORS.armorPlate], [8, 9, LORD_COLORS.armorPlateLight], [9, 9, LORD_COLORS.armorPlate], [10, 9, LORD_COLORS.armorDark],
-  [3, 10, LORD_COLORS.armorDark], [4, 10, LORD_COLORS.armorPlateLight], [5, 10, LORD_COLORS.chaosGlow], [6, 10, LORD_COLORS.armorPlate], [7, 10, LORD_COLORS.armorPlateLight], [8, 10, LORD_COLORS.armorPlate], [9, 10, LORD_COLORS.armor], [10, 10, LORD_COLORS.armorDark],
+  [5, 9, LORD_COLORS.armorDark], [6, 9, LORD_COLORS.armorPlate], [7, 9, LORD_COLORS.armorPlateLight], [8, 9, LORD_COLORS.chaos], [9, 9, LORD_COLORS.armorPlate], [10, 9, LORD_COLORS.armorPlateLight], [11, 9, LORD_COLORS.armorPlate], [12, 9, LORD_COLORS.armorDark],
+  [5, 10, LORD_COLORS.armorDark], [6, 10, LORD_COLORS.armorPlateLight], [7, 10, LORD_COLORS.chaosGlow], [8, 10, LORD_COLORS.armorPlate], [9, 10, LORD_COLORS.armorPlateLight], [10, 10, LORD_COLORS.armorPlate], [11, 10, LORD_COLORS.armor], [12, 10, LORD_COLORS.armorDark],
 
   // ===== 腰带 =====
-  [4, 11, LORD_COLORS.belt], [5, 11, LORD_COLORS.belt], [6, 11, LORD_COLORS.armorPlateLight], [7, 11, LORD_COLORS.chaos], [8, 11, LORD_COLORS.armorPlate], [9, 11, LORD_COLORS.belt],
+  [6, 11, LORD_COLORS.belt], [7, 11, LORD_COLORS.belt], [8, 11, LORD_COLORS.armorPlateLight], [9, 11, LORD_COLORS.chaos], [10, 11, LORD_COLORS.armorPlate], [11, 11, LORD_COLORS.belt],
 
   // ===== 腿甲 =====
-  [4, 12, LORD_COLORS.armorDark], [5, 12, LORD_COLORS.armorPlate], [6, 12, LORD_COLORS.armorPlateLight], [7, 12, LORD_COLORS.armorPlate], [8, 12, LORD_COLORS.armorDark],
-  [4, 13, LORD_COLORS.boot], [5, 13, LORD_COLORS.bootLight], [6, 13, LORD_COLORS.boot], [7, 13, LORD_COLORS.bootLight], [8, 13, LORD_COLORS.boot],
-  [4, 14, LORD_COLORS.bootDark], [5, 14, LORD_COLORS.boot], [6, 14, LORD_COLORS.boot], [7, 14, LORD_COLORS.boot], [8, 14, LORD_COLORS.bootDark],
-  [4, 15, LORD_COLORS.boot], [5, 15, LORD_COLORS.bootLight], [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootLight], [8, 15, LORD_COLORS.boot],
+  [6, 12, LORD_COLORS.armorDark], [7, 12, LORD_COLORS.armorPlate], [8, 12, LORD_COLORS.armorPlateLight], [9, 12, LORD_COLORS.armorPlate], [10, 12, LORD_COLORS.armorDark],
+  [6, 13, LORD_COLORS.boot], [7, 13, LORD_COLORS.bootLight], [8, 13, LORD_COLORS.boot], [9, 13, LORD_COLORS.bootLight], [10, 13, LORD_COLORS.boot],
+  [6, 14, LORD_COLORS.bootDark], [7, 14, LORD_COLORS.boot], [8, 14, LORD_COLORS.boot], [9, 14, LORD_COLORS.boot], [10, 14, LORD_COLORS.bootDark],
+  [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootLight], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.bootLight], [10, 15, LORD_COLORS.boot],
 
   // ===== 左手（盾在身后）=====
-  [3, 9, LORD_COLORS.gauntletDark], [4, 9, LORD_COLORS.gauntlet],
-  [3, 10, LORD_COLORS.gauntlet], [4, 10, LORD_COLORS.gauntletLight],
-  [3, 11, LORD_COLORS.shieldChaos],
-  [3, 12, LORD_COLORS.shieldLight],
-  [3, 13, LORD_COLORS.shield],
-  [3, 14, LORD_COLORS.shieldDark],
+  [5, 9, LORD_COLORS.gauntletDark], [6, 9, LORD_COLORS.gauntlet],
+  [5, 10, LORD_COLORS.gauntlet], [6, 10, LORD_COLORS.gauntletLight],
+  [5, 11, LORD_COLORS.shieldChaos],
+  [5, 12, LORD_COLORS.shieldLight],
+  [5, 13, LORD_COLORS.shield],
+  [5, 14, LORD_COLORS.shieldDark],
 
   // ===== 右手（前伸持战锤）=====
-  [11, 8, LORD_COLORS.gauntlet],
-  [12, 9, LORD_COLORS.gauntletLight], [13, 9, LORD_COLORS.hammerDark],
-  [12, 10, LORD_COLORS.gauntlet], [13, 10, LORD_COLORS.hammer],
-  [12, 11, LORD_COLORS.gauntletDark], [13, 11, LORD_COLORS.hammerDark],
-  [13, 12, LORD_COLORS.hammer], [14, 12, LORD_COLORS.hammerDark],
-  [14, 13, LORD_COLORS.hammerHeadDark], [15, 13, LORD_COLORS.hammer],
-  [14, 14, LORD_COLORS.hammerRune], [15, 14, LORD_COLORS.hammerHead],
-  [15, 15, LORD_COLORS.hammerHeadLight],
+  [13, 8, LORD_COLORS.gauntlet],
+  [14, 9, LORD_COLORS.gauntletLight], [15, 9, LORD_COLORS.hammerDark],
+  [14, 10, LORD_COLORS.gauntlet], [15, 10, LORD_COLORS.hammer],
+  [14, 11, LORD_COLORS.gauntletDark], [15, 11, LORD_COLORS.hammerDark],
+  [15, 12, LORD_COLORS.hammer], [16, 12, LORD_COLORS.hammerDark],
+  [16, 13, LORD_COLORS.hammerHeadDark], [17, 13, LORD_COLORS.hammer],
+  [16, 14, LORD_COLORS.hammerRune], [17, 14, LORD_COLORS.hammerHead],
+  [17, 15, LORD_COLORS.hammerHeadLight],
 
   // ===== 混沌能量 =====
-  [7, 15, LORD_COLORS.energyLight],
-  [8, 15, LORD_COLORS.energy],
+  [9, 15, LORD_COLORS.energyLight],
+  [10, 15, LORD_COLORS.energy],
 ]
 
-// 待机动画帧（眼睛发光 + 混沌符文闪烁）
+// 待机动画帧（眼睛发光 + 混沌符文闪烁）- 已居中
 const LORD_IDLE_FRAMES = [
   // 帧0 - 暗
   [
     { pixels: [
-      [6, 4, LORD_COLORS.eye], [7, 4, LORD_COLORS.eye],
-      [6, 8, LORD_COLORS.chaos], [7, 8, LORD_COLORS.chaos],
-      [6, 12, LORD_COLORS.chaos], [7, 12, LORD_COLORS.chaos],
-      [5, 15, LORD_COLORS.energy], [8, 15, LORD_COLORS.energy],
+      [8, 4, LORD_COLORS.eye], [9, 4, LORD_COLORS.eye],
+      [8, 8, LORD_COLORS.chaos], [9, 8, LORD_COLORS.chaos],
+      [8, 12, LORD_COLORS.chaos], [9, 12, LORD_COLORS.chaos],
+      [7, 15, LORD_COLORS.energy], [10, 15, LORD_COLORS.energy],
     ] }
   ],
   // 帧1 - 亮（眼睛发光 + 符文强发光 + 能量爆发）
   [
     { pixels: [
-      [6, 4, LORD_COLORS.eyeGlow], [7, 4, LORD_COLORS.eyeGlow],
-      [6, 8, LORD_COLORS.chaosGlow], [7, 8, LORD_COLORS.chaosGlow],
-      [6, 12, LORD_COLORS.chaosGlow], [7, 12, LORD_COLORS.chaosGlow],
-      [5, 15, LORD_COLORS.energyLight], [8, 15, LORD_COLORS.energyLight],
-      [6, 15, LORD_COLORS.spark], [7, 15, LORD_COLORS.spark],
+      [8, 4, LORD_COLORS.eyeGlow], [9, 4, LORD_COLORS.eyeGlow],
+      [8, 8, LORD_COLORS.chaosGlow], [9, 8, LORD_COLORS.chaosGlow],
+      [8, 12, LORD_COLORS.chaosGlow], [9, 12, LORD_COLORS.chaosGlow],
+      [7, 15, LORD_COLORS.energyLight], [10, 15, LORD_COLORS.energyLight],
+      [8, 15, LORD_COLORS.spark], [9, 15, LORD_COLORS.spark],
     ] }
   ],
 ]
 
-// 行走动画帧（步伐）
+// 行走动画帧（步伐）- 已居中
 const LORD_WALK_FRAMES = [
   // 帧0 - 左脚前
   [
     { pixels: [
-      [4, 15, LORD_COLORS.bootDark], [5, 15, LORD_COLORS.boot], [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootDark], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.bootDark],
+      [6, 15, LORD_COLORS.bootDark], [7, 15, LORD_COLORS.boot], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.bootDark], [10, 15, LORD_COLORS.boot], [11, 15, LORD_COLORS.bootDark],
     ] }
   ],
   // 帧1 - 中间
   [
     { pixels: [
-      [4, 15, LORD_COLORS.boot], [5, 15, LORD_COLORS.bootDark], [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.boot], [8, 15, LORD_COLORS.bootDark], [9, 15, LORD_COLORS.boot],
+      [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootDark], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.boot], [10, 15, LORD_COLORS.bootDark], [11, 15, LORD_COLORS.boot],
     ] }
   ],
   // 帧2 - 右脚前
   [
     { pixels: [
-      [4, 15, LORD_COLORS.boot], [5, 15, LORD_COLORS.bootDark], [6, 15, LORD_COLORS.bootDark], [7, 15, LORD_COLORS.boot], [8, 15, LORD_COLORS.boot], [9, 15, LORD_COLORS.bootDark],
+      [6, 15, LORD_COLORS.boot], [7, 15, LORD_COLORS.bootDark], [8, 15, LORD_COLORS.bootDark], [9, 15, LORD_COLORS.boot], [10, 15, LORD_COLORS.boot], [11, 15, LORD_COLORS.bootDark],
     ] }
   ],
 ]
