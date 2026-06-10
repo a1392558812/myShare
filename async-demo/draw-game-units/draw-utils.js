@@ -138,7 +138,7 @@ export const drawHealthBar = (ctx, unit, config) => {
   ctx.fillRect(barX, hpBarY, barWidth, barHeight)
   
   // 绘制血条当前值
-  const hpColor = hpRatio > 0.5 ? '#4CAF50' : hpRatio > 0.25 ? '#FFC107' : '#F44336'
+  const hpColor = '#F44336'
   ctx.fillStyle = hpColor
   ctx.fillRect(barX, hpBarY, barWidth * hpRatio, barHeight)
   

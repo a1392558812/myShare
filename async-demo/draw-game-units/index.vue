@@ -81,7 +81,7 @@ const units = ref({
     maxHp: 100,
     hp: 50,
     maxMp: 100,
-    mp: 50,
+    mp: 0,
     avatarPos: { x: 0, y: 0 },
     speed: 3,
     direction: 'down',
