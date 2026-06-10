@@ -161,3 +161,64 @@ export const drawHealthBar = (ctx, unit, config) => {
     hpBarY + barHeight * 2 + 4
   );
 }
+/**
+ * @description {drawSelectMenus} 绘制选择菜单
+ * @param {CanvasRenderingContext2D} ctx canvas上下文
+ * @param {Object} config 选择菜单配置
+ * @param {Number} config.x 选择菜单x坐标
+ * @param {Number} config.y 选择菜单y坐标
+ * @param {Number} config.width 选择菜单item宽度
+ * @param {Number} config.height 选择菜单item高度
+ * @param {Function} config.callback 选择菜单item点击回调函数, 参数为选择菜单项item
+ * @param {Array} config.list 选择菜单列表
+ * @param {Object} config.list[0] 选择菜单项
+ * @param {String} config.list[0].label 选择菜单项标签文本
+ * @param {Number} config.list[0].value 选择菜单项值
+ * @param {Number} config.list[0].isDisabled 是否可点击
+ */
+export const drawSelectMenus = (ctx, config) => {
+  const list = config.list || []
+  const x = config.x
+  const y = config.y
+  const itemWidth = config.width || 80
+  const itemHeight = config.height || 14
+  const padding = 2
+  const borderWidth = 1
+
+  ctx.imageSmoothingEnabled = false
+
+  const listCount = list.length
+  const menuHeight = listCount * itemHeight + padding * 2
+
+  ctx.fillStyle = '#1A1A2E'
+  ctx.fillRect(x, y, itemWidth + padding * 2, menuHeight)
+
+  ctx.fillStyle = '#16213E'
+  ctx.fillRect(x + borderWidth, y + borderWidth, itemWidth + padding * 2 - borderWidth * 2, menuHeight - borderWidth * 2)
+
+  for (let i = 0; i < listCount; i++) {
+    const item = list[i]
+    const itemY = y + padding + i * itemHeight
+    const itemX = x + padding
+
+    if (item.isDisabled) {
+      ctx.fillStyle = '#2A2A3E'
+    } else {
+      ctx.fillStyle = '#2E3A5E'
+    }
+    ctx.fillRect(itemX, itemY, itemWidth, itemHeight - padding)
+
+    if (!item.isDisabled) {
+      ctx.fillStyle = '#4A5A8E'
+      ctx.fillRect(itemX, itemY, itemWidth, borderWidth)
+      ctx.fillStyle = '#0E1A2E'
+      ctx.fillRect(itemX, itemY + itemHeight - padding - borderWidth, itemWidth, borderWidth)
+    }
+
+    ctx.font = '10px sans-serif'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = item.isDisabled ? '#666666' : '#E0E0E0'
+    ctx.fillText(item.label, itemX + 6, itemY + (itemHeight - padding) / 2)
+  }
+}
