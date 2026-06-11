@@ -153,93 +153,247 @@ export const drawAttack = (ctx, { x, y, size, frame }) => {
   const unit = size / 16;
   const cx = x + size / 2;
   const cy = y + size / 2;
-  const orbitRadius = size * 0.5;
+  const orbitRadius = size * 0.28;
 
   ctx.save();
 
-  const cycleDuration = 80;
-  const angle = (frame % cycleDuration) / cycleDuration * Math.PI * 2;
+  // 透明度和缩放脉动
+  const baseAlpha = 0.85 + 0.1 * Math.sin(frame * 0.15);
+  const pulseScale = 1 + 0.04 * Math.sin(frame * 0.2);
 
-  const swordX = cx + Math.cos(angle) * orbitRadius;
-  const swordY = cy + Math.sin(angle) * orbitRadius;
+  // 剑的旋转角度（从帧计数驱动，绕圆心旋转）
+  const baseAngle = frame * 0.08;
 
-  const alpha = 0.7 + 0.3 * Math.sin(frame * 0.15);
+  // 5把剑，等角度间隔
+  const swordCount = 5;
+  const angleStep = (Math.PI * 2) / swordCount;
 
-  ctx.save();
-  ctx.translate(swordX, swordY);
-  ctx.rotate(angle + Math.PI / 4);
+  // 剑的尺寸（缩小以容纳5把）
+  const bladeWidth = unit * 1.0;
+  const bladeHeight = unit * 2.8;
+  const guardWidth = unit * 2.0;
+  const guardHeight = unit * 0.8;
+  const handleWidth = unit * 0.8;
+  const handleHeight = unit * 1.5;
 
-  const swordLength = unit * 2.8;
-  const bladeWidth = unit * 0.55;
-  const handleLength = unit * 0.7;
+  for (let i = 0; i < swordCount; i++) {
+    const angle = baseAngle + i * angleStep;
+    const swordX = cx + orbitRadius * Math.cos(angle);
+    const swordY = cy + orbitRadius * Math.sin(angle);
 
-  const bladeGrad = ctx.createLinearGradient(
-    0,
-    -swordLength / 2,
-    0,
-    swordLength / 2,
-  );
-  bladeGrad.addColorStop(0, `rgba(255, 215, 0, ${alpha})`);
-  bladeGrad.addColorStop(0.5, `rgba(218, 165, 32, ${alpha * 0.9})`);
-  bladeGrad.addColorStop(1, `rgba(180, 130, 20, ${alpha * 0.75})`);
+    ctx.save();
+    ctx.translate(swordX, swordY);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.scale(pulseScale, pulseScale);
 
-  ctx.fillStyle = bladeGrad;
+    // 剑柄（底部）
+    ctx.fillStyle = `rgba(101, 67, 33, ${baseAlpha})`;
+    ctx.fillRect(-handleWidth / 2, guardHeight / 2, handleWidth, handleHeight);
+
+    // 剑柄装饰
+    ctx.fillStyle = `rgba(139, 90, 43, ${baseAlpha * 0.9})`;
+    ctx.fillRect(
+      -handleWidth / 2,
+      guardHeight / 2 + unit * 0.25,
+      handleWidth,
+      unit * 0.35,
+    );
+    ctx.fillRect(
+      -handleWidth / 2,
+      guardHeight / 2 + unit * 1.0,
+      handleWidth,
+      unit * 0.35,
+    );
+
+    // 剑柄末端圆球
+    ctx.fillStyle = `rgba(218, 165, 32, ${baseAlpha})`;
+    ctx.beginPath();
+    ctx.arc(0, guardHeight / 2 + handleHeight, unit * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 剑柄圆球高光
+    ctx.fillStyle = `rgba(255, 215, 100, ${baseAlpha * 0.9})`;
+    ctx.beginPath();
+    ctx.arc(
+      -unit * 0.12,
+      guardHeight / 2 + handleHeight - unit * 0.12,
+      unit * 0.2,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+
+    // 剑格（护手）
+    ctx.fillStyle = `rgba(139, 90, 43, ${baseAlpha})`;
+    ctx.fillRect(-guardWidth / 2, -guardHeight / 2, guardWidth, guardHeight);
+
+    // 剑格高光边缘
+    ctx.fillStyle = `rgba(218, 165, 32, ${baseAlpha * 0.9})`;
+    ctx.fillRect(-guardWidth / 2, -guardHeight / 2, guardWidth, unit * 0.25);
+
+    // 剑格两端装饰球
+    ctx.fillStyle = `rgba(218, 165, 32, ${baseAlpha})`;
+    ctx.beginPath();
+    ctx.arc(-guardWidth / 2, 0, unit * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(guardWidth / 2, 0, unit * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 剑刃主体（银色）
+    ctx.fillStyle = `rgba(192, 192, 192, ${baseAlpha})`;
+    ctx.fillRect(
+      -bladeWidth / 2,
+      -bladeHeight - guardHeight / 2,
+      bladeWidth,
+      bladeHeight,
+    );
+
+    // 剑刃高光（左侧亮边）
+    ctx.fillStyle = `rgba(230, 230, 250, ${baseAlpha * 0.95})`;
+    ctx.fillRect(
+      -bladeWidth / 2,
+      -bladeHeight - guardHeight / 2,
+      unit * 0.35,
+      bladeHeight,
+    );
+
+    // 剑刃阴影（右侧暗边）
+    ctx.fillStyle = `rgba(120, 120, 140, ${baseAlpha * 0.85})`;
+    ctx.fillRect(
+      bladeWidth / 2 - unit * 0.35,
+      -bladeHeight - guardHeight / 2,
+      unit * 0.35,
+      bladeHeight,
+    );
+
+    // 剑刃中央血槽
+    ctx.fillStyle = `rgba(150, 150, 170, ${baseAlpha * 0.6})`;
+    ctx.fillRect(
+      -unit * 0.12,
+      -bladeHeight * 0.8 - guardHeight / 2,
+      unit * 0.24,
+      bladeHeight * 0.7,
+    );
+
+    // 剑尖（三角形尖）
+    ctx.fillStyle = `rgba(192, 192, 192, ${baseAlpha})`;
+    ctx.beginPath();
+    ctx.moveTo(-bladeWidth / 2, -bladeHeight - guardHeight / 2);
+    ctx.lineTo(0, -bladeHeight * 1.3 - guardHeight / 2);
+    ctx.lineTo(bladeWidth / 2, -bladeHeight - guardHeight / 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // 剑尖高光
+    ctx.fillStyle = `rgba(230, 230, 250, ${baseAlpha * 0.9})`;
+    ctx.beginPath();
+    ctx.moveTo(-bladeWidth / 2, -bladeHeight - guardHeight / 2);
+    ctx.lineTo(-unit * 0.08, -bladeHeight * 1.25 - guardHeight / 2);
+    ctx.lineTo(0, -bladeHeight - guardHeight / 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // 剑刃光芒效果（随帧闪烁）
+    const glowIntensity = 0.4 + 0.3 * Math.sin(frame * 0.3 + i);
+    ctx.strokeStyle = `rgba(255, 100, 50, ${baseAlpha * glowIntensity})`;
+    ctx.lineWidth = Math.max(1, unit * 0.25);
+    ctx.beginPath();
+    ctx.moveTo(
+      -bladeWidth / 2 - unit * 0.15,
+      -bladeHeight * 0.5 - guardHeight / 2,
+    );
+    ctx.lineTo(
+      bladeWidth / 2 + unit * 0.15,
+      -bladeHeight * 0.5 - guardHeight / 2,
+    );
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // 旋转轨迹光晕（淡红色圆环）
+  ctx.strokeStyle = `rgba(220, 80, 60, ${baseAlpha * 0.2})`;
+  ctx.lineWidth = Math.max(1, unit * 0.3);
   ctx.beginPath();
-  ctx.moveTo(0, -swordLength / 2);
-  ctx.lineTo(-bladeWidth / 2, swordLength / 2 - handleLength);
-  ctx.lineTo(0, swordLength / 2 - handleLength - unit * 0.15);
-  ctx.lineTo(bladeWidth / 2, swordLength / 2 - handleLength);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.strokeStyle = `rgba(139, 90, 43, ${alpha})`;
-  ctx.lineWidth = Math.max(1, unit * 0.12);
+  ctx.arc(cx, cy, orbitRadius, 0, Math.PI * 2);
   ctx.stroke();
-
-  ctx.fillStyle = `rgba(80, 50, 30, ${alpha})`;
-  ctx.fillRect(
-    -unit * 0.22,
-    swordLength / 2 - handleLength,
-    unit * 0.44,
-    handleLength,
-  );
-
-  ctx.fillStyle = `rgba(218, 165, 32, ${alpha})`;
-  ctx.fillRect(
-    -unit * 0.45,
-    swordLength / 2 - handleLength - unit * 0.08,
-    unit * 0.9,
-    unit * 0.16,
-  );
-
-  ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
-  ctx.beginPath();
-  ctx.arc(0, swordLength / 2, unit * 0.18, 0, Math.PI * 2);
-  ctx.fill();
 
   ctx.restore();
+};
 
-  const tailLength = size * 0.2;
-  const tailAngle = angle - Math.PI / 6;
-  const tailGrad = ctx.createLinearGradient(
-    swordX - Math.cos(tailAngle) * tailLength,
-    swordY - Math.sin(tailAngle) * tailLength,
-    swordX,
-    swordY,
-  );
-  tailGrad.addColorStop(0, "rgba(255, 200, 50, 0)");
-  tailGrad.addColorStop(1, `rgba(255, 200, 50, ${alpha * 0.5})`);
+export const drawRecover = (ctx, { x, y, size, frame }) => {
+  if (!ctx || frame === undefined) return;
 
-  ctx.strokeStyle = tailGrad;
-  ctx.lineWidth = Math.max(2, unit * 0.4);
-  ctx.lineCap = "round";
+  const unit = size / 16;
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const orbitRadius = size * 0.38;
+  const spawnY = y + size * 0.95;
+  const topY = y - size * 0.05;
+
+  ctx.save();
+
+  const baseAlpha = 0.85 + 0.12 * Math.sin(frame * 0.1);
+
+  const totalParticles = 14;
+
+  for (let i = 0; i < totalParticles; i++) {
+    // 每个粒子的相位，0~1 循环
+    const phase = ((frame * 0.5 + i * (200 / totalParticles)) % 200) / 200;
+
+    // y 从底部 spawnY 上升到顶部 topY
+    const py = spawnY - phase * (spawnY - topY);
+
+    // 环绕效果：根据上升进度在水平方向做左右摆动，形成螺旋升腾
+    // 越接近中心（y接近cy），摆动幅度越大（等于orbitRadius），接近顶部/底部时收窄
+    const verticalT = (py - topY) / (spawnY - topY);
+    const swayFactor = Math.sin(verticalT * Math.PI);
+    const angle = phase * Math.PI * 4 + i * 0.6;
+    const px = cx + Math.cos(angle) * orbitRadius * swayFactor;
+
+    // 粒子大小：从小开始，中心最大，顶部逐渐消散
+    const sizeFactor = Math.sin(verticalT * Math.PI) * 0.9 + 0.1;
+    const isRed = i % 2 === 0;
+    const pSize = (isRed ? unit * 1.3 : unit * 1.1) * sizeFactor;
+
+    // 透明度：顶部淡出
+    const fadeAlpha = verticalT < 0.15 ? verticalT / 0.15 : (verticalT > 0.8 ? (1 - verticalT) / 0.2 : 1);
+    const alpha = baseAlpha * fadeAlpha;
+
+    // 颜色选择
+    const glowColor = isRed ? `rgba(255, 80, 80, ${alpha * 0.25})` : `rgba(80, 160, 255, ${alpha * 0.25})`;
+    const highlight = isRed ? `rgba(255, 220, 220, ${alpha})` : `rgba(220, 240, 255, ${alpha})`;
+    const midColor = isRed ? `rgba(255, 100, 100, ${alpha * 0.9})` : `rgba(80, 160, 255, ${alpha * 0.9})`;
+    const darkColor = isRed ? `rgba(180, 30, 30, ${alpha * 0.7})` : `rgba(30, 80, 180, ${alpha * 0.7})`;
+
+    // 光晕
+    ctx.beginPath();
+    ctx.fillStyle = glowColor;
+    ctx.arc(px, py, pSize * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 粒子核心
+    ctx.beginPath();
+    const grad = ctx.createRadialGradient(px - pSize * 0.2, py - pSize * 0.2, 0, px, py, pSize);
+    grad.addColorStop(0, highlight);
+    grad.addColorStop(0.5, midColor);
+    grad.addColorStop(1, darkColor);
+    ctx.fillStyle = grad;
+    ctx.arc(px, py, pSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 中心光点
+  const centerSize = unit * 0.9 + Math.sin(frame * 0.2) * unit * 0.3;
   ctx.beginPath();
-  ctx.moveTo(
-    swordX - Math.cos(tailAngle) * tailLength,
-    swordY - Math.sin(tailAngle) * tailLength,
-  );
-  ctx.lineTo(swordX, swordY);
-  ctx.stroke();
+  const centerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, centerSize * 2);
+  centerGrad.addColorStop(0, `rgba(255, 255, 255, ${baseAlpha * 0.8})`);
+  centerGrad.addColorStop(0.4, `rgba(200, 120, 200, ${baseAlpha * 0.35})`);
+  centerGrad.addColorStop(1, `rgba(255, 100, 100, 0)`);
+  ctx.fillStyle = centerGrad;
+  ctx.arc(cx, cy, centerSize * 2, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.restore();
 };

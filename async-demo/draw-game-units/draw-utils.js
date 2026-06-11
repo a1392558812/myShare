@@ -707,3 +707,279 @@ export const buildEmojiCursor = (emoji) => {
     .replace(/"/g, "%22");
   return `url("data:image/svg+xml;charset=utf-8,${encoded}") 0 0, auto`;
 };
+
+/**
+ * @description 绘制单位
+ * @param {RenderingContext2D} ctx canvas元素
+ * @param {Object} currentUnit 当前单位
+ * @param {String} currentUnit.maxHp 当前单位最大生命值
+ * @param {String} currentUnit.hp 当前单位当前生命值
+ * @param {String} currentUnit.name 当前单位名称
+ * @param {String} currentUnit.maxMp 当前单位最大魔法值
+ * @param {String} currentUnit.mp 当前单位当前魔法值
+ * @param {String} currentUnit.drawAvatar 当前单位头像绘制函数(同上drawAvatar)
+ * @param {String} currentUnit.buffList 当前单位 buff 列表
+ * @param {String} currentUnit.buffList[0].label 当前单位 buff 名称
+ * @param {String} currentUnit.buffList[0].duration 当前单位 buff 列表持续回合
+ * @param {String} currentUnit.debuffList 当前单位 debuff 列表
+ * @param {String} currentUnit.debuffList[0].label 当前单位 debuff 名称
+ * @param {String} currentUnit.debuffList[0].duration 当前单位 debuff 列表持续回合
+ *
+ * @param {Object} config 配置项
+ * @param {Number} config.x 单位面板 x 坐标
+ * @param {Number} config.y 单位面板 y 坐标
+ * @param {Number} config.width 单位面板宽度
+ * @param {Number} config.height 单位面板高度
+ */
+export const drawPanel = (ctx, unit, config) => {
+  if (!ctx || !unit || !config) return;
+
+  const x = config.x;
+  const y = config.y;
+  const width = config.width || 240;
+  const height = config.height || 130;
+
+  ctx.save();
+
+  const bgColor = config.bgColor || "#1A1A2E";
+  const borderColor = config.borderColor || "#3A3A5E";
+
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(x, y, width, height);
+
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, width, height);
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.strokeRect(x + 1, y + 1, width - 2, height - 2);
+
+  const padding = 8;
+  const gap = 12;
+  const lineHeight = 16;
+
+  const avatarBoxSize = 80;
+  const avatarX = x + padding;
+  const avatarY = y + padding;
+
+  // 头像框外层（深色）
+  ctx.fillStyle = "#0A0A1E";
+  ctx.fillRect(avatarX - 3, avatarY - 3, avatarBoxSize + 6, avatarBoxSize + 6);
+
+  // 头像框装饰边框（金色渐变）
+  const frameGrad = ctx.createLinearGradient(
+    avatarX,
+    avatarY,
+    avatarX + avatarBoxSize,
+    avatarY + avatarBoxSize,
+  );
+  frameGrad.addColorStop(0, "#B8860B");
+  frameGrad.addColorStop(0.5, "#FFD700");
+  frameGrad.addColorStop(1, "#B8860B");
+  ctx.strokeStyle = frameGrad;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(
+    avatarX - 2,
+    avatarY - 2,
+    avatarBoxSize + 4,
+    avatarBoxSize + 4,
+  );
+
+  // 内层边框
+  ctx.strokeStyle = "#5A4A1E";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(avatarX, avatarY, avatarBoxSize, avatarBoxSize);
+
+  // 四角装饰
+  const cornerSize = 8;
+  ctx.fillStyle = "#FFD700";
+  ctx.fillRect(avatarX - 3, avatarY - 3, cornerSize, 2);
+  ctx.fillRect(avatarX - 3, avatarY - 3, 2, cornerSize);
+  ctx.fillRect(
+    avatarX + avatarBoxSize - cornerSize + 3,
+    avatarY - 3,
+    cornerSize,
+    2,
+  );
+  ctx.fillRect(avatarX + avatarBoxSize + 1, avatarY - 3, 2, cornerSize);
+  ctx.fillRect(avatarX - 3, avatarY + avatarBoxSize + 1, cornerSize, 2);
+  ctx.fillRect(
+    avatarX - 3,
+    avatarY + avatarBoxSize - cornerSize + 3,
+    2,
+    cornerSize,
+  );
+  ctx.fillRect(
+    avatarX + avatarBoxSize - cornerSize + 3,
+    avatarY + avatarBoxSize + 1,
+    cornerSize,
+    2,
+  );
+  ctx.fillRect(
+    avatarX + avatarBoxSize + 1,
+    avatarY + avatarBoxSize - cornerSize + 3,
+    2,
+    cornerSize,
+  );
+
+  if (unit.drawAvatar) {
+    const innerSize = avatarBoxSize - 4;
+    const centerX = avatarX + 2 + innerSize / 2;
+    const centerY = avatarY + 2 + innerSize / 2;
+    unit.drawAvatar(
+      ctx,
+      {
+        size: innerSize,
+      },
+      {
+        x: avatarX + 4,
+        y: avatarY + 4,
+        size: innerSize,
+      },
+    );
+  }
+
+  const infoOffsetX = avatarBoxSize + gap;
+  const infoStartX = x + padding + infoOffsetX;
+  const infoWidth = width - padding - infoOffsetX - padding;
+  let currentY = y + padding;
+  const barHeight = 8;
+
+  ctx.fillStyle = config.nameColor || "#E0E0E0";
+  ctx.font = "bold 14px sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText(unit.name || "Unknown", infoStartX, currentY, infoWidth);
+  currentY += lineHeight + 4;
+
+  const maxHp = unit.maxHp || 100;
+  const hp = unit.hp ?? maxHp;
+  const hpRatio = Math.max(0, Math.min(1, hp / maxHp));
+
+  ctx.fillStyle = "#FF6B6B";
+  ctx.font = "14px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(`HP ${hp}/${maxHp}`, infoStartX, currentY, infoWidth);
+  currentY += lineHeight;
+
+  ctx.fillStyle = "#2A2A2A";
+  ctx.fillRect(infoStartX, currentY, infoWidth, barHeight);
+
+  const hpGrad = ctx.createLinearGradient(
+    infoStartX,
+    0,
+    infoStartX + infoWidth,
+    0,
+  );
+  hpGrad.addColorStop(0, "#E53935");
+  hpGrad.addColorStop(1, "#F44336");
+  ctx.fillStyle = hpGrad;
+  ctx.fillRect(infoStartX, currentY, infoWidth * hpRatio, barHeight);
+
+  ctx.strokeStyle = "#1A1A1A";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(infoStartX, currentY, infoWidth, barHeight);
+  currentY += lineHeight;
+
+  const maxMp = unit.maxMp || 100;
+  const mp = unit.mp ?? maxMp;
+  const mpRatio = Math.max(0, Math.min(1, mp / maxMp));
+
+  ctx.fillStyle = "#4FC3F7";
+  ctx.font = "14px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(`MP ${mp}/${maxMp}`, infoStartX, currentY, infoWidth);
+  currentY += lineHeight;
+
+  ctx.fillStyle = "#1A2A3A";
+  ctx.fillRect(infoStartX, currentY, infoWidth, barHeight);
+
+  const mpGrad = ctx.createLinearGradient(
+    infoStartX,
+    0,
+    infoStartX + infoWidth,
+    0,
+  );
+  mpGrad.addColorStop(0, "#1976D2");
+  mpGrad.addColorStop(1, "#2196F3");
+  ctx.fillStyle = mpGrad;
+  ctx.fillRect(infoStartX, currentY, infoWidth * mpRatio, barHeight);
+
+  ctx.strokeStyle = "#1A1A1A";
+  ctx.strokeRect(infoStartX, currentY, infoWidth, barHeight);
+  currentY += lineHeight + 4;
+
+  const buffList = unit.buffList || [];
+  const iconBoxHeight = 16;
+  const iconBoxGap = 6;
+
+  if (buffList.length > 0) {
+    let buffIconX = infoStartX;
+    buffList.forEach((buff) => {
+      const textToShow =
+        buff.duration !== undefined
+          ? `${buff.label}${buff.duration}`
+          : buff.label;
+
+      ctx.font = "14px sans-serif";
+      const textWidth = ctx.measureText(textToShow).width;
+      const boxWidth = Math.max(textWidth + 12, 32);
+
+      ctx.fillStyle = "rgba(76, 175, 80, 0.85)";
+      ctx.fillRect(buffIconX, currentY, boxWidth, iconBoxHeight);
+      ctx.strokeStyle = "#2E7D32";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(buffIconX, currentY, boxWidth, iconBoxHeight);
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        textToShow,
+        buffIconX + boxWidth / 2,
+        currentY + iconBoxHeight / 2,
+      );
+
+      buffIconX += boxWidth + iconBoxGap;
+    });
+    currentY += iconBoxHeight + 6;
+  }
+
+  // 行7：Debuff 列表
+  const debuffList = unit.debuffList || [];
+
+  if (debuffList.length > 0) {
+    let debuffIconX = infoStartX;
+    debuffList.forEach((debuff) => {
+      const textToShow =
+        debuff.duration !== undefined
+          ? `${debuff.label}${debuff.duration}`
+          : debuff.label;
+
+      ctx.font = "14px sans-serif";
+      const textWidth = ctx.measureText(textToShow).width;
+      const boxWidth = Math.max(textWidth + 12, 32);
+
+      ctx.fillStyle = "rgba(244, 67, 54, 0.85)";
+      ctx.fillRect(debuffIconX, currentY, boxWidth, iconBoxHeight);
+      ctx.strokeStyle = "#C62828";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(debuffIconX, currentY, boxWidth, iconBoxHeight);
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        textToShow,
+        debuffIconX + boxWidth / 2,
+        currentY + iconBoxHeight / 2,
+      );
+
+      debuffIconX += boxWidth + iconBoxGap;
+    });
+  }
+
+  ctx.restore();
+};
