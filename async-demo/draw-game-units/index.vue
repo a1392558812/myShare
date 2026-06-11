@@ -457,7 +457,7 @@ const pet = ref({
   drawAvatar: drawPetAvatar,
 });
 
-const cuttentMode = ref("battle"); // test battle
+const cuttentMode = ref("test"); // test battle
 
 const enemyList = computed(() => {
   console.log("enemyList", cuttentMode.value);

@@ -34,7 +34,7 @@ export class FrameRateManager {
    * @param {Function} callback 回调函数，接收 deltaTime 参数
    */
   register(callback) {
-    if (typeof callback === 'function' && !this.callbacks.includes(callback)) {
+    if (typeof callback === "function" && !this.callbacks.includes(callback)) {
       this.callbacks.push(callback);
     }
   }
@@ -64,7 +64,7 @@ export class FrameRateManager {
   _loop(timestamp) {
     if (!this.isRunning) return;
 
-    const deltaTime = timestamp - this.lastTime;
+    const deltaTime = timestamp - this.lastTime; // 计算时间间隔
 
     if (deltaTime >= this.frameInterval) {
       this.lastTime = timestamp - (deltaTime % this.frameInterval);

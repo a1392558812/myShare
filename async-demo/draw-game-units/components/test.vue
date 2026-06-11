@@ -31,12 +31,47 @@
           />
         </div>
       </div>
+      <div>
+        <div>debuffList</div>
+        <div v-for="(debuff, index) in debuffList" :key="index">
+          {{ debuff.label }}:<input
+            type="checkbox"
+            :value="
+              units[selectedUnit].debuffList.find(
+                (item) => item === debuff.value,
+              ) !== undefined
+            "
+            @input="onDebuffInput(debuff)"
+          />
+        </div>
+      </div>
+      <div>
+        <div>buffList</div>
+        <div v-for="(buff, index) in buffList" :key="index">
+          {{ buff.label }}:<input
+            type="checkbox"
+            :value="
+              units[selectedUnit].buffList.find(
+                (item) => item === buff.value,
+              ) !== undefined
+            "
+            @input="onBuffInput(buff)"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 import { frameRateManager } from "../frame-rate.js";
+import {
+  drawPoisoning,
+  drawChaos,
+  drawFrozen,
+  drawSeal,
+} from "../draw-buff/debuff.js";
+import { drawSpeed, drawDefense, drawAttack } from "../draw-buff/buff.js";
 import {
   drawSelectionHighlight,
   drawBorder,
@@ -65,6 +100,47 @@ const props = defineProps({
     default: () => {},
   },
 });
+
+const debuffList = ref([
+  {
+    label: "封印",
+    value: "seal",
+    draw: drawSeal,
+  },
+  {
+    label: "冰冻",
+    value: "frozen",
+    draw: drawFrozen,
+  },
+  {
+    label: "中毒",
+    value: "poisoned",
+    draw: drawPoisoning,
+  },
+  {
+    label: "混沌",
+    value: "chaos",
+    draw: drawChaos,
+  },
+]);
+
+const buffList = ref([
+  {
+    label: "速度提升",
+    value: "speed",
+    draw: drawSpeed,
+  },
+  {
+    label: "防御提升",
+    value: "defense",
+    draw: drawDefense,
+  },
+  {
+    label: "攻击提升",
+    value: "attack",
+    draw: drawAttack,
+  },
+]);
 
 const canvasRef = ref(null);
 const canvasRect = ref(null);
@@ -97,6 +173,30 @@ const keyMapDirection = {
   },
 };
 const keyDownList = ref([]);
+
+const onDebuffInput = (debuff) => {
+  const index = units.value[selectedUnit.value].debuffList.findIndex(
+    (item) => item === debuff.value,
+  );
+  if (index !== -1) {
+    units.value[selectedUnit.value].debuffList.splice(index, 1);
+  } else {
+    units.value[selectedUnit.value].debuffList.push(debuff.value);
+  }
+  console.log(units.value[selectedUnit.value].debuffList);
+};
+
+const onBuffInput = (buff) => {
+  const index = units.value[selectedUnit.value].buffList.findIndex(
+    (item) => item === buff.value,
+  );
+  if (index !== -1) {
+    units.value[selectedUnit.value].buffList.splice(index, 1);
+  } else {
+    units.value[selectedUnit.value].buffList.push(buff.value);
+  }
+  console.log(units.value[selectedUnit.value].buffList);
+};
 
 // 绘制回调
 const drawFrame = (deltaTime) => {
@@ -137,6 +237,19 @@ const drawFrame = (deltaTime) => {
 
   // 绘制所有单位
   for (const [key, unit] of Object.entries(units.value)) {
+    // 绘制所有debuff效果
+    for (const debuff of debuffList.value) {
+      if (unit.debuffList.includes(debuff.value)) {
+        debuff.draw(ctx, unit);
+      }
+    }
+
+    for (const buff of buffList.value) {
+      if (unit.buffList.includes(buff.value)) {
+        buff.draw(ctx, unit);
+      }
+    }
+
     unit.drawUnit(ctx, unit);
     drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
 
@@ -243,6 +356,8 @@ const onInit = () => {
 
     unit.x = unitX;
     unit.y = unitY;
+    unit.debuffList = [];
+    unit.buffList = [];
     unit.avatarPos = {
       x: unitX + (col + 1) * unit.size,
       y: unitY,

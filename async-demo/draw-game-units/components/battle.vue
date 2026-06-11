@@ -5,22 +5,50 @@
   >
     <canvas
       ref="canvasRef"
-      :style="{ width: width + 'px', height: height + 'px' }"
+      :style="{
+        width: width + 'px',
+        height: height + 'px',
+        cursor: canvasCursor,
+      }"
       id="gameCanvas"
       width="100%"
       height="100%"
       @click="handleCanvasClick"
+      @mousemove="handleCanvasMouseMove"
     ></canvas>
+
+    <div v-if="itemDialogShow" class="item-dialog">
+      <div class="item-dialog-container">
+        <div class="item-dialog-container-title">道具选择</div>
+        <div class="item-dialog-container-body">
+          <div
+            v-for="item in itemList"
+            :key="item.id"
+            class="item-dialog-item"
+            @click="handleItemSelect(item)"
+          >
+            {{ item.label }}
+          </div>
+        </div>
+        <div class="item-dialog-container-footer">
+          <button class="item-dialog-cancel-btn" @click="handleItemCancel">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, computed, onUnmounted, ref } from "vue";
 
 import {
   drawSelectionHighlight,
   drawBorder,
   drawHealthBar,
   drawSelectMenus,
+  drawMagicCircle,
+  buildEmojiCursor,
 } from "../draw-utils.js";
 import { frameRateManager } from "../frame-rate.js";
 
@@ -47,26 +75,56 @@ const props = defineProps({
   },
 });
 
+const itemDialogShow = ref(false);
+const itemList = ref(
+  (() => {
+    const list = [];
+    Array.from({ length: 20 }).forEach((item, index) => {
+      list.push({
+        label: `道具${index + 1}`,
+        value: `item${index + 1}`,
+        id: index + 1,
+      });
+    });
+    return list;
+  })(),
+);
+const itemDialogOpener = ref(null); // 记录是谁打开的道具面板: 'player' | 'pet'
+
+const cursorPos = ref({ x: 0, y: 0 }); // 鼠标位置
+
 const currentEnemyList = ref(null);
 const currentPet = ref(null);
 const currentPlayer = ref(null);
 
 const canvasRef = ref(null);
 const canvasRect = ref(null);
-const menuConfig = ref({
-  x: 1000, // 菜单x坐标
+
+/**
+ * type: attack， target: index
+ * type: magic， target: index
+ * type: item， target: index， item: item
+ * type: defense
+ * type: run
+ */
+const playerCommand = ref(null);
+const petCommand = ref(null);
+const currentCommander = ref(null);
+
+const playerMenuConfig = ref({
+  x: 950, // 菜单x坐标
   y: 50, // 菜单y坐标
   width: 200, // 菜单宽度
   height: 30, // 菜单高度
   list: [
     // 菜单列表
     {
-      label: "移动",
-      value: "move",
+      label: "自动",
+      value: "auto",
       isDisabled: false,
       callback: (e) => {
-        console.log("移动", e);
-        alert("移动");
+        console.log("自动", e);
+        alert("自动");
       },
     },
     {
@@ -74,8 +132,30 @@ const menuConfig = ref({
       value: "attack",
       isDisabled: false,
       callback: (e) => {
-        console.log("攻击", e);
-        alert("攻击");
+        playerCommand.value = { type: "attack", target: null };
+        currentCommander.value = playerCommand.value;
+        console.log("player-attack", e);
+      },
+    },
+    {
+      label: "魔法",
+      value: "magic",
+      isDisabled: false,
+      callback: (e) => {
+        playerCommand.value = { type: "magic", target: null };
+        currentCommander.value = playerCommand.value;
+        console.log("player-magic", e);
+      },
+    },
+    {
+      label: "道具",
+      value: "item",
+      isDisabled: false,
+      callback: (e) => {
+        playerCommand.value = { type: "item", target: null, item: null };
+        currentCommander.value = playerCommand.value;
+        itemDialogOpener.value = "player";
+        itemDialogShow.value = true;
       },
     },
     {
@@ -83,11 +163,166 @@ const menuConfig = ref({
       value: "defense",
       isDisabled: false,
       callback: (e) => {
-        console.log("防御", e);
-        alert("防御");
+        playerCommand.value = { type: "defense" };
+      },
+    },
+    {
+      label: "逃跑",
+      value: "run",
+      isDisabled: false,
+      callback: (e) => {
+        playerCommand.value = { type: "run" };
       },
     },
   ],
+});
+
+const petMenuConfig = ref({
+  x: 950, // 菜单x坐标
+  y: 50, // 菜单y坐标
+  width: 200, // 菜单宽度
+  height: 30, // 菜单高度
+  list: [
+    {
+      label: "攻击",
+      value: "attack",
+      isDisabled: false,
+      callback: (e) => {
+        petCommand.value = { type: "attack", target: null };
+        currentCommander.value = petCommand.value;
+        console.log("pet-attack", e);
+      },
+    },
+    {
+      label: "魔法",
+      value: "magic",
+      isDisabled: false,
+      callback: (e) => {
+        petCommand.value = { type: "magic", target: null };
+        currentCommander.value = petCommand.value;
+        console.log("pet-magic", e);
+      },
+    },
+    {
+      label: "道具",
+      value: "item",
+      isDisabled: false,
+      callback: (e) => {
+        petCommand.value = { type: "item", target: null, item: null };
+        currentCommander.value = petCommand.value;
+        itemDialogOpener.value = "pet";
+        itemDialogShow.value = true;
+      },
+    },
+    {
+      label: "防御",
+      value: "defense",
+      isDisabled: false,
+      callback: (e) => {
+        petCommand.value = { type: "defense" };
+      },
+    },
+    {
+      label: "取消",
+      value: "cancel",
+      isDisabled: false,
+      callback: (e) => {
+        petCommand.value = null;
+        itemDialogOpener.value = null;
+        playerCommand.value = null;
+      },
+    },
+  ],
+});
+
+const cancelMenu = ref({
+  x: 950,
+  y: 50,
+  width: 200,
+  height: 30,
+  list: [
+    {
+      label: "取消",
+      value: "cancel",
+      isDisabled: false,
+      callback: (e) => {
+        if (itemDialogOpener.value === "player") {
+          playerCommand.value = null;
+          itemDialogOpener.value = null;
+        } else if (itemDialogOpener.value === "pet") {
+          petCommand.value = null;
+          itemDialogOpener.value = null;
+        } else {
+          if (playerCommand.value) {
+            playerCommand.value = null;
+            petCommand.value = null;
+          } else if (petCommand.value) {
+            petCommand.value = null;
+          }
+        }
+      },
+    },
+  ],
+});
+
+const currentMenusConfig = computed(() => {
+  if (!playerCommand.value) {
+    return playerMenuConfig.value;
+  }
+
+  if (
+    playerCommand.value &&
+    ["attack", "magic", "item"].includes(playerCommand.value.type) &&
+    !petCommand.value
+  ) {
+    if (playerCommand.value.target) {
+      return petMenuConfig.value;
+    }
+    return cancelMenu.value;
+  }
+
+  if (
+    petCommand.value &&
+    ["attack", "magic", "item"].includes(petCommand.value.type)
+  ) {
+    // 宠物普通攻击
+    if (petCommand.value.target) {
+      return null;
+    }
+    return cancelMenu.value;
+  }
+  return null;
+});
+
+// 根据当前指令状态计算 canvas 的鼠标样式（使用 SVG data URL 嵌入 emoji）
+const canvasCursor = computed(() => {
+  // 玩家攻击 / 宠物攻击指令 - 选择目标中
+  const isPlayerAttacking =
+    playerCommand.value &&
+    playerCommand.value.type === "attack" &&
+    !playerCommand.value.target;
+  const isPetAttacking =
+    petCommand.value &&
+    petCommand.value.type === "attack" &&
+    !petCommand.value.target;
+  if (isPlayerAttacking || isPetAttacking) {
+    return buildEmojiCursor("🗡️");
+  }
+  // 玩家道具 / 宠物道具指令 - 已选道具，选择目标中
+  const isPlayerItemTargeting =
+    playerCommand.value &&
+    playerCommand.value.type === "item" &&
+    playerCommand.value.item &&
+    !playerCommand.value.target;
+  const isPetItemTargeting =
+    petCommand.value &&
+    petCommand.value.type === "item" &&
+    petCommand.value.item &&
+    !petCommand.value.target;
+  if (isPlayerItemTargeting || isPetItemTargeting) {
+    return buildEmojiCursor("❤️");
+  }
+  return "default";
 });
 
 // 按规则计算敌人位置（左下圆心，45度右上斜线排列，每线最多5个）
@@ -121,13 +356,14 @@ const calcEnemyPositions = () => {
   // 总排数
   const totalCount = enemies.length;
   const totalRows = Math.ceil(totalCount / maxPerRow);
+  const currentPerRow = totalRows > 1 ? maxPerRow : totalCount;
 
   enemies.forEach((enemy, index) => {
-    const row = Math.floor(index / maxPerRow);
-    const colInRow = index % maxPerRow;
+    const row = Math.floor(index / currentPerRow);
+    const colInRow = index % currentPerRow;
 
-    // 等分：将直线分成 (maxPerRow + 1) 段，敌人位于分段点上
-    const t = ((colInRow + 1) / (maxPerRow + 1)) * totalLineLength;
+    // 等分：将直线分成 (currentPerRow + 1) 段，敌人位于分段点上
+    const t = ((colInRow + 1) / (currentPerRow + 1)) * totalLineLength;
 
     // 计算该敌人在直线上的坐标
     const lineX = centerX + t * cosA;
@@ -135,23 +371,40 @@ const calcEnemyPositions = () => {
 
     // 平行线偏移：向右下偏移
     const offsetX =
-      row * rowGap * offsetCos + Math.floor(index / maxPerRow) * 0.8 * unitSize;
+      row * rowGap * offsetCos +
+      Math.floor(index / currentPerRow) * 0.8 * unitSize;
     const offsetY =
       row * rowGap * offsetSin -
       unitSize -
-      Math.floor(index / maxPerRow) * 0.8 * unitSize;
+      Math.floor(index / currentPerRow) * 0.8 * unitSize;
 
     enemy.x = lineX + offsetX;
     enemy.y = lineY + offsetY;
-
-    // 更新头像位置
-    if (enemy.avatarPos) {
-      enemy.avatarPos.x = enemy.x;
-      enemy.avatarPos.y = enemy.y;
-    } else {
-      enemy.avatarPos = { x: enemy.x, y: enemy.y };
-    }
   });
+};
+
+const calcPlayerPosition = () => {
+  if (!currentPlayer.value) return;
+
+  const canvasWidth = props.width;
+  const canvasHeight = props.height;
+  const unitSize = currentPlayer.value.size || 40;
+
+  // 玩家位于画布右侧，敌人的对面（右下方，单独一行）
+  currentPlayer.value.x = (canvasWidth / 3) * 2 + unitSize / 2;
+  currentPlayer.value.y = canvasHeight / 2 + unitSize * 2 * Math.sqrt(2);
+};
+
+const calcPetPosition = () => {
+  if (!currentPet.value) return;
+
+  const canvasWidth = props.width;
+  const canvasHeight = props.height;
+  const unitSize = currentPet.value.size || 40;
+
+  // 宠物位于玩家下方另一行，敌人的对面（右侧，与玩家不同行）
+  currentPet.value.x = (canvasWidth / 3) * 2 - unitSize * 2;
+  currentPet.value.y = (canvasHeight / 3) * 2 - (unitSize * 2) / Math.sqrt(2);
 };
 
 // 绘制回调
@@ -162,31 +415,48 @@ const drawFrame = (deltaTime) => {
   // 清空画布
   ctx.clearRect(0, 0, props.width, props.height);
 
+  // 绘制战斗魔法阵
+  const magicCircleSize = (props.height / 3) * 2;
+  drawMagicCircle(ctx, {
+    x: props.width / 2 - magicCircleSize / 2,
+    y: props.height / 2 - magicCircleSize / 2,
+    size: magicCircleSize,
+    opacity: 0.7,
+  });
+
   // 计算敌人位置
   calcEnemyPositions();
+
+  // 计算玩家位置
+  calcPlayerPosition();
+
+  // 计算宠物位置
+  calcPetPosition();
 
   // 绘制所有单位
   if (currentEnemyList.value) {
     for (const unit of currentEnemyList.value) {
       unit.drawUnit(ctx, unit);
       drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
-
-      const avatarPos = Object.assign({ size: unit.size }, unit.avatarPos);
-      unit.drawAvatar(ctx, unit, avatarPos);
-      drawHealthBar(ctx, unit, avatarPos);
     }
   }
 
-  // 绘制菜单
-  drawSelectMenus(ctx, menuConfig.value);
+  for (const unit of [currentPlayer.value, currentPet.value]) {
+    unit.drawUnit(ctx, unit);
+    drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
+  }
+
+  if (!currentMenusConfig.value) return;
+  drawSelectMenus(ctx, currentMenusConfig.value);
 };
 
 // 点击菜单
 const handleMenuClick = (e) => {
+  if (!currentMenusConfig.value) return;
   const clickX = e.clientX - canvasRect.value.left;
   const clickY = e.clientY - canvasRect.value.top;
 
-  const config = menuConfig.value;
+  const config = currentMenusConfig.value;
   const padding = 2;
 
   // 检测点击是否在菜单范围内
@@ -207,12 +477,153 @@ const handleMenuClick = (e) => {
   }
 };
 
-// 点击画布选择单位
+// 点击画布点击
 const handleCanvasClick = (e) => {
   handleMenuClick(e);
+
+  // 玩家普通攻击
+  if (
+    playerCommand.value &&
+    playerCommand.value.type === "attack" &&
+    !playerCommand.value.target
+  ) {
+    const selectedEnemyUnitIndex = handleSelectEnemyUnit(e);
+    if (selectedEnemyUnitIndex !== -1) {
+      playerCommand.value.target =
+        currentEnemyList.value[selectedEnemyUnitIndex].id;
+      console.log("player-selectedEnemyUnitIndex", selectedEnemyUnitIndex);
+    }
+    return;
+  }
+
+  // 玩家道具使用
+  if (
+    playerCommand.value &&
+    playerCommand.value.type === "item" &&
+    playerCommand.value.item &&
+    !playerCommand.value.target
+  ) {
+    const target = handleSelectPlayerUnit(e);
+    playerCommand.value.target = target;
+    return;
+  }
+
+  // 宠物普通攻击
+  if (
+    petCommand.value &&
+    petCommand.value.type === "attack" &&
+    !petCommand.value.target
+  ) {
+    const selectedEnemyUnitIndex = handleSelectEnemyUnit(e);
+    if (selectedEnemyUnitIndex !== -1) {
+      petCommand.value.target =
+        currentEnemyList.value[selectedEnemyUnitIndex].id;
+      console.log("player-selectedEnemyUnitIndex", selectedEnemyUnitIndex);
+    }
+    return;
+  }
+
+  // 宠物道具使用
+  if (
+    petCommand.value &&
+    petCommand.value.type === "item" &&
+    petCommand.value.item &&
+    !petCommand.value.target
+  ) {
+    const target = handleSelectPlayerUnit(e);
+    petCommand.value.target = target;
+    return;
+  }
 };
 
-const initUnit = (item) => {
+// 鼠标在画布上移动
+const handleCanvasMouseMove = (e) => {
+  cursorPos.value = {
+    x: e.clientX - canvasRect.value.left,
+    y: e.clientY - canvasRect.value.top,
+  };
+};
+
+// 点击画布选择敌人单位
+const handleSelectEnemyUnit = (e) => {
+  const clickX = e.clientX - canvasRect.value.left;
+  const clickY = e.clientY - canvasRect.value.top;
+
+  let selectedEnemyUnitIndex = -1;
+  // 检测点击了哪个单位
+  for (let i = 0; i < currentEnemyList.value.length; i++) {
+    const unit = currentEnemyList.value[i];
+    const unitSize = unit.size || 50;
+    if (
+      clickX >= unit.x &&
+      clickX <= unit.x + unitSize &&
+      clickY >= unit.y &&
+      clickY <= unit.y + unitSize
+    ) {
+      selectedEnemyUnitIndex = i;
+      break;
+    }
+  }
+  return selectedEnemyUnitIndex;
+};
+
+const handleSelectPlayerUnit = (e) => {
+  const clickX = e.clientX - canvasRect.value.left;
+  const clickY = e.clientY - canvasRect.value.top;
+
+  // 检测点击了哪个单位
+  if (
+    clickX >= currentPlayer.value.x &&
+    clickX <= currentPlayer.value.x + currentPlayer.value.size &&
+    clickY >= currentPlayer.value.y &&
+    clickY <= currentPlayer.value.y + currentPlayer.value.size
+  ) {
+    return "player";
+  }
+  if (
+    clickX >= currentPet.value.x &&
+    clickX <= currentPet.value.x + currentPet.value.size &&
+    clickY >= currentPet.value.y &&
+    clickY <= currentPet.value.y + currentPet.value.size
+  ) {
+    return "pet";
+  }
+  return null;
+};
+
+const handleItemSelect = (item) => {
+  if (
+    playerCommand.value &&
+    playerCommand.value.type === "item" &&
+    !playerCommand.value.item
+  ) {
+    playerCommand.value.item = item;
+    itemDialogShow.value = false;
+    return;
+  }
+  if (
+    petCommand.value &&
+    petCommand.value.type === "item" &&
+    !petCommand.value.item
+  ) {
+    petCommand.value.item = item;
+    itemDialogShow.value = false;
+    return;
+  }
+};
+
+const handleItemCancel = () => {
+  itemDialogShow.value = false;
+  if (itemDialogOpener.value === "player") {
+    playerCommand.value = null;
+    itemDialogOpener.value = null;
+  } else if (itemDialogOpener.value === "pet") {
+    petCommand.value = null;
+    itemDialogOpener.value = null;
+  }
+};
+
+const initUnit = (item, index) => {
   return {
     name: item.name,
     x: 0,
@@ -227,6 +638,7 @@ const initUnit = (item) => {
     frame: 0,
     isMoving: false,
     size: 40,
+    id: index + 1,
     config: item.config,
     drawUnit: item.drawUnit,
     drawAvatar: item.drawAvatar,
@@ -235,8 +647,8 @@ const initUnit = (item) => {
 
 const onInit = () => {
   const list = [];
-  props.enemyList.forEach((enemy) => {
-    list.push(initUnit(enemy));
+  props.enemyList.forEach((enemy, index) => {
+    list.push(initUnit(enemy, index));
   });
   currentEnemyList.value = list;
   currentPlayer.value = initUnit(props.player);
@@ -268,6 +680,66 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     background-color: rgba(15, 15, 15, 0.582);
+  }
+  .item-dialog {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .item-dialog-container {
+      width: 300px;
+      max-height: 400px;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #000;
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      .item-dialog-container-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 10px;
+      }
+      .item-dialog-container-body {
+        flex: 1;
+        overflow-y: auto;
+        .item-dialog-item {
+          padding: 10px;
+          cursor: pointer;
+          border-radius: 5px;
+          transition: background-color 0.2s;
+          &:hover {
+            background-color: #e0e0e0;
+          }
+        }
+      }
+      .item-dialog-container-footer {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        .item-dialog-cancel-btn {
+          padding: 8px 20px;
+          background-color: #666;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+          &:hover {
+            background-color: #888;
+          }
+        }
+      }
+    }
   }
 }
 </style>
