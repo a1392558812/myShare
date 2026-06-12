@@ -48,6 +48,7 @@ import {
   drawHealthBar,
   drawSelectMenus,
   drawMagicCircle,
+  drawDecoration,
   buildEmojiCursor,
 } from "../draw-utils.js";
 import { frameRateManager } from "../frame-rate.js";
@@ -74,6 +75,8 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const canvasFrame = ref(0);
 
 const itemDialogShow = ref(false);
 const itemList = ref(
@@ -411,17 +414,26 @@ const calcPetPosition = () => {
 const drawFrame = (deltaTime) => {
   const ctx = canvasRef.value?.getContext("2d");
   if (!ctx) return;
+  canvasFrame.value += deltaTime * 0.01;
 
   // 清空画布
   ctx.clearRect(0, 0, props.width, props.height);
+
+  // 绘制背景装饰 (deltaTime 单位 ms，换算为秒)
+  drawDecoration(ctx, {
+    width: props.width,
+    height: props.height,
+    frame: canvasFrame.value * 0.5,
+  });
 
   // 绘制战斗魔法阵
   const magicCircleSize = (props.height / 3) * 2;
   drawMagicCircle(ctx, {
     x: props.width / 2 - magicCircleSize / 2,
     y: props.height / 2 - magicCircleSize / 2,
+    frame: canvasFrame.value * 0.05,
     size: magicCircleSize,
-    opacity: 0.7,
+    opacity: 0.3,
   });
 
   // 计算敌人位置
@@ -436,12 +448,16 @@ const drawFrame = (deltaTime) => {
   // 绘制所有单位
   if (currentEnemyList.value) {
     for (const unit of currentEnemyList.value) {
+      const animSpeed = unit.config.IDLE_SPEED
+      unit.frame = unit.frame + deltaTime * animSpeed;
       unit.drawUnit(ctx, unit);
       drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
     }
   }
 
   for (const unit of [currentPlayer.value, currentPet.value]) {
+    const animSpeed = unit.config.IDLE_SPEED
+    unit.frame = unit.frame + deltaTime * animSpeed;
     unit.drawUnit(ctx, unit);
     drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
   }

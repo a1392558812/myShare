@@ -1,7 +1,7 @@
 import { drawUnit, drawAvatar } from '../draw-utils.js'
 
 export const config = {
-  IDLE_SPEED: 0.02,
+  IDLE_SPEED: 0.008,
   WALK_SPEED: 0.1,
 }
 

@@ -82,6 +82,8 @@ import {
   drawBorder,
   drawHealthBar,
   drawPanel,
+  drawTombstone,
+  drawDecoration,
 } from "../draw-utils.js";
 
 const props = defineProps({
@@ -222,9 +224,16 @@ const onBuffInput = (buff) => {
 const drawFrame = (deltaTime) => {
   const ctx = canvasRef.value?.getContext("2d");
   if (!ctx) return;
+  canvasFrame.value += deltaTime * 0.01;
 
   // 清空画布
   ctx.clearRect(0, 0, props.width, props.height);
+
+  drawDecoration(ctx, {
+    width: props.width,
+    height: props.height,
+    frame: canvasFrame.value * 0.5,
+  });
 
   // 获取当前选中的单位
   const currentUnit = units.value[selectedUnit.value];
@@ -232,7 +241,6 @@ const drawFrame = (deltaTime) => {
 
   // 判断是否在移动
   const isMoving = keyDownList.value.length > 0;
-  canvasFrame.value += deltaTime * 0.01;
 
   // 更新所有单位的移动状态和位置
   for (const [key, unit] of Object.entries(units.value)) {
@@ -277,7 +285,12 @@ const drawFrame = (deltaTime) => {
       });
     }
 
-    unit.drawUnit(ctx, unit);
+    if (unit.hp && unit.hp > 0) {
+      unit.drawUnit(ctx, unit);
+    } else {
+      drawTombstone(ctx, unit);
+    }
+    
     drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
 
     const avatarPos = Object.assign({ size: unitSize }, unit.avatarPos);
