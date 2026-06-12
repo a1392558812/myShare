@@ -85,6 +85,7 @@ import {
   drawTombstone,
   drawDecoration,
 } from "../draw-utils.js";
+import { drawShop } from '../draw-build/draw-shop.js'
 
 const props = defineProps({
   width: {
@@ -233,6 +234,15 @@ const drawFrame = (deltaTime) => {
     width: props.width,
     height: props.height,
     frame: canvasFrame.value * 0.5,
+  });
+
+  // 商店城堡
+  drawShop(ctx, {
+    width: 3 * 35,
+    height: 5 * 35,
+    x: 850,
+    y: 200,
+    frame: canvasFrame.value * 0.15,
   });
 
   // 获取当前选中的单位
