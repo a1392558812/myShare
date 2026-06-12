@@ -1,17 +1,6 @@
 <template>
-  <div
-    ref="gameContainerRef"
-    class="draw-game-units"
-    :style="{ width: width + 'px', height: height + 'px' }"
-  >
-    <canvas
-      ref="canvasRef"
-      :style="{ width: width + 'px', height: height + 'px' }"
-      id="gameCanvas"
-      width="100%"
-      height="100%"
-      @click="handleCanvasClick"
-    ></canvas>
+  <canvasDraw @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
+    @canvasDestroyed="onCanvasDestroyed">
     <div class="unit-selector">
       <select v-model="selectedUnit" :key="key">
         <option v-for="(unit, key) in units" :key="key" :value="key">
@@ -19,48 +8,30 @@
         </option>
       </select>
       <div>
-        <div
-          class="input-wrap"
-          v-for="(keyVal, index) in ['hp', 'mp']"
-          :key="index"
-        >
-          {{ keyVal }}:<input
-            style="width: 3em"
-            type="number"
-            v-model.number="units[selectedUnit][keyVal]"
-          />
+        <div class="input-wrap" v-for="(keyVal, index) in ['hp', 'mp']" :key="index">
+          {{ keyVal }}:<input style="width: 3em" type="number" v-model.number="units[selectedUnit][keyVal]" />
         </div>
       </div>
       <div>
         <div>debuffList</div>
         <div v-for="(debuff, index) in debuffList" :key="index">
-          {{ debuff.label }}:<input
-            type="checkbox"
-            :value="
-              units[selectedUnit].debuffList.find(
-                (item) => item.value === debuff.value,
-              ) !== undefined
-            "
-            @input="onDebuffInput(debuff)"
-          />
+          {{ debuff.label }}:<input type="checkbox" :value="units[selectedUnit].debuffList.find(
+            (item) => item.value === debuff.value,
+          ) !== undefined
+            " @input="onDebuffInput(debuff)" />
         </div>
       </div>
       <div>
         <div>buffList</div>
         <div v-for="(buff, index) in buffList" :key="index">
-          {{ buff.label }}:<input
-            type="checkbox"
-            :value="
-              units[selectedUnit].buffList.find(
-                (item) => item.value === buff.value,
-              ) !== undefined
-            "
-            @input="onBuffInput(buff)"
-          />
+          {{ buff.label }}:<input type="checkbox" :value="units[selectedUnit].buffList.find(
+            (item) => item.value === buff.value,
+          ) !== undefined
+            " @input="onBuffInput(buff)" />
         </div>
       </div>
     </div>
-  </div>
+  </canvasDraw>
 </template>
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
@@ -83,9 +54,9 @@ import {
   drawHealthBar,
   drawPanel,
   drawTombstone,
-  drawDecoration,
 } from "../draw-utils.js";
-import { drawShop } from '../draw-build/draw-shop.js'
+
+import canvasDraw from "./canvas-draw.vue";
 
 const props = defineProps({
   width: {
@@ -98,15 +69,15 @@ const props = defineProps({
   },
   enemy: {
     type: Object,
-    default: () => {},
+    default: () => { },
   },
   player: {
     type: Object,
-    default: () => {},
+    default: () => { },
   },
   pet: {
     type: Object,
-    default: () => {},
+    default: () => { },
   },
 });
 
@@ -164,9 +135,6 @@ const buffList = ref([
   },
 ]);
 
-const canvasFrame = ref(0);
-const canvasRef = ref(null);
-const canvasRect = ref(null);
 const selectedUnit = ref("player");
 
 // 单位管理
@@ -222,29 +190,7 @@ const onBuffInput = (buff) => {
 };
 
 // 绘制回调
-const drawFrame = (deltaTime) => {
-  const ctx = canvasRef.value?.getContext("2d");
-  if (!ctx) return;
-  canvasFrame.value += deltaTime * 0.01;
-
-  // 清空画布
-  ctx.clearRect(0, 0, props.width, props.height);
-
-  drawDecoration(ctx, {
-    width: props.width,
-    height: props.height,
-    frame: canvasFrame.value * 0.5,
-  });
-
-  // 商店城堡
-  drawShop(ctx, {
-    width: 3 * 35,
-    height: 5 * 35,
-    x: 850,
-    y: 200,
-    frame: canvasFrame.value * 0.15,
-  });
-
+const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
   // 获取当前选中的单位
   const currentUnit = units.value[selectedUnit.value];
   const unitSize = currentUnit.size || 50;
@@ -252,7 +198,7 @@ const drawFrame = (deltaTime) => {
   // 判断是否在移动
   const isMoving = keyDownList.value.length > 0;
 
-  // 更新所有单位的移动状态和位置
+  // 绘制所有单位
   for (const [key, unit] of Object.entries(units.value)) {
     const isCurrentSelected = key === selectedUnit.value;
     unit.isMoving = isCurrentSelected && isMoving;
@@ -272,17 +218,14 @@ const drawFrame = (deltaTime) => {
       ? unit.config.WALK_SPEED
       : unit.config.IDLE_SPEED;
     unit.frame = unit.frame + deltaTime * animSpeed;
-  }
 
-  // 绘制所有单位
-  for (const [key, unit] of Object.entries(units.value)) {
     // 绘制所有debuff效果
     for (const debuff of unit.debuffList) {
       debuff.draw(ctx, {
         x: unit.x,
         y: unit.y,
         size: unitSize,
-        frame: canvasFrame.value,
+        frame: canvasFrame,
       });
     }
 
@@ -291,7 +234,7 @@ const drawFrame = (deltaTime) => {
         x: unit.x,
         y: unit.y,
         size: unitSize,
-        frame: canvasFrame.value,
+        frame: canvasFrame,
       });
     }
 
@@ -300,7 +243,7 @@ const drawFrame = (deltaTime) => {
     } else {
       drawTombstone(ctx, unit);
     }
-    
+
     drawHealthBar(ctx, unit, { x: unit.x, y: unit.y, textColor: "#00CCFF" });
 
     const avatarPos = Object.assign({ size: unitSize }, unit.avatarPos);
@@ -314,6 +257,17 @@ const drawFrame = (deltaTime) => {
     }
   }
 
+  // 绘制死亡单位
+  drawTombstone(ctx, {
+    x: 40 + 40 * 2 + 10 * 2,
+    y: 560,
+    maxHp: 100,
+    hp: 0,
+    maxMp: 100,
+    mp: 0,
+    size: 40,
+  });
+
   // 绘制debuff
   for (let i = 0; i < buffList.value.length; i++) {
     const buff = buffList.value[i];
@@ -321,7 +275,7 @@ const drawFrame = (deltaTime) => {
       x: 100 + 40 * 6 + 20 + i * 50,
       y: 80,
       size: 40,
-      frame: canvasFrame.value,
+      frame: canvasFrame,
     });
   }
 
@@ -332,7 +286,7 @@ const drawFrame = (deltaTime) => {
       x: 100 + 40 * 6 + 20 + i * 50,
       y: 160,
       size: 40,
-      frame: canvasFrame.value,
+      frame: canvasFrame,
     });
   }
 
@@ -346,9 +300,9 @@ const drawFrame = (deltaTime) => {
 };
 
 // 点击画布选择单位
-const handleSelectUnit = (e) => {
-  const clickX = e.clientX - canvasRect.value.left;
-  const clickY = e.clientY - canvasRect.value.top;
+const handleSelectUnit = ({ e, canvasRect }) => {
+  const clickX = e.clientX - canvasRect.left;
+  const clickY = e.clientY - canvasRect.top;
 
   // 检测点击了哪个单位
   for (const [key, unit] of Object.entries(units.value)) {
@@ -366,8 +320,8 @@ const handleSelectUnit = (e) => {
 };
 
 // 点击画布选择单位
-const handleCanvasClick = (e) => {
-  handleSelectUnit(e);
+const onCanvasClick = ({ e, canvasRect }) => {
+  handleSelectUnit({ e, canvasRect });
 };
 
 // 键盘按下
@@ -447,64 +401,36 @@ const onInit = () => {
 
 onInit();
 
-onMounted(() => {
-  canvasRef.value.width = props.width;
-  canvasRef.value.height = props.height;
-  canvasRect.value = canvasRef.value.getBoundingClientRect();
-
-  // 注册绘制回调
-  frameRateManager.register(drawFrame);
-
-  // 设置帧率
-  frameRateManager.setFPS(60);
-
-  // 启动动画
-  frameRateManager.start();
-
+const onCanvasMounted = () => {
   // 监听键盘事件
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("keyup", handleKeyUp);
-});
+};
 
-onUnmounted(() => {
-  // 停止动画
-  frameRateManager.stop();
-
-  // 移除回调
-  frameRateManager.clear();
-
+const onCanvasDestroyed = () => {
   // 移除键盘监听
   window.removeEventListener("keydown", handleKeyDown);
   window.removeEventListener("keyup", handleKeyUp);
-});
+};
 </script>
 <style lang="scss" module>
-.draw-game-units {
-  position: relative;
+.unit-selector {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: rgba(95, 95, 95, 0.7);
+  padding: 10px;
+  border-radius: 8px;
+  color: #fff;
 
-  canvas {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(15, 15, 15, 0.582);
-  }
-
-  .unit-selector {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+  .input-wrap {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: rgba(95, 95, 95, 0.7);
-    padding: 10px;
-    border-radius: 8px;
-    color: #fff;
-    .input-wrap {
-      display: flex;
-      align-items: center;
-      line-height: 1;
-      gap: 5px;
-    }
+    align-items: center;
+    line-height: 1;
+    gap: 5px;
   }
 }
 </style>

@@ -104,6 +104,7 @@ export const drawBorder = (ctx, unit, unitKey) => {
   const size = unit.size || 40;
   const padding = 0; // 可配置加大判断范围
 
+  ctx.strokeStyle = "#000000";
   ctx.beginPath();
   ctx.moveTo(unit.x - padding, unit.y - padding);
   ctx.lineTo(unit.x + size + padding, unit.y - padding);

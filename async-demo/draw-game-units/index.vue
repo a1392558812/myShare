@@ -3,19 +3,13 @@
     <div>
       <button @click="cuttentMode = 'test'">test-ui展示</button>
       <button @click="cuttentMode = 'battle'">battle-ui展示</button>
+      <button @click="cuttentMode = 'attact'">attact-ui展示</button>
+      <button @click="cuttentMode = 'building'">building-ui展示</button>
     </div>
-    <Test
-      :enemy="enemy"
-      :player="player"
-      :pet="pet"
-      v-if="cuttentMode === 'test'"
-    ></Test>
-    <Battle
-      :enemyList="enemyList"
-      :player="player"
-      :pet="pet"
-      v-if="cuttentMode === 'battle'"
-    ></Battle>
+    <Test :enemy="enemy" :player="player" :pet="pet" v-if="cuttentMode === 'test'"></Test>
+    <Battle :enemyList="enemyList" :player="player" :pet="pet" v-else-if="cuttentMode === 'battle'"></Battle>
+    <Attack :enemy="enemy" :player="player" :pet="pet" v-else-if="cuttentMode === 'attact'" />
+    <Building v-else-if="cuttentMode === 'building'"/>
   </div>
 </template>
 
@@ -125,6 +119,8 @@ import {
 
 import Test from "./components/test.vue";
 import Battle from "./components/battle.vue";
+import Attack from "./components/attack.vue";
+import Building from "./components/building.vue";
 
 const enemy = ref({
   slime: {
@@ -457,7 +453,7 @@ const pet = ref({
   drawAvatar: drawPetAvatar,
 });
 
-const cuttentMode = ref("test"); // test battle
+const cuttentMode = ref("attact"); // test battle attact
 
 const enemyList = computed(() => {
   console.log("enemyList", cuttentMode.value);
