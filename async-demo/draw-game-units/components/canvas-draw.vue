@@ -9,7 +9,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { frameRateManager } from "../frame-rate.js";
 
-const emit = defineEmits(['drawFrame', 'canvasMounted', 'canvasClick', 'canvasDestroyed'])
+const emit = defineEmits(['drawFrame', 'canvasMounted', 'canvasClick', 'canvasDestroyed', 'canvasMouseMove'])
 
 const props = defineProps({
   width: {

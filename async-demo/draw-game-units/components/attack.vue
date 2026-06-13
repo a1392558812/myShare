@@ -1,6 +1,31 @@
 <template>
-  <canvasDraw @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
-    @canvasDestroyed="onCanvasDestroyed" />
+  <div>
+    <canvasDraw @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
+      @canvasDestroyed="onCanvasDestroyed" @canvasMouseMove="onCanvasMouseMove">
+
+    </canvasDraw>
+    <div class="dialog">
+      <div>选择目标，按X射箭</div>
+      <div>按住C激光</div>
+      <div>按V魔法阵惊雷</div>
+      <div>选择目标，按Z火球</div>
+      <div>选择目标，按1封印</div>
+      <div>选择目标，按2中毒</div>
+      <div>选择目标，按3混沌</div>
+      <div>选择目标，按4冰冻</div>
+      <div class="dialog-body">
+        <div v-for="(itemKey, index) in Object.keys(units).filter(item => item !== selectedUnit)" :key="index"
+          class="dialog-item">
+          {{ itemKey }}-{{ selectedUnit }}
+          <div class="dialog-item-checkbox"
+            :style="{ background: targetList.includes(itemKey) ? 'green' : '#fff' }"
+            @click="onTargetClick(itemKey)"></div>
+          <div>{{ units[itemKey].name }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 <script setup>
 import { ref } from "vue";
@@ -10,6 +35,13 @@ import {
   drawHealthBar,
 } from "../draw-utils.js";
 import canvasDraw from "./canvas-draw.vue";
+
+// ===================== 攻击系统导入 =====================
+import { updateArrows, fireAttack } from "../draw-attack/arrow.js";
+import { laser, drawLaser } from "../draw-attack/laser.js";
+import { updateFireballs, fireFireball } from "../draw-attack/fireball.js";
+import { updateMagicCircles, createMagicCircle } from "../draw-attack/magic.js";
+import { updateObstacles, fireObstacle } from "../draw-attack/obstacle.js";
 
 const props = defineProps({
   width: {
@@ -35,6 +67,8 @@ const props = defineProps({
 });
 
 const selectedUnit = ref("player");
+
+const targetList = ref(['slime', 'phantomKnight', 'maouOfChaos'])
 
 // 单位管理
 const units = ref({});
@@ -64,8 +98,18 @@ const keyMapDirection = {
 };
 const keyDownList = ref([]);
 
+const onTargetClick = (itemKey) => {
+  const index = targetList.value.findIndex(item => item === itemKey)
+  console.log('onTargetClick', itemKey, index)
+  if (index === -1) {
+    targetList.value.push(itemKey)
+  } else {
+    targetList.value.splice(index, 1)
+  }
+}
+
 // 绘制回调
-const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
+const onDrawFrame = ({ ctx, deltaTime, canvasFrame, canvasRect }) => {
   // 清空画布
   ctx.clearRect(0, 0, props.width, props.height);
 
@@ -106,7 +150,12 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     }
   }
 
-
+  // ---- 攻击系统绘制 ----
+  updateArrows(ctx, deltaTime);
+  drawLaser(ctx, canvasFrame, units, selectedUnit);
+  updateFireballs(ctx, deltaTime);
+  updateMagicCircles(ctx, deltaTime);
+  updateObstacles(ctx, deltaTime);
 };
 
 // 点击画布选择单位
@@ -124,13 +173,22 @@ const handleSelectUnit = ({ e, canvasRect }) => {
       clickY <= unit.y + unitSize
     ) {
       selectedUnit.value = key;
+      targetList.value = []
       break;
     }
   }
 };
 
+// 画布上MouseMove - 实时记录鼠标在 canvas 内的坐标
+const onCanvasMouseMove = ({ e, canvasRect }) => {
+  if (!canvasRect) return;
+  laser.value.mouseX = e.clientX - canvasRect.left;
+  laser.value.mouseY = e.clientY - canvasRect.top;
+}
+
 // 点击画布选择单位
 const onCanvasClick = ({ e, canvasRect }) => {
+  console.log('onCanvasClick')
   handleSelectUnit({ e, canvasRect });
 };
 
@@ -142,6 +200,28 @@ const handleKeyDown = (e) => {
     !keyDownList.value.includes(key)
   ) {
     keyDownList.value.push(key);
+  }
+  console.log('fireAttack', units, selectedUnit, targetList)
+  // x 键发动箭矢攻击
+  if (key === "x") {
+    fireAttack(units, selectedUnit, targetList);
+  }
+  // c 键开始持续激光
+  if (key === "c") {
+    laser.value.isActive = true;
+    laser.value.frame = 0;
+  }
+  // z 键发动火球攻击
+  if (key === "z") {
+    fireFireball(units, selectedUnit, targetList);
+  }
+  // v 键在鼠标位置生成魔法阵
+  if (key === "v") {
+    createMagicCircle(laser.value.mouseX, laser.value.mouseY);
+  }
+  // 1/2/3/4 键发动文本障碍攻击（封印/中毒/混沌/冰冻）
+  if (["1", "2", "3", "4"].includes(key)) {
+    fireObstacle(key, units, selectedUnit, targetList);
   }
 };
 
@@ -156,6 +236,11 @@ const handleKeyUp = (e) => {
     if (index !== -1) {
       keyDownList.value.splice(index, 1);
     }
+  }
+  // c 键松开停止激光
+  if (key === "c") {
+    laser.value.isActive = false;
+    laser.value.frame = 0;
   }
 };
 
@@ -222,3 +307,30 @@ const onCanvasDestroyed = () => {
   window.removeEventListener("keyup", handleKeyUp);
 };
 </script>
+<style lang="scss" module>
+.dialog {
+  background: #000;
+  width: 300px;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  color: #fff;
+
+  .dialog-body {
+    height: 400px;
+    overflow: auto;
+
+    .dialog-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .dialog-item-checkbox {
+        width: 1em;
+        height: 1em;
+        border: 1px solid #000;
+      }
+    }
+  }
+}
+</style>
