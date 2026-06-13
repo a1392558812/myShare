@@ -34,8 +34,7 @@
   </canvasDraw>
 </template>
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
-import { frameRateManager } from "../frame-rate.js";
+import { ref } from "vue";
 import {
   drawPoisoning,
   drawChaos,

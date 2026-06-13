@@ -1,7 +1,7 @@
 <template>
   <div ref="gameContainerRef" class="draw-game-units" :style="{ width: width + 'px', height: height + 'px' }">
-    <canvas ref="canvasRef" :style="{ width: width + 'px', height: height + 'px' }" id="gameCanvas" width="100%"
-      height="100%" @click="handleCanvasClick"></canvas>
+    <canvas ref="canvasRef" :style="[{ width: width + 'px', height: height + 'px' }, canvasStyle]" id="gameCanvas"
+      width="100%" height="100%" @click="handleCanvasClick" @mousemove="handleCanvasMouseMove"></canvas>
     <slot></slot>
   </div>
 </template>
@@ -20,6 +20,10 @@ const props = defineProps({
     type: Number,
     default: 675,
   },
+  canvasStyle: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const canvasFrame = ref(0);
@@ -30,6 +34,10 @@ const canvasRect = ref(null);
 const handleCanvasClick = (e) => {
   emit('canvasClick', { e, canvasRect: canvasRect.value })
 };
+
+const handleCanvasMouseMove = (e) => {
+  emit('canvasMouseMove', { e, canvasRect: canvasRect.value })
+}
 
 // 绘制回调
 const drawFrame = (deltaTime) => {

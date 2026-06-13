@@ -1,32 +1,14 @@
 <template>
-  <div
-    class="draw-game-battle"
-    :style="{ width: width + 'px', height: height + 'px' }"
-  >
-    <canvas
-      ref="canvasRef"
-      :style="{
-        width: width + 'px',
-        height: height + 'px',
-        cursor: canvasCursor,
-      }"
-      id="gameCanvas"
-      width="100%"
-      height="100%"
-      @click="handleCanvasClick"
-      @mousemove="handleCanvasMouseMove"
-    ></canvas>
+  <canvasDraw :canvasStyle="{
+    cursor: canvasCursor
+  }" @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
+    @canvasMouseMove="onCanvasMouseMove" @canvasDestroyed="onCanvasDestroyed">
 
     <div v-if="itemDialogShow" class="item-dialog">
       <div class="item-dialog-container">
         <div class="item-dialog-container-title">道具选择</div>
         <div class="item-dialog-container-body">
-          <div
-            v-for="item in itemList"
-            :key="item.id"
-            class="item-dialog-item"
-            @click="handleItemSelect(item)"
-          >
+          <div v-for="item in itemList" :key="item.id" class="item-dialog-item" @click="handleItemSelect(item)">
             {{ item.label }}
           </div>
         </div>
@@ -37,21 +19,20 @@
         </div>
       </div>
     </div>
-  </div>
+  </canvasDraw>
 </template>
 <script setup>
-import { onMounted, computed, onUnmounted, ref } from "vue";
+import { computed, ref } from "vue";
 
 import {
-  drawSelectionHighlight,
-  drawBorder,
   drawHealthBar,
   drawSelectMenus,
   drawMagicCircle,
   drawDecoration,
   buildEmojiCursor,
 } from "../draw-utils.js";
-import { frameRateManager } from "../frame-rate.js";
+
+import canvasDraw from "./canvas-draw.vue";
 
 const props = defineProps({
   width: {
@@ -76,8 +57,6 @@ const props = defineProps({
   },
 });
 
-const canvasFrame = ref(0);
-
 const itemDialogShow = ref(false);
 const itemList = ref(
   (() => {
@@ -99,9 +78,6 @@ const cursorPos = ref({ x: 0, y: 0 }); // 鼠标位置
 const currentEnemyList = ref(null);
 const currentPet = ref(null);
 const currentPlayer = ref(null);
-
-const canvasRef = ref(null);
-const canvasRect = ref(null);
 
 /**
  * type: attack， target: index
@@ -411,19 +387,12 @@ const calcPetPosition = () => {
 };
 
 // 绘制回调
-const drawFrame = (deltaTime) => {
-  const ctx = canvasRef.value?.getContext("2d");
-  if (!ctx) return;
-  canvasFrame.value += deltaTime * 0.01;
-
-  // 清空画布
-  ctx.clearRect(0, 0, props.width, props.height);
-
+const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
   // 绘制背景装饰 (deltaTime 单位 ms，换算为秒)
   drawDecoration(ctx, {
     width: props.width,
     height: props.height,
-    frame: canvasFrame.value * 0.5,
+    frame: canvasFrame * 0.5,
   });
 
   // 绘制战斗魔法阵
@@ -431,7 +400,7 @@ const drawFrame = (deltaTime) => {
   drawMagicCircle(ctx, {
     x: props.width / 2 - magicCircleSize / 2,
     y: props.height / 2 - magicCircleSize / 2,
-    frame: canvasFrame.value * 0.05,
+    frame: canvasFrame * 0.05,
     size: magicCircleSize,
     opacity: 0.3,
   });
@@ -467,10 +436,10 @@ const drawFrame = (deltaTime) => {
 };
 
 // 点击菜单
-const handleMenuClick = (e) => {
+const handleMenuClick = ({ e, canvasRect }) => {
   if (!currentMenusConfig.value) return;
-  const clickX = e.clientX - canvasRect.value.left;
-  const clickY = e.clientY - canvasRect.value.top;
+  const clickX = e.clientX - canvasRect.left;
+  const clickY = e.clientY - canvasRect.top;
 
   const config = currentMenusConfig.value;
   const padding = 2;
@@ -494,8 +463,8 @@ const handleMenuClick = (e) => {
 };
 
 // 点击画布点击
-const handleCanvasClick = (e) => {
-  handleMenuClick(e);
+const onCanvasClick = ({ e, canvasRect }) => {
+  handleMenuClick({ e, canvasRect });
 
   // 玩家普通攻击
   if (
@@ -503,7 +472,7 @@ const handleCanvasClick = (e) => {
     playerCommand.value.type === "attack" &&
     !playerCommand.value.target
   ) {
-    const selectedEnemyUnitIndex = handleSelectEnemyUnit(e);
+    const selectedEnemyUnitIndex = handleSelectEnemyUnit({ e, canvasRect });
     if (selectedEnemyUnitIndex !== -1) {
       playerCommand.value.target =
         currentEnemyList.value[selectedEnemyUnitIndex].id;
@@ -519,7 +488,7 @@ const handleCanvasClick = (e) => {
     playerCommand.value.item &&
     !playerCommand.value.target
   ) {
-    const target = handleSelectPlayerUnit(e);
+    const target = handleSelectPlayerUnit({ e, canvasRect });
     playerCommand.value.target = target;
     return;
   }
@@ -530,7 +499,7 @@ const handleCanvasClick = (e) => {
     petCommand.value.type === "attack" &&
     !petCommand.value.target
   ) {
-    const selectedEnemyUnitIndex = handleSelectEnemyUnit(e);
+    const selectedEnemyUnitIndex = handleSelectEnemyUnit({ e, canvasRect });
     if (selectedEnemyUnitIndex !== -1) {
       petCommand.value.target =
         currentEnemyList.value[selectedEnemyUnitIndex].id;
@@ -546,24 +515,24 @@ const handleCanvasClick = (e) => {
     petCommand.value.item &&
     !petCommand.value.target
   ) {
-    const target = handleSelectPlayerUnit(e);
+    const target = handleSelectPlayerUnit({ e, canvasRect });
     petCommand.value.target = target;
     return;
   }
 };
 
 // 鼠标在画布上移动
-const handleCanvasMouseMove = (e) => {
+const onCanvasMouseMove = ({ e, canvasRect }) => {
   cursorPos.value = {
-    x: e.clientX - canvasRect.value.left,
-    y: e.clientY - canvasRect.value.top,
+    x: e.clientX - canvasRect.left,
+    y: e.clientY - canvasRect.top,
   };
 };
 
 // 点击画布选择敌人单位
-const handleSelectEnemyUnit = (e) => {
-  const clickX = e.clientX - canvasRect.value.left;
-  const clickY = e.clientY - canvasRect.value.top;
+const handleSelectEnemyUnit = ({ e, canvasRect }) => {
+  const clickX = e.clientX - canvasRect.left;
+  const clickY = e.clientY - canvasRect.top;
 
   let selectedEnemyUnitIndex = -1;
   // 检测点击了哪个单位
@@ -583,9 +552,9 @@ const handleSelectEnemyUnit = (e) => {
   return selectedEnemyUnitIndex;
 };
 
-const handleSelectPlayerUnit = (e) => {
-  const clickX = e.clientX - canvasRect.value.left;
-  const clickY = e.clientY - canvasRect.value.top;
+const handleSelectPlayerUnit = ({ e, canvasRect }) => {
+  const clickX = e.clientX - canvasRect.left;
+  const clickY = e.clientY - canvasRect.top;
 
   // 检测点击了哪个单位
   if (
@@ -672,87 +641,71 @@ const onInit = () => {
 };
 
 onInit();
-
-onMounted(() => {
-  canvasRef.value.width = props.width;
-  canvasRef.value.height = props.height;
-  canvasRect.value = canvasRef.value.getBoundingClientRect();
-
-  // 注册绘制回调
-  frameRateManager.register(drawFrame);
-
-  // 设置帧率
-  frameRateManager.setFPS(60);
-
-  // 启动动画
-  frameRateManager.start();
-});
 </script>
 <style lang="scss" module>
-.draw-game-battle {
-  position: relative;
+.item-dialog {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  canvas {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(15, 15, 15, 0.582);
-  }
-  .item-dialog {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
+  .item-dialog-container {
+    width: 300px;
+    max-height: 400px;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #000;
+    border-radius: 10px;
+    padding: 20px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    .item-dialog-container {
-      width: 300px;
-      max-height: 400px;
-      background-color: rgba(255, 255, 255, 0.8);
-      color: #000;
-      border-radius: 10px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      .item-dialog-container-title {
-        text-align: center;
-        font-weight: bold;
-        font-size: 18px;
-        margin-bottom: 15px;
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 10px;
-      }
-      .item-dialog-container-body {
-        flex: 1;
-        overflow-y: auto;
-        .item-dialog-item {
-          padding: 10px;
-          cursor: pointer;
-          border-radius: 5px;
-          transition: background-color 0.2s;
-          &:hover {
-            background-color: #e0e0e0;
-          }
+    flex-direction: column;
+
+    .item-dialog-container-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
+    }
+
+    .item-dialog-container-body {
+      flex: 1;
+      overflow-y: auto;
+
+      .item-dialog-item {
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #e0e0e0;
         }
       }
-      .item-dialog-container-footer {
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
-        .item-dialog-cancel-btn {
-          padding: 8px 20px;
-          background-color: #666;
-          color: #fff;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 14px;
-          &:hover {
-            background-color: #888;
-          }
+    }
+
+    .item-dialog-container-footer {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+
+      .item-dialog-cancel-btn {
+        padding: 8px 20px;
+        background-color: #666;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+
+        &:hover {
+          background-color: #888;
         }
       }
     }
