@@ -50,9 +50,17 @@ export function fireObstacle(key, units, selectedUnit, targetList) {
     const dist = ty - OBSTACLE_START_Y;
     const v0 = (dist - 0.5 * OBSTACLE_GRAVITY * FLIGHT_TIME * FLIGHT_TIME) / FLIGHT_TIME;
 
-    // 多个目标时 X 位置错开
+    // 多个目标时 X 位置错开（起始位置偏移，但最终飞向目标中心）
     const spreadCount = targetList.value.length;
-    const spread = spreadCount > 1 ? (idx - (spreadCount - 1) / 2) * 22 : 0;
+    const spread = spreadCount > 1 ? (idx - (spreadCount - 1) / 2) * 10 : 0;
+
+    // 起始位置（天空，带 spread 偏移）
+    const startX = tx + spread;
+    // 目标 X 为真实目标中心
+    const finalX = tx;
+
+    // 计算 X 方向速度，使障碍在下落过程中飞向目标中心
+    const vx = (finalX - startX) / FLIGHT_TIME;
 
     obstacles.value.push({
       id: ++obstacleIdCounter,
@@ -60,16 +68,17 @@ export function fireObstacle(key, units, selectedUnit, targetList) {
       color: config.color,
       shadowColor: config.shadowColor,
       glowColor: config.glowColor,
-      targetX: tx + spread,
+      targetX: finalX,
       targetY: ty,
-      x: tx + spread,
+      x: startX,
       y: OBSTACLE_START_Y,
+      vx: vx,
       vy: Math.max(v0, 40),
       g: OBSTACLE_GRAVITY,
       frame: 0,
-      phase: "falling",   // "falling" → "resting" → "done"
+      phase: "falling",
       restTimer: 0,
-      trail: [],           // 下落拖尾 [{x,y,life}]
+      trail: [],
     });
   });
 }
@@ -349,10 +358,13 @@ export function updateObstacles(ctx, deltaTime) {
       // 重力下落
       obs.vy += obs.g * dt;
       obs.y += obs.vy * dt;
+      // X 方向匀速移动，飞向目标中心
+      obs.x += (obs.vx || 0) * dt;
 
       // 到达目标检测
       if (obs.y >= obs.targetY) {
         obs.y = obs.targetY;
+        obs.x = obs.targetX;
         obs.phase = "resting";
         obs.restTimer = REST_DURATION;
       }

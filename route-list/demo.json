@@ -660,6 +660,13 @@
     "meta": { "demoName": "ai生成的回合制游戏", "ifShowHeaderComponent": false }
   },
   {
+    "path": "draw-pixel-art",
+    "component": "draw-pixel-art",
+    "name": "draw-pixel-art",
+    "fileType": "vue",
+    "meta": { "demoName": "绘制像素画", "ifShowHeaderComponent": false }
+  },
+  {
     "path": "draw-game-units",
     "component": "draw-game-units",
     "name": "draw-game-units",

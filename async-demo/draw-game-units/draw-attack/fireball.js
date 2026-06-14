@@ -38,14 +38,23 @@ export function fireFireball(units, selectedUnit, targetList) {
 
     // 多个火球时略微错开 X 位置
     const spreadCount = targetList.value.length;
-    const spread = spreadCount > 1 ? (idx - (spreadCount - 1) / 2) * 18 : 0;
+    const spread = spreadCount > 1 ? (idx - (spreadCount - 1) / 2) * 10 : 0;
+
+    // 起始位置（天空，带 spread 偏移）
+    const startX = tx + spread;
+    // 目标 X 为真实目标中心
+    const finalX = tx;
+
+    // 计算 X 方向速度，使火球在下落过程中飞向目标 X
+    const vx = (finalX - startX) / flightTime;
 
     fireballs.value.push({
       id: ++fireballIdCounter,
-      targetX: tx,
+      targetX: finalX,
       targetY: ty,
-      x: tx + spread,
+      x: startX,
       y: FIREBALL_START_Y,
+      vx: vx,
       vy: Math.max(v0, 60),
       g: FIREBALL_GRAVITY,
       radius: FIREBALL_RADIUS,
@@ -247,10 +256,13 @@ export function updateFireballs(ctx, deltaTime) {
       // 重力下落
       fb.vy += fb.g * dt;
       fb.y += fb.vy * dt;
+      // X 方向匀速移动，飞向目标
+      fb.x += (fb.vx || 0) * dt;
 
       // 到达检测
       if (fb.y >= fb.targetY) {
         fb.y = fb.targetY;
+        fb.x = fb.targetX;
         fb.exploded = true;
         fb.explodeTimer = EXPLODE_DURATION;
       }

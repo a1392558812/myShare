@@ -1,9 +1,7 @@
 <template>
   <div>
     <canvasDraw @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
-      @canvasDestroyed="onCanvasDestroyed" @canvasMouseMove="onCanvasMouseMove">
-
-    </canvasDraw>
+      @canvasDestroyed="onCanvasDestroyed" @canvasMouseMove="onCanvasMouseMove"></canvasDraw>
     <div class="dialog">
       <div>选择目标，按X射箭</div>
       <div>按住C激光</div>
@@ -68,7 +66,7 @@ const props = defineProps({
 
 const selectedUnit = ref("player");
 
-const targetList = ref(['slime', 'phantomKnight', 'maouOfChaos'])
+const targetList = ref(['slime', 'skeletonSoldier', 'darknessBinder'])
 
 // 单位管理
 const units = ref({});

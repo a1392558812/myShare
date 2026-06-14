@@ -1,6 +1,6 @@
 /**
  * 帧率管理器
- * 用于管理游戏循环动画 drawShadowSorcererAvatar drawPhantomKnightAvatar drawVenomousLordAvatar drawChaosLordAvatar drawBlackKnightAvatar drawPitLordAvatar
+ * 用于管理游戏循环动画
  */
 export class FrameRateManager {
   constructor() {
