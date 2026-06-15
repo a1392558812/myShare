@@ -59,7 +59,7 @@
             <template v-for="(itemKey, index) in Object.keys(ifOverflow)" :key="index">
               <div>
                 <div>{{ itemKey }}轴溢出像素点：</div>
-                <details v-if="ifOverflow[itemKey].length" style="max-height: 200px; overflow: auto;">
+                <details v-if="ifOverflow[itemKey].length" style="max-height: 200px; overflow-y: auto; overflow-x: visible;">
                   <summary style="cursor: pointer;">点击查看详情</summary>
                   <button style="padding: 0; margin: 0; cursor: pointer; margin-right: 10px;"
                     v-if="ifOverflow[itemKey].length" @click="removeAllPixelClick(ifOverflow[itemKey])">删除所有溢出⛔</button>
@@ -76,7 +76,7 @@
 
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div>颜色面板</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; max-height: 200px; overflow: auto;"
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; max-height: 200px; overflow-y: auto; overflow-x: visible;"
               v-if="colorPalette.length">
               <div style="display: flex; align-items: center; justify-content: center; gap: 2px;"
                 v-for="(color, index) in colorPalette" :key="color">
@@ -119,6 +119,11 @@
         <div v-if="['exclude'].includes(drawMode)" style="display: flex; flex-direction: column; gap: 10px;">
           <div style="display: flex; flex-direction: column; gap: 5px;">
             <div
+              style="display: flex; align-items: center; gap: 10px; padding: 2px 5px;">
+              <div>一键替换所有颜色: </div>
+              <pickerColor :key="item" @replaceColor="(newColor) => replaceAllColor(newColor)" />
+            </div>
+            <div
               style="display: flex; align-items: center; gap: 10px; padding: 2px 5px; border-radius: 4px;  border: 1px solid #000;">
               <div>当前选中: </div>
 
@@ -133,17 +138,17 @@
               <pickerColor :key="item" @replaceColor="(newColor) => replaceColor(selectedColor, newColor)" />
             </div>
 
-            <div style="max-height: 500px; overflow: auto;">
+            <div style="max-height: 500px; overflow-y: auto; overflow-x: visible;">
               <div v-for="(item, index) in allColor" :key="item"
                 style="display: flex; align-items: center; gap: 10px; padding: 2px 5px; border-radius: 4px;">
                 <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 4px; cursor: pointer;"
-                  :style="{ backgroundColor: item }">
+                  :style="{ backgroundColor: item.color }">
                 </div>
-                <button @click="onRemoveColor(item)">批量删除</button>
+                <button @click="onRemoveColor(item.color)">批量删除({{ `${item.count}` }})</button>
 
                 <div>《==</div>
 
-                <pickerColor :key="item" @replaceColor="(newColor) => replaceColor(item, newColor)" />
+                <pickerColor :key="item.color" @replaceColor="(newColor) => replaceColor(item.color, newColor)" />
               </div>
             </div>
           </div>
@@ -267,8 +272,14 @@ const resultPreview = computed(() => {
 const allColor = computed(() => {
   const list = []
   result.value.forEach(item => {
-    if (!list.includes(item[2])) {
-      list.push(item[2])
+    const index = list.findIndex(listImte => listImte.color === item[2])
+    if (index === -1) {
+      list.push({
+        color: item[2],
+        count: 1,
+      })
+    } else {
+      list[index].count += 1
     }
   })
   return list
@@ -466,6 +477,15 @@ const onOffsetChange = (itemKey, itemIndex, val) => {
   redrawCanvas()
 }
 
+const replaceAllColor = (newColor) => {
+  if (confirm('确认替换所有颜色为新颜色？')){
+    result.value.forEach((item, index) => {
+      result.value[index][2] = newColor
+    })
+    redrawCanvas()
+  }
+}
+
 const replaceColor = (color, newColor) => {
   console.log('replaceColor', { color, newColor })
   if (color === newColor) return
@@ -624,7 +644,7 @@ const handleFileChange = (event) => {
 }
 
 const exportData = () => {
-  const dataStr = JSON.stringify(result.value, null, 2)
+  const dataStr = JSON.stringify(result.value)
   const dataBlob = new Blob([dataStr], { type: 'application/json' })
   const url = URL.createObjectURL(dataBlob)
   const link = document.createElement('a')

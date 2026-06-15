@@ -31,14 +31,6 @@
 
         <div style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
-            x轴平移:<input style="width: 60px;" type="number" v-model.number="imageConfig.xOffset" @change="redrawCanvas">
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
-            y轴平移:<input style="width: 60px;" type="number" v-model.number="imageConfig.yOffset" @change="redrawCanvas">
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
             图片width:<input style="width: 60px;" type="number" :min="1" v-model.number="imageConfig.width"
               @change="redrawCanvas">
           </div>
@@ -46,6 +38,14 @@
           <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
             图片height:<input style="width: 60px;" type="number" :min="1" v-model.number="imageConfig.height"
               @change="redrawCanvas">
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
+            x轴平移:<input style="width: 60px;" type="number" v-model.number="imageConfig.xOffset" @change="redrawCanvas">
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
+            y轴平移:<input style="width: 60px;" type="number" v-model.number="imageConfig.yOffset" @change="redrawCanvas">
           </div>
 
           <div style="display: flex; align-items: center; gap: 5px; padding: 2px 5px; border: 1px solid #000;">
@@ -311,7 +311,7 @@ const copyResult = () => {
 }
 
 const exportResult = () => {
-  const str = JSON.stringify(result.value, null, 2)
+  const str = JSON.stringify(result.value)
   const blob = new Blob([str], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
