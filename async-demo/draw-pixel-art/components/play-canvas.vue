@@ -99,7 +99,6 @@ const canvasConfig = reactive({
 })
 const frameList = ref([])
 
-// 动画状态
 const isPlaying = ref(false)
 const currentFrameIndex = ref(0)
 const fps = ref(30)
@@ -107,30 +106,24 @@ let animationFrameId = null
 let lastFrameTime = 0
 const frameInterval = computed(() => 1000 / fps.value)
 
-// 获取 canvas 2d context
 const getCtx = () => {
   if (!canvasRef.value) return null
   return canvasRef.value.getContext('2d')
 }
 
-// 绘制单帧像素数据到画布
-// frameData: [[x1, y1, color1], [x2, y2, color2], ...]
 const drawFrame = (frameData) => {
   const ctx = getCtx()
   if (!ctx) return
 
   const { width, height, unit, bgColor } = canvasConfig
 
-  // 清空画布并填充背景色
   ctx.clearRect(0, 0, width, height)
   ctx.fillStyle = bgColor
   ctx.fillRect(0, 0, width, height)
 
   if (!frameData || !frameData.length) return
 
-  // 逐个绘制像素方块
   frameData.forEach(([x, y, color]) => {
-    // 边界检查
     if (x < 0 || y < 0 || (x + 1) * unit > width || (y + 1) * unit > height) return
 
     ctx.fillStyle = color
@@ -138,7 +131,6 @@ const drawFrame = (frameData) => {
   })
 }
 
-// 重绘画布（当前帧）
 const redrawCanvas = (itemKey, val) => {
   if (itemKey && val) {
     canvasConfig[itemKey] = val
@@ -147,11 +139,9 @@ const redrawCanvas = (itemKey, val) => {
   drawFrame(currentData)
 }
 
-// requestAnimationFrame 动画循环
 const animationLoop = (timestamp) => {
   if (!isPlaying.value) return
 
-  // 时间累积，控制帧率
   if (timestamp - lastFrameTime >= frameInterval.value) {
     lastFrameTime = timestamp
 
@@ -159,7 +149,6 @@ const animationLoop = (timestamp) => {
       pause()
       return
     }
-    // 切换到下一帧，循环
     currentFrameIndex.value = (currentFrameIndex.value + 1) % frameList.value.length
     drawFrame(frameList.value[currentFrameIndex.value])
   }
@@ -167,18 +156,14 @@ const animationLoop = (timestamp) => {
   animationFrameId = requestAnimationFrame(animationLoop)
 }
 
-// 播放动画
 const play = () => {
   if (!frameList.value.length || isPlaying.value) return
   isPlaying.value = true
   lastFrameTime = performance.now()
-  // 先绘制当前帧
   drawFrame(frameList.value[currentFrameIndex.value])
-  // 启动 rAF 循环
   animationFrameId = requestAnimationFrame(animationLoop)
 }
 
-// 暂停动画
 const pause = () => {
   isPlaying.value = false
   if (animationFrameId) {
@@ -188,7 +173,6 @@ const pause = () => {
 }
 
 
-// 修改帧数据后重绘
 const onUploadFile = (event, index) => {
   const file = event.target.files[0]
   if (!file) return
@@ -196,7 +180,6 @@ const onUploadFile = (event, index) => {
   reader.onload = (event) => {
     const data = JSON.parse(event.target.result)
     frameList.value[index] = data
-    // 如果修改的是当前帧且未在播放，更新画布
     if (index === currentFrameIndex.value && !isPlaying.value) {
       nextTick(() => drawFrame(data))
     }
@@ -211,7 +194,6 @@ const addFrame = (index) => {
 const removeFrame = (index) => {
   if (isPlaying.value) pause()
   frameList.value.splice(index, 1)
-  // 调整当前帧索引
   if (currentFrameIndex.value >= frameList.value.length) {
     currentFrameIndex.value = Math.max(0, frameList.value.length - 1)
   }
@@ -228,16 +210,13 @@ const copyFrame = (fromIndex, toIndex) => {
   frameList.value.splice(toIndex, 0, [...data])
 }
 
-// 监听 canvasConfig 变化自动重绘
 watch(() => [canvasConfig.width, canvasConfig.height, canvasConfig.unit, canvasConfig.bgColor], () => {
   if (!isPlaying.value) {
     nextTick(() => redrawCanvas())
   }
 })
 
-// 初始化
 onMounted(() => {
-  // 如果有帧数据，绘制第一帧
   if (frameList.value.length) {
     drawFrame(frameList.value[0])
   } else {
