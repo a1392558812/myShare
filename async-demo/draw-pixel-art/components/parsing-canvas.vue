@@ -127,7 +127,7 @@ const colCount = computed(() => Math.floor((canvasConfig.width / canvasConfig.un
 const currentImage = ref(null)
 
 const resultPreview = computed(() => {
-  const MAX_SHOW = 200
+  const MAX_SHOW = 100
   if (result.value.length <= MAX_SHOW) {
     return JSON.stringify(result.value, null, 2)
   }

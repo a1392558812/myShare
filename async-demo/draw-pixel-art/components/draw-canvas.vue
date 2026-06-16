@@ -1,15 +1,17 @@
 <template>
-  <div class="draw-canvas">
-    <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid #000;">
-      <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; align-items: center;">
+  <div class="draw-canvas" style="overflow: auto;">
+    <div
+      style="display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid #000; flex-shrink: 0;">
+      <div style="display: flex; flex-direction: row; flex-shrink: 0; gap: 10px; align-items: center;">
         <div v-for="(itemKey, index) in ['width', 'height', 'unit']" :key="index"
-          style="display: flex; align-items: center; gap: 10px;">
+          style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
           <label>{{ itemKey }}:</label>
-          <input style="width: 50px;" :min="0" type="number" v-model.number="config[itemKey]" @change="redrawCanvas">
+          <input style="width: 50px; flex-shrink: 0;" :min="0" type="number" v-model.number="config[itemKey]"
+            @change="redrawCanvas">
         </div>
 
         <div v-for="(itemKey, index) in ['bgColor', 'colColor', 'rowColor']" :key="index"
-          style="display: flex; align-items: center; gap: 10px;">
+          style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
           <label>{{ itemKey }}:</label>
           <colorPicker type="color" :modelValue="config[itemKey]" :tipsStyle="{
             left: '100px'
@@ -17,11 +19,11 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 10px;">
-        <button @click="saveConfig">保存绘制与配置</button>
-        <button @click="initSaveConfig">还原初始化配置</button>
-        <button @click="clearCanvas">清空画布</button>
-        <button style="position: relative; overflow: hidden;">
+      <div style="display: flex; flex-shrink: 0; gap: 10px;">
+        <button style="flex-shrink: 0;" @click="saveConfig">保存绘制与配置</button>
+        <button style="flex-shrink: 0;" @click="initSaveConfig">还原初始化配置</button>
+        <button style="flex-shrink: 0;" @click="clearCanvas">清空画布</button>
+        <button style="flex-shrink: 0; position: relative; overflow: hidden;">
           导入数据
           <input :style="{
             position: 'absolute',
@@ -33,13 +35,13 @@
             cursor: 'pointer',
           }" type="file" @change="handleFileChange">
         </button>
-        <button @click="exportData">导出数据</button>
-        <button @click="copyData">复制数据</button>
-        <div style="display: flex; align-items: center;">当前像素比：{{ `(${colCount}*${rowCount})` }}</div>
+        <button style="flex-shrink: 0;" @click="exportData">导出数据</button>
+        <button style="flex-shrink: 0;" @click="copyData">复制数据</button>
+        <div style="flex-shrink: 0; display: flex; align-items: center;">当前像素比：{{ `(${colCount}*${rowCount})` }}</div>
       </div>
     </div>
 
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 10px; flex-shrink: 0;">
       <div class="tool-panel">
         <div style="display: flex; gap: 10px;">
           <button v-for="(item, index) in [
@@ -59,7 +61,8 @@
             <template v-for="(itemKey, index) in Object.keys(ifOverflow)" :key="index">
               <div>
                 <div>{{ itemKey }}轴溢出像素点：</div>
-                <details v-if="ifOverflow[itemKey].length" style="max-height: 200px; overflow-y: auto; overflow-x: visible;">
+                <details v-if="ifOverflow[itemKey].length"
+                  style="max-height: 200px; overflow-y: auto; overflow-x: visible;">
                   <summary style="cursor: pointer;">点击查看详情</summary>
                   <button style="padding: 0; margin: 0; cursor: pointer; margin-right: 10px;"
                     v-if="ifOverflow[itemKey].length" @click="removeAllPixelClick(ifOverflow[itemKey])">删除所有溢出⛔</button>
@@ -76,7 +79,8 @@
 
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div>颜色面板</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; max-height: 200px; overflow-y: auto; overflow-x: visible;"
+            <div
+              style="display: flex; flex-wrap: wrap; gap: 10px; max-height: 200px; overflow-y: auto; overflow-x: visible;"
               v-if="colorPalette.length">
               <div style="display: flex; align-items: center; justify-content: center; gap: 2px;"
                 v-for="(color, index) in colorPalette" :key="color">
@@ -116,39 +120,43 @@
           </div>
         </template>
 
-        <div v-if="['exclude'].includes(drawMode)" style="display: flex; flex-direction: column; gap: 10px;">
+        <div v-if="['exclude'].includes(drawMode) && allColor.length"
+          style="display: flex; flex-direction: column; gap: 10px;">
           <div style="display: flex; flex-direction: column; gap: 5px;">
-            <div
-              style="display: flex; align-items: center; gap: 10px; padding: 2px 5px;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 2px 5px;">
               <div>一键替换所有颜色: </div>
               <pickerColor :key="item" @replaceColor="(newColor) => replaceAllColor(newColor)" />
             </div>
-            <div
-              style="display: flex; align-items: center; gap: 10px; padding: 2px 5px; border-radius: 4px;  border: 1px solid #000;">
-              <div>当前选中: </div>
 
+            <div style="display: flex; align-items: center; gap: 10px; padding: 2px 5px; border-radius: 4px;">
               <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 4px; cursor: pointer;"
-                :style="{ backgroundColor: selectedColor }">
+                :style="{ backgroundColor: allColor[0].color }">
               </div>
 
-              <button @click="onRemoveColor(selectedColor)">批量删除</button>
+              <button @click="onRemoveColor(allColor[0].color)">批量删除({{ `${allColor[0].count}` }})</button>
 
               <div>《==</div>
 
-              <pickerColor :key="item" @replaceColor="(newColor) => replaceColor(selectedColor, newColor)" />
+              <pickerColor :key="allColor[0].color"
+                @replaceColor="(newColor) => replaceColor(allColor[0].color, newColor)" />
+
+              <div v-if="allColor[0].color === selectedColor">当前选中颜色</div>
             </div>
 
             <div style="max-height: 500px; overflow-y: auto; overflow-x: visible;">
-              <div v-for="(item, index) in allColor" :key="item"
+              <div v-for="(item, index) in allColor.slice(1, allColor.length)" :key="item"
                 style="display: flex; align-items: center; gap: 10px; padding: 2px 5px; border-radius: 4px;">
                 <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 4px; cursor: pointer;"
                   :style="{ backgroundColor: item.color }">
                 </div>
+
                 <button @click="onRemoveColor(item.color)">批量删除({{ `${item.count}` }})</button>
 
                 <div>《==</div>
 
                 <pickerColor :key="item.color" @replaceColor="(newColor) => replaceColor(item.color, newColor)" />
+
+                <div v-if="item.color === selectedColor">当前选中颜色：</div>
               </div>
             </div>
           </div>
@@ -167,7 +175,7 @@
       </div>
     </div>
 
-    <details class="data-panel">
+    <details style="flex-shrink: 0;" class="data-panel">
       <summary style="cursor: pointer;">像素数据: ({{ result.length }} 个像素点)</summary>
       <div class="data-content">
         <pre>{{ resultPreview }}</pre>
@@ -260,7 +268,7 @@ const ifOverflow = computed(() => {
 })
 
 const resultPreview = computed(() => {
-  const MAX_SHOW = 200
+  const MAX_SHOW = 100
   if (result.value.length <= MAX_SHOW) {
     return JSON.stringify(result.value, null, 2)
   }
@@ -271,6 +279,7 @@ const resultPreview = computed(() => {
 
 const allColor = computed(() => {
   const list = []
+  let targetIndex = 0
   result.value.forEach(item => {
     const index = list.findIndex(listImte => listImte.color === item[2])
     if (index === -1) {
@@ -278,10 +287,18 @@ const allColor = computed(() => {
         color: item[2],
         count: 1,
       })
+      if (item[2] === selectedColor.value) {
+        targetIndex = list.length - 1
+      }
     } else {
       list[index].count += 1
     }
   })
+
+  if (targetIndex) {
+    const item = list.splice(targetIndex, 1)[0];
+    list.splice(0, 0, item);
+  }
   return list
 })
 
@@ -478,7 +495,7 @@ const onOffsetChange = (itemKey, itemIndex, val) => {
 }
 
 const replaceAllColor = (newColor) => {
-  if (confirm('确认替换所有颜色为新颜色？')){
+  if (confirm('确认替换所有颜色为新颜色？')) {
     result.value.forEach((item, index) => {
       result.value[index][2] = newColor
     })
@@ -673,6 +690,7 @@ watch(() => [config.width, config.height, config.unit], () => {
 
   .tool-panel {
     width: 400px;
+    flex-shrink: 0;
     padding: 15px;
     display: flex;
     flex-direction: column;
