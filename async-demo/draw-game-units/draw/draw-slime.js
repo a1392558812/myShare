@@ -1,14 +1,3 @@
-/**
- * 绘制史莱姆怪物
- * @param {CanvasElement} canvasRef canvas元素
- * @param {Object} currentUnit 史莱姆位置和状态
- * @param {Number} currentUnit.x 史莱姆x坐标
- * @param {Number} currentUnit.y 史莱姆y坐标
- * @param {Number} currentUnit.size 史莱姆大小(px)
- * @param {String} currentUnit.direction 方向 'down' | 'up' | 'left' | 'right'
- * @param {Number} currentUnit.frame 动画帧 0-1
- */
-
 export const config = {
   IDLE_SPEED: 0.005,
   WALK_SPEED: 0.005,
@@ -24,9 +13,7 @@ const SLIME_COLORS = {
   highlight: '#FFFFFF'
 };
 
-// 史莱姆弹跳动画帧 - 12x12 网格设计（已居中，x坐标-2）
 const SLIME_FRAMES = [
-  // 帧0：正常状态（中间高度）
   {
     body: [
       [3, 1, SLIME_COLORS.bodyLight], [4, 1, SLIME_COLORS.bodyLight], [5, 1, SLIME_COLORS.bodyLight], [6, 1, SLIME_COLORS.bodyLight], [7, 1, SLIME_COLORS.bodyLight],
@@ -50,7 +37,6 @@ const SLIME_FRAMES = [
       [5, 3, SLIME_COLORS.highlight],
     ]
   },
-  // 帧1：压缩状态（底部更宽更扁）
   {
     body: [
       [2, 3, SLIME_COLORS.bodyLight], [3, 3, SLIME_COLORS.bodyLight], [4, 3, SLIME_COLORS.bodyLight], [5, 3, SLIME_COLORS.bodyLight], [6, 3, SLIME_COLORS.bodyLight], [7, 3, SLIME_COLORS.bodyLight], [8, 3, SLIME_COLORS.bodyLight],
@@ -73,7 +59,6 @@ const SLIME_FRAMES = [
       [4, 5, SLIME_COLORS.highlight], [5, 5, SLIME_COLORS.highlight],
     ]
   },
-  // 帧2：伸展状态（顶部更高更窄）
   {
     body: [
       [4, 0, SLIME_COLORS.bodyLight], [5, 0, SLIME_COLORS.bodyLight], [6, 0, SLIME_COLORS.bodyLight],

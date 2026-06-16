@@ -1,5 +1,5 @@
 <template>
- <canvasDraw @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
+  <canvasDraw @drawFrame="onDrawFrame" @canvasMounted="onCanvasMounted" @canvasClick="onCanvasClick"
     @canvasDestroyed="onCanvasDestroyed" />
 </template>
 <script setup>
@@ -20,9 +20,7 @@ const props = defineProps({
   },
 });
 
-// 绘制回调
 const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
-  // 商店城堡
   drawShop(ctx, {
     width: 3 * 35,
     height: 5 * 35,
@@ -31,7 +29,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     frame: canvasFrame * 0.15,
   });
 
-  // 绘制贤者之石
   drawSKillStone(ctx, {
     width: 90,
     height: 100,

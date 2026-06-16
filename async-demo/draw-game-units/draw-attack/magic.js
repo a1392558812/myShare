@@ -1,21 +1,13 @@
-/**
- * 魔法阵+惊雷攻击系统
- * 按下 v 键，在鼠标位置创建魔法阵 → 符文升腾 → 惊雷从天劈中法阵 → 余波扩散
- */
 import { ref } from "vue";
 
-// ===================== 常量 =====================
 export const MAGIC_RADIUS = 55;
-export const MAGIC_LIFETIME = 2.0; // 总持续秒数
-export const RUNE_COUNT = 8;       // 符文数量
+export const MAGIC_LIFETIME = 2.0;
+export const RUNE_COUNT = 8;
 
-// ===================== 状态 =====================
 export const magicCircles = ref([]);
 let magicIdCounter = 0;
 
-// ===================== 工具函数 =====================
 
-/** 生成闪电路径（从上方某处到目标点的锯齿折线） */
 export function generateLightning(tx, ty) {
   const startY = -30;
   const startX = tx + (Math.random() - 0.5) * 40;
@@ -33,11 +25,9 @@ export function generateLightning(tx, ty) {
     cx = nx;
     cy = ny;
   }
-  // 确保最后一段精确到达目标
   segments[segments.length - 1].x2 = tx;
   segments[segments.length - 1].y2 = ty;
 
-  // 生成分支闪光（从主路径随机分叉）
   const branches = [];
   for (let i = 1; i < segments.length - 1; i++) {
     if (Math.random() < 0.45) {
@@ -51,13 +41,12 @@ export function generateLightning(tx, ty) {
   return { segments, branches };
 }
 
-/** 根据类型绘制不同符文形状 */
 export function drawRune(ctx, rx, ry, size, type) {
   ctx.save();
   ctx.translate(rx, ry);
 
   switch (type) {
-    case 0: // 三角形
+    case 0:
       ctx.beginPath();
       ctx.moveTo(0, -size);
       ctx.lineTo(-size * 0.8, size * 0.6);
@@ -66,7 +55,7 @@ export function drawRune(ctx, rx, ry, size, type) {
       ctx.fill();
       ctx.stroke();
       break;
-    case 1: // 菱形
+    case 1:
       ctx.beginPath();
       ctx.moveTo(0, -size);
       ctx.lineTo(size * 0.7, 0);
@@ -76,7 +65,7 @@ export function drawRune(ctx, rx, ry, size, type) {
       ctx.fill();
       ctx.stroke();
       break;
-    case 2: // 圆+点
+    case 2:
       ctx.beginPath();
       ctx.arc(0, 0, size * 0.65, 0, Math.PI * 2);
       ctx.fill();
@@ -86,14 +75,13 @@ export function drawRune(ctx, rx, ry, size, type) {
       ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2);
       ctx.fill();
       break;
-    case 3: // 十字星
+    case 3:
       ctx.beginPath();
       ctx.moveTo(0, -size);
       ctx.lineTo(0, size);
       ctx.moveTo(-size * 0.7, 0);
       ctx.lineTo(size * 0.7, 0);
       ctx.stroke();
-      // 叉线
       ctx.beginPath();
       ctx.moveTo(-size * 0.5, -size * 0.5);
       ctx.lineTo(size * 0.5, size * 0.5);
@@ -109,9 +97,7 @@ export function drawRune(ctx, rx, ry, size, type) {
   ctx.restore();
 }
 
-// ===================== 创建 =====================
 
-/** 在鼠标位置创建魔法阵 */
 export function createMagicCircle(mouseX, mouseY) {
   if (mouseX <= 0 && mouseY <= 0) return;
 
@@ -136,14 +122,11 @@ export function createMagicCircle(mouseX, mouseY) {
   });
 }
 
-// ===================== 绘制 =====================
 
-/** 绘制完整的魔法阵动画 */
 export function drawMagicCircle(ctx, mc) {
   const { x, y, radius, elapsed } = mc;
   const f = elapsed;
 
-  // 阶段进度
   const formP = Math.min(f / 0.5, 1);
   const runeP = Math.max(0, Math.min((f - 0.2) / 0.8, 1));
   const lightningP = Math.max(0, Math.min((f - 0.5) / 0.8, 1));
@@ -152,7 +135,6 @@ export function drawMagicCircle(ctx, mc) {
 
   const curR = radius * Math.min(formP, 1) * (1 + Math.sin(f * 8) * 0.02 * (1 - formP));
 
-  // ===== 1. 法阵双环 =====
   if (formP > 0.01) {
     ctx.save();
     ctx.globalAlpha = overallAlpha * formP * 0.9;
@@ -202,7 +184,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.restore();
   }
 
-  // ===== 2. 符文升腾 =====
   if (f > 0.2 && overallAlpha > 0) {
     mc.runes.forEach((rune, i) => {
       const riseDist = (f - 0.2) * 50 * (0.7 + i * 0.12);
@@ -234,7 +215,6 @@ export function drawMagicCircle(ctx, mc) {
     });
   }
 
-  // ===== 3. 惊雷 =====
   if (lightningP > 0 && overallAlpha > 0) {
     const boltAlpha = Math.min(lightningP * 2.5, 1) * overallAlpha;
     const segs = mc.lightning.segments;
@@ -253,7 +233,6 @@ export function drawMagicCircle(ctx, mc) {
       ctx.restore();
     }
 
-    // 外层光晕
     ctx.save();
     ctx.globalAlpha = boltAlpha * 0.25;
     ctx.strokeStyle = "#6688FF";
@@ -266,7 +245,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.stroke();
     ctx.restore();
 
-    // 中层光束
     ctx.save();
     ctx.globalAlpha = boltAlpha * 0.6;
     ctx.strokeStyle = "#AACCFF";
@@ -279,7 +257,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.stroke();
     ctx.restore();
 
-    // 内核
     ctx.save();
     ctx.globalAlpha = boltAlpha * 0.9;
     ctx.strokeStyle = "#FFFFFF";
@@ -290,7 +267,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.stroke();
     ctx.restore();
 
-    // 分支闪电
     ctx.save();
     ctx.globalAlpha = boltAlpha * 0.35;
     ctx.strokeStyle = "#AACCDD";
@@ -303,7 +279,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.stroke();
     ctx.restore();
 
-    // 命中点爆散
     const hitShimmer = Math.sin(f * 10) * 0.3 + 0.7;
     ctx.save();
     ctx.globalAlpha = boltAlpha * 0.5 * hitShimmer;
@@ -320,7 +295,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.restore();
   }
 
-  // ===== 4. 余波扩散 =====
   if (f > 1.0 && overallAlpha > 0) {
     const shockP = Math.max(0, (f - 1.0) / 1.0);
     const shockR = curR * (1 + shockP * 4);
@@ -337,7 +311,6 @@ export function drawMagicCircle(ctx, mc) {
     ctx.stroke();
     ctx.restore();
 
-    // 地面扩散粒子
     const pCount = 12;
     for (let i = 0; i < pCount; i++) {
       const a = (i / pCount) * Math.PI * 2 + shockP * 1.5;
@@ -356,8 +329,6 @@ export function drawMagicCircle(ctx, mc) {
   }
 }
 
-// ===================== 每帧更新 =====================
-/** 更新所有魔法阵状态并绘制 */
 export function updateMagicCircles(ctx, deltaTime) {
   magicCircles.value = magicCircles.value.filter((mc) => {
     mc.elapsed += deltaTime / 1000;

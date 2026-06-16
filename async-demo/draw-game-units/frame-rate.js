@@ -64,12 +64,11 @@ export class FrameRateManager {
   _loop(timestamp) {
     if (!this.isRunning) return;
 
-    const deltaTime = timestamp - this.lastTime; // 计算时间间隔
+    const deltaTime = timestamp - this.lastTime;
 
     if (deltaTime >= this.frameInterval) {
       this.lastTime = timestamp - (deltaTime % this.frameInterval);
 
-      // 执行所有注册的回调
       for (const callback of this.callbacks) {
         callback(deltaTime);
       }
@@ -124,5 +123,4 @@ export class FrameRateManager {
   }
 }
 
-// 创建全局单例实例
 export const frameRateManager = new FrameRateManager();

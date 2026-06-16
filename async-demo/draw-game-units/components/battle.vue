@@ -71,9 +71,9 @@ const itemList = ref(
     return list;
   })(),
 );
-const itemDialogOpener = ref(null); // 记录是谁打开的道具面板: 'player' | 'pet'
+const itemDialogOpener = ref(null);
 
-const cursorPos = ref({ x: 0, y: 0 }); // 鼠标位置
+const cursorPos = ref({ x: 0, y: 0 });
 
 const currentEnemyList = ref(null);
 const currentPet = ref(null);
@@ -91,12 +91,11 @@ const petCommand = ref(null);
 const currentCommander = ref(null);
 
 const playerMenuConfig = ref({
-  x: 950, // 菜单x坐标
-  y: 50, // 菜单y坐标
-  width: 200, // 菜单宽度
-  height: 30, // 菜单高度
+  x: 950,
+  y: 50,
+  width: 200,
+  height: 30,
   list: [
-    // 菜单列表
     {
       label: "自动",
       value: "auto",
@@ -157,10 +156,10 @@ const playerMenuConfig = ref({
 });
 
 const petMenuConfig = ref({
-  x: 950, // 菜单x坐标
-  y: 50, // 菜单y坐标
-  width: 200, // 菜单宽度
-  height: 30, // 菜单高度
+  x: 950,
+  y: 50,
+  width: 200,
+  height: 30,
   list: [
     {
       label: "攻击",
@@ -264,7 +263,6 @@ const currentMenusConfig = computed(() => {
     petCommand.value &&
     ["attack", "magic", "item"].includes(petCommand.value.type)
   ) {
-    // 宠物普通攻击
     if (petCommand.value.target) {
       return null;
     }
@@ -273,9 +271,7 @@ const currentMenusConfig = computed(() => {
   return null;
 });
 
-// 根据当前指令状态计算 canvas 的鼠标样式（使用 SVG data URL 嵌入 emoji）
 const canvasCursor = computed(() => {
-  // 玩家攻击 / 宠物攻击指令 - 选择目标中
   const isPlayerAttacking =
     playerCommand.value &&
     playerCommand.value.type === "attack" &&
@@ -287,7 +283,6 @@ const canvasCursor = computed(() => {
   if (isPlayerAttacking || isPetAttacking) {
     return buildEmojiCursor("🗡️");
   }
-  // 玩家道具 / 宠物道具指令 - 已选道具，选择目标中
   const isPlayerItemTargeting =
     playerCommand.value &&
     playerCommand.value.type === "item" &&
@@ -304,35 +299,28 @@ const canvasCursor = computed(() => {
   return "default";
 });
 
-// 按规则计算敌人位置（左下圆心，45度右上斜线排列，每线最多5个）
 const calcEnemyPositions = () => {
   if (!currentEnemyList.value || currentEnemyList.value.length === 0) return;
 
   const canvasHeight = props.height;
   const enemies = currentEnemyList.value;
 
-  // 圆心：画布左下角
   const centerX = 0;
   const centerY = canvasHeight;
 
-  // 45度角（屏幕坐标系：从水平向右向上旋转45度）
   const angle = -Math.PI / 4;
   const cosA = Math.cos(angle);
   const sinA = Math.sin(angle);
 
-  // 平行线间距方向（与直线垂直，向右下偏移）
   const offsetCos = Math.cos(Math.PI / 4);
   const offsetSin = Math.sin(Math.PI / 4);
 
-  // 每排最多5个，排之间间距为 unit.size * 2
   const maxPerRow = 5;
   const unitSize = enemies[0]?.size || 40;
   const rowGap = unitSize * 2;
 
-  // 直线总长度：从左下角到顶部的距离 = canvasHeight / sin(45°)
   const totalLineLength = canvasHeight / Math.sin(Math.PI / 4);
 
-  // 总排数
   const totalCount = enemies.length;
   const totalRows = Math.ceil(totalCount / maxPerRow);
   const currentPerRow = totalRows > 1 ? maxPerRow : totalCount;
@@ -341,14 +329,11 @@ const calcEnemyPositions = () => {
     const row = Math.floor(index / currentPerRow);
     const colInRow = index % currentPerRow;
 
-    // 等分：将直线分成 (currentPerRow + 1) 段，敌人位于分段点上
     const t = ((colInRow + 1) / (currentPerRow + 1)) * totalLineLength;
 
-    // 计算该敌人在直线上的坐标
     const lineX = centerX + t * cosA;
     const lineY = centerY + t * sinA;
 
-    // 平行线偏移：向右下偏移
     const offsetX =
       row * rowGap * offsetCos +
       Math.floor(index / currentPerRow) * 0.8 * unitSize;
@@ -369,7 +354,6 @@ const calcPlayerPosition = () => {
   const canvasHeight = props.height;
   const unitSize = currentPlayer.value.size || 40;
 
-  // 玩家位于画布右侧，敌人的对面（右下方，单独一行）
   currentPlayer.value.x = (canvasWidth / 3) * 2 + unitSize / 2;
   currentPlayer.value.y = canvasHeight / 2 + unitSize * 2 * Math.sqrt(2);
 };
@@ -381,21 +365,17 @@ const calcPetPosition = () => {
   const canvasHeight = props.height;
   const unitSize = currentPet.value.size || 40;
 
-  // 宠物位于玩家下方另一行，敌人的对面（右侧，与玩家不同行）
   currentPet.value.x = (canvasWidth / 3) * 2 - unitSize * 2;
   currentPet.value.y = (canvasHeight / 3) * 2 - (unitSize * 2) / Math.sqrt(2);
 };
 
-// 绘制回调
 const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
-  // 绘制背景装饰 (deltaTime 单位 ms，换算为秒)
   drawDecoration(ctx, {
     width: props.width,
     height: props.height,
     frame: canvasFrame * 0.5,
   });
 
-  // 绘制战斗魔法阵
   const magicCircleSize = (props.height / 3) * 2;
   drawMagicCircle(ctx, {
     x: props.width / 2 - magicCircleSize / 2,
@@ -405,16 +385,12 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     opacity: 0.3,
   });
 
-  // 计算敌人位置
   calcEnemyPositions();
 
-  // 计算玩家位置
   calcPlayerPosition();
 
-  // 计算宠物位置
   calcPetPosition();
 
-  // 绘制所有单位
   if (currentEnemyList.value) {
     for (const unit of currentEnemyList.value) {
       const animSpeed = unit.config.IDLE_SPEED
@@ -435,7 +411,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
   drawSelectMenus(ctx, currentMenusConfig.value);
 };
 
-// 点击菜单
 const handleMenuClick = ({ e, canvasRect }) => {
   if (!currentMenusConfig.value) return;
   const clickX = e.clientX - canvasRect.left;
@@ -462,11 +437,9 @@ const handleMenuClick = ({ e, canvasRect }) => {
   }
 };
 
-// 点击画布点击
 const onCanvasClick = ({ e, canvasRect }) => {
   handleMenuClick({ e, canvasRect });
 
-  // 玩家普通攻击
   if (
     playerCommand.value &&
     playerCommand.value.type === "attack" &&
@@ -481,7 +454,6 @@ const onCanvasClick = ({ e, canvasRect }) => {
     return;
   }
 
-  // 玩家道具使用
   if (
     playerCommand.value &&
     playerCommand.value.type === "item" &&
@@ -493,7 +465,6 @@ const onCanvasClick = ({ e, canvasRect }) => {
     return;
   }
 
-  // 宠物普通攻击
   if (
     petCommand.value &&
     petCommand.value.type === "attack" &&
@@ -508,7 +479,6 @@ const onCanvasClick = ({ e, canvasRect }) => {
     return;
   }
 
-  // 宠物道具使用
   if (
     petCommand.value &&
     petCommand.value.type === "item" &&
@@ -521,7 +491,6 @@ const onCanvasClick = ({ e, canvasRect }) => {
   }
 };
 
-// 鼠标在画布上移动
 const onCanvasMouseMove = ({ e, canvasRect }) => {
   cursorPos.value = {
     x: e.clientX - canvasRect.left,
@@ -529,13 +498,11 @@ const onCanvasMouseMove = ({ e, canvasRect }) => {
   };
 };
 
-// 点击画布选择敌人单位
 const handleSelectEnemyUnit = ({ e, canvasRect }) => {
   const clickX = e.clientX - canvasRect.left;
   const clickY = e.clientY - canvasRect.top;
 
   let selectedEnemyUnitIndex = -1;
-  // 检测点击了哪个单位
   for (let i = 0; i < currentEnemyList.value.length; i++) {
     const unit = currentEnemyList.value[i];
     const unitSize = unit.size || 50;

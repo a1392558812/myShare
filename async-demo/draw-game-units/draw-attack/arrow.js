@@ -1,19 +1,11 @@
-/**
- * 箭矢攻击系统
- * 按下 x 键，selectedUnit 向 targetList 中所有目标各射一箭
- */
 import { ref } from "vue";
 
-// ===================== 常量 =====================
-export const ARROW_SPEED = 250; // px/s
-export const TRAIL_MAX = 8;     // 拖尾长度
+export const ARROW_SPEED = 250;
+export const TRAIL_MAX = 8;
 
-// ===================== 状态 =====================
 export const arrows = ref([]);
 let arrowIdCounter = 0;
 
-// ===================== 发射 =====================
-/** 发射一次攻击：向 targetList 中所有目标各射一箭 */
 export function fireAttack(units, selectedUnit, targetList) {
   const attacker = units.value[selectedUnit.value];
   if (!attacker) return;
@@ -57,7 +49,6 @@ export function fireAttack(units, selectedUnit, targetList) {
   });
 }
 
-// ===================== 绘制 =====================
 /**
  * 绘制单支箭矢
  * @param {CanvasRenderingContext2D} ctx
@@ -73,7 +64,6 @@ export function drawArrow(ctx, arrow) {
   ctx.translate(x, y);
   ctx.rotate(angle);
 
-  // 箭杆
   ctx.strokeStyle = "#920fbb";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -81,7 +71,6 @@ export function drawArrow(ctx, arrow) {
   ctx.lineTo(0, 0);
   ctx.stroke();
 
-  // 箭尖（金属色）
   ctx.fillStyle = "#E8E8E8";
   ctx.strokeStyle = "#AAAAAA";
   ctx.lineWidth = 1;
@@ -94,7 +83,6 @@ export function drawArrow(ctx, arrow) {
   ctx.fill();
   ctx.stroke();
 
-  // 箭尾羽毛
   ctx.strokeStyle = "#88AAFF";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -107,24 +95,19 @@ export function drawArrow(ctx, arrow) {
   ctx.restore();
 }
 
-// ===================== 每帧更新 =====================
-/** 更新所有箭矢位置并绘制 */
 export function updateArrows(ctx, deltaTime) {
   const dt = deltaTime / 1000;
   arrows.value = arrows.value.filter((arrow) => {
     if (arrow.done) return false;
 
-    // 记录拖尾
     arrow.trail.push({ x: arrow.x, y: arrow.y });
     if (arrow.trail.length > TRAIL_MAX) {
       arrow.trail.shift();
     }
 
-    // 移动
     arrow.x += arrow.vx * dt;
     arrow.y += arrow.vy * dt;
 
-    // 到达检测
     const dx = arrow.toX - arrow.x;
     const dy = arrow.toY - arrow.y;
     if (Math.sqrt(dx * dx + dy * dy) < 8) {
@@ -132,7 +115,6 @@ export function updateArrows(ctx, deltaTime) {
       return false;
     }
 
-    // 绘制拖尾
     if (arrow.trail.length > 1) {
       for (let i = 1; i < arrow.trail.length; i++) {
         const progress = i / arrow.trail.length;
@@ -148,7 +130,6 @@ export function updateArrows(ctx, deltaTime) {
       }
     }
 
-    // 绘制箭矢主体
     drawArrow(ctx, arrow);
 
     return true;

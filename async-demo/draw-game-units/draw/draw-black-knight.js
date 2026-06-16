@@ -5,145 +5,113 @@ export const config = {
   WALK_SPEED: 0.1,
 }
 
-// 暗黑骑士颜色（骑士盔甲 + 黑魔法侵蚀）
 const KNIGHT_COLORS = {
-  // 头盔
-  helm: '#2A2A3A',         // 头盔主色 - 暗灰
-  helmDark: '#1A1A2A',     // 头盔暗
-  helmLight: '#3A3A4A',     // 头盔亮
-  helmCrack: '#0A0A1A',    // 头盔裂缝
-  // 眼睛 - 被侵蚀的红光
-  eye: '#FF2222',           // 眼睛 - 血红
-  eyeGlow: '#FF4444',       // 眼睛发光
-  eyeInner: '#FF8888',     // 眼睛内核
-  // 盔甲
-  armor: '#3A3A4A',        // 盔甲主色
-  armorDark: '#2A2A3A',    // 盔甲暗
-  armorLight: '#4A4A5A',   // 盔甲亮
-  armorPlate: '#4A4A5A',   // 金属板
-  armorPlateLight: '#5A5A6A', // 板亮
-  armorCrack: '#1A1A2A',    // 侵蚀裂缝
-  // 黑魔法符文
-  corruption: '#6600CC',     // 侵蚀 - 紫黑
-  corruptionGlow: '#9933FF', // 侵蚀发光
-  corruptionDark: '#440099', // 侵蚀暗
-  corruptionLight: '#BB66FF', // 侵蚀亮
-  rune: '#8800FF',           // 符文
-  runeGlow: '#AA44FF',       // 符文发光
-  runeDark: '#5500AA',      // 符文暗
-  // 披风
-  cape: '#1A0A1A',        // 披风主色 - 极暗黑紫
-  capeDark: '#0A000A',    // 披风暗
-  capeLight: '#2A1A2A',   // 披风亮
-  capeCorrupt: '#330066',  // 侵蚀披风
-  // 剑
-  sword: '#6A6A7A',      // 剑刃 - 银灰
-  swordDark: '#4A4A5A',  // 剑刃暗
-  swordLight: '#8A8A9A', // 剑刃亮
-  swordCorrupt: '#9933FF', // 剑上侵蚀符文
-  swordHandle: '#4A3A2A', // 剑柄 - 棕
-  swordGuard: '#8A7A3A',  // 剑格 - 金
-  // 盾
-  shield: '#3A3A4A',      // 盾
-  shieldDark: '#2A2A3A',  // 盾暗
-  shieldLight: '#4A4A5A', // 盾亮
-  shieldCorrupt: '#6600CC', // 盾侵蚀符文
-  // 护手
-  gauntlet: '#4A4A5A',    // 护手
-  gauntletDark: '#3A3A4A', // 护手暗
-  gauntletLight: '#5A5A6A', // 护手亮
-  // 腰带
-  belt: '#3A3A4A',        // 腰带
-  beltLight: '#4A4A5A',   // 腰带亮
-  // 靴子
-  boot: '#2A2A3A',        // 靴
-  bootDark: '#1A1A2A',    // 靴暗
-  bootLight: '#3A3A4A',   // 靴亮
-  // 黑魔法能量
-  darkEnergy: '#6600CC',     // 黑暗能量
-  darkEnergyGlow: '#9933FF', // 能量发光
-  spark: '#BB66FF',          // 火花 - 紫
-  sparkWhite: '#FFFFFF',     // 白火花
-  // 侵蚀裂缝效果
-  crack: '#1A0A2A',          // 裂缝
-  crackGlow: '#8800FF',     // 裂缝发光
-  highlight: '#FFFFFF',          // 高光
+  helm: '#2A2A3A',
+  helmDark: '#1A1A2A',
+  helmLight: '#3A3A4A',
+  helmCrack: '#0A0A1A',
+  eye: '#FF2222',
+  eyeGlow: '#FF4444',
+  eyeInner: '#FF8888',
+  armor: '#3A3A4A',
+  armorDark: '#2A2A3A',
+  armorLight: '#4A4A5A',
+  armorPlate: '#4A4A5A',
+  armorPlateLight: '#5A5A6A',
+  armorCrack: '#1A1A2A',
+  corruption: '#6600CC',
+  corruptionGlow: '#9933FF',
+  corruptionDark: '#440099',
+  corruptionLight: '#BB66FF',
+  rune: '#8800FF',
+  runeGlow: '#AA44FF',
+  runeDark: '#5500AA',
+  cape: '#1A0A1A',
+  capeDark: '#0A000A',
+  capeLight: '#2A1A2A',
+  capeCorrupt: '#330066',
+  sword: '#6A6A7A',
+  swordDark: '#4A4A5A',
+  swordLight: '#8A8A9A',
+  swordCorrupt: '#9933FF',
+  swordHandle: '#4A3A2A',
+  swordGuard: '#8A7A3A',
+  shield: '#3A3A4A',
+  shieldDark: '#2A2A3A',
+  shieldLight: '#4A4A5A',
+  shieldCorrupt: '#6600CC',
+  gauntlet: '#4A4A5A',
+  gauntletDark: '#3A3A4A',
+  gauntletLight: '#5A5A6A',
+  belt: '#3A3A4A',
+  beltLight: '#4A4A5A',
+  boot: '#2A2A3A',
+  bootDark: '#1A1A2A',
+  bootLight: '#3A3A4A',
+  darkEnergy: '#6600CC',
+  darkEnergyGlow: '#9933FF',
+  spark: '#BB66FF',
+  sparkWhite: '#FFFFFF',
+  crack: '#1A0A2A',
+  crackGlow: '#8800FF',
+  highlight: '#FFFFFF',
 }
 
-// 暗黑骑士高精度头像（16x16网格，聚焦被侵蚀的头盔头部特写）
 const KNIGHT_AVATAR = [
-  // ===== 头盔顶部边缘 =====
   [5, 0, KNIGHT_COLORS.helmDark], [6, 0, KNIGHT_COLORS.helm], [7, 0, KNIGHT_COLORS.helmLight], [8, 0, KNIGHT_COLORS.helmLight], [9, 0, KNIGHT_COLORS.helm], [10, 0, KNIGHT_COLORS.helmDark],
   [4, 1, KNIGHT_COLORS.helm], [5, 1, KNIGHT_COLORS.helmLight], [6, 1, KNIGHT_COLORS.helm], [7, 1, KNIGHT_COLORS.corruption], [8, 1, KNIGHT_COLORS.corruption], [9, 1, KNIGHT_COLORS.helm], [10, 1, KNIGHT_COLORS.helmLight], [11, 1, KNIGHT_COLORS.helm],
   [4, 2, KNIGHT_COLORS.helmDark], [5, 2, KNIGHT_COLORS.helm], [6, 2, KNIGHT_COLORS.helmLight], [7, 2, KNIGHT_COLORS.helmLight], [8, 2, KNIGHT_COLORS.corruption], [9, 2, KNIGHT_COLORS.corruption], [10, 2, KNIGHT_COLORS.helmLight], [11, 2, KNIGHT_COLORS.helm], [12, 2, KNIGHT_COLORS.helmDark],
 
-  // ===== 头盔主体 =====
   [3, 3, KNIGHT_COLORS.helmDark], [4, 3, KNIGHT_COLORS.helm], [5, 3, KNIGHT_COLORS.helmLight], [6, 3, KNIGHT_COLORS.helm], [7, 3, KNIGHT_COLORS.corruptionGlow], [8, 3, KNIGHT_COLORS.corruptionGlow], [9, 3, KNIGHT_COLORS.helm], [10, 3, KNIGHT_COLORS.helmLight], [11, 3, KNIGHT_COLORS.helm], [12, 3, KNIGHT_COLORS.helmDark],
   [3, 4, KNIGHT_COLORS.helmDark], [4, 4, KNIGHT_COLORS.helm], [5, 4, KNIGHT_COLORS.helmLight], [6, 4, KNIGHT_COLORS.helm], [7, 4, KNIGHT_COLORS.corruption], [8, 4, KNIGHT_COLORS.corruption], [9, 4, KNIGHT_COLORS.helm], [10, 4, KNIGHT_COLORS.helmLight], [11, 4, KNIGHT_COLORS.helm], [12, 4, KNIGHT_COLORS.helmDark],
 
-  // ===== 眼睛行（血红侵蚀）=====
   [3, 5, KNIGHT_COLORS.helmDark], [4, 5, KNIGHT_COLORS.helm], [5, 5, KNIGHT_COLORS.eye], [6, 5, KNIGHT_COLORS.eyeGlow], [7, 5, KNIGHT_COLORS.corruption], [8, 5, KNIGHT_COLORS.corruption], [9, 5, KNIGHT_COLORS.eyeGlow], [10, 5, KNIGHT_COLORS.eye], [11, 5, KNIGHT_COLORS.helm], [12, 5, KNIGHT_COLORS.helmDark],
-  // 眼睛高光
   [5, 4, KNIGHT_COLORS.highlight], [6, 4, KNIGHT_COLORS.highlight], [9, 4, KNIGHT_COLORS.highlight], [10, 4, KNIGHT_COLORS.highlight],
   [5, 5, KNIGHT_COLORS.highlight], [9, 5, KNIGHT_COLORS.highlight],
 
-  // ===== 眼睛发光效果 =====
   [5, 5, KNIGHT_COLORS.eyeGlow], [6, 5, KNIGHT_COLORS.eyeGlow], [9, 5, KNIGHT_COLORS.eyeGlow], [10, 5, KNIGHT_COLORS.eyeGlow],
   [5, 6, KNIGHT_COLORS.eyeInner], [6, 6, KNIGHT_COLORS.eyeInner], [9, 6, KNIGHT_COLORS.eyeInner], [10, 6, KNIGHT_COLORS.eyeInner],
 
-  // ===== 面罩/侵蚀细节 =====
   [3, 6, KNIGHT_COLORS.helmDark], [4, 6, KNIGHT_COLORS.helm], [5, 6, KNIGHT_COLORS.corruptionGlow], [6, 6, KNIGHT_COLORS.eyeGlow], [7, 6, KNIGHT_COLORS.corruption], [8, 6, KNIGHT_COLORS.corruption], [9, 6, KNIGHT_COLORS.eyeGlow], [10, 6, KNIGHT_COLORS.corruptionGlow], [11, 6, KNIGHT_COLORS.helm], [12, 6, KNIGHT_COLORS.helmDark],
   [3, 7, KNIGHT_COLORS.helmDark], [4, 7, KNIGHT_COLORS.helm], [5, 7, KNIGHT_COLORS.corruption], [6, 7, KNIGHT_COLORS.corruptionDark], [7, 7, KNIGHT_COLORS.corruption], [8, 7, KNIGHT_COLORS.corruptionDark], [9, 7, KNIGHT_COLORS.corruption], [10, 7, KNIGHT_COLORS.corruption], [11, 7, KNIGHT_COLORS.helm], [12, 7, KNIGHT_COLORS.helmDark],
 
-  // ===== 侵蚀裂缝 =====
   [4, 8, KNIGHT_COLORS.helmDark], [5, 8, KNIGHT_COLORS.crackGlow], [6, 8, KNIGHT_COLORS.crack], [7, 8, KNIGHT_COLORS.corruption], [8, 8, KNIGHT_COLORS.corruption], [9, 8, KNIGHT_COLORS.crack], [10, 8, KNIGHT_COLORS.crackGlow], [11, 8, KNIGHT_COLORS.helmDark],
   [5, 9, KNIGHT_COLORS.crack], [6, 9, KNIGHT_COLORS.corruptionGlow], [7, 9, KNIGHT_COLORS.corruptionDark], [8, 9, KNIGHT_COLORS.corruptionDark], [9, 9, KNIGHT_COLORS.corruptionGlow], [10, 9, KNIGHT_COLORS.crack],
 
-  // ===== 下颚/护面 =====
   [4, 10, KNIGHT_COLORS.helmDark], [5, 10, KNIGHT_COLORS.helm], [6, 10, KNIGHT_COLORS.corruption], [7, 10, KNIGHT_COLORS.corruptionDark], [8, 10, KNIGHT_COLORS.corruptionDark], [9, 10, KNIGHT_COLORS.corruption], [10, 10, KNIGHT_COLORS.helm], [11, 10, KNIGHT_COLORS.helmDark],
   [5, 11, KNIGHT_COLORS.helm], [6, 11, KNIGHT_COLORS.helmLight], [7, 11, KNIGHT_COLORS.corruption], [8, 11, KNIGHT_COLORS.corruption], [9, 11, KNIGHT_COLORS.helmLight], [10, 11, KNIGHT_COLORS.helm],
   [5, 12, KNIGHT_COLORS.helmDark], [6, 12, KNIGHT_COLORS.helm], [7, 12, KNIGHT_COLORS.corruptionGlow], [8, 12, KNIGHT_COLORS.corruptionGlow], [9, 12, KNIGHT_COLORS.helm], [10, 12, KNIGHT_COLORS.helmDark],
 
-  // ===== 肩甲 =====
   [3, 13, KNIGHT_COLORS.armorDark], [4, 13, KNIGHT_COLORS.armor], [5, 13, KNIGHT_COLORS.armorPlateLight], [6, 13, KNIGHT_COLORS.corruption], [7, 13, KNIGHT_COLORS.corruptionGlow], [8, 13, KNIGHT_COLORS.corruptionGlow], [9, 13, KNIGHT_COLORS.corruption], [10, 13, KNIGHT_COLORS.armorPlateLight], [11, 13, KNIGHT_COLORS.armor], [12, 13, KNIGHT_COLORS.armorDark],
   [4, 14, KNIGHT_COLORS.armorDark], [5, 14, KNIGHT_COLORS.armorPlate], [6, 14, KNIGHT_COLORS.corruptionDark], [7, 14, KNIGHT_COLORS.corruption], [8, 14, KNIGHT_COLORS.corruption], [9, 14, KNIGHT_COLORS.corruptionDark], [10, 14, KNIGHT_COLORS.armorPlateLight], [11, 14, KNIGHT_COLORS.armorPlate], [12, 14, KNIGHT_COLORS.armorDark],
 
-  // ===== 符文装饰 =====
   [6, 13, KNIGHT_COLORS.runeGlow], [7, 13, KNIGHT_COLORS.rune], [8, 13, KNIGHT_COLORS.rune], [9, 13, KNIGHT_COLORS.runeGlow],
   [7, 14, KNIGHT_COLORS.sparkWhite], [8, 14, KNIGHT_COLORS.sparkWhite],
 ]
 
-// 向下面朝 - 正面（已居中，x偏移+2）
 const KNIGHT_FACE_DOWN = [
-  // ===== 头盔顶部 =====
   [7, 0, KNIGHT_COLORS.helmDark], [8, 0, KNIGHT_COLORS.helm], [9, 0, KNIGHT_COLORS.helm], [10, 0, KNIGHT_COLORS.helmDark],
   [6, 1, KNIGHT_COLORS.helm], [7, 1, KNIGHT_COLORS.helmLight], [8, 1, KNIGHT_COLORS.helm], [9, 1, KNIGHT_COLORS.helm], [10, 1, KNIGHT_COLORS.helmLight], [11, 1, KNIGHT_COLORS.helm],
   [6, 2, KNIGHT_COLORS.helmDark], [7, 2, KNIGHT_COLORS.helm], [8, 2, KNIGHT_COLORS.helmLight], [9, 2, KNIGHT_COLORS.helmLight], [10, 2, KNIGHT_COLORS.helm], [11, 2, KNIGHT_COLORS.helmDark],
 
-  // ===== 头盔面罩 =====
   [6, 3, KNIGHT_COLORS.helmDark], [7, 3, KNIGHT_COLORS.helm], [8, 3, KNIGHT_COLORS.corruption], [9, 3, KNIGHT_COLORS.corruption], [10, 3, KNIGHT_COLORS.helm], [11, 3, KNIGHT_COLORS.helmDark],
   [6, 4, KNIGHT_COLORS.helmDark], [7, 4, KNIGHT_COLORS.eye], [8, 4, KNIGHT_COLORS.eyeGlow], [9, 4, KNIGHT_COLORS.eyeGlow], [10, 4, KNIGHT_COLORS.eye], [11, 4, KNIGHT_COLORS.helmDark],
   [6, 5, KNIGHT_COLORS.helmDark], [7, 5, KNIGHT_COLORS.eyeGlow], [8, 5, KNIGHT_COLORS.eyeInner], [9, 5, KNIGHT_COLORS.eyeInner], [10, 5, KNIGHT_COLORS.eyeGlow], [11, 5, KNIGHT_COLORS.helmDark],
   [7, 6, KNIGHT_COLORS.helm], [8, 6, KNIGHT_COLORS.corruption], [9, 6, KNIGHT_COLORS.corruption], [10, 6, KNIGHT_COLORS.helm],
 
-  // ===== 肩甲 =====
   [4, 7, KNIGHT_COLORS.armorDark], [5, 7, KNIGHT_COLORS.armor], [6, 7, KNIGHT_COLORS.armorPlateLight], [7, 7, KNIGHT_COLORS.corruption], [8, 7, KNIGHT_COLORS.corruptionGlow], [9, 7, KNIGHT_COLORS.corruptionGlow], [10, 7, KNIGHT_COLORS.corruption], [11, 7, KNIGHT_COLORS.armorPlateLight], [12, 7, KNIGHT_COLORS.armor], [13, 7, KNIGHT_COLORS.armorDark],
   [4, 8, KNIGHT_COLORS.armorDark], [5, 8, KNIGHT_COLORS.armorPlate], [6, 8, KNIGHT_COLORS.armorPlateLight], [7, 8, KNIGHT_COLORS.corruptionDark], [8, 8, KNIGHT_COLORS.corruption], [9, 8, KNIGHT_COLORS.corruption], [10, 8, KNIGHT_COLORS.corruptionDark], [11, 8, KNIGHT_COLORS.armorPlateLight], [12, 8, KNIGHT_COLORS.armorPlate], [13, 8, KNIGHT_COLORS.armorDark],
 
-  // ===== 胸甲 =====
   [5, 9, KNIGHT_COLORS.armorDark], [6, 9, KNIGHT_COLORS.armorPlate], [7, 9, KNIGHT_COLORS.corruptionGlow], [8, 9, KNIGHT_COLORS.armorPlateLight], [9, 9, KNIGHT_COLORS.armorPlateLight], [10, 9, KNIGHT_COLORS.corruptionGlow], [11, 9, KNIGHT_COLORS.armorPlate], [12, 9, KNIGHT_COLORS.armorDark],
   [5, 10, KNIGHT_COLORS.armorDark], [6, 10, KNIGHT_COLORS.armor], [7, 10, KNIGHT_COLORS.corruption], [8, 10, KNIGHT_COLORS.corruptionDark], [9, 10, KNIGHT_COLORS.corruptionDark], [10, 10, KNIGHT_COLORS.corruption], [11, 10, KNIGHT_COLORS.armor], [12, 10, KNIGHT_COLORS.armorDark],
 
-  // ===== 腰带 =====
   [6, 11, KNIGHT_COLORS.belt], [7, 11, KNIGHT_COLORS.corruption], [8, 11, KNIGHT_COLORS.beltLight], [9, 11, KNIGHT_COLORS.beltLight], [10, 11, KNIGHT_COLORS.corruption], [11, 11, KNIGHT_COLORS.belt],
 
-  // ===== 腿甲 =====
   [7, 12, KNIGHT_COLORS.armorDark], [8, 12, KNIGHT_COLORS.armorPlate], [9, 12, KNIGHT_COLORS.armorPlate], [10, 12, KNIGHT_COLORS.armorDark],
   [7, 13, KNIGHT_COLORS.boot], [8, 13, KNIGHT_COLORS.bootLight], [9, 13, KNIGHT_COLORS.bootLight], [10, 13, KNIGHT_COLORS.boot],
   [7, 14, KNIGHT_COLORS.bootDark], [8, 14, KNIGHT_COLORS.boot], [9, 14, KNIGHT_COLORS.boot], [10, 14, KNIGHT_COLORS.bootDark],
   [7, 15, KNIGHT_COLORS.boot], [8, 15, KNIGHT_COLORS.bootLight], [9, 15, KNIGHT_COLORS.bootLight], [10, 15, KNIGHT_COLORS.boot],
 
-  // ===== 左手（持剑）=====
   [3, 8, KNIGHT_COLORS.gauntlet], [4, 8, KNIGHT_COLORS.gauntletDark],
   [3, 9, KNIGHT_COLORS.gauntletLight], [4, 9, KNIGHT_COLORS.gauntlet],
   [3, 10, KNIGHT_COLORS.gauntlet], [4, 10, KNIGHT_COLORS.gauntletDark],
@@ -155,7 +123,6 @@ const KNIGHT_FACE_DOWN = [
   [3, 16, KNIGHT_COLORS.sword], [4, 16, KNIGHT_COLORS.corruption],
   [3, 17, KNIGHT_COLORS.swordLight],
 
-  // ===== 右手（持盾）=====
   [14, 8, KNIGHT_COLORS.gauntletDark], [15, 8, KNIGHT_COLORS.gauntlet],
   [14, 9, KNIGHT_COLORS.gauntlet], [15, 9, KNIGHT_COLORS.gauntletLight],
   [14, 10, KNIGHT_COLORS.gauntletDark], [15, 10, KNIGHT_COLORS.gauntlet],
@@ -164,78 +131,62 @@ const KNIGHT_FACE_DOWN = [
   [15, 13, KNIGHT_COLORS.shieldLight],
   [15, 14, KNIGHT_COLORS.shieldCorrupt],
 
-  // ===== 黑魔法能量 =====
   [8, 15, KNIGHT_COLORS.darkEnergy], [9, 15, KNIGHT_COLORS.darkEnergy],
   [7, 17, KNIGHT_COLORS.spark], [10, 17, KNIGHT_COLORS.spark],
 ]
 
-// 向上面朝 - 背面（已居中，x偏移+2）
 const KNIGHT_FACE_UP = [
-  // ===== 头盔顶部 =====
   [7, 0, KNIGHT_COLORS.helmDark], [8, 0, KNIGHT_COLORS.helm], [9, 0, KNIGHT_COLORS.helm], [10, 0, KNIGHT_COLORS.helmDark],
   [6, 1, KNIGHT_COLORS.helm], [7, 1, KNIGHT_COLORS.helmLight], [8, 1, KNIGHT_COLORS.helm], [9, 1, KNIGHT_COLORS.helm], [10, 1, KNIGHT_COLORS.helmLight], [11, 1, KNIGHT_COLORS.helm],
   [6, 2, KNIGHT_COLORS.helmDark], [7, 2, KNIGHT_COLORS.helm], [8, 2, KNIGHT_COLORS.helmLight], [9, 2, KNIGHT_COLORS.helmLight], [10, 2, KNIGHT_COLORS.helm], [11, 2, KNIGHT_COLORS.helmDark],
 
-  // ===== 头盔背面 =====
   [6, 3, KNIGHT_COLORS.helmDark], [7, 3, KNIGHT_COLORS.helm], [8, 3, KNIGHT_COLORS.corruption], [9, 3, KNIGHT_COLORS.corruption], [10, 3, KNIGHT_COLORS.helm], [11, 3, KNIGHT_COLORS.helmDark],
   [6, 4, KNIGHT_COLORS.helmDark], [7, 4, KNIGHT_COLORS.helm], [8, 4, KNIGHT_COLORS.helmLight], [9, 4, KNIGHT_COLORS.helmLight], [10, 4, KNIGHT_COLORS.helm], [11, 4, KNIGHT_COLORS.helmDark],
   [7, 5, KNIGHT_COLORS.helm], [8, 5, KNIGHT_COLORS.corruptionGlow], [9, 5, KNIGHT_COLORS.corruptionGlow], [10, 5, KNIGHT_COLORS.helm],
 
-  // ===== 披风 =====
   [3, 6, KNIGHT_COLORS.capeDark], [4, 6, KNIGHT_COLORS.cape], [5, 6, KNIGHT_COLORS.capeLight], [6, 6, KNIGHT_COLORS.capeCorrupt], [7, 6, KNIGHT_COLORS.corruptionGlow], [8, 6, KNIGHT_COLORS.corruptionGlow], [9, 6, KNIGHT_COLORS.corruptionGlow], [10, 6, KNIGHT_COLORS.capeCorrupt], [11, 6, KNIGHT_COLORS.capeLight], [12, 6, KNIGHT_COLORS.cape], [13, 6, KNIGHT_COLORS.capeDark],
   [3, 7, KNIGHT_COLORS.capeDark], [4, 7, KNIGHT_COLORS.cape], [5, 7, KNIGHT_COLORS.capeLight], [6, 7, KNIGHT_COLORS.cape], [7, 7, KNIGHT_COLORS.corruptionDark], [8, 7, KNIGHT_COLORS.corruption], [9, 7, KNIGHT_COLORS.corruption], [10, 7, KNIGHT_COLORS.corruptionDark], [11, 7, KNIGHT_COLORS.cape], [12, 7, KNIGHT_COLORS.capeLight], [13, 7, KNIGHT_COLORS.cape], [14, 7, KNIGHT_COLORS.capeDark],
   [4, 8, KNIGHT_COLORS.capeDark], [5, 8, KNIGHT_COLORS.cape], [6, 8, KNIGHT_COLORS.capeLight], [7, 8, KNIGHT_COLORS.cape], [8, 8, KNIGHT_COLORS.corruptionDark], [9, 8, KNIGHT_COLORS.corruptionDark], [10, 8, KNIGHT_COLORS.cape], [11, 8, KNIGHT_COLORS.capeLight], [12, 8, KNIGHT_COLORS.cape], [13, 8, KNIGHT_COLORS.capeDark],
   [4, 9, KNIGHT_COLORS.capeDark], [5, 9, KNIGHT_COLORS.cape], [6, 9, KNIGHT_COLORS.capeLight], [7, 9, KNIGHT_COLORS.capeCorrupt], [8, 9, KNIGHT_COLORS.cape], [9, 9, KNIGHT_COLORS.cape], [10, 9, KNIGHT_COLORS.capeCorrupt], [11, 9, KNIGHT_COLORS.capeLight], [12, 9, KNIGHT_COLORS.cape], [13, 9, KNIGHT_COLORS.capeDark],
 
-  // ===== 背甲 + 腿 =====
   [6, 10, KNIGHT_COLORS.armorDark], [7, 10, KNIGHT_COLORS.corruptionGlow], [8, 10, KNIGHT_COLORS.armorPlateLight], [9, 10, KNIGHT_COLORS.armorPlateLight], [10, 10, KNIGHT_COLORS.corruptionGlow], [11, 10, KNIGHT_COLORS.armorDark],
   [7, 11, KNIGHT_COLORS.armorDark], [8, 11, KNIGHT_COLORS.armorPlate], [9, 11, KNIGHT_COLORS.armorPlate], [10, 11, KNIGHT_COLORS.armorDark],
   [7, 12, KNIGHT_COLORS.boot], [8, 12, KNIGHT_COLORS.bootLight], [9, 12, KNIGHT_COLORS.bootLight], [10, 12, KNIGHT_COLORS.boot],
   [7, 13, KNIGHT_COLORS.bootDark], [8, 13, KNIGHT_COLORS.boot], [9, 13, KNIGHT_COLORS.boot], [10, 13, KNIGHT_COLORS.bootDark],
   [7, 14, KNIGHT_COLORS.boot], [8, 14, KNIGHT_COLORS.bootLight], [9, 14, KNIGHT_COLORS.bootLight], [10, 14, KNIGHT_COLORS.boot],
 
-  // ===== 武器（剑背在身后）=====
   [14, 7, KNIGHT_COLORS.swordDark],
   [14, 8, KNIGHT_COLORS.sword],
   [14, 9, KNIGHT_COLORS.swordLight],
   [14, 10, KNIGHT_COLORS.swordGuard],
   [14, 11, KNIGHT_COLORS.swordHandle],
 
-  // ===== 黑魔法能量 =====
   [8, 14, KNIGHT_COLORS.darkEnergy], [9, 14, KNIGHT_COLORS.darkEnergy],
 ]
 
-// 向左面朝 - 侧面（已居中，x偏移+2）
 const KNIGHT_FACE_LEFT = [
-  // ===== 头盔侧面 =====
   [7, 0, KNIGHT_COLORS.helmDark], [8, 0, KNIGHT_COLORS.helm],
   [6, 1, KNIGHT_COLORS.helm], [7, 1, KNIGHT_COLORS.helmLight], [8, 1, KNIGHT_COLORS.corruption],
   [6, 2, KNIGHT_COLORS.helmDark], [7, 2, KNIGHT_COLORS.helm], [8, 2, KNIGHT_COLORS.helmLight],
 
-  // ===== 头盔侧面 + 眼睛 =====
   [6, 3, KNIGHT_COLORS.helmDark], [7, 3, KNIGHT_COLORS.eye], [8, 3, KNIGHT_COLORS.eyeGlow], [9, 3, KNIGHT_COLORS.helm],
   [6, 4, KNIGHT_COLORS.helmDark], [7, 4, KNIGHT_COLORS.eyeGlow], [8, 4, KNIGHT_COLORS.eyeInner], [9, 4, KNIGHT_COLORS.helmDark],
   [6, 5, KNIGHT_COLORS.helm], [7, 5, KNIGHT_COLORS.corruption], [8, 5, KNIGHT_COLORS.helm], [9, 5, KNIGHT_COLORS.helmDark],
 
-  // ===== 肩甲 =====
   [5, 6, KNIGHT_COLORS.armorDark], [6, 6, KNIGHT_COLORS.armorPlateLight], [7, 6, KNIGHT_COLORS.corruption], [8, 6, KNIGHT_COLORS.corruptionGlow], [9, 6, KNIGHT_COLORS.armorPlate], [10, 6, KNIGHT_COLORS.armorDark],
   [4, 7, KNIGHT_COLORS.armorDark], [5, 7, KNIGHT_COLORS.armor], [6, 7, KNIGHT_COLORS.corruptionDark], [7, 7, KNIGHT_COLORS.corruption], [8, 7, KNIGHT_COLORS.corruptionDark], [9, 7, KNIGHT_COLORS.armorPlateLight], [10, 7, KNIGHT_COLORS.armor], [11, 7, KNIGHT_COLORS.armorDark],
 
-  // ===== 胸甲侧面 =====
   [4, 8, KNIGHT_COLORS.armorDark], [5, 8, KNIGHT_COLORS.armorPlate], [6, 8, KNIGHT_COLORS.corruptionGlow], [7, 8, KNIGHT_COLORS.corruption], [8, 8, KNIGHT_COLORS.corruptionDark], [9, 8, KNIGHT_COLORS.armorPlateLight], [10, 8, KNIGHT_COLORS.armor], [11, 8, KNIGHT_COLORS.armorDark],
   [4, 9, KNIGHT_COLORS.armorDark], [5, 9, KNIGHT_COLORS.armor], [6, 9, KNIGHT_COLORS.corruption], [7, 9, KNIGHT_COLORS.corruptionDark], [8, 9, KNIGHT_COLORS.corruptionDark], [9, 9, KNIGHT_COLORS.corruption], [10, 9, KNIGHT_COLORS.armor], [11, 9, KNIGHT_COLORS.armorDark],
 
-  // ===== 腰带 =====
   [5, 10, KNIGHT_COLORS.belt], [6, 10, KNIGHT_COLORS.corruption], [7, 10, KNIGHT_COLORS.beltLight], [8, 10, KNIGHT_COLORS.corruption], [9, 10, KNIGHT_COLORS.beltLight], [10, 10, KNIGHT_COLORS.belt], [11, 10, KNIGHT_COLORS.belt],
 
-  // ===== 腿甲 =====
   [7, 11, KNIGHT_COLORS.armorDark], [8, 11, KNIGHT_COLORS.armorPlate], [9, 11, KNIGHT_COLORS.armorPlate], [10, 11, KNIGHT_COLORS.armorDark],
   [7, 12, KNIGHT_COLORS.boot], [8, 12, KNIGHT_COLORS.bootLight], [9, 12, KNIGHT_COLORS.bootLight], [10, 12, KNIGHT_COLORS.boot],
   [7, 13, KNIGHT_COLORS.bootDark], [8, 13, KNIGHT_COLORS.boot], [9, 13, KNIGHT_COLORS.boot], [10, 13, KNIGHT_COLORS.bootDark],
   [7, 14, KNIGHT_COLORS.boot], [8, 14, KNIGHT_COLORS.bootLight], [9, 14, KNIGHT_COLORS.bootLight], [10, 14, KNIGHT_COLORS.boot],
   [7, 15, KNIGHT_COLORS.bootDark], [8, 15, KNIGHT_COLORS.boot], [9, 15, KNIGHT_COLORS.boot], [10, 15, KNIGHT_COLORS.bootDark],
 
-  // ===== 左手（前伸持剑）=====
   [2, 7, KNIGHT_COLORS.gauntlet],
   [2, 8, KNIGHT_COLORS.gauntletLight], [3, 8, KNIGHT_COLORS.swordHandle],
   [2, 9, KNIGHT_COLORS.gauntlet], [3, 9, KNIGHT_COLORS.swordGuard],
@@ -245,7 +196,6 @@ const KNIGHT_FACE_LEFT = [
   [3, 13, KNIGHT_COLORS.swordLight], [4, 13, KNIGHT_COLORS.sword],
   [4, 14, KNIGHT_COLORS.swordDark],
 
-  // ===== 右手（盾在身后）=====
   [11, 8, KNIGHT_COLORS.gauntlet], [12, 8, KNIGHT_COLORS.gauntletDark],
   [11, 9, KNIGHT_COLORS.gauntletLight], [12, 9, KNIGHT_COLORS.gauntlet],
   [12, 10, KNIGHT_COLORS.shieldDark],
@@ -253,42 +203,33 @@ const KNIGHT_FACE_LEFT = [
   [12, 12, KNIGHT_COLORS.shieldLight],
   [12, 13, KNIGHT_COLORS.shieldCorrupt],
 
-  // ===== 黑魔法能量 =====
   [8, 15, KNIGHT_COLORS.darkEnergy],
   [7, 15, KNIGHT_COLORS.spark],
 ]
 
-// 向右面朝 - 侧面镜像（已居中，x偏移+2）
 const KNIGHT_FACE_RIGHT = [
-  // ===== 头盔侧面 =====
   [8, 0, KNIGHT_COLORS.helm], [9, 0, KNIGHT_COLORS.helmDark],
   [8, 1, KNIGHT_COLORS.corruption], [9, 1, KNIGHT_COLORS.helmLight], [10, 1, KNIGHT_COLORS.helm],
   [8, 2, KNIGHT_COLORS.helmLight], [9, 2, KNIGHT_COLORS.helm], [10, 2, KNIGHT_COLORS.helmDark],
 
-  // ===== 头盔侧面 + 眼睛 =====
   [7, 3, KNIGHT_COLORS.helm], [8, 3, KNIGHT_COLORS.eyeGlow], [9, 3, KNIGHT_COLORS.eye], [10, 3, KNIGHT_COLORS.helmDark],
   [7, 4, KNIGHT_COLORS.helmDark], [8, 4, KNIGHT_COLORS.eyeInner], [9, 4, KNIGHT_COLORS.eyeGlow], [10, 4, KNIGHT_COLORS.helmDark],
   [7, 5, KNIGHT_COLORS.helmDark], [8, 5, KNIGHT_COLORS.helm], [9, 5, KNIGHT_COLORS.corruption], [10, 5, KNIGHT_COLORS.helm],
 
-  // ===== 肩甲 =====
   [7, 6, KNIGHT_COLORS.armorDark], [8, 6, KNIGHT_COLORS.armorPlate], [9, 6, KNIGHT_COLORS.corruptionGlow], [10, 6, KNIGHT_COLORS.corruption], [11, 6, KNIGHT_COLORS.armorPlateLight], [12, 6, KNIGHT_COLORS.armorDark],
   [6, 7, KNIGHT_COLORS.armorDark], [7, 7, KNIGHT_COLORS.armor], [8, 7, KNIGHT_COLORS.corruptionDark], [9, 7, KNIGHT_COLORS.corruption], [10, 7, KNIGHT_COLORS.corruptionDark], [11, 7, KNIGHT_COLORS.armorPlate], [12, 7, KNIGHT_COLORS.armor], [13, 7, KNIGHT_COLORS.armorDark],
 
-  // ===== 胸甲侧面 =====
   [6, 8, KNIGHT_COLORS.armorDark], [7, 8, KNIGHT_COLORS.armor], [8, 8, KNIGHT_COLORS.corruptionDark], [9, 8, KNIGHT_COLORS.corruption], [10, 8, KNIGHT_COLORS.corruptionGlow], [11, 8, KNIGHT_COLORS.armorPlate], [12, 8, KNIGHT_COLORS.armorPlate], [13, 8, KNIGHT_COLORS.armorDark],
   [6, 9, KNIGHT_COLORS.armorDark], [7, 9, KNIGHT_COLORS.armor], [8, 9, KNIGHT_COLORS.corruptionDark], [9, 9, KNIGHT_COLORS.corruptionDark], [10, 9, KNIGHT_COLORS.corruption], [11, 9, KNIGHT_COLORS.corruptionGlow], [12, 9, KNIGHT_COLORS.armor], [13, 9, KNIGHT_COLORS.armorDark],
 
-  // ===== 腰带 =====
   [6, 10, KNIGHT_COLORS.belt], [7, 10, KNIGHT_COLORS.beltLight], [8, 10, KNIGHT_COLORS.corruption], [9, 10, KNIGHT_COLORS.beltLight], [10, 10, KNIGHT_COLORS.corruption], [11, 10, KNIGHT_COLORS.belt],
 
-  // ===== 腿甲 =====
   [6, 11, KNIGHT_COLORS.armorDark], [7, 11, KNIGHT_COLORS.armorPlate], [8, 11, KNIGHT_COLORS.armorPlate], [9, 11, KNIGHT_COLORS.armorDark],
   [6, 12, KNIGHT_COLORS.boot], [7, 12, KNIGHT_COLORS.bootLight], [8, 12, KNIGHT_COLORS.bootLight], [9, 12, KNIGHT_COLORS.boot],
   [6, 13, KNIGHT_COLORS.bootDark], [7, 13, KNIGHT_COLORS.boot], [8, 13, KNIGHT_COLORS.boot], [9, 13, KNIGHT_COLORS.bootDark],
   [6, 14, KNIGHT_COLORS.boot], [7, 14, KNIGHT_COLORS.bootLight], [8, 14, KNIGHT_COLORS.bootLight], [9, 14, KNIGHT_COLORS.boot],
   [6, 15, KNIGHT_COLORS.bootDark], [7, 15, KNIGHT_COLORS.boot], [8, 15, KNIGHT_COLORS.boot], [9, 15, KNIGHT_COLORS.bootDark],
 
-  // ===== 左手（盾在身后）=====
   [4, 8, KNIGHT_COLORS.gauntletDark], [5, 8, KNIGHT_COLORS.gauntlet],
   [4, 9, KNIGHT_COLORS.gauntlet], [5, 9, KNIGHT_COLORS.gauntletLight],
   [4, 10, KNIGHT_COLORS.shieldCorrupt],
@@ -296,7 +237,6 @@ const KNIGHT_FACE_RIGHT = [
   [4, 12, KNIGHT_COLORS.shield],
   [4, 13, KNIGHT_COLORS.shieldDark],
 
-  // ===== 右手（前伸持剑）=====
   [13, 7, KNIGHT_COLORS.gauntlet],
   [14, 8, KNIGHT_COLORS.swordHandle], [15, 8, KNIGHT_COLORS.gauntletLight],
   [14, 9, KNIGHT_COLORS.swordGuard], [15, 9, KNIGHT_COLORS.gauntlet],
@@ -306,17 +246,13 @@ const KNIGHT_FACE_RIGHT = [
   [15, 13, KNIGHT_COLORS.sword], [16, 13, KNIGHT_COLORS.swordLight],
   [16, 14, KNIGHT_COLORS.swordDark],
 
-  // ===== 黑魔法能量 =====
   [8, 15, KNIGHT_COLORS.darkEnergy],
   [9, 15, KNIGHT_COLORS.spark],
 ]
 
-// 待机动画帧（眼睛发光 + 侵蚀脉动 + 脚下能量）- 已居中
 const KNIGHT_IDLE_FRAMES = [
-  // 帧0 - 暗（正常状态，无额外像素覆盖）
   [
     { pixels: [
-      // 侵蚀正常色 - 眼睛周围
       [8, 3, KNIGHT_COLORS.corruption], [9, 3, KNIGHT_COLORS.corruption],
       [8, 6, KNIGHT_COLORS.corruption], [9, 6, KNIGHT_COLORS.corruption],
       [7, 7, KNIGHT_COLORS.corruption], [8, 7, KNIGHT_COLORS.corruption], [9, 7, KNIGHT_COLORS.corruption], [10, 7, KNIGHT_COLORS.corruption],
@@ -324,48 +260,36 @@ const KNIGHT_IDLE_FRAMES = [
       [7, 9, KNIGHT_COLORS.corruptionGlow], [8, 9, KNIGHT_COLORS.corruptionDark], [9, 9, KNIGHT_COLORS.corruptionDark], [10, 9, KNIGHT_COLORS.corruptionGlow],
     ] }
   ],
-  // 帧1 - 亮（侵蚀发光 + 脚下能量）
   [
     { pixels: [
-      // 侵蚀发光
       [8, 3, KNIGHT_COLORS.corruptionGlow], [9, 3, KNIGHT_COLORS.corruptionGlow],
       [8, 6, KNIGHT_COLORS.corruptionGlow], [9, 6, KNIGHT_COLORS.corruptionGlow],
       [7, 7, KNIGHT_COLORS.corruptionGlow], [8, 7, KNIGHT_COLORS.corruptionGlow], [9, 7, KNIGHT_COLORS.corruptionGlow], [10, 7, KNIGHT_COLORS.corruptionGlow],
       [7, 8, KNIGHT_COLORS.corruptionGlow], [8, 8, KNIGHT_COLORS.corruptionGlow], [9, 8, KNIGHT_COLORS.corruptionGlow], [10, 8, KNIGHT_COLORS.corruptionGlow],
       [7, 9, KNIGHT_COLORS.corruptionGlow], [8, 9, KNIGHT_COLORS.corruption], [9, 9, KNIGHT_COLORS.corruption], [10, 9, KNIGHT_COLORS.corruptionGlow],
-      // 脚下黑魔法能量
       [8, 16, KNIGHT_COLORS.darkEnergy],
       [7, 16, KNIGHT_COLORS.spark], [9, 16, KNIGHT_COLORS.spark],
     ] }
   ],
 ]
 
-// 行走动画帧（步伐 + 脚下能量）- 已居中
 const KNIGHT_WALK_FRAMES = [
-  // 帧0 - 左脚抬起
   [
     { pixels: [
-      // 左脚靴子颜色变暗（抬脚）
       [7, 15, KNIGHT_COLORS.bootDark], [8, 15, KNIGHT_COLORS.boot], [9, 15, KNIGHT_COLORS.bootLight], [10, 15, KNIGHT_COLORS.boot],
-      // 脚下能量
       [8, 16, KNIGHT_COLORS.darkEnergy],
       [7, 16, KNIGHT_COLORS.spark],
     ] }
   ],
-  // 帧1 - 脚落地（略微抬起右脚）
   [
     { pixels: [
-      // 右脚靴子颜色变暗
       [7, 15, KNIGHT_COLORS.boot], [8, 15, KNIGHT_COLORS.bootLight], [9, 15, KNIGHT_COLORS.boot], [10, 15, KNIGHT_COLORS.bootDark],
-      // 脚下能量
       [9, 16, KNIGHT_COLORS.darkEnergy],
       [8, 16, KNIGHT_COLORS.spark], [10, 16, KNIGHT_COLORS.spark],
     ] }
   ],
-  // 帧2 - 中间帧（脚并拢）
   [
     { pixels: [
-      // 两只脚颜色正常
       [7, 15, KNIGHT_COLORS.bootLight], [8, 15, KNIGHT_COLORS.boot], [9, 15, KNIGHT_COLORS.boot], [10, 15, KNIGHT_COLORS.bootLight],
     ] }
   ],

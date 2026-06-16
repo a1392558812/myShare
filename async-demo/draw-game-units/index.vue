@@ -466,14 +466,12 @@ const pet = ref({
 const cuttentMode = ref("attact"); // test battle attact
 
 const enemyList = computed(() => {
-  console.log("enemyList", cuttentMode.value);
   const list = Object.keys(enemy.value);
   const max = 8;
   const min = 8;
   const len = Math.floor(Math.random() * (max - min + 1)) + min;
   const result = [];
   for (let i = 0; i < len; i++) {
-    // 随机下标
     const idx = Math.floor(Math.random() * list.length);
     result.push(enemy.value[list[idx]]);
   }

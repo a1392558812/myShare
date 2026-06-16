@@ -90,7 +90,6 @@ export const drawSelectionHighlight = (ctx, unit, unitKey) => {
   const size = unit.size || 40;
   const padding = 4;
 
-  // 绘制选择指示器（顶部三角形）
   ctx.fillStyle = "#FFD700";
   ctx.beginPath();
   ctx.moveTo(unit.x + size / 2 - 6, unit.y - padding - 8);
@@ -102,7 +101,7 @@ export const drawSelectionHighlight = (ctx, unit, unitKey) => {
 
 export const drawBorder = (ctx, unit, unitKey) => {
   const size = unit.size || 40;
-  const padding = 0; // 可配置加大判断范围
+  const padding = 0;
 
   ctx.strokeStyle = "#000000";
   ctx.beginPath();
@@ -143,35 +142,28 @@ export const drawHealthBar = (ctx, unit, config) => {
   const x = config.x;
   const y = config.y;
 
-  // 血条参数
   const maxHp = unit.maxHp || 100;
   const hp = unit.hp ?? maxHp;
   const hpRatio = Math.max(0, Math.min(1, hp / maxHp));
 
-  // 蓝条参数
   const maxMp = unit.maxMp || 100;
   const mp = unit.mp ?? maxMp;
   const mpRatio = Math.max(0, Math.min(1, mp / maxMp));
 
-  // 血条位置（单位下方）
   const barX = x + marginLeft;
   const hpBarY = y + size + marginTop;
   const mpBarY = hpBarY + barHeight + barGap;
 
-  // 绘制血条背景
   ctx.fillStyle = "#3A3A3A";
   ctx.fillRect(barX, hpBarY, barWidth, barHeight);
 
-  // 绘制血条当前值
   const hpColor = "#F44336";
   ctx.fillStyle = hpColor;
   ctx.fillRect(barX, hpBarY, barWidth * hpRatio, barHeight);
 
-  // 绘制蓝条背景
   ctx.fillStyle = "#3A3A3A";
   ctx.fillRect(barX, mpBarY, barWidth, barHeight);
 
-  // 绘制蓝条当前值
   ctx.fillStyle = "#2196F3";
   ctx.fillRect(barX, mpBarY, barWidth * mpRatio, barHeight);
 
@@ -255,7 +247,7 @@ export const drawSelectMenus = (ctx, config) => {
 };
 
 /**
- * @description {drawMagicCircle} 绘制战斗魔法阵 - 使用向量绘制高精度
+ * @description {drawMagicCircle} 绘制战斗魔法阵
  * @param {CanvasRenderingContext2D} ctx canvas上下文
  * @param {Object} config 配置项
  * @param {Number} config.x 魔法圆中心x坐标
@@ -270,20 +262,18 @@ export const drawMagicCircle = (ctx, config) => {
   const cy = y + size / 2;
   const r = size / 2;
 
-  // 动画参数（基于 frame 秒为单位）
-  const glowPulse = 0.82 + 0.18 * Math.sin(frame * 1.4);           // 光晕脉动
-  const runeOrbit = frame * 0.35;                                    // 符文轨道旋转
-  const diamondPulse = 0.6 + 0.4 * Math.sin(frame * 1.8 + 1);       // 菱形闪烁
-  const starPulse = 0.85 + 0.15 * Math.sin(frame * 2.0 + 0.5);      // 五角星脉动
-  const radialAlpha = 0.2 + 0.15 * Math.sin(frame * 1.6 + 2);       // 放射线透明度
-  const innerRotation = frame * 0.5;                                 // 中心三角旋转
-  const swordWobble = Math.sin(frame * 0.8) * 0.04;                 // 双剑微摆
+  const glowPulse = 0.82 + 0.18 * Math.sin(frame * 1.4);
+  const runeOrbit = frame * 0.35;
+  const diamondPulse = 0.6 + 0.4 * Math.sin(frame * 1.8 + 1);
+  const starPulse = 0.85 + 0.15 * Math.sin(frame * 2.0 + 0.5);
+  const radialAlpha = 0.2 + 0.15 * Math.sin(frame * 1.6 + 2);
+  const innerRotation = frame * 0.5;
+  const swordWobble = Math.sin(frame * 0.8) * 0.04;
 
   ctx.imageSmoothingEnabled = true;
   ctx.globalAlpha = opacity;
   ctx.save();
 
-  // === 绘制外圈光晕（径向渐变，带脉动效果） ===
   const glowGradient = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r);
   glowGradient.addColorStop(0, "rgba(65, 105, 225, 0)");
   glowGradient.addColorStop(0.6, `rgba(65, 105, 225, ${0.15 * glowPulse})`);
@@ -294,42 +284,36 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.fill();
 
-  // === 绘制外圈金色圆环 ===
   ctx.strokeStyle = "#FFD700";
   ctx.lineWidth = Math.max(2, size * 0.008);
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.95, 0, Math.PI * 2);
   ctx.stroke();
 
-  // === 绘制内层蓝色圆环 ===
   ctx.strokeStyle = "#4169E1";
   ctx.lineWidth = Math.max(1.5, size * 0.006);
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2);
   ctx.stroke();
 
-  // === 绘制金色细圆环 ===
   ctx.strokeStyle = "#FFEC8B";
   ctx.lineWidth = Math.max(1, size * 0.004);
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.75, 0, Math.PI * 2);
   ctx.stroke();
 
-  // === 绘制符文圆环（8方位） ===
   ctx.strokeStyle = "#9370DB";
   ctx.lineWidth = Math.max(1, size * 0.004);
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.68, 0, Math.PI * 2);
   ctx.stroke();
 
-  // === 绘制最内层装饰圈 ===
   ctx.strokeStyle = "#B8860B";
   ctx.lineWidth = Math.max(1, size * 0.003);
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
   ctx.stroke();
 
-  // === 绘制8个方位的装饰符文（带轨道旋转动画） ===
   const runeRadius = r * 0.68;
   for (let i = 0; i < 8; i++) {
     const angle = ((i * 45 - 90) * Math.PI) / 180 + runeOrbit;
@@ -337,13 +321,11 @@ export const drawMagicCircle = (ctx, config) => {
     const ry = cy + Math.sin(angle) * runeRadius;
     const runeSize = size * 0.04;
 
-    // 符文外侧光晕（脉动）
     ctx.fillStyle = `rgba(147, 112, 219, ${0.15 * glowPulse})`;
     ctx.beginPath();
     ctx.arc(rx, ry, runeSize * 0.8, 0, Math.PI * 2);
     ctx.fill();
 
-    // 绘制符文（方形外框 + 内部十字）
     ctx.fillStyle = "#9370DB";
     ctx.fillRect(rx - runeSize / 2, ry - runeSize / 2, runeSize, runeSize);
 
@@ -351,7 +333,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.lineWidth = Math.max(1, size * 0.003);
     ctx.strokeRect(rx - runeSize / 2, ry - runeSize / 2, runeSize, runeSize);
 
-    // 内部十字
     ctx.beginPath();
     ctx.moveTo(rx - runeSize * 0.3, ry);
     ctx.lineTo(rx + runeSize * 0.3, ry);
@@ -359,7 +340,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.lineTo(rx, ry + runeSize * 0.3);
     ctx.stroke();
 
-    // 中心小圆点（脉动大小）
     const dotPulse = 0.9 + 0.1 * Math.sin(frame * 3.0 + i);
     ctx.fillStyle = "#E6E6FA";
     ctx.beginPath();
@@ -367,7 +347,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.fill();
   }
 
-  // === 绘制四个对角方向的菱形装饰（带旋转+闪烁） ===
   const diamondRadius = r * 0.88;
   for (let i = 0; i < 4; i++) {
     const angle = ((i * 90 - 45) * Math.PI) / 180 + runeOrbit * 0.5;
@@ -396,7 +375,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.restore();
   }
 
-  // === 绘制上下左右四个方向的五角星装饰（带脉动+旋转） ===
   const starRadius = r * 0.92;
   for (let i = 0; i < 4; i++) {
     const angle = ((i * 90 - 90) * Math.PI) / 180 + runeOrbit * 0.7;
@@ -408,7 +386,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.translate(sx, sy);
     ctx.rotate(angle + frame * 0.4);
 
-    // 绘制五角星
     ctx.fillStyle = "#FFEC8B";
     ctx.strokeStyle = "#B8860B";
     ctx.lineWidth = Math.max(1, size * 0.003);
@@ -428,8 +405,7 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.restore();
   }
 
-  // === 绘制径向放射线（12条，带旋转+脉动透明度） ===
-  const radialRotate = frame * 0.25; // 放射线整体缓慢旋转
+  const radialRotate = frame * 0.25;
   for (let i = 0; i < 12; i++) {
     const angle = (i * 30 * Math.PI) / 180 + radialRotate;
     const startX = cx + Math.cos(angle) * r * 0.62;
@@ -445,22 +421,18 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.stroke();
   }
 
-  // === 绘制两把交错的剑（X形，带微摆动画） ===
   const bladeLength = r * 0.6;
   const bladeWidth = size * 0.03;
   const hiltLength = size * 0.15;
   const guardWidth = size * 0.18;
 
-  // 剑身辉光脉动
   const bladeGlow = 0.25 + 0.15 * Math.sin(frame * 1.2);
 
-  // 剑1：从左上到右下（旋转 45度 + 微摆）
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(Math.PI / 4 + swordWobble);
   ctx.translate(-bladeLength * 0.15, -bladeLength * 0.15);
 
-  // 剑身背景辉光
   ctx.fillStyle = `rgba(135, 206, 250, ${bladeGlow})`;
   ctx.beginPath();
   ctx.moveTo(-bladeWidth / 2 - size * 0.01, -bladeLength * 0.2);
@@ -471,13 +443,11 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.closePath();
   ctx.fill();
 
-  // 剑身渐变（从剑柄到剑尖）
   const bladeGrad1 = ctx.createLinearGradient(0, 0, 0, bladeLength);
   bladeGrad1.addColorStop(0, "#E8E8E8");
   bladeGrad1.addColorStop(0.5, "#FFFFFF");
   bladeGrad1.addColorStop(1, "#808080");
 
-  // 剑身（上下宽度一致）
   ctx.fillStyle = bladeGrad1;
   ctx.beginPath();
   ctx.moveTo(-bladeWidth / 2, -bladeLength * 0.15);
@@ -488,7 +458,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.closePath();
   ctx.fill();
 
-  // 剑身中线（高光）
   ctx.strokeStyle = "#FFFFFF";
   ctx.lineWidth = Math.max(0.5, size * 0.002);
   ctx.beginPath();
@@ -496,7 +465,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.lineTo(0, bladeLength * 0.85);
   ctx.stroke();
 
-  // 剑格（护手）
   ctx.fillStyle = "#FFD700";
   ctx.strokeStyle = "#B8860B";
   ctx.lineWidth = Math.max(1, size * 0.004);
@@ -509,13 +477,11 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.fill();
   ctx.stroke();
 
-  // 剑格宝石
   ctx.fillStyle = "#6495ED";
   ctx.beginPath();
   ctx.arc(0, -bladeLength * 0.14, size * 0.015, 0, Math.PI * 2);
   ctx.fill();
 
-  // 剑柄（握把）
   ctx.fillStyle = "#B8860B";
   ctx.strokeStyle = "#8B6914";
   ctx.lineWidth = Math.max(1, size * 0.003);
@@ -532,7 +498,6 @@ export const drawMagicCircle = (ctx, config) => {
     hiltLength - bladeLength * 0.15,
   );
 
-  // 剑柄纹理
   ctx.strokeStyle = "#FFD700";
   ctx.lineWidth = Math.max(0.5, size * 0.002);
   for (let j = 0; j < 3; j++) {
@@ -543,7 +508,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.stroke();
   }
 
-  // 剑柄末端装饰（圆头）
   ctx.fillStyle = "#FFD700";
   ctx.strokeStyle = "#B8860B";
   ctx.beginPath();
@@ -551,7 +515,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.fill();
   ctx.stroke();
 
-  // 剑柄末端宝石
   ctx.fillStyle = "#9370DB";
   ctx.beginPath();
   ctx.arc(0, -hiltLength, bladeWidth * 0.4, 0, Math.PI * 2);
@@ -559,13 +522,11 @@ export const drawMagicCircle = (ctx, config) => {
 
   ctx.restore();
 
-  // 剑2：从右上到左下（旋转 -45度 + 微摆）
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(-Math.PI / 4 - swordWobble);
   ctx.translate(bladeLength * 0.15, -bladeLength * 0.15);
 
-  // 剑身背景辉光
   ctx.fillStyle = `rgba(135, 206, 250, ${bladeGlow})`;
   ctx.beginPath();
   ctx.moveTo(-bladeWidth / 2 - size * 0.01, -bladeLength * 0.2);
@@ -576,13 +537,11 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.closePath();
   ctx.fill();
 
-  // 剑身渐变
   const bladeGrad2 = ctx.createLinearGradient(0, 0, 0, bladeLength);
   bladeGrad2.addColorStop(0, "#E8E8E8");
   bladeGrad2.addColorStop(0.5, "#FFFFFF");
   bladeGrad2.addColorStop(1, "#808080");
 
-  // 剑身（上下宽度一致）
   ctx.fillStyle = bladeGrad2;
   ctx.beginPath();
   ctx.moveTo(-bladeWidth / 2, -bladeLength * 0.15);
@@ -593,7 +552,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.closePath();
   ctx.fill();
 
-  // 剑身中线（高光）
   ctx.strokeStyle = "#FFFFFF";
   ctx.lineWidth = Math.max(0.5, size * 0.002);
   ctx.beginPath();
@@ -601,7 +559,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.lineTo(0, bladeLength * 0.85);
   ctx.stroke();
 
-  // 剑格（护手）
   ctx.fillStyle = "#FFD700";
   ctx.strokeStyle = "#B8860B";
   ctx.lineWidth = Math.max(1, size * 0.004);
@@ -614,13 +571,11 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.fill();
   ctx.stroke();
 
-  // 剑格宝石
   ctx.fillStyle = "#6495ED";
   ctx.beginPath();
   ctx.arc(0, -bladeLength * 0.14, size * 0.015, 0, Math.PI * 2);
   ctx.fill();
 
-  // 剑柄（握把）
   ctx.fillStyle = "#B8860B";
   ctx.strokeStyle = "#8B6914";
   ctx.lineWidth = Math.max(1, size * 0.003);
@@ -637,7 +592,6 @@ export const drawMagicCircle = (ctx, config) => {
     hiltLength - bladeLength * 0.15,
   );
 
-  // 剑柄纹理
   ctx.strokeStyle = "#FFD700";
   ctx.lineWidth = Math.max(0.5, size * 0.002);
   for (let j = 0; j < 3; j++) {
@@ -648,7 +602,6 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.stroke();
   }
 
-  // 剑柄末端装饰
   ctx.fillStyle = "#FFD700";
   ctx.strokeStyle = "#B8860B";
   ctx.beginPath();
@@ -656,7 +609,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.fill();
   ctx.stroke();
 
-  // 剑柄末端宝石
   ctx.fillStyle = "#9370DB";
   ctx.beginPath();
   ctx.arc(0, -hiltLength, bladeWidth * 0.4, 0, Math.PI * 2);
@@ -664,7 +616,6 @@ export const drawMagicCircle = (ctx, config) => {
 
   ctx.restore();
 
-  // === 绘制中心交叉点的宝石装饰 ===
   ctx.fillStyle = "#FFD700";
   ctx.beginPath();
   ctx.arc(cx, cy, size * 0.025, 0, Math.PI * 2);
@@ -675,7 +626,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.arc(cx - size * 0.008, cy - size * 0.008, size * 0.008, 0, Math.PI * 2);
   ctx.fill();
 
-  // === 绘制中心魔法圈 ===
   const centerR = r * 0.45;
   ctx.strokeStyle = "#FFD700";
   ctx.lineWidth = Math.max(1.5, size * 0.005);
@@ -689,7 +639,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.arc(cx, cy, centerR - size * 0.02, 0, Math.PI * 2);
   ctx.stroke();
 
-  // 中心圈内的四角星装饰
   for (let i = 0; i < 4; i++) {
     const angle = ((i * 90 - 45) * Math.PI) / 180;
     const gx = cx + Math.cos(angle) * centerR * 0.6;
@@ -719,11 +668,9 @@ export const drawMagicCircle = (ctx, config) => {
     ctx.restore();
   }
 
-  // === 绘制中心魔法符号（三角/星形，带旋转动画） ===
   ctx.strokeStyle = "#BA55D3";
   ctx.lineWidth = Math.max(1.5, size * 0.004);
 
-  // 外三角（旋转）
   const triR = size * 0.08;
   ctx.save();
   ctx.translate(cx, cy);
@@ -744,10 +691,6 @@ export const drawMagicCircle = (ctx, config) => {
   ctx.globalAlpha = 1;
 };
 
-/**
- * 生成带 emoji 的鼠标光标样式
- * 使用 SVG data URL 实现跨平台一致的 emoji 光标
- */
 export const buildEmojiCursor = (emoji) => {
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><text x='0' y='26' font-size='28'>${emoji}</text></svg>`;
   const encoded = encodeURIComponent(svg)
@@ -810,11 +753,9 @@ export const drawPanel = (ctx, unit, config) => {
   const avatarX = x + padding;
   const avatarY = y + padding;
 
-  // 头像框外层（深色）
   ctx.fillStyle = "#0A0A1E";
   ctx.fillRect(avatarX - 3, avatarY - 3, avatarBoxSize + 6, avatarBoxSize + 6);
 
-  // 头像框装饰边框（金色渐变）
   const frameGrad = ctx.createLinearGradient(
     avatarX,
     avatarY,
@@ -833,12 +774,10 @@ export const drawPanel = (ctx, unit, config) => {
     avatarBoxSize + 4,
   );
 
-  // 内层边框
   ctx.strokeStyle = "#5A4A1E";
   ctx.lineWidth = 1;
   ctx.strokeRect(avatarX, avatarY, avatarBoxSize, avatarBoxSize);
 
-  // 四角装饰
   const cornerSize = 8;
   ctx.fillStyle = "#FFD700";
   ctx.fillRect(avatarX - 3, avatarY - 3, cornerSize, 2);
@@ -994,7 +933,6 @@ export const drawPanel = (ctx, unit, config) => {
     currentY += iconBoxHeight + 6;
   }
 
-  // 行7：Debuff 列表
   const debuffList = unit.debuffList || [];
 
   if (debuffList.length > 0) {
@@ -1045,36 +983,29 @@ export const drawPanel = (ctx, unit, config) => {
 export const drawTombstone = (ctx, currentUnit) => {
   const x = currentUnit.x;
   const y = currentUnit.y;
-  const unit = currentUnit.size / 18; // 像素18*18
+  const unit = currentUnit.size / 18; 
   ctx.imageSmoothingEnabled = false;
 
   const stonePixels = [
-    // 墓碑顶部弧形
     [6, 1, "#8B8B83"], [7, 1, "#A0A098"], [8, 1, "#A0A098"], [9, 1, "#A0A098"], [10, 1, "#A0A098"], [11, 1, "#8B8B83"],
     [5, 2, "#8B8B83"], [6, 2, "#B8B8B0"], [7, 2, "#D0D0C8"], [8, 2, "#D0D0C8"], [9, 2, "#D0D0C8"], [10, 2, "#D0D0C8"], [11, 2, "#B8B8B0"], [12, 2, "#8B8B83"],
     [4, 3, "#787870"], [5, 3, "#C0C0B8"], [6, 3, "#E0E0D8"], [7, 3, "#E8E8E0"], [8, 3, "#E8E8E0"], [9, 3, "#E8E8E0"], [10, 3, "#E8E8E0"], [11, 3, "#E0E0D8"], [12, 3, "#C0C0B8"], [13, 3, "#787870"],
-    // 墓碑主体矩形区域
     [4, 4, "#787870"], [5, 4, "#C0C0B8"], [6, 4, "#D8D8D0"], [7, 4, "#D8D8D0"], [8, 4, "#D8D8D0"], [9, 4, "#D8D8D0"], [10, 4, "#D8D8D0"], [11, 4, "#D8D8D0"], [12, 4, "#C0C0B8"], [13, 4, "#787870"],
     [4, 5, "#787870"], [5, 5, "#C0C0B8"], [6, 5, "#D8D8D0"], [7, 5, "#D8D8D0"], [8, 5, "#D8D8D0"], [9, 5, "#D8D8D0"], [10, 5, "#D8D8D0"], [11, 5, "#D8D8D0"], [12, 5, "#C0C0B8"], [13, 5, "#787870"],
     [4, 6, "#787870"], [5, 6, "#C0C0B8"], [6, 6, "#D8D8D0"], [7, 6, "#D8D8D0"], [8, 6, "#D8D8D0"], [9, 6, "#D8D8D0"], [10, 6, "#D8D8D0"], [11, 6, "#D8D8D0"], [12, 6, "#C0C0B8"], [13, 6, "#787870"],
     [4, 7, "#787870"], [5, 7, "#C0C0B8"], [6, 7, "#D8D8D0"], [7, 7, "#D8D8D0"], [8, 7, "#D8D8D0"], [9, 7, "#D8D8D0"], [10, 7, "#D8D8D0"], [11, 7, "#D8D8D0"], [12, 7, "#C0C0B8"], [13, 7, "#787870"],
-    // 墓碑主体下半部分
     [4, 8, "#787870"], [5, 8, "#B0B0A8"], [6, 8, "#D8D8D0"], [7, 8, "#D8D8D0"], [8, 8, "#D8D8D0"], [9, 8, "#D8D8D0"], [10, 8, "#D8D8D0"], [11, 8, "#D8D8D0"], [12, 8, "#B0B0A8"], [13, 8, "#787870"],
     [4, 9, "#787870"], [5, 9, "#B0B0A8"], [6, 9, "#D8D8D0"], [7, 9, "#D8D8D0"], [8, 9, "#D8D8D0"], [9, 9, "#D8D8D0"], [10, 9, "#D8D8D0"], [11, 9, "#D8D8D0"], [12, 9, "#B0B0A8"], [13, 9, "#787870"],
     [4, 10, "#787870"], [5, 10, "#B0B0A8"], [6, 10, "#D8D8D0"], [7, 10, "#D8D8D0"], [8, 10, "#D8D8D0"], [9, 10, "#D8D8D0"], [10, 10, "#D8D8D0"], [11, 10, "#D8D8D0"], [12, 10, "#B0B0A8"], [13, 10, "#787870"],
-    // 墓碑底部
     [4, 11, "#787870"], [5, 11, "#B0B0A8"], [6, 11, "#C0C0B8"], [7, 11, "#C0C0B8"], [8, 11, "#C0C0B8"], [9, 11, "#C0C0B8"], [10, 11, "#C0C0B8"], [11, 11, "#C0C0B8"], [12, 11, "#B0B0A8"], [13, 11, "#787870"],
     [5, 12, "#787870"], [6, 12, "#B0B0A8"], [7, 12, "#B0B0A8"], [8, 12, "#B0B0A8"], [9, 12, "#B0B0A8"], [10, 12, "#B0B0A8"], [11, 12, "#B0B0A8"], [12, 12, "#787870"],
     [6, 13, "#686860"], [7, 13, "#909088"], [8, 13, "#909088"], [9, 13, "#909088"], [10, 13, "#909088"], [11, 13, "#686860"],
-    // 墓碑底座
     [5, 14, "#787870"], [6, 14, "#989890"], [7, 14, "#989890"], [8, 14, "#989890"], [9, 14, "#989890"], [10, 14, "#989890"], [11, 14, "#989890"], [12, 14, "#787870"],
     [4, 15, "#686860"], [5, 15, "#A0A098"], [6, 15, "#A0A098"], [7, 15, "#A0A098"], [8, 15, "#A0A098"], [9, 15, "#A0A098"], [10, 15, "#A0A098"], [11, 15, "#A0A098"], [12, 15, "#A0A098"], [13, 15, "#686860"],
-    // 草地
     [3, 16, "#4A6E2A"], [4, 16, "#5A8E3A"], [5, 16, "#5A8E3A"], [6, 16, "#4A6E2A"], [7, 16, "#6A9E4A"], [8, 16, "#5A8E3A"], [9, 16, "#4A6E2A"], [10, 16, "#6A9E4A"], [11, 16, "#5A8E3A"], [12, 16, "#5A8E3A"], [13, 16, "#4A6E2A"], [14, 16, "#4A6E2A"],
     [2, 17, "#3A5E1A"], [3, 17, "#4A6E2A"], [4, 17, "#3A5E1A"], [5, 17, "#4A6E2A"], [6, 17, "#5A8E3A"], [7, 17, "#5A8E3A"], [8, 17, "#4A6E2A"], [9, 17, "#5A8E3A"], [10, 17, "#6A9E4A"], [11, 17, "#5A8E3A"], [12, 17, "#4A6E2A"], [13, 17, "#3A5E1A"], [14, 17, "#4A6E2A"], [15, 17, "#3A5E1A"],
   ];
 
-  // 绘制墓碑主体
   for (let i = 0; i < stonePixels.length; i++) {
     const px = stonePixels[i][0];
     const py = stonePixels[i][1];
@@ -1091,20 +1022,11 @@ export const drawTombstone = (ctx, currentUnit) => {
   }
 };
 
-/**
- * @description 绘制战斗面板装饰与氛围
- * @param {CanvasRenderingContext2D} ctx  canvas上下文
- * @param {Object} config  canvas配置
- * @param {Number} config.width 画布宽度
- * @param {Number} config.height 画布高度
- * @param {Number} config.frame 当前帧数坐标
- */
 export const drawDecoration = (ctx, config) => {
   const { width, height, frame = 0 } = config;
   ctx.save();
   ctx.imageSmoothingEnabled = true;
 
-  // ========== 1. 地面石砖纹理（下半部分） ==========
   const floorTop = height * 0.55;
   const tileSize = 48;
   ctx.globalAlpha = 0.06;
@@ -1117,24 +1039,21 @@ export const drawDecoration = (ctx, config) => {
   }
   ctx.globalAlpha = 1;
 
-  // ========== 2. 角落符文装饰（相邻环旋转方向相逆） ==========
-  const cornerR = 70; // 角落装饰半径
+  const cornerR = 70;
   const corners = [
-    { x: 20, y: 20 },                       // 左上
-    { x: width - 20, y: 20 },               // 右上
-    { x: 20, y: height - 20 },              // 左下
-    { x: width - 20, y: height - 20 },      // 右下
+    { x: 20, y: 20 },
+    { x: width - 20, y: 20 },
+    { x: 20, y: height - 20 },
+    { x: width - 20, y: height - 20 },
   ];
 
-  // 三层环各自的旋转参数（相邻方向相逆）
   const ringSpeeds = [
-    frame * 0.4,      // 外圈：正向旋转
-    -frame * 0.55,    // 内圈：反向旋转
-    frame * 0.35,     // 十字符文：正向旋转
+    frame * 0.4,
+    -frame * 0.55,
+    frame * 0.35,
   ];
 
   corners.forEach((corner) => {
-    // --- 外圈（虚线弧，正转） ---
     const outerR = cornerR * 0.7;
     const outerCircum = 2 * Math.PI * outerR;
     ctx.save();
@@ -1148,7 +1067,6 @@ export const drawDecoration = (ctx, config) => {
     ctx.setLineDash([]);
     ctx.restore();
 
-    // --- 内圈（虚线弧，反转） ---
     const innerR = cornerR * 0.45;
     const innerCircum = 2 * Math.PI * innerR;
     ctx.save();
@@ -1162,7 +1080,6 @@ export const drawDecoration = (ctx, config) => {
     ctx.setLineDash([]);
     ctx.restore();
 
-    // --- 十字符文（正转） ---
     ctx.save();
     ctx.translate(corner.x, corner.y);
     ctx.rotate(ringSpeeds[2]);
@@ -1173,7 +1090,6 @@ export const drawDecoration = (ctx, config) => {
     ctx.moveTo(-s, 0); ctx.lineTo(s, 0);
     ctx.moveTo(0, -s); ctx.lineTo(0, s);
     ctx.stroke();
-    // 对角小线
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(200, 180, 140, 0.2)";
     ctx.beginPath();
@@ -1182,7 +1098,6 @@ export const drawDecoration = (ctx, config) => {
     ctx.stroke();
     ctx.restore();
 
-    // 角落三角装饰
     ctx.fillStyle = "rgba(200, 170, 120, 0.2)";
     ctx.strokeStyle = "rgba(220, 190, 140, 0.25)";
     ctx.lineWidth = 1;
@@ -1201,15 +1116,13 @@ export const drawDecoration = (ctx, config) => {
     ctx.stroke();
   });
 
-  // ========== 3. 浮动魔法粒子 ==========
   const particleCount = 28;
-  const seed = 42; // 固定种子保证帧间一致性
+  const seed = 42;
 
   for (let i = 0; i < particleCount; i++) {
-    // 用 i 计算伪随机位置，结合 frame 产生位移
     const baseX = ((i * 137 + seed) % width);
     const baseY = ((i * 251 + seed * 3) % height);
-    const speed = 40 + (i % 7) * 20; // 40~160 px/s 上浮速度
+    const speed = 40 + (i % 7) * 20;
     const amplitude = 20 + (i % 5) * 12;
 
     const px = (baseX + Math.sin(frame * 1.2 + i * 1.7) * amplitude + width) % width;
@@ -1218,7 +1131,6 @@ export const drawDecoration = (ctx, config) => {
     const alpha = 0.15 + 0.08 * Math.sin(frame * 2.4 + i * 2.3);
     const size = 1.5 + (i % 3) * 1.5;
 
-    // 颜色在金色/蓝紫色之间变化
     const hueShift = Math.sin(frame * 0.9 + i * 0.9) * 15;
     const hue = i % 3 === 0 ? 45 + hueShift : i % 3 === 1 ? 260 + hueShift : 120 + hueShift;
     ctx.fillStyle = `hsla(${hue}, 60%, 65%, ${alpha})`;
@@ -1227,7 +1139,6 @@ export const drawDecoration = (ctx, config) => {
     ctx.fill();
   }
 
-  // ========== 4. 顶部边缘装饰线 ==========
   const lineY = 8;
   const dashLen = 30;
   const gapLen = 16;
@@ -1243,7 +1154,6 @@ export const drawDecoration = (ctx, config) => {
   }
   ctx.stroke();
 
-  // 底部边缘装饰线（更宽）
   ctx.strokeStyle = "rgba(200, 170, 120, 0.25)";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -1258,7 +1168,6 @@ export const drawDecoration = (ctx, config) => {
   ctx.lineTo(lineEnd, height - lineY - 6);
   ctx.stroke();
 
-  // ========== 5. 侧边石柱装饰 ==========
   const pillarW = 16;
   const pillarGap = 120;
   [
@@ -1267,7 +1176,6 @@ export const drawDecoration = (ctx, config) => {
   ].forEach((pillar) => {
     for (let py = 0; py < height; py += pillarGap) {
       const pillarHeight = pillarGap * 0.6;
-      // 柱身
       const grad = ctx.createLinearGradient(pillar.x, 0, pillar.x + pillarW, 0);
       grad.addColorStop(0, "rgba(80, 70, 55, 0.25)");
       grad.addColorStop(0.3, "rgba(140, 120, 90, 0.3)");
@@ -1276,12 +1184,10 @@ export const drawDecoration = (ctx, config) => {
       ctx.fillStyle = grad;
       ctx.fillRect(pillar.x, py, pillarW, pillarHeight);
 
-      // 柱头
       ctx.fillStyle = "rgba(170, 145, 105, 0.35)";
       ctx.fillRect(pillar.x - 2, py - 2, pillarW + 4, 6);
       ctx.fillRect(pillar.x - 2, py + pillarHeight - 4, pillarW + 4, 6);
 
-      // 柱身纹理
       ctx.strokeStyle = "rgba(100, 85, 65, 0.2)";
       ctx.lineWidth = 0.5;
       for (let j = 0; j < 3; j++) {
@@ -1294,7 +1200,6 @@ export const drawDecoration = (ctx, config) => {
     }
   });
 
-  // ========== 6. 四角光芒点 ==========
   corners.forEach((corner) => {
     const glowAlpha = 0.15 + 0.06 * Math.sin(frame * 1.8);
     const glowGrad = ctx.createRadialGradient(corner.x, corner.y, 0, corner.x, corner.y, cornerR);

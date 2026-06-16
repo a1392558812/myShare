@@ -1,12 +1,3 @@
-/**
- * @description: 绘制中毒效果（冒绿色泡泡）
- * @param {CanvasRenderingContext2D} ctx 画布上下文
- * @param {Object} currentUnit 当前单位
- * @param {Number} currentUnit.x 当前单位x坐标
- * @param {Number} currentUnit.y 当前单位y坐标
- * @param {Number} currentUnit.size 当前单位大小
- * @param {Number} currentUnit.frame 当前单位帧数
- */
 export const drawPoisoning = (ctx, { x, y, size, frame }) => {
   if (!ctx || frame === undefined) return;
 
@@ -68,15 +59,6 @@ export const drawPoisoning = (ctx, { x, y, size, frame }) => {
   ctx.restore();
 };
 
-/**
- * @description: 绘制混乱效果（紫色气体缠绕）
- * @param {CanvasRenderingContext2D} ctx 画布上下文
- * @param {Object} currentUnit 当前单位
- * @param {Number} currentUnit.x 当前单位x坐标
- * @param {Number} currentUnit.y 当前单位y坐标
- * @param {Number} currentUnit.size 当前单位大小
- * @param {Number} currentUnit.frame 当前单位帧数
- */
 export const drawChaos = (ctx, { x, y, size, frame }) => {
   if (!ctx || frame === undefined) return;
 
@@ -138,15 +120,6 @@ export const drawChaos = (ctx, { x, y, size, frame }) => {
   ctx.restore();
 };
 
-/**
- * @description: 绘制冰冻效果
- * @param {CanvasRenderingContext2D} ctx 画布上下文
- * @param {Object} currentUnit 当前单位
- * @param {Number} currentUnit.x 当前单位x坐标
- * @param {Number} currentUnit.y 当前单位y坐标
- * @param {Number} currentUnit.size 当前单位大小
- * @param {Number} currentUnit.frame 当前单位帧数
- */
 export const drawFrozen = (ctx, { x, y, size, frame }) => {
   if (!ctx || frame === undefined) return;
 
@@ -266,15 +239,6 @@ export const drawFrozen = (ctx, { x, y, size, frame }) => {
   ctx.restore();
 };
 
-/**
- * @description: 绘制封印效果（锁链从下到上螺旋上升缠绕）
- * @param {CanvasRenderingContext2D} ctx 画布上下文
- * @param {Object} currentUnit 当前单位
- * @param {Number} currentUnit.x 当前单位x坐标
- * @param {Number} currentUnit.y 当前单位y坐标
- * @param {Number} currentUnit.size 当前单位大小
- * @param {Number} currentUnit.frame 当前单位帧数
- */
 export const drawSeal = (ctx, { x, y, size, frame }) => {
   if (!ctx || frame === undefined) return;
 

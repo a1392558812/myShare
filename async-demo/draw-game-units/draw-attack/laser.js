@@ -1,10 +1,5 @@
-/**
- * 激光持续攻击系统
- * 按住 c 键，selectedUnit 向鼠标位置持续发射激光；松开 c 键中断
- */
 import { ref } from "vue";
 
-// ===================== 状态 =====================
 export const laser = ref({
   isActive: false,
   frame: 0,
@@ -12,8 +7,6 @@ export const laser = ref({
   mouseY: 0,
 });
 
-// ===================== 绘制 =====================
-/** 在每帧中绘制激光 */
 export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   if (!laser.value.isActive) return;
 
@@ -34,10 +27,8 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   laser.value.frame += 1;
   const f = laser.value.frame;
 
-  // ---- 核心光束（多层叠加，带脉动宽度） ----
   const pulse = 0.7 + 0.3 * Math.sin(f * 0.25);
 
-  // 层1：最宽的外层光晕（淡蓝/青色）
   ctx.save();
   ctx.globalAlpha = 0.12 * pulse;
   ctx.strokeStyle = "#00EEFF";
@@ -51,7 +42,6 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   ctx.stroke();
   ctx.restore();
 
-  // 层2：中层光晕（白蓝）
   ctx.save();
   ctx.globalAlpha = 0.35 * pulse;
   ctx.strokeStyle = "#88DDFF";
@@ -65,7 +55,6 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   ctx.stroke();
   ctx.restore();
 
-  // 层3：内核光束（纯白）
   ctx.save();
   ctx.globalAlpha = 0.9;
   ctx.strokeStyle = "#FFFFFF";
@@ -77,7 +66,6 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   ctx.stroke();
   ctx.restore();
 
-  // ---- 能量粒子噪点（沿光束随机跳动） ----
   const particleCount = 10;
   for (let i = 0; i < particleCount; i++) {
     const phase = (i * 137 + f * 7) % 1000;
@@ -98,7 +86,6 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
     ctx.restore();
   }
 
-  // ---- 发射源光圈（在攻击者中心） ----
   const originPulse = 0.8 + 0.2 * Math.sin(f * 0.4);
   ctx.save();
   ctx.globalAlpha = 0.6 * originPulse;
@@ -111,7 +98,6 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   ctx.stroke();
   ctx.restore();
 
-  // ---- 命中点爆散（鼠标位置） ----
   const hitPulse = 0.6 + 0.4 * Math.sin(f * 0.6 + 1);
   ctx.save();
   ctx.globalAlpha = 0.7 * hitPulse;
@@ -121,14 +107,12 @@ export function drawLaser(ctx, canvasFrame, units, selectedUnit) {
   ctx.beginPath();
   ctx.arc(tx, ty, 5 * hitPulse, 0, Math.PI * 2);
   ctx.fill();
-  // 外环
   ctx.globalAlpha = 0.4 * hitPulse;
   ctx.strokeStyle = "#00EEFF";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.arc(tx, ty, 12 * hitPulse, 0, Math.PI * 2);
   ctx.stroke();
-  // 发散短线（6条）
   ctx.globalAlpha = 0.5 * hitPulse;
   ctx.strokeStyle = "#88DDFF";
   ctx.lineWidth = 1;

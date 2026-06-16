@@ -136,10 +136,8 @@ const buffList = ref([
 
 const selectedUnit = ref("player");
 
-// 单位管理
 const units = ref({});
 
-// 按键状态数组 - 存储当前按下的键
 const keyMapDirection = {
   w: {
     direction: "up",
@@ -188,16 +186,12 @@ const onBuffInput = (buff) => {
   console.log(units.value[selectedUnit.value].buffList);
 };
 
-// 绘制回调
 const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
-  // 获取当前选中的单位
   const currentUnit = units.value[selectedUnit.value];
   const unitSize = currentUnit.size || 50;
 
-  // 判断是否在移动
   const isMoving = keyDownList.value.length > 0;
 
-  // 绘制所有单位
   for (const [key, unit] of Object.entries(units.value)) {
     const isCurrentSelected = key === selectedUnit.value;
     unit.isMoving = isCurrentSelected && isMoving;
@@ -218,7 +212,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
       : unit.config.IDLE_SPEED;
     unit.frame = unit.frame + deltaTime * animSpeed;
 
-    // 绘制所有debuff效果
     for (const debuff of unit.debuffList) {
       debuff.draw(ctx, {
         x: unit.x,
@@ -256,7 +249,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     }
   }
 
-  // 绘制死亡单位
   drawTombstone(ctx, {
     x: 40 + 40 * 2 + 10 * 2,
     y: 560,
@@ -267,7 +259,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     size: 40,
   });
 
-  // 绘制debuff
   for (let i = 0; i < buffList.value.length; i++) {
     const buff = buffList.value[i];
     buff.draw(ctx, {
@@ -278,7 +269,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     });
   }
 
-  // 绘制buff
   for (let i = 0; i < debuffList.value.length; i++) {
     const debuff = debuffList.value[i];
     debuff.draw(ctx, {
@@ -289,7 +279,6 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
     });
   }
 
-  // 绘制选中单位面板
   drawPanel(ctx, currentUnit, {
     x: 100 + 40 * 6 + 20,
     y: 240,
@@ -298,12 +287,10 @@ const onDrawFrame = ({ ctx, deltaTime, canvasFrame }) => {
   });
 };
 
-// 点击画布选择单位
 const handleSelectUnit = ({ e, canvasRect }) => {
   const clickX = e.clientX - canvasRect.left;
   const clickY = e.clientY - canvasRect.top;
 
-  // 检测点击了哪个单位
   for (const [key, unit] of Object.entries(units.value)) {
     const unitSize = unit.size || 50;
     if (
@@ -318,12 +305,10 @@ const handleSelectUnit = ({ e, canvasRect }) => {
   }
 };
 
-// 点击画布选择单位
 const onCanvasClick = ({ e, canvasRect }) => {
   handleSelectUnit({ e, canvasRect });
 };
 
-// 键盘按下
 const handleKeyDown = (e) => {
   const key = e.key.toLowerCase();
   if (
@@ -334,12 +319,10 @@ const handleKeyDown = (e) => {
   }
 };
 
-// 键盘释放
 const handleKeyUp = (e) => {
   const key = e.key.toLowerCase();
   const validKeys = ["w", "a", "s", "d"];
 
-  // 如果是有效的方向键，则从列表中移除
   if (validKeys.includes(key)) {
     const index = keyDownList.value.indexOf(key);
     if (index !== -1) {
@@ -401,13 +384,11 @@ const onInit = () => {
 onInit();
 
 const onCanvasMounted = () => {
-  // 监听键盘事件
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("keyup", handleKeyUp);
 };
 
 const onCanvasDestroyed = () => {
-  // 移除键盘监听
   window.removeEventListener("keydown", handleKeyDown);
   window.removeEventListener("keyup", handleKeyUp);
 };

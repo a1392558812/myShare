@@ -1,23 +1,15 @@
-/**
- * 火球攻击系统
- * 按下 z 键，selectedUnit 向 targetList 中所有目标从天而降一个火球
- */
 import { ref } from "vue";
 
-// ===================== 常量 =====================
-export const FIREBALL_START_Y = -40;   // 起始高度（canvas上方）
-export const FIREBALL_GRAVITY = 800;   // 重力加速度 px/s²
-export const FIREBALL_RADIUS = 10;     // 火球半径
-export const EXPLODE_DURATION = 0.5;   // 爆炸持续时间（秒）
-export const TRAIL_MAX_FB = 12;        // 火球拖尾长度
+export const FIREBALL_START_Y = -40;
+export const FIREBALL_GRAVITY = 800;
+export const FIREBALL_RADIUS = 10;
+export const EXPLODE_DURATION = 0.5;
+export const TRAIL_MAX_FB = 12;
 export const FLIGHTIME = 0.7;
 
-// ===================== 状态 =====================
 export const fireballs = ref([]);
 let fireballIdCounter = 0;
 
-// ===================== 发射 =====================
-/** 发射火球：向 targetList 中所有目标从天而降一个火球 */
 export function fireFireball(units, selectedUnit, targetList) {
   const attacker = units.value[selectedUnit.value];
   if (!attacker) return;
@@ -31,21 +23,16 @@ export function fireFireball(units, selectedUnit, targetList) {
     const tx = target.x + tSize / 2;
     const ty = target.y + tSize / 2;
 
-    // 计算初速度，使火球约 FLIGHTIME 秒到达目标
     const dist = ty - FIREBALL_START_Y;
     const flightTime = FLIGHTIME;
     const v0 = (dist - 0.5 * FIREBALL_GRAVITY * flightTime * flightTime) / flightTime;
 
-    // 多个火球时略微错开 X 位置
     const spreadCount = targetList.value.length;
     const spread = spreadCount > 1 ? (idx - (spreadCount - 1) / 2) * 10 : 0;
 
-    // 起始位置（天空，带 spread 偏移）
     const startX = tx + spread;
-    // 目标 X 为真实目标中心
     const finalX = tx;
 
-    // 计算 X 方向速度，使火球在下落过程中飞向目标 X
     const vx = (finalX - startX) / flightTime;
 
     fireballs.value.push({
@@ -67,21 +54,13 @@ export function fireFireball(units, selectedUnit, targetList) {
   });
 }
 
-// ===================== 绘制 =====================
-/**
- * 绘制单个火球（下落 + 爆炸两阶段）
- * @param {CanvasRenderingContext2D} ctx
- * @param {Object} fb
- */
 export function drawFireball(ctx, fb) {
   const { x, y, radius, frame, exploded, explodeTimer } = fb;
   const f = frame;
 
   if (!exploded) {
-    // ============ 下落阶段 ============
     const pulse = 0.85 + 0.15 * Math.sin(f * 0.5);
 
-    // 拖尾火星（从旧到新，越新越大越亮）
     for (let i = 0; i < fb.trail.length; i++) {
       const t = fb.trail[i];
       const progress = i / fb.trail.length;
@@ -101,7 +80,6 @@ export function drawFireball(ctx, fb) {
       ctx.restore();
     }
 
-    // 外层光晕（红色大范围）
     ctx.save();
     ctx.globalAlpha = 0.25 * pulse;
     ctx.shadowColor = "#FF4400";
@@ -116,7 +94,6 @@ export function drawFireball(ctx, fb) {
     ctx.fill();
     ctx.restore();
 
-    // 中层火焰
     ctx.save();
     ctx.globalAlpha = 0.7 * pulse;
     ctx.shadowColor = "#FF6600";
@@ -132,7 +109,6 @@ export function drawFireball(ctx, fb) {
     ctx.fill();
     ctx.restore();
 
-    // 内核（白热）
     ctx.save();
     ctx.globalAlpha = 0.95;
     const coreGrad = ctx.createRadialGradient(x, y, 0, x, y, radius * pulse);
@@ -145,7 +121,6 @@ export function drawFireball(ctx, fb) {
     ctx.fill();
     ctx.restore();
 
-    // 顶部火星喷溅（模拟下落阻力）
     const sparkCount = 5;
     for (let i = 0; i < sparkCount; i++) {
       const angle = Math.PI * 1.5 + (i - sparkCount / 2) * 0.3 + Math.sin(f * 0.4 + i) * 0.15;
@@ -161,11 +136,9 @@ export function drawFireball(ctx, fb) {
       ctx.restore();
     }
   } else {
-    // ============ 爆炸阶段 ============
     const progress = 1 - explodeTimer / EXPLODE_DURATION;
     const alpha = 1 - progress;
 
-    // 爆炸闪光
     if (progress < 0.2) {
       const flashAlpha = (1 - progress / 0.2) * 0.8;
       ctx.save();
@@ -179,7 +152,6 @@ export function drawFireball(ctx, fb) {
       ctx.restore();
     }
 
-    // 爆炸冲击波（扩散环）
     ctx.save();
     ctx.globalAlpha = alpha * 0.7;
     ctx.strokeStyle = "#FF6600";
@@ -197,7 +169,6 @@ export function drawFireball(ctx, fb) {
     ctx.stroke();
     ctx.restore();
 
-    // 爆炸火星（向外飞散）
     const particleCount = 16;
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2 + progress * 1.5;
@@ -217,7 +188,6 @@ export function drawFireball(ctx, fb) {
       ctx.restore();
     }
 
-    // 中心余烬
     ctx.save();
     ctx.globalAlpha = alpha * 0.6;
     const emberGrad = ctx.createRadialGradient(x, y, 0, x, y, radius * 2 * (1 + progress));
@@ -231,8 +201,6 @@ export function drawFireball(ctx, fb) {
   }
 }
 
-// ===================== 每帧更新 =====================
-/** 更新所有火球位置并绘制 */
 export function updateFireballs(ctx, deltaTime) {
   const dt = deltaTime / 1000;
   fireballs.value = fireballs.value.filter((fb) => {
@@ -241,25 +209,20 @@ export function updateFireballs(ctx, deltaTime) {
     fb.frame++;
 
     if (!fb.exploded) {
-      // 记录拖尾
       fb.trail.push({ x: fb.x, y: fb.y, life: 1.0 });
       if (fb.trail.length > TRAIL_MAX_FB) {
         fb.trail.shift();
       }
 
-      // 更新拖尾生命
       for (const t of fb.trail) {
         t.life -= dt * 2.5;
       }
       fb.trail = fb.trail.filter((t) => t.life > 0);
 
-      // 重力下落
       fb.vy += fb.g * dt;
       fb.y += fb.vy * dt;
-      // X 方向匀速移动，飞向目标
       fb.x += (fb.vx || 0) * dt;
 
-      // 到达检测
       if (fb.y >= fb.targetY) {
         fb.y = fb.targetY;
         fb.x = fb.targetX;
@@ -267,7 +230,6 @@ export function updateFireballs(ctx, deltaTime) {
         fb.explodeTimer = EXPLODE_DURATION;
       }
     } else {
-      // 爆炸倒计时
       fb.explodeTimer -= dt;
       if (fb.explodeTimer <= 0) {
         fb.done = true;
@@ -275,7 +237,6 @@ export function updateFireballs(ctx, deltaTime) {
       }
     }
 
-    // 绘制火球
     drawFireball(ctx, fb);
 
     return true;
