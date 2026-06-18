@@ -672,5 +672,12 @@
     "name": "draw-game-units",
     "fileType": "vue",
     "meta": { "demoName": "绘制游戏单位", "ifShowHeaderComponent": false }
+  },
+  {
+    "path": "ball-rotate",
+    "component": "ball-rotate",
+    "name": "ball-rotate",
+    "fileType": "vue",
+    "meta": { "demoName": "3d旋转球照片墙", "ifShowHeaderComponent": false }
   }
 ]

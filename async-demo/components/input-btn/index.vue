@@ -1,25 +1,26 @@
 <template>
   <div class="input-color-wrap" v-if="['color'].includes(type)">
-    <div class="input-color" :style="colorWrapStyle">
-      <div :style="[inputStyle]" class="input-color-hex">
+    <div class="input-color" :class="colorWrapClass" :style="colorWrapStyle">
+      <div :style="[inputStyle]" class="input-color-hex" :class="inputClass">
         <div class="input-color-hex-content">
-          <div :style="{ width: '100%', height: '100%', backgroundColor: inputValue }"></div>
+          <div :style="{ width: '100%', height: '100%', backgroundColor: inputValue }" :class="inputValueClass"></div>
         </div>
         <input :type="type" v-model="colorValue" :style="[{ opacity: 0 }, inputStyle]" class="input-color-hex"
-          @input="onColorInput">
+          :class="inputClass" @input="onColorInput">
       </div>
       <input type="number" :min="0" :max="1" :step="0.01" v-model.number="colorAlpha" :style="[inputAlphaStyle]"
-        class="input-color-alpha" @input="onAlphaInput">
+        class="input-color-alpha" :class="inputAlphaClass" @input="onAlphaInput">
     </div>
 
-    <button :style="btnStyle" @click="handleBtnClick" class="btn-item">{{ btnText }}</button>
+    <button :style="btnStyle" @click="handleBtnClick" class="btn-item" :class="btnClass">{{ btnText }}</button>
   </div>
 
   <div v-else class="input-btn-wrap">
     <input :min="min" :max="max" :step="step" :type="type" :accept="accept" v-model="inputValue" :style="inputStyle"
-      class="input-item" @input="onInput" :title="inputValue" :placeholder="placeholder">
-    <div v-if="['range'].includes(type)" :style="inputValueStyle" class="input-value">{{ inputValue }}</div>
-    <button :style="btnStyle" @click="handleBtnClick" class="btn-item">{{ btnText }}</button>
+      class="input-item" :class="inputClass" @input="onInput" :title="inputValue" :placeholder="placeholder">
+    <div v-if="['range'].includes(type)" :style="inputValueStyle" class="input-value" :class="inputValueClass">{{
+      inputValue }}</div>
+    <button :style="btnStyle" @click="handleBtnClick" class="btn-item" :class="btnClass">{{ btnText }}</button>
   </div>
 </template>
 <script setup>
@@ -56,6 +57,26 @@ const props = defineProps({
     default: undefined,
   },
   placeholder: {
+    type: String,
+    default: '',
+  },
+  inputClass: {
+    type: String,
+    default: '',
+  },
+  inputAlphaClass: {
+    type: String,
+    default: '',
+  },
+  btnClass: {
+    type: String,
+    default: '',
+  },
+  inputValueClass: {
+    type: String,
+    default: '',
+  },
+  colorWrapClass: {
     type: String,
     default: '',
   },
