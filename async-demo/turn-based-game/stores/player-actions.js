@@ -1,5 +1,5 @@
 import { GAME_CONFIG, SKILLS_CONFIG, UI_CONFIG } from "./constants.js";
-import { calculatePlayerStats, useItem } from "./player.js";
+import { calculatePlayerStats, useItem, cleanupPoolsAfterBattle } from "./player.js";
 import { getRandomAliveEnemyIndex, applyBuff, getBuffMultiplier, applyDebuff, isTargetFrozen } from "./battle-utils.js";
 import { calculateSkillCost, applyUnshakableMountainLimit, applyDamage } from "./utils.js";
 
@@ -456,6 +456,8 @@ export const playerFlee = (gameState) => {
     gameState.currentBattle = null;
     gameState.screen = "map";
     gameState.battleResult = "flee";
+    // 逃跑也需要清理血池/法池
+    cleanupPoolsAfterBattle(gameState.player, gameState.pet);
   } else {
     gameState.battleLog.push("逃跑失败！");
   }
@@ -472,6 +474,10 @@ const getPlayerRestoreTypeText = (item, result) => {
     case "percentBoth":
       const half = Math.floor(result.amount / 2);
       return `恢复了 ${half} 点HP和 ${half} 点MP`;
+    case "bloodPool":
+      return `恢复了 ${result.amount} 点HP（血池）`;
+    case "manaPool":
+      return `恢复了 ${result.amount} 点MP（法池）`;
     default:
       return `恢复了 ${result.amount} 点`;
   }
@@ -522,7 +528,7 @@ export const executePlayerDecision = (gameState, decision) => {
         }
       }
 
-      const result = useItem(target, decision.item, decision.index, player);
+      const result = useItem(target, decision.item, decision.index, player, true);
 
       if (result.success) {
         const restoreTypeText = getPlayerRestoreTypeText(decision.item, result);

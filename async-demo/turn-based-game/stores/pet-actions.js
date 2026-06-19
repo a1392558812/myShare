@@ -526,6 +526,10 @@ const getRestoreTypeText = (item, result) => {
     case "percentBoth":
       const half = Math.floor(result.amount / 2);
       return `恢复了 ${half} 点HP和 ${half} 点MP`;
+    case "bloodPool":
+      return `恢复了 ${result.amount} 点HP（血池）`;
+    case "manaPool":
+      return `恢复了 ${result.amount} 点MP（法池）`;
     default:
       return `恢复了 ${result.amount} 点`;
   }
@@ -587,6 +591,7 @@ export const executePetDecision = (gameState, decision) => {
           decision.item,
           decision.itemIndex,
           player,
+          true, // isInBattle
         );
 
         if (result.success) {

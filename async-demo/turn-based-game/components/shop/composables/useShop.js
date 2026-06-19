@@ -10,6 +10,7 @@ import {
   ITEMS_CONFIG,
   PET_CONFIG,
   SKILLS_CONFIG,
+  PLAYER_CONFIG,
 } from "../../../stores/constants.js";
 import {
   calculateSkillEnhanceCost,
@@ -240,6 +241,94 @@ export function useShop() {
     return gameActions.enhanceSkill(character, index);
   };
 
+  const getPlayerStatReforgeCost = () => {
+    const player = gameState.player;
+    if (!player) return 0;
+    
+    // 只计算可重铸的点数（手动分配的点数）
+    const pointStats = ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"];
+    let totalReforgeablePoints = 0;
+    
+    for (const stat of pointStats) {
+      const currentPoints = player[`${stat}Points`] || 0;
+      const initialPoints = PLAYER_CONFIG.INITIAL_POINTS[stat] || 0;
+      const levelUpPoints = (player.level - 1) * PLAYER_CONFIG.LEVEL_UP.POINTS_PER_STAT;
+      const nonReforgePoints = initialPoints + levelUpPoints;
+      const reforgeablePoints = Math.max(0, currentPoints - nonReforgePoints);
+      
+      totalReforgeablePoints += reforgeablePoints;
+    }
+    
+    if (totalReforgeablePoints === 0) return 0;
+    
+    const config = GAME_CONFIG.SHOP.STAT_REFORGE;
+    return Math.floor(
+      config.BASE_COST +
+        player.level * config.LEVEL_COST_MULTIPLIER +
+        totalReforgeablePoints * config.POINT_COST_MULTIPLIER,
+    );
+  };
+
+  const getPlayerAllocatedPoints = () => {
+    const player = gameState.player;
+    if (!player) return [];
+    return [
+      { key: "physicalAttack", label: "⚔️ 物攻点", value: player.physicalAttackPoints || 0 },
+      { key: "magicAttack", label: "✨ 法攻点", value: player.magicAttackPoints || 0 },
+      { key: "defense", label: "🛡️ 防御点", value: player.defensePoints || 0 },
+      { key: "speed", label: "💨 速度点", value: player.speedPoints || 0 },
+      { key: "maxHp", label: "💖 生命点", value: player.maxHpPoints || 0 },
+    ];
+  };
+
+  const getPlayerTotalAllocatedPoints = () => {
+    const player = gameState.player;
+    if (!player) return 0;
+    return (
+      (player.physicalAttackPoints || 0) +
+      (player.magicAttackPoints || 0) +
+      (player.defensePoints || 0) +
+      (player.speedPoints || 0) +
+      (player.maxHpPoints || 0)
+    );
+  };
+
+  const reforgePlayerStatPoints = () => {
+    return gameActions.reforgePlayerStatPoints();
+  };
+
+  const getPetStatReforgeCost = () => {
+    const pet = gameState.pet;
+    if (!pet) return 0;
+    
+    // 只计算可重铸的点数（手动分配的点数）
+    const pointStats = ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"];
+    let totalReforgeablePoints = 0;
+    
+    for (const stat of pointStats) {
+      const currentPoints = pet[`${stat}Points`] || 0;
+      const initialPoints = PET_CONFIG.INITIAL_POINTS[stat] || 0;
+      const levelUpPoints = (pet.level - 1) * PET_CONFIG.LEVEL_UP.POINTS_PER_STAT;
+      const nonReforgePoints = initialPoints + levelUpPoints;
+      const reforgeablePoints = Math.max(0, currentPoints - nonReforgePoints);
+      
+      totalReforgeablePoints += reforgeablePoints;
+    }
+    
+    if (totalReforgeablePoints === 0) return 0;
+    
+    const config = GAME_CONFIG.SHOP.STAT_REFORGE;
+    return Math.floor(
+      config.BASE_COST +
+        pet.level * config.LEVEL_COST_MULTIPLIER +
+        totalReforgeablePoints * config.POINT_COST_MULTIPLIER,
+    );
+  };
+
+  const reforgePetStatPoints = () => {
+    return gameActions.reforgePetStatPoints();
+  };
+
   return {
     rerollStatsList,
     selectedType,
@@ -276,5 +365,11 @@ export function useShop() {
     calculateSkillEnhanceReducePercent,
     ITEMS_CONFIG,
     SKILLS_CONFIG,
+    getPlayerStatReforgeCost,
+    getPlayerAllocatedPoints,
+    getPlayerTotalAllocatedPoints,
+    reforgePlayerStatPoints,
+    getPetStatReforgeCost,
+    reforgePetStatPoints,
   };
 }

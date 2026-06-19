@@ -1,4 +1,4 @@
-import { EQUIPMENT_CONFIG, GAME_CONFIG } from "./constants.js";
+import { EQUIPMENT_CONFIG, GAME_CONFIG, PLAYER_CONFIG, PET_CONFIG } from "./constants.js";
 import {
   generateBaseStats,
   generateRandomStats,
@@ -8,6 +8,7 @@ import {
   EQUIPMENT_SUFFIXES,
 } from "./equipment.js";
 import { calculateSkillEnhanceCost } from "./utils.js";
+import { reforgeStatPoints, reforgePetStatPoints } from "./player.js";
 
 export const buyItem = (player, item) => {
   const buyPrice = item.price;
@@ -17,11 +18,20 @@ export const buyItem = (player, item) => {
   }
 
   player.gold -= buyPrice;
-  const existingItem = player.inventory.find((i) => i.id === item.id);
-  if (existingItem) {
-    existingItem.count++;
+  
+  // 血池或法池：不堆叠，直接 push 新对象，初始化 currentStorage
+  if (item.type === "bloodPool" || item.type === "manaPool") {
+    player.inventory.push({
+      ...item,
+      currentStorage: item.maxStorage || 100000000,
+    });
   } else {
-    player.inventory.push({ ...item, count: 1 });
+    const existingItem = player.inventory.find((i) => i.id === item.id);
+    if (existingItem) {
+      existingItem.count++;
+    } else {
+      player.inventory.push({ ...item, count: 1 });
+    }
   }
   return true;
 };
@@ -231,5 +241,122 @@ export const enhanceSkill = (character, skillIndex, gameConfig) => {
     oldLevel: skill.enhanceLevel - 1,
     newLevel: skill.enhanceLevel,
     message: `技能强化成功！${skill.name} Lv${skill.enhanceLevel}`,
+  };
+};
+
+/**
+ * 计算玩家可重铸的属性点数量（只计算手动分配的点数）
+ * @param {Object} player - 玩家对象
+ * @returns {number} 可重铸的属性点总数
+ */
+export const getPlayerReforgeablePoints = (player) => {
+  const pointStats = ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"];
+  let totalReforgeablePoints = 0;
+
+  for (const stat of pointStats) {
+    const currentPoints = player[`${stat}Points`] || 0;
+    const initialPoints = PLAYER_CONFIG.INITIAL_POINTS[stat] || 0;
+    const levelUpPoints = (player.level - 1) * PLAYER_CONFIG.LEVEL_UP.POINTS_PER_STAT;
+    const nonReforgePoints = initialPoints + levelUpPoints;
+    const reforgeablePoints = Math.max(0, currentPoints - nonReforgePoints);
+    
+    totalReforgeablePoints += reforgeablePoints;
+  }
+
+  return totalReforgeablePoints;
+};
+
+/**
+ * 重铸玩家属性加点
+ * 将手动分配的属性点返还到未分配池，扣除金币
+ * @param {Object} player - 玩家对象
+ * @param {Object} gameConfig - 游戏配置
+ * @returns {Object} 操作结果
+ */
+export const reforgePlayerStatPoints = (player, gameConfig) => {
+  const reforgeablePoints = getPlayerReforgeablePoints(player);
+
+  if (reforgeablePoints === 0) {
+    return { success: false, message: "没有可重铸的属性点" };
+  }
+
+  const config = gameConfig.SHOP.STAT_REFORGE;
+  const cost = Math.floor(
+    config.BASE_COST +
+      player.level * config.LEVEL_COST_MULTIPLIER +
+      reforgeablePoints * config.POINT_COST_MULTIPLIER
+  );
+
+  if (player.gold < cost) {
+    return { success: false, message: "金币不足" };
+  }
+
+  player.gold -= cost;
+  const reforgedPoints = reforgeStatPoints(player);
+
+  return {
+    success: true,
+    reforgedPoints,
+    cost,
+    message: `重铸成功！返还 ${reforgedPoints} 点属性点到未分配池，消耗 ${cost} 金币`,
+  };
+};
+
+/**
+ * 计算宠物可重铸的属性点数量（只计算手动分配的点数）
+ * @param {Object} pet - 宠物对象
+ * @returns {number} 可重铸的属性点总数
+ */
+export const getPetReforgeablePoints = (pet) => {
+  const pointStats = ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"];
+  let totalReforgeablePoints = 0;
+
+  for (const stat of pointStats) {
+    const currentPoints = pet[`${stat}Points`] || 0;
+    const initialPoints = PET_CONFIG.INITIAL_POINTS[stat] || 0;
+    const levelUpPoints = (pet.level - 1) * PET_CONFIG.LEVEL_UP.POINTS_PER_STAT;
+    const nonReforgePoints = initialPoints + levelUpPoints;
+    const reforgeablePoints = Math.max(0, currentPoints - nonReforgePoints);
+    
+    totalReforgeablePoints += reforgeablePoints;
+  }
+
+  return totalReforgeablePoints;
+};
+
+/**
+ * 重铸宠物属性加点
+ * 将手动分配的属性点返还到未分配池，扣除金币（从玩家金币中扣除）
+ * @param {Object} player - 玩家对象（支付金币）
+ * @param {Object} pet - 宠物对象
+ * @param {Object} gameConfig - 游戏配置
+ * @returns {Object} 操作结果
+ */
+export const reforgePetStatPointsShop = (player, pet, gameConfig) => {
+  const reforgeablePoints = getPetReforgeablePoints(pet);
+
+  if (reforgeablePoints === 0) {
+    return { success: false, message: "没有可重铸的属性点" };
+  }
+
+  const config = gameConfig.SHOP.STAT_REFORGE;
+  const cost = Math.floor(
+    config.BASE_COST +
+      pet.level * config.LEVEL_COST_MULTIPLIER +
+      reforgeablePoints * config.POINT_COST_MULTIPLIER
+  );
+
+  if (player.gold < cost) {
+    return { success: false, message: "金币不足" };
+  }
+
+  player.gold -= cost;
+  const reforgedPoints = reforgePetStatPoints(pet); // 调用 player.js 中的函数
+
+  return {
+    success: true,
+    reforgedPoints,
+    cost,
+    message: `重铸成功！返还 ${reforgedPoints} 点属性点到未分配池，消耗 ${cost} 金币`,
   };
 };

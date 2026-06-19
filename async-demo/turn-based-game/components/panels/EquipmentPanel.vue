@@ -194,7 +194,11 @@
           <div class="item-icon">
             {{ getItemIcon(item) }}
           </div>
-          <div class="item-count-badge">x{{ item.count }}</div>
+           <div class="item-count-badge">
+            {{ item.type === "bloodPool" || item.type === "manaPool" 
+              ? (item.currentStorage > 0 ? `🩸${item.currentStorage}` : '🩸已耗尽') 
+              : `x${item.count}` }}
+          </div>
         </div>
       </div>
       <div v-if="!itemBag || itemBag.length === 0" class="empty-tip">
@@ -210,7 +214,11 @@
       @mouseleave="onItemTooltipMouseLeave"
     >
       <div class="tooltip-item-name">{{ activeItem.name }}</div>
-      <div class="tooltip-item-desc">{{ activeItem.description }}</div>
+      <div class="tooltip-item-desc">
+         {{ activeItem.type === "bloodPool" || activeItem.type === "manaPool" 
+          ? `${activeItem.description}（当前存储：${activeItem.currentStorage > 0 ? activeItem.currentStorage : '已耗尽'}）` 
+          : activeItem.description }}
+      </div>
       <div class="tooltip-item-value">价值: {{ activeItem.price }} 金币</div>
       <div class="tooltip-actions">
         <button
@@ -374,9 +382,12 @@ const getRarityName = (rarity) => {
 };
 
 const getItemIcon = (item) => {
-  if (item.type === 'heal') return '❤️';
-  if (item.type === 'mana') return '💎';
-  return '📦';
+  if (item.type === "heal" || item.type === "percentHeal") return "❤️";
+  if (item.type === "mana" || item.type === "percentMana") return "💎";
+  if (item.type === "percentBoth") return "🧪";
+  if (item.type === "bloodPool") return "🩸";
+  if (item.type === "manaPool") return "🔮";
+  return "📦";
 };
 
 const showItemTooltip = (item, index, event) => {

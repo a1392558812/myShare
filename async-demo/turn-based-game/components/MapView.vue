@@ -465,6 +465,7 @@ onUnmounted(() => {
     radial-gradient(circle at 70% 60%, #3d6b1a 0%, transparent 25%),
     radial-gradient(circle at 50% 80%, #3d6b1a 0%, transparent 35%);
   opacity: 0.5;
+  user-select: none;
 }
 
 .character {

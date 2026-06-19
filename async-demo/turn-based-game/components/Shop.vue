@@ -35,6 +35,17 @@
         @refresh-single-bonus="handleRefreshSingleBonusAffix"
       />
 
+      <PlayerStatReforgeSection
+        :get-cost="getPlayerStatReforgeCost"
+        @reforge="handleReforge"
+      />
+
+      <PetStatReforgeSection
+        v-if="gameState.pet"
+        :get-cost="getPetStatReforgeCost"
+        @reforge="handlePetReforge"
+      />
+
       <PetStatRerollSection
         v-if="gameState.pet"
         :reroll-stats-list="rerollStatsList"
@@ -70,6 +81,8 @@ import EquipmentBagSection from "./shop/EquipmentBagSection.vue";
 import PetStatRerollSection from "./shop/PetStatRerollSection.vue";
 import PetSkillLearnSection from "./shop/PetSkillLearnSection.vue";
 import SkillEnhanceSection from "./shop/SkillEnhanceSection.vue";
+import PlayerStatReforgeSection from "./shop/PlayerStatReforgeSection.vue";
+import PetStatReforgeSection from "./shop/PetStatReforgeSection.vue";
 import { useShop } from "./shop/composables/useShop.js";
 
 const shop = useShop();
@@ -86,16 +99,34 @@ const {
     shopEquipmentPrice,
     closeShop,
     selectEquipmentType,
+    buyItem,
+    buyEquipment,
+    sellItem,
     getEquipmentSellPrice,
     getRefreshCost,
+    sellEquipment,
+    refreshAffixes,
     getSingleBaseAffixCost,
     getSingleBonusAffixCost,
+    refreshSingleBaseAffix,
+    refreshSingleBonusAffix,
     getRerollCost,
     getCurrentCoefficient,
     getRerollRange,
+    rerollPetStatCoefficient,
     getPetSkillLearnCost,
     isPetSkillLearned,
     getSkillIcon,
+    learnPetSkill,
+    enhanceSkill,
+    getPlayerStatReforgeCost,
+    reforgePlayerStatPoints,
+    getPetStatReforgeCost,
+    reforgePetStatPoints,
+    calculateSkillEnhanceCost,
+    calculateSkillEnhanceReducePercent,
+    ITEMS_CONFIG,
+    SKILLS_CONFIG,
 } = shop;
 
 const handlePurchase = ({ item }) => {
@@ -149,6 +180,16 @@ const handleLearnSkill = (skill) => {
 
 const handleEnhanceSkill = (data) => {
   const result = shop.enhanceSkill(data);
+  alert(result.message);
+};
+
+const handleReforge = () => {
+  const result = shop.reforgePlayerStatPoints();
+  alert(result.message);
+};
+
+const handlePetReforge = () => {
+  const result = shop.reforgePetStatPoints();
   alert(result.message);
 };
 </script>

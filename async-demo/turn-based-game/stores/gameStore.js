@@ -25,6 +25,7 @@ import {
   levelUp,
   petLevelUp,
   movePlayer,
+  cleanupPoolsAfterBattle,
 } from "./player.js";
 import {
   startBattle,
@@ -45,6 +46,8 @@ import {
   refreshSingleBonusAffix,
   sellEquipmentForGold,
   enhanceSkill,
+  reforgePlayerStatPoints,
+  reforgePetStatPointsShop,
 } from "./shop.js";
 import {
   generateMapEnemies,
@@ -266,6 +269,14 @@ export const gameActions = {
     return refreshSingleBonusAffix(gameState.player, index, stat);
   },
 
+  reforgePlayerStatPoints() {
+    return reforgePlayerStatPoints(gameState.player, GAME_CONFIG);
+  },
+
+  reforgePetStatPoints() {
+    return reforgePetStatPointsShop(gameState.player, gameState.pet, GAME_CONFIG);
+  },
+
   getEquipmentSellPrice(equipment) {
     return getEquipmentSellPrice(equipment);
   },
@@ -313,6 +324,8 @@ export const gameActions = {
   },
 
   endBattle() {
+    console.log(`[endBattle] 战斗结束，开始清理...`);
+    cleanupPoolsAfterBattle(gameState.player, gameState.pet);
     removeEnemyFromMap(gameState);
     removeBossFromMap(gameState);
     gameState.screen = "map";

@@ -7,6 +7,25 @@ import { performEnemyAttack } from "./enemy-actions.js";
 import { getRandomEquipment, RARITY_NAMES } from "./equipment.js";
 import { applyDamage } from "./utils.js";
 
+// 辅助函数：添加道具到背包（处理血池/法池不堆叠的逻辑）
+const addItemToInventory = (player, item) => {
+  // 血池或法池：不堆叠，直接 push 新对象，初始化 currentStorage
+  if (item.type === "bloodPool" || item.type === "manaPool") {
+    player.inventory.push({
+      ...item,
+      currentStorage: item.maxStorage || 100000000,
+    });
+  } else {
+    // 普通道具：堆叠
+    const existingItem = player.inventory.find((i) => i.id === item.id);
+    if (existingItem) {
+      existingItem.count++;
+    } else {
+      player.inventory.push({ ...item, count: 1 });
+    }
+  }
+};
+
 const executeTurnOrder = (
   gameState,
   calculatePlayerStatsFn,
@@ -337,6 +356,31 @@ const checkReadyToExecute = (gameState) => {
   const petReady = !petNeedsDecision || battle.petDecision !== null;
 
   if (playerReady && petReady) {
+    // 将防御决策的单位提前到行动顺序最前面
+    const playerIsDefending = battle.playerDecision?.type === "defend";
+    const petIsDefending = battle.petDecision?.type === "defend";
+
+    if (playerIsDefending || petIsDefending) {
+      const defending = [];
+      const others = [];
+
+      for (const unit of battle.turnOrder) {
+        if (unit.type === "player" && playerIsDefending) {
+          defending.push(unit);
+        } else if (unit.type === "pet" && petIsDefending) {
+          defending.push(unit);
+        } else {
+          others.push(unit);
+        }
+      }
+
+      // 防御单位之间按原速度顺序；其他单位保持原速度顺序
+      battle.turnOrder = [...defending, ...others];
+
+      const defendNames = defending.map((u) => u.name).join("、");
+      gameState.battleLog.push(`${defendNames} 选择防御，优先行动！`);
+    }
+
     gameState.battleLog.push("--- 执行阶段 ---");
     battle.phase = "execution";
     setTimeout(() => {
@@ -478,12 +522,7 @@ export const handleBattleEnd = (
       bossEnemies.forEach(boss => {
         // BOSS必定掉落物品
         const dropItem = ITEMS_CONFIG[Math.floor(Math.random() * ITEMS_CONFIG.length)];
-        const existingItem = player.inventory.find((i) => i.id === dropItem.id);
-        if (existingItem) {
-          existingItem.count++;
-        } else {
-          player.inventory.push({ ...dropItem, count: 1 });
-        }
+        addItemToInventory(player, dropItem);
         gameState.battleLog.push(`获得 ${dropItem.name}！`);
 
         // 掉落BOSS专属稀有度装备
@@ -515,12 +554,7 @@ export const handleBattleEnd = (
       if (Math.random() < GAME_CONFIG.BATTLE_REWARD.ITEM_DROP_CHANCE) {
         const dropItem =
           ITEMS_CONFIG[Math.floor(Math.random() * ITEMS_CONFIG.length)];
-        const existingItem = player.inventory.find((i) => i.id === dropItem.id);
-        if (existingItem) {
-          existingItem.count++;
-        } else {
-          player.inventory.push({ ...dropItem, count: 1 });
-        }
+        addItemToInventory(player, dropItem);
         gameState.battleLog.push(`获得 ${dropItem.name}！`);
       }
 

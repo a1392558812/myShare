@@ -261,6 +261,51 @@ export const allocatePoints = (player, stat, points) => {
   player.mp = Math.min(player.mp, player.maxMp);
 };
 
+/**
+ * 计算玩家的非重铸属性点（初始点数 + 升级自动获得的点数）
+ * @param {Object} player - 玩家对象
+ * @param {string} stat - 属性类型
+ * @returns {number} 非重铸点数
+ */
+const getPlayerNonReforgePoints = (player, stat) => {
+  const initialPoints = PLAYER_CONFIG.INITIAL_POINTS[stat] || 0;
+  const levelUpPoints = (player.level - 1) * PLAYER_CONFIG.LEVEL_UP.POINTS_PER_STAT;
+  return initialPoints + levelUpPoints;
+};
+
+/**
+ * 重铸属性加点
+ * 只将手动分配的属性点返还到未分配池，可在角色面板重新分配
+ * @param {Object} player - 玩家对象
+ * @returns {number} 返还的属性点总数
+ */
+export const reforgeStatPoints = (player) => {
+  const pointStats = ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"];
+  let totalReforgePoints = 0;
+
+  for (const stat of pointStats) {
+    const key = `${stat}Points`;
+    const currentPoints = player[key] || 0;
+    const nonReforgePoints = getPlayerNonReforgePoints(player, stat);
+    const reforgeablePoints = Math.max(0, currentPoints - nonReforgePoints);
+    
+    if (reforgeablePoints > 0) {
+      player[key] = nonReforgePoints; // 保留非重铸点数
+      totalReforgePoints += reforgeablePoints;
+    }
+  }
+
+  player.freePoints += totalReforgePoints;
+
+  const calculatedStats = calculatePlayerStats(player);
+  player.maxHp = calculatedStats.maxHp;
+  player.maxMp = calculatedStats.maxMp;
+  player.hp = Math.min(player.hp, player.maxHp);
+  player.mp = Math.min(player.mp, player.maxMp);
+
+  return totalReforgePoints;
+};
+
 export const levelUp = (player, battleLog) => {
   while (player.exp >= player.expToNext) {
     player.exp -= player.expToNext;
@@ -306,27 +351,41 @@ export const unequipItem = (player, slot) => {
   }
 };
 
-export const useItem = (target, item, index, inventoryOwner = null) => {
+export const useItem = (target, item, index, inventoryOwner = null, isInBattle = false) => {
+  const owner = inventoryOwner || target;
+
+  // 脱战时：由前端调用，owner.inventory[index] 必须存在
+  // 战斗中：由 player-actions/pet-actions 调用，同样需要校验
+  if (!owner.inventory || owner.inventory[index] === undefined) {
+    return { success: false, message: "无效的道具索引！" };
+  }
+  const invItem = owner.inventory[index];
+
+  // 兼容旧道具：若血池/法池没有 currentStorage，初始化为 maxStorage 或默认值
+  if (invItem && (invItem.type === "bloodPool" || invItem.type === "manaPool") && invItem.currentStorage === undefined) {
+    invItem.currentStorage = invItem.maxStorage || 100000000;
+  }
+
   let result = { success: false, message: "", amount: 0 };
 
-  if (item.type === "heal") {
-    const healAmount = Math.min(item.value, target.maxHp - target.hp);
+  if (invItem.type === "heal") {
+    const healAmount = Math.min(invItem.value, target.maxHp - target.hp);
     target.hp += healAmount;
     result = {
       success: true,
       message: `使用成功！恢复了 ${healAmount} 点生命值`,
       amount: healAmount,
     };
-  } else if (item.type === "mana") {
-    const manaAmount = Math.min(item.value, target.maxMp - target.mp);
+  } else if (invItem.type === "mana") {
+    const manaAmount = Math.min(invItem.value, target.maxMp - target.mp);
     target.mp += manaAmount;
     result = {
       success: true,
       message: `使用成功！恢复了 ${manaAmount} 点法力值`,
       amount: manaAmount,
     };
-  } else if (item.type === "percentHeal") {
-    const healPercent = item.value;
+  } else if (invItem.type === "percentHeal") {
+    const healPercent = invItem.value;
     const healAmount = Math.floor(target.maxHp * healPercent);
     const actualHeal = Math.min(healAmount, target.maxHp - target.hp);
     target.hp += actualHeal;
@@ -335,8 +394,8 @@ export const useItem = (target, item, index, inventoryOwner = null) => {
       message: `使用成功！恢复了 ${actualHeal} 点生命值 (${Math.floor(healPercent * 100)}%最大生命)`,
       amount: actualHeal,
     };
-  } else if (item.type === "percentMana") {
-    const manaPercent = item.value;
+  } else if (invItem.type === "percentMana") {
+    const manaPercent = invItem.value;
     const manaAmount = Math.floor(target.maxMp * manaPercent);
     const actualMana = Math.min(manaAmount, target.maxMp - target.mp);
     target.mp += actualMana;
@@ -345,8 +404,8 @@ export const useItem = (target, item, index, inventoryOwner = null) => {
       message: `使用成功！恢复了 ${actualMana} 点法力值 (${Math.floor(manaPercent * 100)}%最大法力)`,
       amount: actualMana,
     };
-  } else if (item.type === "percentBoth") {
-    const percent = item.value;
+  } else if (invItem.type === "percentBoth") {
+    const percent = invItem.value;
     const healAmount = Math.floor(target.maxHp * percent);
     const manaAmount = Math.floor(target.maxMp * percent);
     const actualHeal = Math.min(healAmount, target.maxHp - target.hp);
@@ -358,15 +417,82 @@ export const useItem = (target, item, index, inventoryOwner = null) => {
       message: `使用成功！恢复了 ${actualHeal} 点生命值和 ${actualMana} 点法力值 (各${Math.floor(percent * 100)}%)`,
       amount: actualHeal + actualMana,
     };
+  } else if (invItem.type === "bloodPool") {
+    // 血池：恢复缺失的生命值，扣减存储
+    const missingHp = target.maxHp - target.hp;
+    let healAmount = 0;
+    if (isInBattle) {
+      // 战斗中：恢复所有缺失的生命值
+      healAmount = missingHp;
+      // 扣减存储（最多扣减到0）
+      const available = invItem.currentStorage || 0;
+      if (available > 0) {
+        const deductAmount = Math.min(missingHp, available);
+        invItem.currentStorage = available - deductAmount;
+      }
+      // 如果存储为0或负数，设置为0（表示无限恢复）
+      if (invItem.currentStorage <= 0) {
+        invItem.currentStorage = 0;
+      }
+    } else {
+      // 脱战时：最多恢复存储的量
+      const available = invItem.currentStorage || 0;
+      healAmount = Math.min(missingHp, available);
+      invItem.currentStorage = available - healAmount;
+    }
+    target.hp += healAmount;
+    result = {
+      success: true,
+      message: `使用成功！恢复了 ${healAmount} 点生命值${isInBattle ? "（战斗中）" : `（剩余存储：${invItem.currentStorage}）`}`,
+      amount: healAmount,
+    };
+  } else if (invItem.type === "manaPool") {
+    // 法池：恢复缺失的法力值，扣减存储
+    const missingMp = target.maxMp - target.mp;
+    let manaAmount = 0;
+    if (isInBattle) {
+      // 战斗中：恢复所有缺失的法力值
+      manaAmount = missingMp;
+      // 扣减存储（最多扣减到0）
+      const available = invItem.currentStorage || 0;
+      if (available > 0) {
+        const deductAmount = Math.min(missingMp, available);
+        invItem.currentStorage = available - deductAmount;
+      }
+      // 如果存储为0或负数，设置为0（表示无限恢复）
+      if (invItem.currentStorage <= 0) {
+        invItem.currentStorage = 0;
+      }
+    } else {
+      // 脱战时：最多恢复存储的量
+      const available = invItem.currentStorage || 0;
+      manaAmount = Math.min(missingMp, available);
+      invItem.currentStorage = available - manaAmount;
+    }
+    target.mp += manaAmount;
+    result = {
+      success: true,
+      message: `使用成功！恢复了 ${manaAmount} 点法力值${isInBattle ? "（战斗中）" : `（剩余存储：${invItem.currentStorage}）`}`,
+      amount: manaAmount,
+    };
   }
 
   if (result.success) {
-    const owner = inventoryOwner || target;
+    // 使用函数开头已声明的 owner 和 invItem，不再重复声明
     if (owner.inventory && owner.inventory[index]) {
-      const invItem = owner.inventory[index];
-      invItem.count--;
-      if (invItem.count <= 0) {
-        owner.inventory.splice(index, 1);
+      if (invItem.type === "bloodPool" || invItem.type === "manaPool") {
+        // 血池/法池：脱战时若存储<=0则销毁；战斗中永不销毁
+        console.log(`[useItem] 检查是否销毁: type=${invItem.type}, isInBattle=${isInBattle}, currentStorage=${invItem.currentStorage}`);
+        if (!isInBattle && invItem.currentStorage <= 0) {
+          console.log(`[useItem] 脱战时销毁道具: ${invItem.name}, index=${index}`);
+          owner.inventory.splice(index, 1);
+        }
+      } else {
+        // 普通道具：count--
+        invItem.count--;
+        if (invItem.count <= 0) {
+          owner.inventory.splice(index, 1);
+        }
       }
     }
   }
@@ -377,6 +503,43 @@ export const useItem = (target, item, index, inventoryOwner = null) => {
 export const movePlayer = (player, dx, dy) => {
   player.x = player.x + dx;
   player.y = player.y + dy;
+};
+
+/**
+ * 战斗结束后清理血池/法池：销毁存储<=0的道具
+ * @param {Object} player - 玩家对象
+ * @param {Object} [pet] - 宠物对象（可选，独立于 player）
+ */
+export const cleanupPoolsAfterBattle = (player, pet = null) => {
+  if (!player || !player.inventory) return;
+  
+  console.log(`[cleanupPoolsAfterBattle] 战斗前背包:`, player.inventory.filter(it => it.type === "bloodPool" || it.type === "manaPool").map(it => `${it.name}: ${it.currentStorage}`));
+  
+  const beforeCount = player.inventory.length;
+  player.inventory = player.inventory.filter(it => {
+    if ((it.type === "bloodPool" || it.type === "manaPool") && it.currentStorage <= 0) {
+      console.log(`[cleanupPoolsAfterBattle] 销毁道具: ${it.name}, currentStorage=${it.currentStorage}`);
+      return false;
+    }
+    return true;
+  });
+  const afterCount = player.inventory.length;
+  
+  console.log(`[cleanupPoolsAfterBattle] 清理了 ${beforeCount - afterCount} 个血池/法池道具`);
+  
+  // 清理宠物背包（pet 是独立对象，不在 player.pet 上）
+  if (pet && pet.inventory) {
+    const petBeforeCount = pet.inventory.length;
+    pet.inventory = pet.inventory.filter(it => {
+      if ((it.type === "bloodPool" || it.type === "manaPool") && it.currentStorage <= 0) {
+        console.log(`[cleanupPoolsAfterBattle] 销毁宠物道具: ${it.name}, currentStorage=${it.currentStorage}`);
+        return false;
+      }
+      return true;
+    });
+    const petAfterCount = pet.inventory.length;
+    console.log(`[cleanupPoolsAfterBattle] 清理了宠物 ${petBeforeCount - petAfterCount} 个血池/法池道具`);
+  }
 };
 
 // ========== 宠物相关功能 ==========
@@ -677,6 +840,56 @@ export const petAllocatePoints = (pet, stat, points) => {
   pet.maxMp = calculatedStats.maxMp;
   pet.hp = Math.min(pet.hp, pet.maxHp);
   pet.mp = Math.min(pet.mp, pet.maxMp);
+};
+
+/**
+ * 计算装备加成的属性点
+ * @param {Object} character - 角色对象（玩家或宠物）
+ * @returns {Object} - 装备加成的属性点
+ */
+/**
+ * 计算宠物的非重铸属性点（初始点数 + 升级自动获得的点数）
+ * @param {Object} pet - 宠物对象
+ * @param {string} stat - 属性类型
+ * @returns {number} 非重铸点数
+ */
+const getPetNonReforgePoints = (pet, stat) => {
+  const initialPoints = PET_CONFIG.INITIAL_POINTS[stat] || 0;
+  const levelUpPoints = (pet.level - 1) * PET_CONFIG.LEVEL_UP.POINTS_PER_STAT;
+  return initialPoints + levelUpPoints;
+};
+
+/**
+ * 重铸宠物属性加点
+ * 只将手动分配的属性点返还到未分配池
+ * @param {Object} pet - 宠物对象
+ * @returns {number} 返还的属性点总数
+ */
+export const reforgePetStatPoints = (pet) => {
+  const pointStats = ["physicalAttack", "magicAttack", "defense", "speed", "maxHp"];
+  let totalReforgePoints = 0;
+
+  for (const stat of pointStats) {
+    const key = `${stat}Points`;
+    const currentPoints = pet[key] || 0;
+    const nonReforgePoints = getPetNonReforgePoints(pet, stat);
+    const reforgeablePoints = Math.max(0, currentPoints - nonReforgePoints);
+    
+    if (reforgeablePoints > 0) {
+      pet[key] = nonReforgePoints; // 保留非重铸点数
+      totalReforgePoints += reforgeablePoints;
+    }
+  }
+
+  pet.freePoints += totalReforgePoints;
+
+  const calculatedStats = calculatePetStats(pet);
+  pet.maxHp = calculatedStats.maxHp;
+  pet.maxMp = calculatedStats.maxMp;
+  pet.hp = Math.min(pet.hp, pet.maxHp);
+  pet.mp = Math.min(pet.mp, pet.maxMp);
+
+  return totalReforgePoints;
 };
 
 /**

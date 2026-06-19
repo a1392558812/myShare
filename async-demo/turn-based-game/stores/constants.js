@@ -31,7 +31,7 @@ export const STAT_CONFIG = {
     magicAttack: { min: 0.2, max: 3 }, // 魔法攻击系数范围：0.2 ~ 3
     defense: { min: 0.5, max: 3 }, // 防御系数范围：0.5 ~ 3
     speed: { min: 0.5, max: 5 }, // 速度系数范围：0.5 ~ 5
-    maxHp: { min: 0.5, max: 5 }, // 生命值系数范围：0.5 ~ 5
+    maxHp: { min: 5, max: 20 }, // 生命值系数范围：5 ~ 20
     maxMp: { min: 0.5, max: 5 }, // 法力值系数范围：0.5 ~ 5
   },
   /** 宠物属性点系数重铸费用配置 */
@@ -50,8 +50,8 @@ export const STAT_CONFIG = {
     magicAttack: 10, // 基础魔法攻击
     defense: 5, // 基础防御
     speed: 5, // 基础速度
-    maxHp: 350, // 基础最大生命
-    maxMp: 50, // 基础最大法力
+    maxHp: 550, // 基础最大生命
+    maxMp: 100, // 基础最大法力
     critRate: 5, // 基础暴击率(%)
     comboRate: 0, // 基础连击率(%)
     maxComboCount: 1, // 基础最大连击次数
@@ -62,8 +62,8 @@ export const STAT_CONFIG = {
     magicAttack: 8, // 基础魔法攻击
     defense: 4, // 基础防御
     speed: 6, // 基础速度
-    maxHp: 250, // 基础最大生命
-    maxMp: 40, // 基础最大法力
+    maxHp: 450, // 基础最大生命
+    maxMp: 100, // 基础最大法力
     critRate: 4, // 基础暴击率(%)
     comboRate: 0, // 基础连击率(%)
     maxComboCount: 1, // 基础最大连击次数
@@ -409,6 +409,12 @@ export const GAME_CONFIG = {
       MAX_LEVEL: 300, // 技能最大强化等级
       BASE_COST: 50, // 强化基础费用
       LEVEL_COST_MULTIPLIER: 10, // 等级费用乘数：费用 = 基础费用 + (当前强化等级) * 等级费用乘数
+    },
+    // 属性加点重铸配置
+    STAT_REFORGE: {
+      BASE_COST: 100, // 基础费用
+      LEVEL_COST_MULTIPLIER: 5, // 等级费用乘数
+      POINT_COST_MULTIPLIER: 5, // 每点已分配属性费用乘数
     },
   },
 };
@@ -1010,6 +1016,24 @@ export const ITEMS_CONFIG = [
     value: 0.15, // 恢复15%生命和法力
     description: "恢复15%最大生命值和法力值",
     price: 80, // 购买价格
+  },
+  {
+    id: 8,
+    name: "血池",
+    type: "bloodPool",
+    maxStorage: 100000000, // 最大血量存储
+    description: "拥有100000000点血量存储，使用时恢复缺失的生命值（扣减存储），脱战时存储为0则销毁",
+    price: 5000, // 购买价格
+    icon: "🩸",
+  },
+  {
+    id: 9,
+    name: "法池",
+    type: "manaPool",
+    maxStorage: 100000000, // 最大法量存储
+    description: "拥有100000000点法量存储，使用时恢复缺失的法力值（扣减存储），脱战时存储为0则销毁",
+    price: 5000, // 购买价格
+    icon: "🔮",
   },
 ];
 
