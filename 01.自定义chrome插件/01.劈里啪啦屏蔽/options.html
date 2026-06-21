@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>劈里啪啦屏蔽 - 设置</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { width: auto; min-height: auto; padding: 20px; }
+    .app { max-width: 600px; margin: 0 auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .list { max-height: 400px; }
+    h2 { color: #fb7299; margin-bottom: 6px; font-size: 16px; }
+    .stats { font-size: 12px; color: #777; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>🐾 劈里啪啦屏蔽 · 设置</h1>
+      <label class="switch">
+        <input type="checkbox" id="toggleEnabled" checked>
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="title">🎬 标题关键词</button>
+      <button class="tab" data-tab="user">👤 UP主关键词</button>
+      <button class="tab" data-tab="selector">🎯 自定义选择器</button>
+      <button class="tab" data-tab="duration">⏱ 时长过滤</button>
+      <button class="tab" data-tab="classrule">🎯 条件隐藏</button>
+    </nav>
+
+    <section class="panel active" id="panel-title">
+      <h2>标题屏蔽</h2>
+      <p class="desc">视频标题含以下关键词时，隐藏整个视频卡片。支持任意子串匹配。</p>
+      <div class="input-row">
+        <input type="text" id="inputTitle" placeholder="输入关键词，回车或点击添加">
+        <button id="btnAddTitle">添加</button>
+      </div>
+      <div class="stats" id="statTitle">已添加 0 条</div>
+      <ul class="list" id="listTitle"></ul>
+      <button class="btn-clear" id="btnClearTitle">清空全部</button>
+    </section>
+
+    <section class="panel" id="panel-user">
+      <h2>UP主屏蔽</h2>
+      <p class="desc">UP主名称含以下关键词时，隐藏整个视频卡片。支持任意子串匹配。</p>
+      <div class="input-row">
+        <input type="text" id="inputUser" placeholder="输入UP主名称，回车或点击添加">
+        <button id="btnAddUser">添加</button>
+      </div>
+      <div class="stats" id="statUser">已添加 0 条</div>
+      <ul class="list" id="listUser"></ul>
+      <button class="btn-clear" id="btnClearUser">清空全部</button>
+    </section>
+
+    <section class="panel" id="panel-selector">
+      <h2>选择器屏蔽</h2>
+      <p class="desc">输入 CSS 选择器（支持复合选择器，如 <code>.x .xx .xxx</code>），匹配到的元素将被直接隐藏。<br>例如：<code>.ad-card</code>、<code>#homepage-banner .popover</code></p>
+      <div class="input-row">
+        <input type="text" id="inputSelector" placeholder="例如：.ad-card 或 .x .xx .xxx">
+        <button id="btnAddSelector">添加</button>
+      </div>
+      <div class="stats" id="statSelector">已添加 0 条</div>
+      <ul class="list" id="listSelector"></ul>
+      <button class="btn-clear" id="btnClearSelector">清空全部</button>
+    </section>
+
+    <section class="panel" id="panel-duration">
+      <h2>时长过滤</h2>
+      <p class="desc">根据视频时长过滤，匹配的视频卡片将被隐藏。<br>输入支持 <code>mm:ss</code> 或 <code>hh:mm:ss</code> 格式，也支持直接输入秒数。</p>
+
+      <div class="duration-form">
+        <select id="durationType">
+          <option value="lt">小于</option>
+          <option value="between">在...之间</option>
+          <option value="gt">大于</option>
+        </select>
+
+        <div class="duration-inputs">
+          <div class="duration-input-row" id="durationLtRow">
+            <input type="text" id="durationLtValue" placeholder="如：5:00 或 300">
+            <span class="duration-unit">秒</span>
+          </div>
+          <div class="duration-input-row" id="durationBetweenRow" style="display:none;">
+            <input type="text" id="durationBetweenMin" placeholder="如：5:00">
+            <span>~</span>
+            <input type="text" id="durationBetweenMax" placeholder="如：10:00">
+          </div>
+          <div class="duration-input-row" id="durationGtRow" style="display:none;">
+            <input type="text" id="durationGtValue" placeholder="如：10:00 或 600">
+            <span class="duration-unit">秒</span>
+          </div>
+        </div>
+
+        <button id="btnAddDuration">添加规则</button>
+      </div>
+
+      <div class="stats" id="statDuration">已添加 0 条</div>
+      <ul class="list" id="listDuration"></ul>
+      <button class="btn-clear" id="btnClearDuration">清空全部</button>
+    </section>
+
+    <section class="panel" id="panel-classrule">
+      <h2>条件祖先隐藏</h2>
+      <p class="desc">
+        当匹配元素包含「目标类名」时，隐藏其最近拥有「祖先类名」的祖先元素。<br>
+        例：选择器 <code>.feed-card .title</code> + 目标类名 <code>highlight</code> + 祖先类名 <code>card-wrap</code><br>
+        表示：找到 <code>.feed-card .title</code> 元素，若含 <code>highlight</code> 类，则隐藏最近的 <code>.card-wrap</code> 祖先。
+      </p>
+
+      <div class="class-rule-form">
+        <div class="class-rule-row">
+          <label>复合选择器</label>
+          <input type="text" id="classRuleSelector" placeholder="如：.feed-card .title">
+        </div>
+        <div class="class-rule-row">
+          <label>目标类名（class1）</label>
+          <input type="text" id="classRuleTarget" placeholder="如：highlight">
+        </div>
+        <div class="class-rule-row">
+          <label>祖先类名（class2）</label>
+          <input type="text" id="classRuleAncestor" placeholder="如：card-wrap">
+        </div>
+        <button id="btnAddClassRule">添加规则</button>
+      </div>
+
+      <div class="stats" id="statClassRule">已添加 0 条</div>
+      <ul class="list" id="listClassRule"></ul>
+      <button class="btn-clear" id="btnClearClassRule">清空全部</button>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-actions">
+        <button class="btn-action" id="btnExport">📤 导出配置</button>
+        <button class="btn-action" id="btnImport">📥 导入配置</button>
+        <input type="file" id="fileImport" accept=".json" hidden>
+      </div>
+      <small>配置通过 Chrome 同步，修改后刷新B站页面立即生效</small>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

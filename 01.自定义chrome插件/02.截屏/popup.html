@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>截屏工具</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 220px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #333;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      text-align: center;
+      color: white;
+    }
+
+    .header .icon {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    .btn:last-child {
+      margin-bottom: 0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f2ff;
+      color: #5a67d8;
+      border: 1.5px solid #c3c9f0;
+    }
+
+    .btn-secondary:hover {
+      background: #e8ebff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(90, 103, 216, 0.15);
+    }
+
+    .btn .emoji {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .btn .label {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .btn .label-main {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn .label-sub {
+      font-size: 11px;
+      opacity: 0.75;
+      margin-top: 1px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #eef0f8;
+      margin: 12px 0;
+    }
+
+    .tips {
+      font-size: 11px;
+      color: #999;
+      line-height: 1.6;
+      padding: 0 2px;
+    }
+
+    .tips span {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="icon">📸</div>
+    <h1>截屏工具</h1>
+  </div>
+
+  <div class="content">
+    <button class="btn btn-primary" id="btnFullscreen">
+      <span class="emoji">🖥️</span>
+      <span class="label">
+        <span class="label-main">全屏截图</span>
+        <span class="label-sub">截取当前可视区域</span>
+      </span>
+    </button>
+
+    <button class="btn btn-secondary" id="btnCrop">
+      <span class="emoji">✂️</span>
+      <span class="label">
+        <span class="label-main">区域截图</span>
+        <span class="label-sub">拖拽选择裁切范围</span>
+      </span>
+    </button>
+
+    <div class="divider"></div>
+
+    <div class="tips">
+      <span>· 全屏：直接截取可视区</span>
+      <span>· 区域：拖拽框选 · 可拖动和缩放</span>
+      <span>· 按 ESC 取消操作</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

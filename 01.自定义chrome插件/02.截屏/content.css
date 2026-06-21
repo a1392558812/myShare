@@ -1,0 +1,116 @@
+/* content.css - 截图遮罩和选区样式 */
+
+/* 全屏遮罩 */
+#__screenshot-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483640;
+  cursor: crosshair;
+  user-select: none;
+  /* 半透明暗色遮罩 */
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* 选区容器 */
+#__screenshot-selection {
+  position: absolute;
+  border: 2px solid #4f8ef7;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.45),
+    0 0 0 2px rgba(79, 142, 247, 0.5);
+  box-sizing: border-box;
+  background: transparent;
+  cursor: move;
+  /* 初始不可见 */
+  display: none;
+}
+
+/* 八个缩放手柄 */
+.ss-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid #4f8ef7;
+  border-radius: 50%;
+  z-index: 2147483641;
+}
+
+.ss-handle[data-dir="nw"] { top: -6px; left: -6px; cursor: nw-resize; }
+.ss-handle[data-dir="n"]  { top: -6px; left: calc(50% - 5px); cursor: n-resize; }
+.ss-handle[data-dir="ne"] { top: -6px; right: -6px; cursor: ne-resize; }
+.ss-handle[data-dir="e"]  { top: calc(50% - 5px); right: -6px; cursor: e-resize; }
+.ss-handle[data-dir="se"] { bottom: -6px; right: -6px; cursor: se-resize; }
+.ss-handle[data-dir="s"]  { bottom: -6px; left: calc(50% - 5px); cursor: s-resize; }
+.ss-handle[data-dir="sw"] { bottom: -6px; left: -6px; cursor: sw-resize; }
+.ss-handle[data-dir="w"]  { top: calc(50% - 5px); left: -6px; cursor: w-resize; }
+
+/* 信息提示栏（显示尺寸） */
+#__screenshot-info {
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  letter-spacing: 0.3px;
+}
+
+/* 工具栏（确认/取消按钮） */
+#__screenshot-toolbar {
+  position: absolute;
+  display: flex;
+  gap: 8px;
+  pointer-events: all;
+}
+
+#__screenshot-toolbar button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#__screenshot-toolbar button:hover {
+  opacity: 0.85;
+}
+
+#__btn-confirm {
+  background: #4f8ef7;
+  color: #fff;
+}
+
+#__btn-cancel {
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd !important;
+}
+
+/* 操作提示 */
+#__screenshot-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  pointer-events: none;
+  z-index: 2147483645;
+  letter-spacing: 0.3px;
+}
