@@ -85,6 +85,7 @@ const menuListSort = [
   { name: "02.杂项整理" },
   { name: "01.杂项整理" },
   { name: "01.前端圣经" },
+  { name: "01.自定义chrome插件" },
   { name: "01.杂项算法补漏" },
   { name: "01.python-study" },
 ];

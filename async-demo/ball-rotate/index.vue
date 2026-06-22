@@ -105,7 +105,7 @@ defineOptions({
 
 const DEFAULT_IMAGES = Array.from({ length: 16 }, (_, i) => ({
   id: `default-${i}`,
-  src: `https://picsum.photos/seed/${i + 10}/200/200`,
+  src: `./demo-static/video-player/video_${i % 11 + 1}.jpg`,
   label: `图片 ${i + 1}`,
 }))
 

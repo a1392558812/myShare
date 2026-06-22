@@ -679,5 +679,12 @@
     "name": "ball-rotate",
     "fileType": "vue",
     "meta": { "demoName": "3d旋转球照片墙", "ifShowHeaderComponent": false }
+  },
+  {
+    "path": "blog-home",
+    "component": "blog-home",
+    "name": "blog-home",
+    "fileType": "vue",
+    "meta": { "demoName": "blog-home", "ifShowHeaderComponent": false }
   }
 ]
