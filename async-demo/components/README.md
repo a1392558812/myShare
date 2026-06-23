@@ -141,7 +141,7 @@ const openDialog = () => {
 
 | 组件名 | 说明 |
 |--------|------|
-| `inputCom` | 基础输入框（text / number / range / checkbox / color） |
+| `inputCom` | 基础输入框（text / number / range / checkbox / color / textarea） |
 | `selectCom` | 下拉选择器，支持可选的 Label 覆盖显示 |
 | `customBtnCom` | 带内嵌输入的按钮，支持点击时读取输入值 |
 | `controlItem` | 标签 + 输入控件的组合行，自动显示当前值 |
@@ -155,12 +155,13 @@ const openDialog = () => {
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `modelValue` | `Number\|Boolean\|String` | `0` | 绑定值 |
-| `type` | `String` | `'text'` | 输入类型：`text` / `number` / `range` / `checkbox` / `color` |
+| `type` | `String` | `'text'` | 输入类型：`text` / `number` / `range` / `checkbox` / `color` / `textarea` |
 | `min` | `Number` | — | 最小值（number/range） |
 | `max` | `Number` | — | 最大值（number/range） |
 | `step` | `Number` | `1` | 步进值（number/range） |
 | `placeholder` | `String` | `''` | 占位文本 |
 | `disabled` | `Boolean` | `false` | 是否禁用 |
+| `rows` | `Number` | `4` | 文本域行数（textarea） |
 
 #### `selectCom` Props
 

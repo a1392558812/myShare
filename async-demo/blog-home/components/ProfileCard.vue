@@ -141,8 +141,8 @@ $bg-sidebar: #241f2d;
 }
 
 .avatar-circle {
-  width: 90px;
-  height: 90px;
+  width: calc(100% - 3px * 2);
+  height: calc(100% - 3px * 2);
   border-radius: 50%;
   background: linear-gradient(135deg, $bili-pink, $steampunk-brass);
   display: flex;
@@ -164,10 +164,12 @@ $bg-sidebar: #241f2d;
 
 .avatar-orbital {
   position: absolute;
-  inset: -8px;
-  border: 1px dashed rgba(201, 169, 110, 0.3);
+  inset: -12px;
+  border: 2px dashed rgba(201, 169, 110, 0.3);
   border-radius: 50%;
   animation: gearSpin 10s linear infinite;
+  left: -12px;
+  top: -12px;
 }
 
 @keyframes gearSpin {

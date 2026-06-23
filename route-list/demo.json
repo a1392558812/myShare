@@ -686,5 +686,12 @@
     "name": "blog-home",
     "fileType": "vue",
     "meta": { "demoName": "blog-home", "ifShowHeaderComponent": false }
+  },
+  {
+    "path": "faulty-text",
+    "component": "faulty-text",
+    "name": "faulty-text",
+    "fileType": "vue",
+    "meta": { "demoName": "故障文字", "ifShowHeaderComponent": false }
   }
 ]

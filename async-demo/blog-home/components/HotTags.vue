@@ -92,6 +92,10 @@ $text-secondary: #b8a99a;
   border: 1px solid rgba(201, 169, 110, 0.1);
   border-radius: 3px;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 
   &:hover {
     color: $bili-pink;

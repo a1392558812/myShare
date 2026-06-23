@@ -691,7 +691,7 @@ $text-muted: #7a6e62;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.6s ease;
-  z-index: 1;
+  z-index: 10;
   overflow: hidden;
 }
 
@@ -703,6 +703,7 @@ $text-muted: #7a6e62;
   background: radial-gradient(ellipse at center, rgba(201, 169, 110, 0.12) 0%, rgba(251, 114, 153, 0.05) 40%, transparent 70%);
   border-radius: 50%;
   filter: blur(8px);
+  z-index: 10;
 }
 
 .steam-1 {

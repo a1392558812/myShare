@@ -4,9 +4,14 @@
 
     <BlogHeader v-model="searchQuery" />
 
+    <SteampunkDivider />
+
     <div class="blog-main">
+      <SteampunkCornerOrnament />
+
       <div class="container">
         <main class="content-area">
+
           <FilterSection :tags="filterTags" v-model="activeTag" />
 
           <div class="article-list">
@@ -15,12 +20,14 @@
           </div>
 
           <LoadMore />
+          <SteampunkPipeJoint />
         </main>
 
         <aside class="sidebar">
+
           <ProfileCard />
           <HotTags :tags="hotTags" />
-          <RecommendArticles :articles="recommendArticles" />
+          <RecommendArticles style="position: sticky; top: calc(32px + 64px);" :articles="recommendArticles" />
         </aside>
       </div>
     </div>
@@ -32,6 +39,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import SteampunkBackground from './components/SteampunkBackground.vue'
+import SteampunkDivider from './components/SteampunkDivider.vue'
+import SteampunkPipeJoint from './components/SteampunkPipeJoint.vue'
+import SteampunkCornerOrnament from './components/SteampunkCornerOrnament.vue'
 import BlogHeader from './components/BlogHeader.vue'
 import FilterSection from './components/FilterSection.vue'
 import ArticleCard from './components/ArticleCard.vue'
@@ -194,6 +204,15 @@ const recommendArticles = [
 ]
 </script>
 
+<style>
+html,
+body,
+#app,
+#page {
+  overflow: inherit;
+}
+</style>
+
 <style lang="scss" scoped>
 // ===== 配色变量 =====
 $bili-pink: #FB7299;
@@ -225,6 +244,7 @@ $shadow-pink: 0 0 20px rgba(251, 114, 153, 0.1);
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap');
 
+
 .blog-wrapper {
   --bili-pink: #{$bili-pink};
   --steampunk-brass: #{$steampunk-brass};
@@ -233,7 +253,6 @@ $shadow-pink: 0 0 20px rgba(251, 114, 153, 0.1);
   color: $text-primary;
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
   line-height: 1.6;
 
   * {

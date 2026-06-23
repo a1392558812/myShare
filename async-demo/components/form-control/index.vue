@@ -34,6 +34,7 @@ const inputCom = defineComponent({
     step: { type: Number, default: 1 },
     placeholder: { type: String, default: "" },
     type: { type: String, default: "text" },
+    rows: { type: Number, default: 4 },
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
@@ -43,6 +44,7 @@ const inputCom = defineComponent({
       if (props.type === "text") return "text-control";
       if (props.type === "checkbox") return "checkbox-control";
       if (props.type === "color") return "color-control";
+      if (props.type === "textarea") return "textarea-control";
       return "";
     });
 
@@ -78,18 +80,26 @@ const inputCom = defineComponent({
 
     return () => {
       return (
-        <input
-          disabled={props.disabled}
-          type={props.type}
-          class={inputClass.value}
-          step={Number(props.step)}
-          min={props.min}
-          max={props.max}
-          placeholder={props.placeholder}
-          checked={currentValue.value}
-          value={currentValue.value}
-          onInput={onInput}
-        />
+        props.type === 'textarea'
+          ? (<textarea
+            rows={props.rows}
+            disabled={props.disabled}
+            class={inputClass.value}
+            placeholder={props.placeholder}
+            value={currentValue.value}
+            onInput={onInput} />)
+          : (<input
+            disabled={props.disabled}
+            type={props.type}
+            class={inputClass.value}
+            step={Number(props.step)}
+            min={props.min}
+            max={props.max}
+            placeholder={props.placeholder}
+            checked={currentValue.value}
+            value={currentValue.value}
+            onInput={onInput}
+          />)
       );
     };
   },
@@ -127,7 +137,7 @@ const selectCom = defineComponent({
             ))}
           </select>
           {props.ifShowLabel ? (
-            <button class="select-control-btn">
+            <button disabled={props.disabled} class="select-control-btn">
               {(() => {
                 if (props.currentLabel) return props.currentLabel;
                 const target = props.options.find(
@@ -346,19 +356,24 @@ export default {
     cursor: pointer;
     padding: $spacing-xs $spacing-md;
 
-    &:hover + .select-control-btn {
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    &:hover+.select-control-btn {
       background-color: #ffffff;
       border-color: #c5c9d2;
     }
 
-    &:focus + .select-control-btn {
+    &:focus+.select-control-btn {
       outline: none;
       border-color: #409eff;
       box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.18);
       background-color: #ffffff;
     }
 
-    &:disabled + .select-control-btn {
+    &:disabled+.select-control-btn {
       cursor: not-allowed;
       opacity: 0.7;
       background-color: #f0f0f0;
@@ -384,12 +399,18 @@ export default {
     background: $light-gray;
     cursor: pointer;
     z-index: 0;
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
 }
 
 .select-control select,
 .number-control,
 .color-control,
+.textarea-control,
 .text-control {
   padding: $spacing-xs $spacing-sm;
   border: 1px solid $medium-gray;
@@ -401,17 +422,40 @@ export default {
     outline: none;
     border-color: $primary-color;
   }
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.textarea-control {
+  padding: 8px;
+  resize: vertical;
+  outline: none;
+  transition: border-color $transition-speed;
+  font-family: inherit;
 }
 
 .color-control {
   padding: 0px 5px;
   cursor: pointer;
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 .checkbox-control {
   width: 16px;
   height: 16px;
   cursor: pointer;
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 .range-control {
@@ -423,6 +467,11 @@ export default {
   background: darken($light-gray, 5%);
   border-radius: 3px;
   outline: none;
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 
   &::-webkit-slider-thumb {
     -webkit-appearance: none;

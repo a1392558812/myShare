@@ -26,6 +26,10 @@ $shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 @mixin control-shared {

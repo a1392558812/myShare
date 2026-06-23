@@ -1,6 +1,4 @@
-/* content.css - 截图遮罩和选区样式 */
 
-/* 全屏遮罩 */
 #__screenshot-overlay {
   position: fixed;
   top: 0;
@@ -10,11 +8,9 @@
   z-index: 2147483640;
   cursor: crosshair;
   user-select: none;
-  /* 半透明暗色遮罩 */
   background: rgba(0, 0, 0, 0.45);
 }
 
-/* 选区容器 */
 #__screenshot-selection {
   position: absolute;
   border: 2px solid #4f8ef7;
@@ -24,11 +20,9 @@
   box-sizing: border-box;
   background: transparent;
   cursor: move;
-  /* 初始不可见 */
   display: none;
 }
 
-/* 八个缩放手柄 */
 .ss-handle {
   position: absolute;
   width: 10px;
@@ -48,7 +42,6 @@
 .ss-handle[data-dir="sw"] { bottom: -6px; left: -6px; cursor: sw-resize; }
 .ss-handle[data-dir="w"]  { top: calc(50% - 5px); left: -6px; cursor: w-resize; }
 
-/* 信息提示栏（显示尺寸） */
 #__screenshot-info {
   position: absolute;
   bottom: -28px;
@@ -64,7 +57,6 @@
   letter-spacing: 0.3px;
 }
 
-/* 工具栏（确认/取消按钮） */
 #__screenshot-toolbar {
   position: absolute;
   display: flex;
@@ -98,7 +90,6 @@
   border: 1px solid #ddd !important;
 }
 
-/* 操作提示 */
 #__screenshot-hint {
   position: fixed;
   top: 50%;

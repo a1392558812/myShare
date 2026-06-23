@@ -1,5 +1,3 @@
-// popup.js - 弹窗交互逻辑
-// 全屏截图由 popup 独立完成，区域截图通过 executeScript 触发 content 中的全局函数
 
 document.getElementById('btnFullscreen').addEventListener('click', async () => {
   try {
@@ -19,7 +17,6 @@ document.getElementById('btnCrop').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   let started = false;
 
-  // 方式1：executeScript 直接调 content 暴露的全局函数（最可靠）
   try {
     const [result] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
@@ -32,17 +29,15 @@ document.getElementById('btnCrop').addEventListener('click', async () => {
       }
     });
     if (result && result.result === true) started = true;
-  } catch (_) { /* executeScript 失败，尝试下一种方式 */ }
+  } catch (_) { }
 
-  // 方式2：tabs.sendMessage 给已注入的 content script
   if (!started) {
     try {
       await chrome.tabs.sendMessage(tab.id, { action: 'startCrop' });
       started = true;
-    } catch (_) { /* content script 未就绪 */ }
+    } catch (_) { }
   }
 
-  // 方式3：storage 标志作为最终备用
   if (!started) {
     await chrome.storage.local.set({ cropPending: true });
   }
