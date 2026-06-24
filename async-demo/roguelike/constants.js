@@ -176,7 +176,7 @@ export const SKILL_MELEE_ATTACK = {
   projectileSpeed: 0,
   duration: 0,
   lifestealPercent: 0,
-  unlockLevel: 2,
+  unlockLevel: 1,
   growth: {
     damage:   { ratio: 1.40, cap: null },    // Lv1=20, Lv2=28, Lv3≈39, Lv5≈77 …
     cooldown: { ratio: 0.88, cap: 300 },     // 冷却缩短，最低 300ms
@@ -196,7 +196,7 @@ export const SKILL_AUTO_SEEK = {
   projectileSpeed: 6,
   duration: 0,
   lifestealPercent: 0,
-  unlockLevel: 3,
+  unlockLevel: 1,
   growth: {
     damage:          { ratio: 1.35, cap: null },      // Lv1=15, Lv2≈20, Lv3≈27 …
     cooldown:        { ratio: 0.92, cap: 800 },       // 冷却缩短，最低 800ms
@@ -217,7 +217,7 @@ export const SKILL_FREEZE = {
   projectileSpeed: 0,
   duration: 3000,
   lifestealPercent: 0,
-  unlockLevel: 4,
+  unlockLevel: 1,
   growth: {
     damage:   { ratio: 1.40, cap: null },    // Lv1=5, Lv2=7, Lv3≈10 …
     cooldown: { ratio: 0.90, cap: 2000 },    // 冷却缩短，最低 2000ms
@@ -238,13 +238,38 @@ export const SKILL_VAMPIRE_AURA = {
   projectileSpeed: 0,
   duration: 5000,
   lifestealPercent: 0.3,
-  unlockLevel: 5,
+  unlockLevel: 1,
   growth: {
     damage:          { ratio: 1.40, cap: null },      // Lv1=8, Lv2≈11, Lv3≈16 …
     cooldown:        { ratio: 0.92, cap: 3000 },      // 冷却缩短，最低 3000ms
     range:           { ratio: 1.10, cap: 200 },       // 光环范围扩大，上限 200px
     duration:        { ratio: 1.10, cap: 10000 },     // 持续时间延长，上限 10000ms
     lifestealPercent:{ ratio: 1.10, cap: 0.8 },       // 吸血比例提升，上限 80%
+  },
+}
+
+/** 强身健体 — 被动技能，每级按比例提升最大生命值、移动速度和基础攻击力 */
+export const SKILL_BODY_STRENGTH = {
+  id: 'bodyStrength',
+  name: '强身健体',
+  icon: '💪',
+  description: '被动技能，每级提升最大生命值、移动速度和基础攻击力',
+  cooldown: 0,
+  damage: 0,
+  range: 0,
+  projectileSpeed: 0,
+  duration: 0,
+  lifestealPercent: 0,
+  unlockLevel: 1,
+  isPassive: true,
+  // 基础加成值（Lv1 时的加成量）
+  maxHpBonusBase: 20,
+  speedBonusBase: 0.3,
+  attackBonusBase: 2,
+  growth: {
+    maxHpBonus:   { ratio: 1.15, cap: null },   // 无上限
+    speedBonus:   { ratio: 1.10, cap: 2 },      // 速度加成上限 2
+    attackBonus:  { ratio: 1.12, cap: null },   // 无上限
   },
 }
 
@@ -255,7 +280,20 @@ export const SKILL_TABLE = [
   SKILL_AUTO_SEEK,
   SKILL_FREEZE,
   SKILL_VAMPIRE_AURA,
+  SKILL_BODY_STRENGTH,
 ]
+
+/**
+ * 技能固定按键映射（技能ID → 按键编号，从1开始）
+ * 无论技能以何种顺序获取，每个技能始终绑定同一个按键
+ */
+export const SKILL_KEY_MAP = {
+  arrow:         1,
+  meleeAttack:   2,
+  autoSeek:      3,
+  freeze:        4,
+  vampireAura:   5,
+}
 
 // ─────────────────────────── 经验等级对照表 ───────────────────────────
 /**
@@ -284,13 +322,15 @@ export const EXP_LEVEL_TABLE = [
 
 // ─────────────────────────── 敌人刷新参数 ───────────────────────────
 /** 初始刷新间隔（ms） */
-export const SPAWN_INTERVAL_INITIAL = 10000
+export const SPAWN_INTERVAL_INITIAL = 1000
 /** 最小刷新间隔（ms），随游戏时长逐渐缩短至此值 */
-export const SPAWN_INTERVAL_MIN = 1000
+export const SPAWN_INTERVAL_MIN = 100
 /** 刷新间隔缩短速率：每过一段时间减少的毫秒数 */
 export const SPAWN_INTERVAL_DECREASE_PER_SEC = 20
 /** 敌人刷新位置距镜头边界的额外偏移（px） */
 export const SPAWN_MARGIN = 20
+/** 场上最大敌人数，超出后不再刷新新敌人 */
+export const MAX_ENEMIES = 60
 
 // ─────────────────────────── 弹幕参数 ───────────────────────────
 /** 敌人远程弹幕飞行速度 */

@@ -1,17 +1,24 @@
 <template>
   <div class="action-bar">
     <div
-      v-for="sk in skills"
-      :key="sk.id"
+      v-for="(sk, idx) in skills"
+      :key="idx"
       class="skill-slot"
-      :class="{ 'skill-cooldown': sk.remainingCooldown > 0, 'skill-active': sk.active }"
-      @click="$emit('skill-click', sk)"
+      :class="{
+        'skill-empty': !sk,
+        'skill-cooldown': sk && sk.remainingCooldown > 0,
+        'skill-active': sk && sk.active
+      }"
+      @click="sk && $emit('skill-click', sk)"
     >
-      <span class="skill-icon">{{ sk.icon }}</span>
-      <span class="skill-level">Lv{{ sk.currentLevel }}</span>
-      <span v-if="sk.remainingCooldown > 0" class="skill-cd-text">
-        {{ Math.ceil(sk.remainingCooldown / 1000) }}s
-      </span>
+      <template v-if="sk">
+        <span class="skill-icon">{{ sk.icon }}</span>
+        <span class="skill-level">Lv{{ sk.currentLevel }}</span>
+        <span v-if="sk.remainingCooldown > 0" class="skill-cd-text">
+          {{ Math.ceil(sk.remainingCooldown / 1000) }}s
+        </span>
+      </template>
+      <span class="skill-key">{{ idx + 1 }}</span>
     </div>
   </div>
 </template>
@@ -49,6 +56,17 @@ defineEmits(['skill-click'])
     background: rgba(50, 61, 79, 0.9);
   }
 
+  &.skill-empty {
+    opacity: 0.25;
+    cursor: default;
+    border-style: dashed;
+
+    &:hover {
+      border-color: rgba(100, 116, 139, 0.4);
+      background: rgba(30, 41, 59, 0.8);
+    }
+  }
+
   &.skill-cooldown {
     opacity: 0.5;
     cursor: not-allowed;
@@ -75,6 +93,15 @@ defineEmits(['skill-click'])
     font-size: 10px;
     color: #fbbf24;
     font-weight: 600;
+  }
+
+  .skill-key {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 700;
   }
 }
 </style>

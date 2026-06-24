@@ -10,6 +10,7 @@ import {
   FRAME_COUNT,
   DIRECTION,
 } from '../constants.js'
+import { useDebug } from './useDebug.js'
 
 /**
  * @param {import('vue').Ref<Array>} enemies - 敌人列表
@@ -21,6 +22,7 @@ import {
  */
 export function useEnemy(enemies, player, projectiles, gameState, mapUtils, battleLog) {
   const { checkCollision } = mapUtils
+  const { debugFlags } = useDebug()
 
   const log = (msg) => {
     battleLog.value.unshift({ time: Date.now(), text: msg })
@@ -43,7 +45,7 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // 朝玩家移动向量
+      // 朝玩家移动向量（始终计算，供攻击方向使用）
       const dx = player.x - e.x
       const dy = player.y - e.y
       const dist = Math.sqrt(dx * dx + dy * dy)
@@ -66,11 +68,11 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         }
       }
 
-      // 技能冷却计时
+      // 技能冷却计时（始终执行）
       e.skillTimer += dt
 
-      // 远程攻击：在射程内且冷却就绪 → 发射弹幕
-      if (e.hasRanged && e.skillRange > 0 && dist <= e.skillRange && e.skillTimer >= e.skillCooldown) {
+      // 远程攻击：受调试标志控制
+      if (!debugFlags?.pauseEnemyAttack && e.hasRanged && e.skillRange > 0 && dist <= e.skillRange && e.skillTimer >= e.skillCooldown) {
         const ndx = dx / dist
         const ndy = dy / dist
         projectiles.value.push({
@@ -85,14 +87,16 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         e.skillTimer = 0
       }
 
-      // 移动逻辑：
-      // - 近战型：始终追踪（冷却期间也追）
-      // - 远程型：仅在射程外时追踪
-      // - 无攻击型：始终追踪
-      const shouldChase = e.hasMelee || (e.hasRanged && dist > e.skillRange) || (!e.hasMelee && !e.hasRanged)
-      if (shouldChase && dist > 1) {
-        e.x += (dx / dist) * e.speed
-        e.y += (dy / dist) * e.speed
+      // 移动逻辑：受调试标志控制
+      if (!debugFlags?.pauseEnemyMovement) {
+        // - 近战型：始终追踪（冷却期间也追）
+        // - 远程型：仅在射程外时追踪
+        // - 无攻击型：始终追踪
+        const shouldChase = e.hasMelee || (e.hasRanged && dist > e.skillRange) || (!e.hasMelee && !e.hasRanged)
+        if (shouldChase && dist > 1) {
+          e.x += (dx / dist) * e.speed
+          e.y += (dy / dist) * e.speed
+        }
       }
 
       // 受击闪白衰减

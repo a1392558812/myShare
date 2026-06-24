@@ -14,6 +14,7 @@ import {
   DIRECTION,
   calcSkillValue,
 } from '../constants.js'
+import { useDebug } from './useDebug.js'
 
 /**
  * @param {import('vue').UnwrapNestedRefs} player - 玩家响应式状态
@@ -41,6 +42,8 @@ export function usePlayer(
     battleLog.value.unshift({ time: Date.now(), text: msg })
     if (battleLog.value.length > 50) battleLog.value.pop()
   }
+
+  const { debugFlags } = useDebug()
 
   const gainExp = (amount) => {
     player.exp += amount
@@ -85,7 +88,37 @@ export function usePlayer(
       auraLifesteal: 0,
       auraRange: 0,
       auraTickTimer: 0,
+      isPassive: template.isPassive || false,
+      maxHpBonusBase: template.maxHpBonusBase || 0,
+      speedBonusBase: template.speedBonusBase || 0,
+      attackBonusBase: template.attackBonusBase || 0,
     })
+  }
+
+  // ─── 被动技能加成计算 ───
+
+  /** 根据被动技能等级重算玩家基础属性（maxHp / speed / baseAttack） */
+  const recalcPassiveBuffs = () => {
+    const passive = player.skills.find(s => s.id === 'bodyStrength')
+    if (!passive) {
+      player.maxHp = PLAYER_ATTRS.maxHp
+      player.speed = PLAYER_ATTRS.speed
+      player.baseAttack = PLAYER_ATTRS.baseAttack
+      return
+    }
+    const maxHpBonus = calcSkillValue(passive.maxHpBonusBase, passive.growth.maxHpBonus, passive.currentLevel)
+    const speedBonus = calcSkillValue(passive.speedBonusBase, passive.growth.speedBonus, passive.currentLevel)
+    const attackBonus = calcSkillValue(passive.attackBonusBase, passive.growth.attackBonus, passive.currentLevel)
+
+    const oldMaxHp = player.maxHp
+    player.maxHp = PLAYER_ATTRS.maxHp + maxHpBonus
+    player.speed = PLAYER_ATTRS.speed + speedBonus
+    player.baseAttack = PLAYER_ATTRS.baseAttack + attackBonus
+
+    // 升级被动时，按增量回复血量
+    if (oldMaxHp && player.maxHp > oldMaxHp) {
+      player.hp += (player.maxHp - oldMaxHp)
+    }
   }
 
   // ─── 玩家操作 ───
@@ -119,15 +152,16 @@ export function usePlayer(
     const arrowSkill = player.skills.find(s => s.id === 'arrow')
     if (!arrowSkill || arrowSkill.remainingCooldown > 0) return
 
-    const ctx = gameCanvas.value
-    if (!ctx) return
-    const mouseLogical = toLogical(mouseScreen.x, mouseScreen.y, ctx)
+    // 通过暴露的 canvasRef 拿到真正的 <canvas> DOM 元素，传给 toLogical
+    const canvas = gameCanvas.value?.canvasRef
+    if (!canvas) return
+    const mouseLogical = toLogical(mouseScreen.x, mouseScreen.y, canvas)
     const dx = mouseLogical.x - player.x
     const dy = mouseLogical.y - player.y
     const dist = Math.sqrt(dx * dx + dy * dy)
     if (dist < 1) return
 
-    const dmg = calcSkillValue(arrowSkill.damage, arrowSkill.growth.damage, arrowSkill.currentLevel)
+    const dmg = calcSkillValue(arrowSkill.damage, arrowSkill.growth.damage, arrowSkill.currentLevel) + (player.baseAttack || 0)
     const effectiveSpeed = calcSkillValue(arrowSkill.projectileSpeed, arrowSkill.growth.projectileSpeed, arrowSkill.currentLevel)
     const effectiveCooldown = calcSkillValue(arrowSkill.cooldown, arrowSkill.growth.cooldown, arrowSkill.currentLevel)
 
@@ -147,21 +181,22 @@ export function usePlayer(
 
   /** 激活技能 */
   const activateSkill = (skill) => {
+    // 被动技能不可主动释放
+    if (skill.isPassive) return
     if (skill.remainingCooldown > 0 || gameState.isDead || gameState.levelUpPending) return
-    const dmg = calcSkillValue(skill.damage, skill.growth?.damage, skill.currentLevel)
+    const dmg = calcSkillValue(skill.damage, skill.growth?.damage, skill.currentLevel) + (player.baseAttack || 0)
     const effectiveRange = calcSkillValue(skill.range, skill.growth?.range, skill.currentLevel)
     const effectiveCooldown = calcSkillValue(skill.cooldown, skill.growth?.cooldown, skill.currentLevel)
 
     if (skill.id === 'meleeAttack') {
-      const canvas = gameCanvas.value
+      const canvas = gameCanvas.value?.canvasRef
+      const mouseLogical = toLogical(mouseScreen.x, mouseScreen.y, canvas)
       effects.value.push({
         type: 'meleeSlash',
         x: player.x, y: player.y,
         radius: effectiveRange,
         duration: 300, elapsed: 0,
-        angle: canvas
-          ? Math.atan2(mouseScreen.y - canvas.height / 2, mouseScreen.x - canvas.width / 2)
-          : 0,
+        angle: Math.atan2(mouseLogical.y - player.y, mouseLogical.x - player.x),
       })
       enemies.value.forEach(e => {
         const dx = e.x - player.x
@@ -239,16 +274,35 @@ export function usePlayer(
     // 已拥有技能升级选项
     player.skills.forEach(sk => {
       const nextLv = sk.currentLevel + 1
-      const nextDmg = calcSkillValue(sk.damage, sk.growth?.damage, nextLv)
-      options.push({ ...sk, isNew: false, nextLevel: nextLv, description: `伤害 ${Math.round(nextDmg)}` })
+      let desc
+      if (sk.isPassive) {
+        const nextHp = calcSkillValue(sk.maxHpBonusBase, sk.growth?.maxHpBonus, nextLv)
+        const nextSpd = calcSkillValue(sk.speedBonusBase, sk.growth?.speedBonus, nextLv)
+        const nextAtk = calcSkillValue(sk.attackBonusBase, sk.growth?.attackBonus, nextLv)
+        desc = `生命+${Math.round(nextHp)} 速度+${nextSpd.toFixed(1)} 攻击+${Math.round(nextAtk)}`
+      } else {
+        const nextDmg = calcSkillValue(sk.damage, sk.growth?.damage, nextLv)
+        desc = `伤害 ${Math.round(nextDmg)}`
+      }
+      options.push({ ...sk, isNew: false, nextLevel: nextLv, description: desc })
     })
 
     // 未拥有技能解锁选项
     SKILL_TABLE.forEach(sk => {
       if (sk.unlockLevel <= player.level && !player.skills.find(s => s.id === sk.id)) {
-        options.push({ ...sk, isNew: true, nextLevel: 1 })
+        let desc = sk.description
+        if (sk.isPassive) {
+          desc = `生命+${sk.maxHpBonusBase} 速度+${sk.speedBonusBase} 攻击+${sk.attackBonusBase}`
+        }
+        options.push({ ...sk, isNew: true, nextLevel: 1, description: desc })
       }
     })
+
+    // Fisher-Yates 洗牌，保证每次升级随机出 3 个选项
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[options[i], options[j]] = [options[j], options[i]]
+    }
 
     levelUpOptions.value = options.slice(0, 3)
     if (levelUpOptions.value.length === 0) {
@@ -269,6 +323,7 @@ export function usePlayer(
         log(`${opt.name} 升级至 Lv.${sk.currentLevel}`)
       }
     }
+    recalcPassiveBuffs()
     gameState.levelUpPending = false
   }
 
@@ -318,7 +373,7 @@ export function usePlayer(
           const d = Math.sqrt((e.x - player.x) ** 2 + (e.y - player.y) ** 2)
           if (d <= vampireSkill.auraRange + e.size / 2) {
             damageEnemy(e, vampireSkill.auraDamage)
-            player.hp = Math.min(PLAYER_ATTRS.maxHp, player.hp + vampireSkill.auraDamage * vampireSkill.auraLifesteal)
+            player.hp = Math.min(player.maxHp || PLAYER_ATTRS.maxHp, player.hp + vampireSkill.auraDamage * vampireSkill.auraLifesteal)
           }
         })
       }
@@ -350,10 +405,11 @@ export function usePlayer(
       }
     }
 
-    // 敌人近战攻击玩家
-    enemies.value.forEach(e => {
-      if (e.dead || e.frozen) return
-      if (e.hasMelee) {
+    // 敌人近战攻击玩家（受调试标志控制）
+    if (!debugFlags?.pauseEnemyAttack) {
+      enemies.value.forEach(e => {
+        if (e.dead || e.frozen) return
+        if (e.hasMelee) {
         const meleeDist = Math.sqrt((player.x - e.x) ** 2 + (player.y - e.y) ** 2)
         if (e.meleeCooldownTimer > 0) {
           e.meleeCooldownTimer -= dt
@@ -371,6 +427,7 @@ export function usePlayer(
         }
       }
     })
+    } // ← end pauseEnemyAttack
 
     // 玩家受击闪红衰减
     if (player.hitFlash > 0) player.hitFlash--
@@ -382,6 +439,9 @@ export function usePlayer(
     player.x = 0
     player.y = 0
     player.hp = PLAYER_ATTRS.maxHp
+    player.maxHp = PLAYER_ATTRS.maxHp
+    player.speed = PLAYER_ATTRS.speed
+    player.baseAttack = PLAYER_ATTRS.baseAttack
     player.level = 1
     player.exp = 0
     player.direction = DIRECTION.FRONT
@@ -393,6 +453,7 @@ export function usePlayer(
     const arrowTemplate = SKILL_TABLE.find(s => s.id === 'arrow')
     player.skills.length = 0
     player.skills.push(createSkillInstance(arrowTemplate, 1))
+    recalcPassiveBuffs()
   }
 
   return {
@@ -406,5 +467,6 @@ export function usePlayer(
     onLevelUpChoice,
     createSkillInstance,
     resetPlayer,
+    recalcPassiveBuffs,
   }
 }

@@ -9,8 +9,10 @@ import {
   SPAWN_INTERVAL_MIN,
   SPAWN_INTERVAL_DECREASE_PER_SEC,
   SPAWN_MARGIN,
+  MAX_ENEMIES,
   DIRECTION,
 } from '../constants.js'
+import { useDebug } from './useDebug.js'
 
 /**
  * @param {import('vue').Ref<Array>} enemies - 敌人列表
@@ -21,6 +23,7 @@ import {
  * @param {import('vue').Ref<Array>} battleLog - 战斗日志
  */
 export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRefs, battleLog) {
+  const { enemyDebug } = useDebug()
   const log = (msg) => {
     battleLog.value.unshift({ time: Date.now(), text: msg })
     if (battleLog.value.length > 50) battleLog.value.pop()
@@ -44,11 +47,15 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
 
     const attrs = chosenType.attrs
 
+    // 通过组件 expose 的方法获取画布尺寸
+    const size = canvas.getCanvasSize ? canvas.getCanvasSize() : { width: 800, height: 600 }
+    if (!size.width || !size.height) return
+
     // 在镜头边界外 SPAWN_MARGIN 处随机位置刷新
     const side = Math.floor(Math.random() * 4) // 0:上 1:右 2:下 3:左
     let spawnX, spawnY
-    const hw = canvas.width / 2 + SPAWN_MARGIN
-    const hh = canvas.height / 2 + SPAWN_MARGIN
+    const hw = size.width / 2 + SPAWN_MARGIN
+    const hh = size.height / 2 + SPAWN_MARGIN
 
     switch (side) {
       case 0: spawnX = camera.x + (Math.random() - 0.5) * 2 * hw; spawnY = camera.y - hh; break
@@ -91,6 +98,11 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
    * 计时器驱动刷新，间隔随游戏时长递减
    */
   const handleSpawning = (dt) => {
+    // 调试：暂停刷新
+    if (enemyDebug.pauseSpawn) return
+    // 场上敌人数已达上限，不再刷新
+    if (enemies.value.length >= MAX_ENEMIES) return
+
     gameState.spawnTimer += dt
     const elapsedSec = gameState.gameTime / 1000
     const interval = Math.max(SPAWN_INTERVAL_MIN, SPAWN_INTERVAL_INITIAL - elapsedSec * SPAWN_INTERVAL_DECREASE_PER_SEC)

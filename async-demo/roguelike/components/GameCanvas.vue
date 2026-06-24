@@ -259,6 +259,12 @@ const renderEffect = (ctx, e) => {
   const progress = e.elapsed / e.duration
   ctx.save()
   if (e.type === 'meleeSlash') {
+    // 全圆范围指示（ faint 底色圆，与伤害判定范围一致）
+    const visualRadius = e.radius + ENTITY_SIZE / 2
+    ctx.globalAlpha = 0.10 * (1 - progress)
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, visualRadius, 0, Math.PI * 2); ctx.stroke()
+    // 斩击弧线
     ctx.globalAlpha = 1 - progress
     ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 4
     ctx.beginPath(); ctx.arc(pos.x, pos.y, e.radius, e.angle - Math.PI / 3, e.angle + Math.PI / 3); ctx.stroke()
@@ -307,10 +313,13 @@ const render = (state) => {
   const vampireSkill = player.skills.find(s => s.id === 'vampireAura' && s.active)
   if (vampireSkill) {
     const pos = toScreen(player.x, player.y, ctx)
+    const visualRadius = vampireSkill.auraRange + ENTITY_SIZE / 2
     ctx.save()
-    ctx.globalAlpha = 0.2 + 0.1 * Math.sin(gameState.gameTime / 200)
-    ctx.beginPath(); ctx.arc(pos.x, pos.y, vampireSkill.auraRange, 0, Math.PI * 2)
-    ctx.fillStyle = '#dc2626'; ctx.fill()
+    ctx.globalAlpha = 0.25 + 0.10 * Math.sin(gameState.gameTime / 200)
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, visualRadius, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.18)'; ctx.fill()
+    ctx.strokeStyle = 'rgba(220, 38, 38, 0.5)'; ctx.lineWidth = 2
+    ctx.stroke()
     ctx.restore()
   }
 
@@ -340,7 +349,23 @@ const render = (state) => {
   drawPlayerSprite(ctx, playerScreen.x, playerScreen.y, player.direction, player.frame, player.hitFlash > 0)
 }
 
-defineExpose({ render })
+/** 供父组件获取当前画布尺寸（spawnEnemy 等需要） */
+const getCanvasSize = () => {
+  const canvas = canvasRef.value
+  if (!canvas) return { width: 0, height: 0 }
+  // canvas.width/height 是 render() 中设置的绘制尺寸
+  // 若尚未渲染，则回退到父容器布局尺寸
+  if (canvas.width && canvas.height) {
+    return { width: canvas.width, height: canvas.height }
+  }
+  const parent = canvas.parentElement
+  if (parent) {
+    return { width: parent.clientWidth, height: parent.clientHeight }
+  }
+  return { width: 800, height: 600 }
+}
+
+defineExpose({ render, getCanvasSize, canvasRef })
 </script>
 
 <style scoped>

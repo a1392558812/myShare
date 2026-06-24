@@ -239,8 +239,8 @@ cameraY += (playerY - cameraY) * CAMERA_EASING
 |--------------------------|-------|-------------------------------|
 | `CAMERA_EASING`          | 0.08  | 镜头缓动系数                   |
 | `ENTITY_SIZE`            | 40    | 玩家/敌人通用尺寸               |
-| `SPAWN_INTERVAL_INITIAL` | 10000  | 初始刷新间隔(ms)               |
-| `SPAWN_INTERVAL_MIN`     | 1000   | 最小刷新间隔(ms)               |
+| `SPAWN_INTERVAL_INITIAL` | 1000  | 初始刷新间隔(ms)               |
+| `SPAWN_INTERVAL_MIN`     | 100   | 最小刷新间隔(ms)               |
 | `SPAWN_INTERVAL_DECREASE_PER_SEC` | 20 | 每秒缩短量(ms)        |
 | `SPAWN_MARGIN`           | 20    | 刷新位置距镜头边界的额外偏移     |
 | `ENEMY_PROJECTILE_SPEED` | 5     | 敌人弹幕飞行速度               |
@@ -263,10 +263,10 @@ cameraY += (playerY - cameraY) * CAMERA_EASING
 
 | 等级 | 可解锁新技能     |
 |------|-----------------|
-| 2    | 近战劈斩         |
-| 3    | 追踪弹幕         |
-| 4    | 冰冻定身         |
-| 5    | 吸血光环         |
+| 1    | 近战劈斩         |
+| 1    | 追踪弹幕         |
+| 1    | 冰冻定身         |
+| 1    | 吸血光环         |
 
 ### 5.3 升级路径（无上限成长）
 

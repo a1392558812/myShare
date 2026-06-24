@@ -3,6 +3,7 @@
  * 管理主循环调度、弹幕/特效生命周期、技能冷却
  */
 import { ENTITY_SIZE } from '../constants.js'
+import { useDebug } from './useDebug.js'
 
 /**
  * @param {import('vue').UnwrapNestedRefs} player - 玩家状态
@@ -24,6 +25,7 @@ export function useGameLoop(
   const { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy } = updaters
   const { updateCamera } = mapUtils
   const { onRender } = options || {}
+  const { debugFlags } = useDebug()
 
   let animFrameId = null
   let lastTimestamp = 0
@@ -62,12 +64,14 @@ export function useGameLoop(
         })
       } else if (p.owner === 'enemy') {
         if (checkCollisionLocal(p.x, p.y, p.size, player.x, player.y, ENTITY_SIZE)) {
-          player.hp -= p.damage
-          p.hit = true
-          if (player.hp <= 0) {
-            player.hp = 0
-            gameState.isDead = true
+          if (!debugFlags.godMode) {
+            player.hp -= p.damage
+            if (player.hp <= 0) {
+              player.hp = 0
+              gameState.isDead = true
+            }
           }
+          p.hit = true
         }
       }
 
