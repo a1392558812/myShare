@@ -693,5 +693,19 @@
     "name": "faulty-text",
     "fileType": "vue",
     "meta": { "demoName": "故障文字", "ifShowHeaderComponent": false }
+  },
+  {
+    "path": "resume",
+    "component": "resume",
+    "name": "resume",
+    "fileType": "vue",
+    "meta": { "demoName": "啥也不是（水demo）", "ifShowHeaderComponent": false }
+  },
+  {
+    "path": "roguelike",
+    "component": "roguelike",
+    "name": "roguelike",
+    "fileType": "vue",
+    "meta": { "demoName": "肉鸽", "ifShowHeaderComponent": false }
   }
 ]

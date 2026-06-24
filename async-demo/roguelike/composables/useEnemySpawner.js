@@ -1,0 +1,111 @@
+/**
+ * useEnemySpawner — 敌人波次生成、难度递增、生成位置计算
+ * 管理敌人刷新逻辑与生命周期清理
+ */
+import { reactive } from 'vue'
+import {
+  ENEMY_TYPE_TABLE,
+  SPAWN_INTERVAL_INITIAL,
+  SPAWN_INTERVAL_MIN,
+  SPAWN_INTERVAL_DECREASE_PER_SEC,
+  SPAWN_MARGIN,
+  DIRECTION,
+} from '../constants.js'
+
+/**
+ * @param {import('vue').Ref<Array>} enemies - 敌人列表
+ * @param {import('vue').UnwrapNestedRefs} gameState - 游戏状态（spawnTimer）
+ * @param {import('vue').UnwrapNestedRefs} camera - 摄像机位置
+ * @param {import('vue').Ref<HTMLCanvasElement|null>} gameCanvas - 画布引用
+ * @param {object} playerRefs - { gainExp } 玩家经验获取函数
+ * @param {import('vue').Ref<Array>} battleLog - 战斗日志
+ */
+export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRefs, battleLog) {
+  const log = (msg) => {
+    battleLog.value.unshift({ time: Date.now(), text: msg })
+    if (battleLog.value.length > 50) battleLog.value.pop()
+  }
+
+  /**
+   * 生成单个敌人（权重随机类型，镜头边界外随机位置）
+   */
+  const spawnEnemy = () => {
+    const canvas = gameCanvas.value
+    if (!canvas) return
+
+    // 权重随机选择敌人类型
+    const totalWeight = ENEMY_TYPE_TABLE.reduce((sum, t) => sum + t.weight, 0)
+    let rand = Math.random() * totalWeight
+    let chosenType = ENEMY_TYPE_TABLE[0]
+    for (const t of ENEMY_TYPE_TABLE) {
+      rand -= t.weight
+      if (rand <= 0) { chosenType = t; break }
+    }
+
+    const attrs = chosenType.attrs
+
+    // 在镜头边界外 SPAWN_MARGIN 处随机位置刷新
+    const side = Math.floor(Math.random() * 4) // 0:上 1:右 2:下 3:左
+    let spawnX, spawnY
+    const hw = canvas.width / 2 + SPAWN_MARGIN
+    const hh = canvas.height / 2 + SPAWN_MARGIN
+
+    switch (side) {
+      case 0: spawnX = camera.x + (Math.random() - 0.5) * 2 * hw; spawnY = camera.y - hh; break
+      case 1: spawnX = camera.x + hw; spawnY = camera.y + (Math.random() - 0.5) * 2 * hh; break
+      case 2: spawnX = camera.x + (Math.random() - 0.5) * 2 * hw; spawnY = camera.y + hh; break
+      case 3: spawnX = camera.x - hw; spawnY = camera.y + (Math.random() - 0.5) * 2 * hh; break
+    }
+
+    enemies.value.push(reactive({
+      type: chosenType.type,
+      x: spawnX, y: spawnY,
+      hp: attrs.maxHp,
+      maxHp: attrs.maxHp,
+      speed: attrs.speed,
+      size: attrs.size,
+      attack: attrs.attack,
+      attackRange: attrs.attackRange,
+      skillRange: attrs.skillRange,
+      skillCooldown: attrs.skillCooldown,
+      color: attrs.color,
+      color2: attrs.color2,
+      expReward: attrs.expReward,
+      hasMelee: attrs.hasMelee,
+      hasRanged: attrs.hasRanged,
+      direction: DIRECTION.FRONT,
+      frame: 0,
+      frameTimer: 0,
+      isMoving: true,
+      dead: false,
+      hitFlash: 0,
+      frozen: false,
+      frozenTimer: 0,
+      skillTimer: 0,
+      meleeAttacking: false,
+      meleeCooldownTimer: 0,
+    }))
+  }
+
+  /**
+   * 计时器驱动刷新，间隔随游戏时长递减
+   */
+  const handleSpawning = (dt) => {
+    gameState.spawnTimer += dt
+    const elapsedSec = gameState.gameTime / 1000
+    const interval = Math.max(SPAWN_INTERVAL_MIN, SPAWN_INTERVAL_INITIAL - elapsedSec * SPAWN_INTERVAL_DECREASE_PER_SEC)
+    if (gameState.spawnTimer >= interval) {
+      gameState.spawnTimer -= interval
+      spawnEnemy()
+    }
+  }
+
+  /**
+   * 清理已死亡敌人
+   */
+  const cleanupDead = () => {
+    enemies.value = enemies.value.filter(e => !e.dead)
+  }
+
+  return { spawnEnemy, handleSpawning, cleanupDead }
+}
