@@ -321,6 +321,35 @@ export const SKILL_KEY_MAP = {
   invincible:   'Q',
 }
 
+// ─────────────────────────── 掉落物 ───────────────────────────
+/** 掉落物类型定义 */
+export const LOOT_TABLE = {
+  healthPotion: {
+    id: 'healthPotion',
+    name: '生命药水',
+    icon: '❤️',
+    color: '#ef4444',
+    hoverColor: '#fca5a5',
+    size: 12,
+    healAmount: 15,        // 恢复 15 点生命
+    dropChance: 0.05,      // 5% 掉落概率
+    lifetime: 12000,       // 12 秒后消失
+    glowSpeed: 300,        // 闪烁周期 ms
+  },
+  goldCoin: {
+    id: 'goldCoin',
+    name: '金币',
+    icon: '🪙',
+    color: '#fbbf24',
+    hoverColor: '#fde68a',
+    size: 10,
+    goldAmount: 1,         // 1 金币（预留）
+    dropChance: 0.10,      // 10% 掉落概率
+    lifetime: 20000,       // 20 秒后消失
+    glowSpeed: 500,
+  },
+}
+
 // ─────────────────────────── 经验等级对照表 ───────────────────────────
 /**
  * 每级所需累计经验值，索引 = 等级 - 1
@@ -369,21 +398,6 @@ export const ENEMY_PROJECTILE_SIZE = 8
 // ─────────────────────────── 箭矢参数 ───────────────────────────
 /** 箭矢尺寸（用于碰撞检测半径） */
 export const ARROW_SIZE = 12
-
-// ─────────────────────────── 操控键位 ───────────────────────────
-export const KEY_BINDINGS = {
-  moveUp:    ['w', 'ArrowUp'],
-  moveDown:  ['s', 'ArrowDown'],
-  moveLeft:  ['a', 'ArrowLeft'],
-  moveRight: ['d', 'ArrowRight'],
-  shoot:     [' '],          // 空格键射击
-  skill1:    ['1'],
-  skill2:    ['2'],
-  skill3:    ['3'],
-  skill4:    ['4'],
-  skill5:    ['5'],
-  invincible:['q'],          // Q 键释放无敌
-}
 
 // ─────────────────────────── 碰撞检测阈值 ───────────────────────────
 /** 两个实体碰撞距离阈值（近似为双方尺寸之和的一半） */

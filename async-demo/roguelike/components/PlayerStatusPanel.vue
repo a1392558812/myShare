@@ -13,9 +13,8 @@
       </div>
       <span class="hud-exp-text">{{ player.exp }} / {{ nextLevelExp }}</span>
     </div>
-    <!-- 游戏时长 -->
     <div class="hud-time">存活 {{ formatTime(gameTime) }}</div>
-    <!-- 击杀数 -->
+    <div class="hud-time">金币 {{ player.gold }}</div>
     <div class="hud-kills">击杀 {{ killCount }}</div>
   </div>
 </template>
@@ -53,7 +52,9 @@ defineProps({
 
   .hud-hp-bar {
     position: absolute;
-    left: 0; top: 0; height: 100%;
+    left: 0;
+    top: 0;
+    height: 100%;
     background: linear-gradient(90deg, #ef4444, #dc2626);
     transition: width 0.3s;
     border-radius: 4px;

@@ -6,6 +6,7 @@ import { reactive } from 'vue'
 import {
   PLAYER_ATTRS,
   SKILL_TABLE,
+  LOOT_TABLE,
   EXP_LEVEL_TABLE,
   ENTITY_SIZE,
   ARROW_SIZE,
@@ -29,11 +30,12 @@ import { useDebug } from './useDebug.js'
  * @param {object} mapUtils - { toLogical, checkCollision }
  * @param {import('vue').Ref<Array>} battleLog - 战斗日志
  * @param {import('vue').Ref<Array>} levelUpOptions - 升级选项
+ * @param {import('vue').Ref<Array>} lootDrops - 掉落物列表
  */
 export function usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvas, enemies, projectiles, effects,
-  mapUtils, battleLog, levelUpOptions,
+  mapUtils, battleLog, levelUpOptions, lootDrops,
 ) {
   const { toLogical, checkCollision } = mapUtils
 
@@ -153,6 +155,27 @@ export function usePlayer(
       gameState.killCount++
       gainExp(enemy.expReward)
       log(`击杀 ${enemy.type} 敌人`)
+
+      // 掉落判定：遍历掉落表，每种道具独立概率
+      Object.values(LOOT_TABLE).forEach(loot => {
+        if (Math.random() < loot.dropChance) {
+          lootDrops.value.push({
+            id: loot.id,
+            name: loot.name,
+            icon: loot.icon,
+            color: loot.color,
+            hoverColor: loot.hoverColor,
+            size: loot.size,
+            healAmount: loot.healAmount || 0,
+            goldAmount: loot.goldAmount || 0,
+            glowSpeed: loot.glowSpeed || 500,
+            x: enemy.x,
+            y: enemy.y,
+            spawnedAt: gameState.gameTime,
+            lifetime: loot.lifetime,
+          })
+        }
+      })
     }
   }
 
@@ -423,6 +446,23 @@ export function usePlayer(
       player.frameTimer = 0
     }
 
+    // 掉落物拾取检测
+    const pickupRange = ENTITY_SIZE / 2 + 8
+    for (let i = lootDrops.value.length - 1; i >= 0; i--) {
+      const drop = lootDrops.value[i]
+      const dist = Math.sqrt((drop.x - player.x) ** 2 + (drop.y - player.y) ** 2)
+      if (dist <= pickupRange) {
+        if (drop.id === 'healthPotion') {
+          player.hp = Math.min(player.maxHp, player.hp + drop.healAmount)
+          log(`拾取 ${drop.name}，恢复 ${drop.healAmount} 生命`)
+        } else if (drop.id === 'goldCoin') {
+          player.gold = (player.gold || 0) + drop.goldAmount
+          log(`拾取 ${drop.name}`)
+        }
+        lootDrops.value.splice(i, 1)
+      }
+    }
+
     // 吸血光环持续伤害
     const vampireSkill = player.skills.find(s => s.id === 'vampireAura' && s.active)
     if (vampireSkill) {
@@ -544,6 +584,7 @@ export function usePlayer(
     player.frameTimer = 0
     player.isMoving = false
     player.hitFlash = 0
+    player.gold = 0
 
     const arrowTemplate = SKILL_TABLE.find(s => s.id === 'arrow')
     player.skills.length = 0

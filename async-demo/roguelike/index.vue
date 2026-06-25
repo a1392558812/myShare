@@ -86,6 +86,7 @@ const player = reactive({
   frame: 0,
   frameTimer: 0,
   skills: [],
+  gold: 0,           // 金币（预留字段）
   hitFlash: 0,
   size: ENTITY_SIZE,
   isMoving: false,
@@ -95,6 +96,7 @@ const camera = reactive({ x: 0, y: 0 })
 const enemies = ref([])
 const projectiles = ref([])
 const effects = ref([])
+const lootDrops = ref([])      // 掉落物列表
 const battleLog = ref([])
 const levelUpOptions = ref([])
 
@@ -157,7 +159,7 @@ const { toScreen, toLogical, checkCollision, updateCamera } = mapUtils
 const playerUtils = usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvasRef, enemies, projectiles, effects,
-  mapUtils, battleLog, levelUpOptions,
+  mapUtils, battleLog, levelUpOptions, lootDrops,
 )
 const {
   updatePlayer, fireArrow, activateSkill, onSkillClick,
@@ -178,14 +180,14 @@ const { spawnEnemy, handleSpawning, cleanupDead } = useEnemySpawner(
 
 // 5. 游戏主循环层
 const { startLoop, stopLoop } = useGameLoop(
-  player, gameState, enemies, projectiles, effects,
+  player, gameState, enemies, projectiles, effects, lootDrops,
   gameCanvasRef, camera,
   { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy },
   mapUtils,
   {
     onRender: () => {
       gameCanvasRef.value?.render({
-        player, enemies, projectiles, effects, gameState,
+        player, enemies, projectiles, effects, lootDrops, gameState,
       })
     },
   },
@@ -258,6 +260,7 @@ const restartGame = () => {
   enemies.value = []
   projectiles.value = []
   effects.value = []
+  lootDrops.value = []
   battleLog.value = []
   levelUpOptions.value = []
   gameState.gameTime = 0

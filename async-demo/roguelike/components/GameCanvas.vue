@@ -301,7 +301,7 @@ const render = (state) => {
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  const { player, enemies, projectiles, effects, gameState } = state
+  const { player, enemies, projectiles, effects, lootDrops, gameState } = state
 
   // 背景网格
   drawBackgroundGrid(ctx)
@@ -337,6 +337,44 @@ const render = (state) => {
       ctx.restore()
     }
   })
+
+  // 掉落物
+  if (lootDrops) {
+    const now = gameState.gameTime
+    lootDrops.value.forEach(drop => {
+      const pos = toScreen(drop.x, drop.y, ctx)
+      // 临近消失时闪烁（最后 3 秒）
+      const remaining = drop.lifetime - (now - drop.spawnedAt)
+      if (remaining < 3000 && Math.floor(now / 200) % 2 === 0) return
+      const alpha = remaining < 3000 ? 0.5 : 1
+
+      ctx.save()
+      ctx.globalAlpha = alpha
+      // 光晕
+      ctx.beginPath()
+      ctx.arc(pos.x, pos.y, drop.size + 4, 0, Math.PI * 2)
+      ctx.fillStyle = drop.color + '20'
+      ctx.fill()
+      // 实体
+      ctx.beginPath()
+      ctx.arc(pos.x, pos.y, drop.size, 0, Math.PI * 2)
+      ctx.fillStyle = drop.color
+      ctx.fill()
+      ctx.strokeStyle = drop.hoverColor
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+      ctx.restore()
+
+      // 图标文字
+      ctx.save()
+      ctx.font = `${drop.size + 2}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = '#fff'
+      ctx.fillText(drop.icon, pos.x, pos.y)
+      ctx.restore()
+    })
+  }
 
   // 弹幕
   projectiles.value.forEach(p => {

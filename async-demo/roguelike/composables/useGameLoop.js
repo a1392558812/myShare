@@ -11,6 +11,7 @@ import { useDebug } from './useDebug.js'
  * @param {import('vue').Ref<Array>} enemies - 敌人列表
  * @param {import('vue').Ref<Array>} projectiles - 弹幕列表
  * @param {import('vue').Ref<Array>} effects - 特效列表
+ * @param {import('vue').Ref<Array>} lootDrops - 掉落物列表
  * @param {import('vue').Ref<HTMLCanvasElement|null>} gameCanvas - 画布引用
  * @param {import('vue').UnwrapNestedRefs} camera - 摄像机
  * @param {object} updaters - { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy }
@@ -18,7 +19,7 @@ import { useDebug } from './useDebug.js'
  * @param {object} options - { onRender }
  */
 export function useGameLoop(
-  player, gameState, enemies, projectiles, effects,
+  player, gameState, enemies, projectiles, effects, lootDrops,
   gameCanvas, camera,
   updaters, mapUtils, options,
 ) {
@@ -112,6 +113,13 @@ export function useGameLoop(
     })
   }
 
+  // ─── 掉落物生命周期 ───
+
+  const updateLoot = () => {
+    const now = gameState.gameTime
+    lootDrops.value = lootDrops.value.filter(d => now - d.spawnedAt < d.lifetime)
+  }
+
   // ─── 主循环 ───
 
   const gameLoop = (timestamp) => {
@@ -129,6 +137,7 @@ export function useGameLoop(
       updateSkillCooldowns(dt)
       handleSpawning(dt)
       cleanupDead()
+      updateLoot()
     }
 
     if (onRender) onRender()
