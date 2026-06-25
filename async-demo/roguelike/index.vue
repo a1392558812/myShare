@@ -228,18 +228,6 @@ const onKeyDown = (e) => {
     fireArrow()
   }
 
-  // Q 键无敌
-  if (e.key.toLowerCase() === 'q') {
-    const invSkill = player.skills.find(s => s.id === 'invincible')
-    if (invSkill) { activateSkill(invSkill); return }
-  }
-
-  // E 键魔法阵火雨
-  if (e.key.toLowerCase() === 'e') {
-    const mcSkill = player.skills.find(s => s.id === 'magicCircle')
-    if (mcSkill) { activateSkill(mcSkill); return }
-  }
-
   const targetKeysDown = e.key.toLowerCase()
   keysDown[targetKeysDown] = true
 
