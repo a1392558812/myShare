@@ -4,7 +4,6 @@
  */
 import { reactive, ref } from 'vue'
 
-// ─── 模块级单例状态 ───
 const debugOpen = ref(false)
 
 const debugFlags = reactive({
@@ -18,13 +17,11 @@ const debugFlags = reactive({
   showEnemyPaths: false,
 })
 
-// ─── 玩家调试：临时覆盖值（null = 不覆盖） ───
 const playerOverride = reactive({
   speed: null,
   baseAttack: null,
 })
 
-// ─── 敌人生成调试 ───
 const enemyDebug = reactive({
   /** 暂停刷新 */
   pauseSpawn: false,

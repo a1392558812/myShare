@@ -390,6 +390,27 @@ export function usePlayer(
       }
     }
 
+    // 追踪弹幕自动释放：冷却好了且范围内有敌人时自动发射
+    const autoSeekSkill = player.skills.find(s => s.id === 'autoSeek')
+    if (autoSeekSkill && autoSeekSkill.remainingCooldown <= 0 && !gameState.isDead && !gameState.levelUpPending) {
+      const effectiveAutoSeekRange = calcSkillValue(autoSeekSkill.range, autoSeekSkill.growth?.range, autoSeekSkill.currentLevel)
+      const hasTarget = enemies.value.some(e => {
+        if (e.dead) return false
+        const edx = e.x - player.x
+        const edy = e.y - player.y
+        return Math.sqrt(edx * edx + edy * edy) <= effectiveAutoSeekRange
+      })
+      if (hasTarget) {
+        activateSkill(autoSeekSkill)
+      }
+    }
+
+    // 吸血光环自动释放：冷却好了且光环未激活时自动开启
+    const vampireAutoSkill = player.skills.find(s => s.id === 'vampireAura')
+    if (vampireAutoSkill && vampireAutoSkill.remainingCooldown <= 0 && !vampireAutoSkill.active && !gameState.isDead && !gameState.levelUpPending) {
+      activateSkill(vampireAutoSkill)
+    }
+
     // 近战自动劈斩
     const meleeSkill = player.skills.find(s => s.id === 'meleeAttack')
     if (meleeSkill && meleeSkill.remainingCooldown <= 0 && !gameState.isDead && !gameState.levelUpPending) {
@@ -414,8 +435,10 @@ export function usePlayer(
         if (e.meleeCooldownTimer > 0) {
           e.meleeCooldownTimer -= dt
         }
-        if (meleeDist <= e.attackRange && e.meleeCooldownTimer <= 0) {
-          player.hp -= e.attack
+          if (meleeDist <= e.attackRange && e.meleeCooldownTimer <= 0) {
+          if (!debugFlags?.godMode) {
+            player.hp -= e.attack
+          }
           player.hitFlash = 6
           e.meleeCooldownTimer = e.skillCooldown
           log(`受到 ${e.type} 敌人 ${e.attack} 点近战伤害`)
