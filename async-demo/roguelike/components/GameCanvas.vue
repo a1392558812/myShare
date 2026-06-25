@@ -1,12 +1,6 @@
 <template>
-  <canvas
-    ref="canvasRef"
-    @mousemove="onMouseMove"
-    @mousedown="onMouseDown"
-    @mouseup="onMouseUp"
-    @mouseleave="onMouseUp"
-    @contextmenu.prevent
-  ></canvas>
+  <canvas ref="canvasRef" @mousemove="onMouseMove" @mousedown="onMouseDown" @mouseup="onMouseUp" @mouseleave="onMouseUp"
+    @contextmenu.prevent></canvas>
 </template>
 
 <script setup>
@@ -277,6 +271,122 @@ const renderEffect = (ctx, e) => {
     ctx.beginPath(); ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2); ctx.stroke()
     ctx.fillStyle = 'rgba(147, 197, 253, 0.15)'
     ctx.beginPath(); ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2); ctx.fill()
+  } else if (e.type === 'magicFireball') {
+    // 火球坠落 → 闪白爆发 → 多层渐变 → 冲击波 → 裂片
+    const r = e.radius * (0.2 + progress * 0.8)
+    const fade = 1 - progress
+    const pulse = 1 + 0.04 * Math.sin(e.elapsed * 0.015)
+    ctx.save()
+
+    // ═══════ 阶段1：闪白爆发（前 18%） ═══════
+    if (progress < 0.18) {
+      ctx.globalAlpha = (1 - progress / 0.18) * 0.75
+      ctx.fillStyle = '#FFFFFF'
+      ctx.shadowColor = '#FFFFFF'
+      ctx.shadowBlur = 20
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, r * (1.5 + progress * 2), 0, Math.PI * 2); ctx.fill()
+    }
+
+    // ═══════ 外层辉光 ═══════
+    ctx.globalAlpha = fade * 0.28 * pulse
+    ctx.shadowColor = '#FF4400'
+    ctx.shadowBlur = 20
+    const outerGrad = ctx.createRadialGradient(
+      pos.x, pos.y, r * 0.4 * pulse,
+      pos.x, pos.y, r * 2 * (1 + progress * 0.3) * pulse
+    )
+    outerGrad.addColorStop(0, 'rgba(255, 180, 20, 0.65)')
+    outerGrad.addColorStop(0.5, 'rgba(255, 80, 10, 0.28)')
+    outerGrad.addColorStop(1, 'rgba(255, 20, 0, 0)')
+    ctx.fillStyle = outerGrad
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 2 * (1 + progress * 0.3) * pulse, 0, Math.PI * 2); ctx.fill()
+
+    // ═══════ 中层渐变（偏移高光模拟光照） ═══════
+    ctx.globalAlpha = fade * 0.75
+    ctx.shadowColor = '#FF6600'
+    ctx.shadowBlur = 16
+    const midGrad = ctx.createRadialGradient(
+      pos.x - r * 0.18, pos.y - r * 0.25, r * 0.08,
+      pos.x, pos.y, r * 1.8 * pulse
+    )
+    midGrad.addColorStop(0, '#FFF5CC')
+    midGrad.addColorStop(0.25, '#FFCC44')
+    midGrad.addColorStop(0.55, '#FF7722')
+    midGrad.addColorStop(0.85, '#CC3300')
+    midGrad.addColorStop(1, 'rgba(160, 20, 0, 0)')
+    ctx.fillStyle = midGrad
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 1.8 * pulse, 0, Math.PI * 2); ctx.fill()
+
+    // ═══════ 核心白色高光 ═══════
+    ctx.globalAlpha = fade * 0.95
+    const coreGrad = ctx.createRadialGradient(
+      pos.x, pos.y, 0,
+      pos.x, pos.y, r * pulse
+    )
+    coreGrad.addColorStop(0, '#FFFFFF')
+    coreGrad.addColorStop(0.25, '#FFEE88')
+    coreGrad.addColorStop(0.7, '#FF9922')
+    coreGrad.addColorStop(1, 'rgba(255, 100, 20, 0)')
+    ctx.fillStyle = coreGrad
+    ctx.shadowColor = '#FF8800'
+    ctx.shadowBlur = 8
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r * pulse, 0, Math.PI * 2); ctx.fill()
+
+    // ═══════ 5 个甩动火花粒子 ═══════
+    for (let i = 0; i < 5; i++) {
+      const angle = Math.PI * 1.5 + (i - 2) * 0.35 + Math.sin(e.elapsed * 0.04 + i) * 0.18
+      const sparkDist = r * (1.1 + 0.55 * Math.sin(e.elapsed * 0.06 + i * 2.1))
+      const sx = pos.x + Math.cos(angle) * sparkDist
+      const sy = pos.y + Math.sin(angle) * sparkDist
+      ctx.globalAlpha = fade * (0.45 + 0.3 * Math.sin(e.elapsed * 0.06 + i))
+      ctx.fillStyle = i % 2 === 0 ? '#FFEE44' : '#FFAA33'
+      ctx.shadowColor = '#FF6600'
+      ctx.shadowBlur = 3
+      ctx.beginPath(); ctx.arc(sx, sy, 1.4 + Math.sin(e.elapsed * 0.07 + i) * 0.6, 0, Math.PI * 2); ctx.fill()
+    }
+
+    // ═══════ 双层冲击波圆环 ═══════
+    // 外层冲击环
+    ctx.globalAlpha = fade * 0.45
+    ctx.strokeStyle = '#FF7722'
+    ctx.lineWidth = 3.5 * (1 - progress * 0.4)
+    ctx.shadowColor = '#FF4400'
+    ctx.shadowBlur = 10
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r * (1.0 + progress * 3), 0, Math.PI * 2); ctx.stroke()
+
+    // 内层冲击环
+    ctx.globalAlpha = fade * 0.2
+    ctx.strokeStyle = '#FFAA44'
+    ctx.lineWidth = 2 * (1 - progress)
+    ctx.shadowBlur = 6
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r * (1.0 + progress * 2), 0, Math.PI * 2); ctx.stroke()
+
+    // ═══════ 16 个爆破裂片（三色轮替） ═══════
+    const particleCount = 16
+    for (let i = 0; i < particleCount; i++) {
+      const pa = (i / particleCount) * Math.PI * 2 + progress * 1.8
+      const pd = r * (1.0 + progress * 2.5 + Math.sin(i * 3.7) * 0.15)
+      const px = pos.x + Math.cos(pa) * pd
+      const py = pos.y + Math.sin(pa) * pd
+      ctx.globalAlpha = fade * (0.5 - progress * 0.35)
+      const colors = ['#FFEE44', '#FF9922', '#EE3311']
+      ctx.fillStyle = colors[i % 3]
+      ctx.shadowColor = '#FF6600'
+      ctx.shadowBlur = 2
+      const ps = 1.6 + Math.sin(i * 2.4) * 0.6
+      ctx.beginPath(); ctx.arc(px, py, ps * (1 - progress * 0.5), 0, Math.PI * 2); ctx.fill()
+    }
+
+    // ═══════ 余烬光晕 ═══════
+    ctx.globalAlpha = fade * 0.12
+    const emberGrad = ctx.createRadialGradient(pos.x, pos.y, r * 0.3, pos.x, pos.y, r * 1.8)
+    emberGrad.addColorStop(0, 'rgba(255, 100, 20, 0.5)')
+    emberGrad.addColorStop(1, 'rgba(255, 40, 0, 0)')
+    ctx.fillStyle = emberGrad
+    ctx.shadowBlur = 0
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 1.8, 0, Math.PI * 2); ctx.fill()
+
+    ctx.restore()
   }
   ctx.restore()
 }
@@ -301,7 +411,7 @@ const render = (state) => {
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  const { player, enemies, projectiles, effects, lootDrops, gameState } = state
+  const { player, enemies, projectiles, effects, lootDrops, magicCircles, gameState } = state
 
   // 背景网格
   drawBackgroundGrid(ctx)
@@ -321,6 +431,146 @@ const render = (state) => {
     ctx.strokeStyle = 'rgba(220, 38, 38, 0.5)'; ctx.lineWidth = 2
     ctx.stroke()
     ctx.restore()
+  }
+
+  // 魔法阵火雨（draw-game-units/magic.js 风格）
+  if (magicCircles) {
+    const now = gameState.gameTime
+    magicCircles.value.forEach(circle => {
+      const pos = toScreen(circle.x, circle.y, ctx)
+      const progress = circle.elapsed / circle.duration
+      const alpha = 1 - progress * 0.35
+      const pulse = 1 + 0.03 * Math.sin(now / 150)
+      const vr = circle.radius * pulse
+      const dissolve = progress > 0.7 ? (1 - progress) / 0.3 : 1
+
+      ctx.save()
+      ctx.globalAlpha = alpha * dissolve
+
+      // ═══════ 灼烧地面底色 ═══════
+      const burnGrad = ctx.createRadialGradient(pos.x, pos.y, vr * 0.25, pos.x, pos.y, vr * 1.05)
+      burnGrad.addColorStop(0, 'rgba(255, 45, 0, 0.22)')
+      burnGrad.addColorStop(0.55, 'rgba(255, 85, 10, 0.10)')
+      burnGrad.addColorStop(1, 'rgba(255, 120, 20, 0)')
+      ctx.fillStyle = burnGrad
+      ctx.shadowBlur = 0
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, vr * 1.05, 0, Math.PI * 2); ctx.fill()
+
+      // ═══════ 发光外圈 ═══════
+      ctx.strokeStyle = 'rgba(255, 102, 34, 0.75)'
+      ctx.lineWidth = 2.5 * dissolve
+      ctx.shadowColor = '#FF4400'
+      ctx.shadowBlur = 22 * dissolve
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, vr, 0, Math.PI * 2); ctx.stroke()
+
+      // ═══════ 内圈符文线 ═══════
+      ctx.strokeStyle = 'rgba(255, 200, 55, 0.3)'
+      ctx.lineWidth = 1.5
+      ctx.shadowColor = '#FFAA33'
+      ctx.shadowBlur = 12
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, vr * 0.72, 0, Math.PI * 2); ctx.stroke()
+
+      // ═══════ 外圈顺时针弧段 ═══════
+      const arcRot = now / 600
+      ctx.strokeStyle = 'rgba(255, 160, 30, 0.6)'
+      ctx.lineWidth = 2.8
+      ctx.shadowColor = '#FF8822'
+      ctx.shadowBlur = 14
+      ctx.beginPath()
+      ctx.arc(pos.x, pos.y, vr * 0.98, arcRot, arcRot + Math.PI * 1.2)
+      ctx.stroke()
+
+      // ═══════ 内圈逆时针弧段 ═══════
+      ctx.strokeStyle = 'rgba(255, 200, 60, 0.45)'
+      ctx.lineWidth = 2
+      ctx.shadowColor = '#FFAA44'
+      ctx.shadowBlur = 8
+      ctx.beginPath()
+      ctx.arc(pos.x, pos.y, vr * 0.74, -arcRot * 0.7, -arcRot * 0.7 + Math.PI * 1.0)
+      ctx.stroke()
+
+      // ═══════ 中心呼吸光点 ═══════
+      const coreSize = vr * 0.14 * (1 + 0.35 * Math.sin(now * 0.0035 * Math.PI * 2))
+      const coreGrad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, coreSize * 2.5)
+      coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)')
+      coreGrad.addColorStop(0.35, 'rgba(255, 210, 80, 0.5)')
+      coreGrad.addColorStop(1, 'rgba(255, 100, 20, 0)')
+      ctx.fillStyle = coreGrad
+      ctx.shadowColor = '#FFFFFF'
+      ctx.shadowBlur = 16
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, coreSize * 2.5, 0, Math.PI * 2); ctx.fill()
+
+      // ═══════ 8 个符文标记（4 种形状轮替：三角/菱形/圆/十字） ═══════
+      const runeRot = now / 1800 * Math.PI * 2
+      const shapes = ['triangle', 'diamond', 'circle', 'cross']
+      for (let r = 0; r < 8; r++) {
+        const ra = runeRot + r * Math.PI / 4
+        const rx = pos.x + Math.cos(ra) * vr * 0.86
+        const ry = pos.y + Math.sin(ra) * vr * 0.86
+        const rise = 1 + Math.sin(now * 0.002 + r) * 0.12
+        const swing = Math.sin(now * 0.003 + r * 0.7) * 3
+        ctx.save()
+        ctx.translate(rx, ry + swing)
+        ctx.scale(rise, rise)
+        ctx.globalAlpha = 0.6 + 0.2 * Math.sin(now * 0.004 + r)
+        ctx.fillStyle = 'rgba(255, 210, 60, 0.8)'
+        ctx.shadowColor = '#FFAA33'
+        ctx.shadowBlur = 6
+        ctx.lineWidth = 1.2
+        ctx.strokeStyle = 'rgba(255, 240, 150, 0.5)'
+
+        const shape = shapes[r % 4]
+        if (shape === 'triangle') {
+          ctx.beginPath()
+          ctx.moveTo(0, -3.5); ctx.lineTo(3, 2); ctx.lineTo(-3, 2)
+          ctx.closePath(); ctx.fill(); ctx.stroke()
+        } else if (shape === 'diamond') {
+          ctx.beginPath()
+          ctx.moveTo(0, -3); ctx.lineTo(2.5, 0)
+          ctx.lineTo(0, 3); ctx.lineTo(-2.5, 0)
+          ctx.closePath(); ctx.fill(); ctx.stroke()
+        } else if (shape === 'circle') {
+          ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, Math.PI * 2)
+          ctx.fill(); ctx.stroke()
+        } else if (shape === 'cross') {
+          ctx.beginPath()
+          ctx.moveTo(-0.8, -3.5); ctx.lineTo(0.8, -3.5)
+          ctx.lineTo(0.8, -0.8); ctx.lineTo(3.5, -0.8)
+          ctx.lineTo(3.5, 0.8); ctx.lineTo(0.8, 0.8)
+          ctx.lineTo(0.8, 3.5); ctx.lineTo(-0.8, 3.5)
+          ctx.lineTo(-0.8, 0.8); ctx.lineTo(-3.5, 0.8)
+          ctx.lineTo(-3.5, -0.8); ctx.lineTo(-0.8, -0.8)
+          ctx.closePath(); ctx.fill(); ctx.stroke()
+        }
+        ctx.restore()
+      }
+
+      // ═══════ 消散效果（后 30% 进度）：扩散冲击波 + 粒子 ═══════
+      if (progress > 0.7) {
+        const dissProgress = (progress - 0.7) / 0.3
+        // 扩散冲击波
+        ctx.globalAlpha = (1 - dissProgress) * 0.5
+        ctx.strokeStyle = '#FF7722'
+        ctx.lineWidth = 3 * (1 - dissProgress)
+        ctx.shadowColor = '#FF4400'
+        ctx.shadowBlur = 16 * (1 - dissProgress)
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, vr * (1 + dissProgress * 1.2), 0, Math.PI * 2); ctx.stroke()
+
+        // 12 个消散粒子
+        for (let p = 0; p < 12; p++) {
+          const pa = p * Math.PI / 6 + dissProgress * 2.5
+          const pd = vr * (0.7 + dissProgress * 1.6)
+          const px = pos.x + Math.cos(pa) * pd
+          const py = pos.y + Math.sin(pa) * pd
+          ctx.globalAlpha = (1 - dissProgress) * (0.3 + 0.15 * Math.sin(p * 2.3))
+          ctx.fillStyle = p % 3 === 0 ? '#FFEE44' : (p % 3 === 1 ? '#FF9922' : '#EE3311')
+          ctx.shadowBlur = 4
+          ctx.beginPath(); ctx.arc(px, py, 1.8 * (1 - dissProgress), 0, Math.PI * 2); ctx.fill()
+        }
+      }
+
+      ctx.restore()
+    })
   }
 
   // 敌人

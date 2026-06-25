@@ -125,18 +125,49 @@ export const ENEMY_TYPE_TABLE = [
  */
 
 /**
- * 根据技能基础值与成长配置，计算指定等级的属性值
+ * 根据技能基础值与成长配置，计算指定等级的属性值（自动识别 ratio 指数 / increment 线性模式）
  * @param {number} base   - 基础值（Lv1）
- * @param {{ ratio: number, cap: number|null }} growthCfg - 成长配置
+ * @param {{ ratio?: number, increment?: number, cap: number|null }} growthCfg - 成长配置
  * @param {number} level  - 目标等级
  * @returns {number} 计算后的属性值
  */
 export const calcSkillValue = (base, growthCfg, level) => {
   if (!growthCfg) return base
-  const value = base * growthCfg.ratio ** (level - 1)
+
+  // 自动识别成长模式：优先 ratio（指数），其次 increment（线性）
+  const useRatio = growthCfg.ratio !== undefined
+  const useIncrement = growthCfg.increment !== undefined
+  if (!useRatio && !useIncrement) return base
+
+  let value
+  if (useRatio) {
+    value = base * growthCfg.ratio ** (level - 1)
+  } else {
+    value = base + growthCfg.increment * (level - 1)
+  }
+
   if (growthCfg.cap !== null && growthCfg.cap !== undefined) {
-    // ratio > 1 时 cap 为上限；ratio < 1 时 cap 为下限
-    return growthCfg.ratio >= 1
+    // 判断增长方向：ratio ≥ 1 或 increment ≥ 0 → 向上（cap 为上限），反之 cap 为下限
+    const goingUp = useRatio ? growthCfg.ratio >= 1 : growthCfg.increment >= 0
+    return goingUp
+      ? Math.min(growthCfg.cap, value)
+      : Math.max(growthCfg.cap, value)
+  }
+  return value
+}
+
+/**
+ * 技能属性线性增长计算（base + increment × (level - 1)），适用需精确控制每级增量场景
+ * @param {number} base   - 基础值（Lv1）
+ * @param {{ increment: number, cap: number|null }} growthCfg - 线性成长配置
+ * @param {number} level  - 目标等级
+ * @returns {number}
+ */
+export const calcSkillValueLinear = (base, growthCfg, level) => {
+  if (!growthCfg || growthCfg.increment === undefined) return base
+  const value = base + growthCfg.increment * (level - 1)
+  if (growthCfg.cap !== null && growthCfg.cap !== undefined) {
+    return growthCfg.increment >= 0
       ? Math.min(growthCfg.cap, value)
       : Math.max(growthCfg.cap, value)
   }
@@ -297,6 +328,33 @@ export const SKILL_INVINCIBLE = {
   },
 }
 
+/** 魔法阵火雨 — 在鼠标位置召唤魔法阵，持续坠落火球并灼烧范围内敌人 */
+export const SKILL_MAGIC_CIRCLE = {
+  id: 'magicCircle',
+  name: '魔法阵火雨',
+  icon: '🔥',
+  description: '在鼠标位置召唤魔法阵，持续坠落火球并对范围内敌人造成灼烧伤害',
+  cooldown: 10000,          // 冷却 10s
+  damage: 12,               // 每颗火球伤害
+  burnDamage: 5,            // 灼烧伤害/跳
+  range: 70,                // 魔法阵半径
+  fireballCount: 3,         // 每波火球数量
+  fireballRadius: 25,       // 火球 AoE 半径
+  duration: 4000,            // 总持续时间 4s
+  projectileSpeed: 0,
+  lifestealPercent: 0,
+  unlockLevel: 2,
+  /** 线性成长配置（increment 取代 ratio，每级固定增减） */
+  growth: {
+    damage:        { increment: 5, cap: null },     // 火球伤害 12→17→22…
+    burnDamage:    { increment: 2, cap: null },     // 灼烧伤害 5→7→9…
+    range:         { increment: 10, cap: 200 },     // 半径 70→80→90…上限 200
+    fireballCount: { increment: 1, cap: 8 },        // 火球 3→4→5…上限 8
+    duration:      { increment: 500, cap: 10000 },  // 持续 4000→4500…上限 10s
+    cooldown:      { increment: -500, cap: 5000 },  // 冷却 10000→9500…下限 5s
+  },
+}
+
 /** 技能注册表 */
 export const SKILL_TABLE = [
   SKILL_ARROW,
@@ -306,6 +364,7 @@ export const SKILL_TABLE = [
   SKILL_VAMPIRE_AURA,
   SKILL_BODY_STRENGTH,
   SKILL_INVINCIBLE,
+  SKILL_MAGIC_CIRCLE,
 ]
 
 /**
@@ -319,6 +378,7 @@ export const SKILL_KEY_MAP = {
   freeze:        4,
   vampireAura:   5,
   invincible:   'Q',
+  magicCircle:  'E',
 }
 
 // ─────────────────────────── 掉落物 ───────────────────────────

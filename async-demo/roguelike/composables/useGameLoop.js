@@ -12,6 +12,7 @@ import { useDebug } from './useDebug.js'
  * @param {import('vue').Ref<Array>} projectiles - 弹幕列表
  * @param {import('vue').Ref<Array>} effects - 特效列表
  * @param {import('vue').Ref<Array>} lootDrops - 掉落物列表
+ * @param {import('vue').Ref<Array>} magicCircles - 魔法阵火雨实例列表
  * @param {import('vue').Ref<HTMLCanvasElement|null>} gameCanvas - 画布引用
  * @param {import('vue').UnwrapNestedRefs} camera - 摄像机
  * @param {object} updaters - { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy }
@@ -19,7 +20,7 @@ import { useDebug } from './useDebug.js'
  * @param {object} options - { onRender }
  */
 export function useGameLoop(
-  player, gameState, enemies, projectiles, effects, lootDrops,
+  player, gameState, enemies, projectiles, effects, lootDrops, magicCircles,
   gameCanvas, camera,
   updaters, mapUtils, options,
 ) {
@@ -120,6 +121,68 @@ export function useGameLoop(
     lootDrops.value = lootDrops.value.filter(d => now - d.spawnedAt < d.lifetime)
   }
 
+  // ─── 魔法阵火雨更新 ───
+
+  const updateMagicCircles = (dt) => {
+    for (let i = magicCircles.value.length - 1; i >= 0; i--) {
+      const circle = magicCircles.value[i]
+      circle.elapsed += dt
+
+      // 过期移除
+      if (circle.elapsed >= circle.duration) {
+        magicCircles.value.splice(i, 1)
+        continue
+      }
+
+      // 灼烧伤害：每 burnTickInterval ms 对范围内敌人造成一次持续伤害
+      circle.burnTickTimer += dt
+      if (circle.burnTickTimer >= circle.burnTickInterval) {
+        circle.burnTickTimer -= circle.burnTickInterval
+        enemies.value.forEach(e => {
+          if (e.dead) return
+          const dx = e.x - circle.x
+          const dy = e.y - circle.y
+          if (Math.sqrt(dx * dx + dy * dy) <= circle.radius + e.size / 2) {
+            damageEnemy(e, circle.burnDamage)
+          }
+        })
+      }
+
+      // 火球坠落：每 fireballInterval ms 在半径内随机位置生成一波火球
+      circle.fireballTimer += dt
+      if (circle.fireballTimer >= circle.fireballInterval) {
+        circle.fireballTimer -= circle.fireballInterval
+        for (let j = 0; j < circle.fireballCount; j++) {
+          // 随机角度 + 随机距圆心距离（限制在半径内）
+          const angleR = Math.random() * Math.PI * 2
+          const distR = Math.random() * circle.radius
+          const fx = circle.x + Math.cos(angleR) * distR
+          const fy = circle.y + Math.sin(angleR) * distR
+
+          // 火球 AoE 伤害
+          const fireR = circle.fireballRadius || 25
+          enemies.value.forEach(e => {
+            if (e.dead) return
+            const dx = e.x - fx
+            const dy = e.y - fy
+            if (Math.sqrt(dx * dx + dy * dy) <= fireR + e.size / 2) {
+              damageEnemy(e, circle.fireballDamage)
+            }
+          })
+
+          // 火球视觉特效
+          effects.value.push({
+            type: 'magicFireball',
+            x: fx, y: fy,
+            radius: fireR,
+            duration: 600,
+            elapsed: 0,
+          })
+        }
+      }
+    }
+  }
+
   // ─── 主循环 ───
 
   const gameLoop = (timestamp) => {
@@ -138,6 +201,7 @@ export function useGameLoop(
       handleSpawning(dt)
       cleanupDead()
       updateLoot()
+      updateMagicCircles(dt)
     }
 
     if (onRender) onRender()

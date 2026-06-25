@@ -14,6 +14,7 @@ import {
   FRAME_COUNT,
   DIRECTION,
   calcSkillValue,
+  calcSkillValueLinear,
 } from '../constants.js'
 import { useDebug } from './useDebug.js'
 
@@ -31,11 +32,12 @@ import { useDebug } from './useDebug.js'
  * @param {import('vue').Ref<Array>} battleLog - 战斗日志
  * @param {import('vue').Ref<Array>} levelUpOptions - 升级选项
  * @param {import('vue').Ref<Array>} lootDrops - 掉落物列表
+ * @param {import('vue').Ref<Array>} magicCircles - 魔法阵火雨实例列表
  */
 export function usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvas, enemies, projectiles, effects,
-  mapUtils, battleLog, levelUpOptions, lootDrops,
+  mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
 ) {
   const { toLogical, checkCollision } = mapUtils
 
@@ -100,6 +102,8 @@ export function usePlayer(
       maxHpBonusBase: template.maxHpBonusBase || 0,
       speedBonusBase: template.speedBonusBase || 0,
       attackBonusBase: template.attackBonusBase || 0,
+      burnDamage: template.burnDamage,
+      fireballCount: template.fireballCount,
     })
   }
 
@@ -334,6 +338,38 @@ export function usePlayer(
       skill.invincibleDamageBoost = effectiveDamageBoost
       skill.remainingCooldown = effectiveCooldown
       log('无敌启动！')
+    } else if (skill.id === 'magicCircle') {
+      // 鼠标世界坐标
+      const canvas = gameCanvas.value?.canvasRef
+      if (!canvas) { skill.remainingCooldown = effectiveCooldown; return }
+      const mouseWorld = toLogical(mouseScreen.x, mouseScreen.y, canvas)
+
+      const effectiveRadius = calcSkillValueLinear(skill.range, skill.growth?.range, skill.currentLevel)
+      const effectiveDuration = calcSkillValueLinear(skill.duration, skill.growth?.duration, skill.currentLevel)
+      const effectiveFireballCount = Math.floor(calcSkillValueLinear(skill.fireballCount, skill.growth?.fireballCount, skill.currentLevel))
+      const effectiveFireballDmg = calcSkillValueLinear(skill.damage, skill.growth?.damage, skill.currentLevel) + (player.baseAttack || 0)
+      const effectiveBurnDmg = calcSkillValueLinear(skill.burnDamage, skill.growth?.burnDamage, skill.currentLevel)
+
+      magicCircles.value.push({
+        id: Date.now() + Math.random(),
+        type: 'magicCircle',
+        x: mouseWorld.x,
+        y: mouseWorld.y,
+        radius: effectiveRadius,
+        duration: effectiveDuration,
+        elapsed: 0,
+        burnDamage: Math.round(effectiveBurnDmg),
+        burnTickInterval: 500,
+        burnTickTimer: 0,
+        fireballCount: effectiveFireballCount,
+        fireballDamage: Math.round(effectiveFireballDmg),
+        fireballRadius: skill.fireballRadius || 25,
+        fireballInterval: 800,
+        fireballTimer: 0,
+      })
+
+      skill.remainingCooldown = effectiveCooldown
+      log(`魔法阵火雨降临！`)
     }
   }
 
@@ -363,6 +399,15 @@ export function usePlayer(
         const nextSpeed = calcSkillValue(sk.speedBoost, sk.growth?.speedBoost, nextLv)
         const nextDmgBoost = calcSkillValue(sk.damageBoost, sk.growth?.damageBoost, nextLv)
         desc = `冷却${(nextCooldown/1000).toFixed(1)}s 持续${(nextDuration/1000).toFixed(1)}s 移速+${Math.round(nextSpeed*100)}% 伤害+${Math.round(nextDmgBoost*100)}%`
+      } else if (sk.burnDamage !== undefined) {
+        // 魔法阵火雨：展示火球伤害、灼烧伤害、半径、火球数、持续时间、冷却
+        const nextDmg = calcSkillValueLinear(sk.damage, sk.growth?.damage, nextLv)
+        const nextBurn = calcSkillValueLinear(sk.burnDamage, sk.growth?.burnDamage, nextLv)
+        const nextRadius = calcSkillValueLinear(sk.range, sk.growth?.range, nextLv)
+        const nextCount = Math.floor(calcSkillValueLinear(sk.fireballCount, sk.growth?.fireballCount, nextLv))
+        const nextDur = calcSkillValueLinear(sk.duration, sk.growth?.duration, nextLv)
+        const nextCd = calcSkillValueLinear(sk.cooldown, sk.growth?.cooldown, nextLv)
+        desc = `火球${Math.round(nextDmg)} 灼烧${Math.round(nextBurn)} 半径${Math.round(nextRadius)}px ${nextCount}颗 ${(nextDur/1000).toFixed(1)}s 冷却${(nextCd/1000).toFixed(1)}s`
       } else {
         const nextDmg = calcSkillValue(sk.damage, sk.growth?.damage, nextLv)
         desc = `伤害 ${Math.round(nextDmg)}`
@@ -374,6 +419,13 @@ export function usePlayer(
     SKILL_TABLE.forEach(sk => {
       if (sk.unlockLevel <= player.level && !player.skills.find(s => s.id === sk.id)) {
         let desc = sk.description
+        if (sk.isPassive) {
+          desc = `生命+${sk.maxHpBonusBase} 速度+${sk.speedBonusBase} 攻击+${sk.attackBonusBase}`
+        } else if (sk.speedBoost || sk.damageBoost) {
+          desc = `冷却${(sk.cooldown/1000).toFixed(1)}s 持续${(sk.duration/1000).toFixed(1)}s 移速+${Math.round(sk.speedBoost*100)}% 伤害+${Math.round(sk.damageBoost*100)}%`
+        } else if (sk.burnDamage !== undefined) {
+          desc = `火球${sk.damage} 灼烧${sk.burnDamage} 半径${sk.range}px ${sk.fireballCount}颗 ${(sk.duration/1000).toFixed(1)}s`
+        }
         options.push({ ...sk, isNew: true, nextLevel: 1, description: desc })
       }
     })

@@ -97,6 +97,7 @@ const enemies = ref([])
 const projectiles = ref([])
 const effects = ref([])
 const lootDrops = ref([])      // 掉落物列表
+const magicCircles = ref([])   // 魔法阵火雨实例列表
 const battleLog = ref([])
 const levelUpOptions = ref([])
 
@@ -159,7 +160,7 @@ const { toScreen, toLogical, checkCollision, updateCamera } = mapUtils
 const playerUtils = usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvasRef, enemies, projectiles, effects,
-  mapUtils, battleLog, levelUpOptions, lootDrops,
+  mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
 )
 const {
   updatePlayer, fireArrow, activateSkill, onSkillClick,
@@ -180,14 +181,14 @@ const { spawnEnemy, handleSpawning, cleanupDead } = useEnemySpawner(
 
 // 5. 游戏主循环层
 const { startLoop, stopLoop } = useGameLoop(
-  player, gameState, enemies, projectiles, effects, lootDrops,
+  player, gameState, enemies, projectiles, effects, lootDrops, magicCircles,
   gameCanvasRef, camera,
   { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy },
   mapUtils,
   {
     onRender: () => {
       gameCanvasRef.value?.render({
-        player, enemies, projectiles, effects, lootDrops, gameState,
+        player, enemies, projectiles, effects, lootDrops, magicCircles, gameState,
       })
     },
   },
@@ -227,6 +228,18 @@ const onKeyDown = (e) => {
     fireArrow()
   }
 
+  // Q 键无敌
+  if (e.key.toLowerCase() === 'q') {
+    const invSkill = player.skills.find(s => s.id === 'invincible')
+    if (invSkill) { activateSkill(invSkill); return }
+  }
+
+  // E 键魔法阵火雨
+  if (e.key.toLowerCase() === 'e') {
+    const mcSkill = player.skills.find(s => s.id === 'magicCircle')
+    if (mcSkill) { activateSkill(mcSkill); return }
+  }
+
   const targetKeysDown = e.key.toLowerCase()
   keysDown[targetKeysDown] = true
 
@@ -261,6 +274,7 @@ const restartGame = () => {
   projectiles.value = []
   effects.value = []
   lootDrops.value = []
+  magicCircles.value = []
   battleLog.value = []
   levelUpOptions.value = []
   gameState.gameTime = 0
