@@ -13,6 +13,10 @@ export const renderProjectile = (ctx, sx, sy, p) => {
   } else if (p.type === 'enemyBullet') {
     ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 2, 0, Math.PI * 2); ctx.fill()
     ctx.fillStyle = '#fca5a5'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 4, 0, Math.PI * 2); ctx.fill()
+  } else if (p.type === 'summonerBolt') {
+    // 紫色光球 + 亮紫内核，匹配召唤师色调
+    ctx.fillStyle = '#7F77DD'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 2, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#E9D5FF'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 4, 0, Math.PI * 2); ctx.fill()
   }
   ctx.restore()
 }

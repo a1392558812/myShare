@@ -7,7 +7,7 @@ import {
   PLAYER_ATTRS,
   SKILL_TABLE,
   LOOT_TABLE,
-  EXP_LEVEL_TABLE,
+  getExpThreshold,
   ENTITY_SIZE,
   ARROW_SIZE,
   FRAME_INTERVAL,
@@ -16,6 +16,7 @@ import {
   calcSkillValue,
   calcSkillValueLinear,
 } from '../constants.js'
+import { pushBattleLog } from './useBattleLog.js'
 
 /**
  * @param {import('vue').UnwrapNestedRefs} player - 玩家响应式状态
@@ -41,10 +42,7 @@ export function usePlayer(
   const { toLogical, checkCollision } = mapUtils
 
   // ─── 内部辅助 ───
-  const log = (msg) => {
-    battleLog.value.unshift({ time: Date.now(), text: msg })
-    if (battleLog.value.length > 50) battleLog.value.pop()
-  }
+  const log = (msg) => pushBattleLog(battleLog, msg)
 
 
   const gainExp = (amount) => {
@@ -52,18 +50,10 @@ export function usePlayer(
     checkLevelUp()
   }
 
-  // 只处理一次升级；剩余经验由 onLevelUpChoice 选择后再次调用本函数逐级处理，
-  // 避免一次性获得大量经验时 while 循环跳级导致升级奖励丢失/卡等级。
   const checkLevelUp = () => {
     if (gameState.levelUpPending) return  // 已有待玩家选择的升级面板，不重复触发
 
-    let needExp
-    if (player.level < EXP_LEVEL_TABLE.length) {
-      needExp = EXP_LEVEL_TABLE[player.level]
-    } else {
-      // 超出经验表，按线性公式计算下一级所需累计经验
-      needExp = EXP_LEVEL_TABLE[EXP_LEVEL_TABLE.length - 1] + (player.level - EXP_LEVEL_TABLE.length + 1) * 2000
-    }
+    const needExp = getExpThreshold(player.level + 1)
 
     if (player.exp >= needExp) {
       player.level++

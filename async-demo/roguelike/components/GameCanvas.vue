@@ -6,6 +6,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useMap } from '../composables/useMap.js'
+import { groundZones } from '../composables/useEnemy.js'
 
 const props = defineProps({
   camera: { type: Object, required: true },
@@ -32,6 +33,7 @@ import { renderEffect } from '../draw/effects.js'
 import { renderVampireAura } from '../draw/vampireAura.js'
 import { renderMagicCircles } from '../draw/magicCircles.js'
 import { renderLootDrops } from '../draw/lootDrops.js'
+import { renderGroundZones } from '../draw/effects.js'
 
 // ═════════════════════ 对外暴露的渲染方法 ═════════════════════
 
@@ -54,6 +56,8 @@ const render = (state) => {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   const { player, enemies, projectiles, effects, lootDrops, magicCircles, gameState } = state
+  const cw = canvas.width
+  const ch = canvas.height
 
   // 背景网格
   drawBackgroundGrid(ctx, props.camera, toScreen)
@@ -61,16 +65,21 @@ const render = (state) => {
   // 视觉特效
   effects.value.forEach(e => renderEffect(ctx, e, toScreen))
 
+  // 地面毒区
+  renderGroundZones(ctx, groundZones.value, toScreen)
+
   // 吸血光环
   renderVampireAura(ctx, player, gameState.gameTime, toScreen)
 
   // 魔法阵火雨
   renderMagicCircles(ctx, magicCircles, gameState.gameTime, toScreen)
 
-  // 敌人
+  // 敌人（视口裁剪：跳过屏幕外的实体）
   enemies.value.forEach(e => {
     if (e.dead) return
     const pos = toScreen(e.x, e.y, ctx)
+    const margin = e.size
+    if (pos.x < -margin || pos.x > cw + margin || pos.y < -margin || pos.y > ch + margin) return
     drawEnemySprite(ctx, pos.x, pos.y, e)
     drawHpBar(ctx, pos.x, pos.y - e.size / 2 - 8, e.hp, e.maxHp, e.size, e.color)
     if (e.frozen) {
@@ -85,9 +94,11 @@ const render = (state) => {
   // 掉落物
   renderLootDrops(ctx, lootDrops, gameState.gameTime, toScreen)
 
-  // 弹幕
+  // 弹幕（视口裁剪）
   projectiles.value.forEach(p => {
     const pos = toScreen(p.x, p.y, ctx)
+    const psize = p.size || 10
+    if (pos.x < -psize || pos.x > cw + psize || pos.y < -psize || pos.y > ch + psize) return
     renderProjectile(ctx, pos.x, pos.y, p)
   })
 

@@ -190,15 +190,150 @@ export const ENEMY_SHIELDER = {
   shieldReduction: 0.4,     // 减伤比例 40%
 }
 
-/** 敌人类型注册表（按权重随机抽取） */
+// ══════════════════ 精英怪 — 疾风 wind ══════════════════
+/** 普通精英：移速 +40%，青色尾迹，较脆，逼走位 */
+export const ENEMY_ELITE_WIND = {
+  maxHp: 60,
+  hpGrowth: 8,              // Lv7 后每级 +8 HP
+  speed: 4.2,               // 固定，不成长
+  size: ENTITY_SIZE,
+  attack: 12,
+  attackGrowth: 2,          // Lv7 后每级 +2 攻击
+  attackRange: 50,
+  skillRange: 0,
+  skillCooldown: 800,
+  color: '#06b6d4',         // 青色主色
+  color2: '#0891b2',
+  icon: '💨',
+  name: '疾风武士',
+  expRewardBase: 35,         // 基础 EXP，普通精英 ×1.5
+  eliteTier: 'normal',
+  hasMelee: true,
+  hasRanged: false,
+}
+
+// ══════════════════ 精英怪 — 血牛 blood ══════════════════
+/** 普通精英：体型 1.5x，HP +50%，伤害 +30%，明显更大 */
+export const ENEMY_ELITE_BLOOD = {
+  maxHp: 180,
+  hpGrowth: 20,             // Lv7 后每级 +20 HP
+  speed: 2.0,               // 固定，不成长
+  size: ENTITY_SIZE * 1.5,  // 固定 1.5x，不随等级放大
+  attack: 20,
+  attackGrowth: 3,           // Lv7 后每级 +3 攻击
+  attackRange: 55,
+  skillRange: 0,
+  skillCooldown: 800,
+  color: '#991b1b',         // 暗红主色
+  color2: '#7f1d1d',
+  icon: '🐂',
+  name: '血牛武士',
+  expRewardBase: 45,         // 基础 EXP，普通精英 ×1.5
+  eliteTier: 'normal',
+  hasMelee: true,
+  hasRanged: false,
+}
+
+// ══════════════════ 精英怪 — 牧师 priest ══════════════════
+/** 稀有精英：周期性给范围内友军回血，本身威胁低，必须优先击杀 */
+export const ENEMY_ELITE_PRIEST = {
+  maxHp: 70,
+  hpGrowth: 10,              // Lv7 后每级 +10 HP
+  speed: 1.8,               // 固定，不成长
+  size: ENTITY_SIZE * 1.1,   // 略大
+  attack: 8,
+  attackGrowth: 1.5,         // Lv7 后每级 +1.5 攻击
+  attackRange: 45,
+  skillRange: 200,
+  skillCooldown: 2000,       // 回血间隔 ms（固定）
+  color: '#7f1d1d',         // 暗血红主色
+  color2: '#fca5a5',        // 血色辅色（光环）
+  icon: '⛪',
+  name: '亡灵牧师',
+  expRewardBase: 60,         // 基础 EXP，稀有精英 ×2.5
+  eliteTier: 'rare',
+  hasMelee: true,
+  hasRanged: false,
+  priestHealAmount: 8,      // 基础回血量
+  priestHealGrowth: 2,       // Lv7 后每级 +2 回血
+  priestHealInterval: 2000,  // 回血间隔 ms（固定）
+  priestAuraRange: 130,      // 光环半径 px（固定）
+}
+
+// ══════════════════ 精英怪 — 毒虫 venom ══════════════════
+/** 稀有精英：向玩家投毒弹，落地生成地面毒区，逼走位 */
+export const ENEMY_ELITE_VENOM = {
+  maxHp: 50,
+  hpGrowth: 6,               // Lv7 后每级 +6 HP
+  speed: 2.5,                // 固定，不成长
+  size: ENTITY_SIZE,
+  attack: 10,                // 毒弹伤害
+  attackGrowth: 2,            // Lv7 后每级 +2 毒弹伤害
+  attackRange: 0,
+  skillRange: 300,
+  skillCooldown: 3000,        // 毒弹发射间隔 ms（固定）
+  color: '#166534',          // 深绿主色
+  color2: '#4ade80',         // 毒绿辅色
+  icon: '☠️',
+  name: '毒液虫',
+  expRewardBase: 55,          // 基础 EXP，稀有精英 ×2.5
+  eliteTier: 'rare',
+  hasMelee: false,
+  hasRanged: false,
+  venomWarnDuration: 800,    // 预警圈时长 ms（固定）
+  venomZoneDuration: 5000,   // 地面毒区持续 ms（固定）
+  venomZoneDamage: 2,        // 基础每秒伤害
+  venomZoneDamageGrowth: 0.5, // Lv7 后每级 +0.5 伤害
+  venomZoneRadius: 50,        // 毒区半径 px（固定）
+  venomBoltSpeed: 4,         // 毒弹飞行速度
+  venomMaxZones: 3,          // 每个毒虫最多保留毒区数
+}
+
+/** 根据玩家等级返回对应的敌人类型权重表（动态，支持精英怪分级出场） */
+export function getEnemyTypeTable(playerLevel) {
+  // 基础普通敌人表（Lv1~7 使用）
+  const base = [
+    { type: 'melee',    attrs: ENEMY_MELEE,    weight: 4 },
+    { type: 'ranged',   attrs: ENEMY_RANGED,   weight: 3 },
+    { type: 'hybrid',   attrs: ENEMY_HYBRID,   weight: 2 },
+    { type: 'bomber',   attrs: ENEMY_BOMBER,   weight: 2 },
+    { type: 'summoner', attrs: ENEMY_SUMMONER, weight: 1 },
+    { type: 'charger',  attrs: ENEMY_CHARGER,  weight: 2 },
+    { type: 'shielder', attrs: ENEMY_SHIELDER, weight: 1 },
+  ]
+  // Lv 1~7：无精英
+  if (!playerLevel || playerLevel <= 7) return base
+  // Lv 8~12：普通精英（疾风 + 血牛）
+  if (playerLevel <= 12) {
+    return [
+      ...base,
+      { type: 'eliteWind',  attrs: ENEMY_ELITE_WIND,  weight: 2 },
+      { type: 'eliteBlood', attrs: ENEMY_ELITE_BLOOD, weight: 2 },
+    ]
+  }
+  // Lv 13+：全部 4 种精英
+  return [
+    ...base,
+    { type: 'eliteWind',   attrs: ENEMY_ELITE_WIND,   weight: 2 },
+    { type: 'eliteBlood',  attrs: ENEMY_ELITE_BLOOD,  weight: 2 },
+    { type: 'elitePriest', attrs: ENEMY_ELITE_PRIEST, weight: 1 },
+    { type: 'eliteVenom',  attrs: ENEMY_ELITE_VENOM,  weight: 1 },
+  ]
+}
+
+/** 敌人类型静态注册表（用于 UI 显示，不含动态权重） */
 export const ENEMY_TYPE_TABLE = [
-  { type: 'melee',    attrs: ENEMY_MELEE,    weight: 4 },
-  { type: 'ranged',   attrs: ENEMY_RANGED,   weight: 3 },
-  { type: 'hybrid',   attrs: ENEMY_HYBRID,   weight: 2 },
-  { type: 'bomber',   attrs: ENEMY_BOMBER,   weight: 2 },
-  { type: 'summoner', attrs: ENEMY_SUMMONER, weight: 1 },
-  { type: 'charger',  attrs: ENEMY_CHARGER,  weight: 2 },
-  { type: 'shielder', attrs: ENEMY_SHIELDER, weight: 1 },
+  { type: 'melee',    attrs: ENEMY_MELEE },
+  { type: 'ranged',   attrs: ENEMY_RANGED },
+  { type: 'hybrid',   attrs: ENEMY_HYBRID },
+  { type: 'bomber',   attrs: ENEMY_BOMBER },
+  { type: 'summoner', attrs: ENEMY_SUMMONER },
+  { type: 'charger',  attrs: ENEMY_CHARGER },
+  { type: 'shielder', attrs: ENEMY_SHIELDER },
+  { type: 'eliteWind',  attrs: ENEMY_ELITE_WIND },
+  { type: 'eliteBlood', attrs: ENEMY_ELITE_BLOOD },
+  { type: 'elitePriest', attrs: ENEMY_ELITE_PRIEST },
+  { type: 'eliteVenom',  attrs: ENEMY_ELITE_VENOM },
 ]
 
 // ─────────────────────────── 技能属性表 ───────────────────────────
@@ -513,13 +648,62 @@ export const LOOT_TABLE = {
   },
 }
 
-// ─────────────────────────── 经验等级对照表 ───────────────────────────
+// ─────────────────────────── 经验等级公式 ───────────────────────────
 /**
- * 每级所需累计经验值，索引 = 等级 - 1
- * level 1 = 0 exp（初始等级）
- * level 2 = 50 exp
- * level 3 = 120 exp ...
+ * 每级累计所需经验值（无等级上限）。
+ *
+ * 设计（方案 C：等级软上限）：
+ *   - Lv 1～15：完全复用原有硬编表数值（保证现有体验不变）
+ *   - Lv 16+  ：增量线性增长，避免指数爆炸
+ *     Lv15→16 增量 = 4000（与原表 Lv14→15 增量衔接）
+ *     每升一级，下一级增量固定 +LINEAR_STEP（500）
+ *     总阈值为 O(n²) 多项式增长，数字可控，前端显示友好
+ *
+ * 数值示例（Lv16+ 累计阈值）：
+ *   Lv16  = 17,000   （增量 4000）
+ *   Lv20  = 38,000   （增量 6400）
+ *   Lv30  = 150,000  （增量 11400）
+ *   Lv50  = 450,500  （增量 21400）
+ *   Lv100 = 1,750,500（增量 46400）
+ *
+ * @param {number} level - 目标等级（≥ 1）
+ * @returns {number} 升到该等级所需的累计经验值
  */
+const EXP_LINEAR_STEP = 500          // Lv16+ 每级增量增加量
+const EXP_LV15_THRESHOLD = 13000     // Lv15 累计阈值（原表最后一项）
+const EXP_LV15_INCREMENT = 4000      // Lv14→Lv15 增量（Lv15→16 起点）
+
+/**
+ *  closed-form 计算累计阈值（O(1)，无缓存需求）：
+ *  m = level - 15（超过 15 级的级数，≥ 1）
+ *  total = 13000 + m×4000 + 500 × (m-1)×m / 2
+ */
+export function getExpThreshold(level) {
+  if (level <= 1) return 0
+  if (level <= 15) return EXP_LEVEL_TABLE[level - 1]
+
+  const m = level - 15
+  const total = EXP_LV15_THRESHOLD
+    + m * EXP_LV15_INCREMENT
+    + EXP_LINEAR_STEP * (m - 1) * m / 2
+  return Math.floor(total)
+}
+
+/**
+ * 升到下一级所需经验增量（O(1)，无上限）。
+ *  Lv15+ 直接公式：increment = 4000 + (level - 15) × 500
+ *
+ * @param {number} level - 当前等级
+ * @returns {number} 升到下一级所需的经验增量
+ */
+export function getExpForNextLevel(level) {
+  if (level < 15) {
+    return getExpThreshold(level + 1) - getExpThreshold(level)
+  }
+  return EXP_LV15_INCREMENT + (level - 15) * EXP_LINEAR_STEP
+}
+
+// 保留原表作为常量导出（前 15 级精确值，方便调试对比）
 export const EXP_LEVEL_TABLE = [
   0,     // Lv 1
   50,    // Lv 2
@@ -547,8 +731,16 @@ export const SPAWN_INTERVAL_MIN = 100
 export const SPAWN_INTERVAL_DECREASE_PER_SEC = 20
 /** 敌人刷新位置距镜头边界的额外偏移（px） */
 export const SPAWN_MARGIN = 20
-/** 场上最大敌人数，超出后不再刷新新敌人 */
+/** 场上最大敌人数（不含召唤物），超出后不再刷新新敌人 */
 export const MAX_ENEMIES = 60
+/** 场上最大召唤物总数（所有召唤师共享），防止实体过多导致卡顿 */
+export const MAX_SUMMONS = 40
+
+// ─────────────────────────── 战斗日志参数 ───────────────────────────
+/** 战斗日志最大存储条数（超出后自动丢弃最旧的条目） */
+export const BATTLE_LOG_MAX_STORE = 200
+/** 战斗日志面板最大显示条数（只渲染最近 N 条，不影响存储） */
+export const BATTLE_LOG_MAX_DISPLAY = 20
 
 // ─────────────────────────── 敌人属性随玩家等级缩放 ───────────────────────────
 /** 每级生命值缩放比例（Lv1 为基准，每升一级 HP 增加该比例 × 基础值） */
@@ -574,6 +766,16 @@ export const ENEMY_PROJECTILE_SPEED = 5
 export const ENEMY_PROJECTILE_DAMAGE = 8
 /** 敌人弹幕尺寸 */
 export const ENEMY_PROJECTILE_SIZE = 8
+
+// ─────────────────────────── 召唤师死灵弹幕参数 ───────────────────────────
+/** 召唤师死灵弹幕飞行速度（比普通弹幕慢，可闪避） */
+export const SUMMONER_BOLT_SPEED = 3.5
+/** 召唤师死灵弹幕伤害（比弓箭手弱 25%） */
+export const SUMMONER_BOLT_DAMAGE = 6
+/** 召唤师死灵弹幕尺寸 */
+export const SUMMONER_BOLT_SIZE = 7
+/** 召唤师死灵弹幕发射间隔（ms，冷却期发 2~3 发） */
+export const SUMMONER_BOLT_COOLDOWN = 1300
 
 // ─────────────────────────── 箭矢参数 ───────────────────────────
 /** 箭矢尺寸（用于碰撞检测半径） */

@@ -3,8 +3,8 @@
     <div class="battle-log-header">战斗日志</div>
     <div class="battle-log-body">
       <div
-        v-for="(entry, i) in log"
-        :key="entry.time + '-' + i"
+        v-for="entry in displayLog"
+        :key="entry.id"
         class="battle-log-entry"
       >
         <span class="log-time">{{ formatLogTime(entry.time) }}</span>
@@ -16,9 +16,17 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import { BATTLE_LOG_MAX_DISPLAY } from '../constants.js'
+
+const props = defineProps({
   log: { type: Array, required: true },
+  // 最大显示条数，默认取常量配置，也可外部覆盖
+  maxDisplay: { type: Number, default: BATTLE_LOG_MAX_DISPLAY },
 })
+
+// 只取前 maxDisplay 条渲染，log 内部可存储更多但不全部渲染
+const displayLog = computed(() => props.log.slice(0, props.maxDisplay))
 
 const formatLogTime = (timestamp) => {
   const d = new Date(timestamp)

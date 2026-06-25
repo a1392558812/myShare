@@ -85,7 +85,7 @@ const getTypeName = (type) => typeInfoMap[type]?.name || type
 }
 
 .enemy-type-name {
-  width: 30px;
+  width: 50px;
   color: #cbd5e1;
 }
 
@@ -99,13 +99,10 @@ const getTypeName = (type) => typeInfoMap[type]?.name || type
   .enemy-mini-hp-fill {
     height: 100%;
     border-radius: 2px;
+    background: #ef4444;
     transition: width 0.2s;
   }
 }
-
-.enemy-melee .enemy-mini-hp-fill { background: #dc2626; }
-.enemy-ranged .enemy-mini-hp-fill { background: #2563eb; }
-.enemy-hybrid .enemy-mini-hp-fill { background: #7c3aed; }
 
 .enemy-empty {
   font-size: 11px;

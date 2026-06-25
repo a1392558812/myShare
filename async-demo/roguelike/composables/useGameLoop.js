@@ -23,11 +23,15 @@ export function useGameLoop(
   player, gameState, enemies, projectiles, effects, lootDrops, magicCircles,
   gameCanvas, camera,
   updaters, mapUtils, options,
+  groundZones, // 新增：地面毒区引用
 ) {
   const { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy } = updaters
   const { updateCamera } = mapUtils
   const { onRender } = options || {}
   const { debugFlags } = useDebug()
+
+  // 存储 groundZones 引用供内部函数使用
+  const groundZonesRef = groundZones
 
   let animFrameId = null
   let lastTimestamp = 0
@@ -55,26 +59,58 @@ export function useGameLoop(
       p.x += p.vx
       p.y += p.vy
 
-      // 碰撞检测
-      if (p.owner === 'player') {
-        enemies.value.forEach(e => {
-          if (e.dead) return
-          if (checkCollisionLocal(p.x, p.y, p.size, e.x, e.y, e.size)) {
-            damageEnemy(e, p.damage)
+      // ═══ 毒弹特殊处理 ═══
+      if (p.type === 'venomBolt') {
+        p.flightTime = (p.flightTime || 0) + dt
+        // 检查是否应该着陆（超时或命中玩家）
+        let shouldLand = false
+        if (p.flightTime >= (p.maxFlightTime || 2000)) {
+          shouldLand = true
+        }
+        if (!shouldLand && checkCollisionLocal(p.x, p.y, p.size, player.x, player.y, ENTITY_SIZE)) {
+          shouldLand = true
+        }
+
+        if (shouldLand) {
+          // 创建预警圈特效
+          effects.value.push({
+            type: 'venomWarn',
+            x: p.x,
+            y: p.y,
+            radius: p.zoneRadius || 50,
+            duration: p.warnDuration || 800,
+            elapsed: 0,
+            // 地面毒区参数（预警结束后创建）
+            zoneDuration: p.zoneDuration,
+            zoneDamage: p.zoneDamage,
+            zoneRadius: p.zoneRadius,
+            ownerEid: p.ownerEid,
+            venomMaxZones: p.venomMaxZones,
+          })
+          p.hit = true
+        }
+      } else {
+        // 普通投射物碰撞检测
+        if (p.owner === 'player') {
+          enemies.value.forEach(e => {
+            if (e.dead) return
+            if (checkCollisionLocal(p.x, p.y, p.size, e.x, e.y, e.size)) {
+              damageEnemy(e, p.damage)
+              p.hit = true
+            }
+          })
+        } else if (p.owner === 'enemy') {
+          if (checkCollisionLocal(p.x, p.y, p.size, player.x, player.y, ENTITY_SIZE)) {
+            const isSkillInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+            if (!debugFlags.godMode && !isSkillInvincible) {
+              player.hp -= p.damage
+              if (player.hp <= 0) {
+                player.hp = 0
+                gameState.isDead = true
+              }
+            }
             p.hit = true
           }
-        })
-      } else if (p.owner === 'enemy') {
-        if (checkCollisionLocal(p.x, p.y, p.size, player.x, player.y, ENTITY_SIZE)) {
-          const isSkillInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-          if (!debugFlags.godMode && !isSkillInvincible) {
-            player.hp -= p.damage
-            if (player.hp <= 0) {
-              player.hp = 0
-              gameState.isDead = true
-            }
-          }
-          p.hit = true
         }
       }
 
@@ -101,6 +137,39 @@ export function useGameLoop(
 
   const updateEffects = (dt) => {
     effects.value.forEach(e => { e.elapsed += dt })
+
+    // ═══ 处理毒液预警：预警结束后创建地面毒区 ═══
+    if (groundZonesRef) {
+      effects.value.forEach(e => {
+        if (e.type === 'venomWarn' && e.elapsed >= e.duration) {
+          // 创建地面毒区
+          const zone = {
+            x: e.x,
+            y: e.y,
+            radius: e.zoneRadius || 50,
+            duration: e.zoneDuration || 5000,
+            elapsed: 0,
+            damagePerTick: e.zoneDamage || 2,
+            tickInterval: 1000,
+            lastTickTime: 0,
+            ownerEid: e.ownerEid,
+          }
+          groundZonesRef.value.push(zone)
+
+          // 限制每个毒虫的最大毒区数
+          const maxZ = e.venomMaxZones || 3
+          const myZones = groundZonesRef.value.filter(z => z.ownerEid === e.ownerEid)
+          if (myZones.length > maxZ) {
+            // 移除最老的毒区
+            const oldestIdx = groundZonesRef.value.indexOf(myZones[0])
+            if (oldestIdx !== -1) {
+              groundZonesRef.value.splice(oldestIdx, 1)
+            }
+          }
+        }
+      })
+    }
+
     effects.value = effects.value.filter(e => e.elapsed < e.duration)
   }
 

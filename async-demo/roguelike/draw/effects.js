@@ -141,41 +141,59 @@ export const renderEffect = (ctx, e, toScreen) => {
     ctx.restore()
   } else if (e.type === 'explosion') {
     if (e.variant === 'sacrifice') {
-      // ── 召唤物溢出自爆：弱化版，紫色调，更小范围 ──
+      // ── 召唤物溢出自爆：紫色调，保持当前大小，强化存在感 ──
       const r = e.radius * (0.2 + progress * 0.7)
       const fade = 1 - progress
       ctx.save()
 
-      // 核心光点（淡紫）
-      ctx.globalAlpha = fade * 0.95
-      ctx.fillStyle = '#d8b4fe'
-      ctx.shadowColor = '#a855f7'
-      ctx.shadowBlur = 6
-      ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 0.2, 0, Math.PI * 2); ctx.fill()
+      // 开局闪白核心（前 18%，白色强闪吸引注意）
+      if (progress < 0.18) {
+        const flashFade = 1 - progress / 0.18
+        ctx.globalAlpha = flashFade
+        ctx.fillStyle = '#FFFFFF'
+        ctx.shadowColor = '#e9d5ff'
+        ctx.shadowBlur = 16
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 0.55, 0, Math.PI * 2); ctx.fill()
+      }
 
-      // 紫色冲击波外圈（比正版细）
-      ctx.globalAlpha = fade * 0.3
+      // 核心光点（亮紫，提亮）
+      ctx.globalAlpha = fade
+      ctx.fillStyle = '#f3e8ff'
+      ctx.shadowColor = '#a855f7'
+      ctx.shadowBlur = 14
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 0.28, 0, Math.PI * 2); ctx.fill()
+
+      // 紫色冲击波外圈（加粗加亮）
+      ctx.globalAlpha = fade * 0.7
       ctx.strokeStyle = e.color || '#7e22ce'
-      ctx.lineWidth = 2 * fade
+      ctx.lineWidth = 3.5 * fade + 0.5
       ctx.shadowColor = e.color || '#7e22ce'
-      ctx.shadowBlur = 5
+      ctx.shadowBlur = 10
       ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2); ctx.stroke()
 
-      // 内圈填充（半透明）
-      ctx.globalAlpha = fade * 0.75
+      // 第二层冲击波（错峰扩散，增强层次）
+      ctx.globalAlpha = fade * 0.35
+      ctx.lineWidth = 1.5 * fade
+      ctx.shadowBlur = 6
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, r * (0.6 + progress * 0.4), 0, Math.PI * 2); ctx.stroke()
+
+      // 内圈填充（提亮，接近实心）
+      ctx.globalAlpha = fade * 0.85
       ctx.fillStyle = e.color || '#7e22ce'
       ctx.shadowBlur = 0
-      ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 0.4, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 0.42, 0, Math.PI * 2); ctx.fill()
 
-      // 4 个紫色火花（比正版少一半，更小）
-      for (let i = 0; i < 4; i++) {
-        const angle = (Math.PI * 2 / 4) * i + progress * 1.5
-        const dist = r * (0.5 + progress * 0.5)
+      // 6 个紫色发光火花（加发光）
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI * 2 / 6) * i + progress * 1.8
+        const dist = r * (0.5 + progress * 0.6)
         const px = pos.x + Math.cos(angle) * dist
         const py = pos.y + Math.sin(angle) * dist
-        ctx.globalAlpha = fade * 0.55
-        ctx.fillStyle = i % 2 === 0 ? '#c084fc' : '#a855f7'
-        ctx.beginPath(); ctx.arc(px, py, 1.5 * fade, 0, Math.PI * 2); ctx.fill()
+        ctx.globalAlpha = fade
+        ctx.fillStyle = i % 2 === 0 ? '#e9d5ff' : '#c084fc'
+        ctx.shadowColor = '#a855f7'
+        ctx.shadowBlur = 6
+        ctx.beginPath(); ctx.arc(px, py, 2.2 * fade + 0.5, 0, Math.PI * 2); ctx.fill()
       }
 
       ctx.restore()
@@ -219,8 +237,84 @@ export const renderEffect = (ctx, e, toScreen) => {
 
       ctx.restore()
     }
+  } else if (e.type === 'venomWarn') {
+    // 调用专门的毒液预警绘制函数
+    renderVenomWarn(ctx, e, toScreen)
   }
   // 统一恢复外层 save——修复 meleeSlash / freezeCircle / magicFireball 分支
   // 未配对 restore 导致 globalAlpha 泄漏，使所有单位跟着闪烁的问题
+  ctx.restore()
+}
+
+// ════════ 绘制地面毒区 ════════
+export const renderGroundZones = (ctx, zones, toScreen) => {
+  zones.forEach(z => {
+    const pos = toScreen(z.x, z.y, ctx)
+    const progress = z.elapsed / z.duration
+    ctx.save()
+
+    // 地面毒区：绿色半透明圆 + 脉动边缘
+    ctx.globalAlpha = 0.35 * (1 - progress * 0.3) // 逐渐淡出
+    ctx.fillStyle = 'rgba(20, 100, 20, 0.4)'
+    ctx.beginPath()
+    ctx.arc(pos.x, pos.y, z.radius, 0, Math.PI * 2)
+    ctx.fill()
+
+    // 边缘脉动
+    ctx.strokeStyle = `rgba(74, 222, 128, ${0.6 * (1 - progress * 0.4)})`
+    ctx.lineWidth = 2 + Math.sin(z.elapsed * 0.008) * 1.5
+    ctx.beginPath()
+    ctx.arc(pos.x, pos.y, z.radius, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // 内部毒雾粒子效果
+    const particleCount = 5
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 / particleCount) * i + z.elapsed * 0.003
+      const dist = z.radius * 0.5 * Math.sin(z.elapsed * 0.005 + i)
+      const px = pos.x + Math.cos(angle) * dist
+      const py = pos.y + Math.sin(angle) * dist
+      ctx.globalAlpha = 0.3 + 0.2 * Math.sin(z.elapsed * 0.008 + i)
+      ctx.fillStyle = '#4ade80'
+      ctx.beginPath()
+      ctx.arc(px, py, 2 + Math.sin(z.elapsed * 0.01 + i), 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    ctx.restore()
+  })
+}
+
+// ════════ 绘制毒液预警圈 ════════
+export const renderVenomWarn = (ctx, e, toScreen) => {
+  const pos = toScreen(e.x, e.y, ctx)
+  const progress = e.elapsed / e.duration
+  ctx.save()
+
+  // 预警圈：红色/紫色半透明圆，逐渐加快脉动
+  const pulse = 1 + 0.3 * Math.sin(progress * Math.PI * 6) // 快速脉动
+  ctx.globalAlpha = 0.5 * (1 - progress * 0.3)
+  ctx.strokeStyle = `rgba(139, 92, 246, ${0.7 * (1 - progress * 0.5)})`
+  ctx.lineWidth = 2 + progress * 3 // 逐渐加粗
+  ctx.setLineDash([5, 5])
+  ctx.beginPath()
+  ctx.arc(pos.x, pos.y, e.radius * pulse, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.setLineDash([])
+
+  // 填充半透明紫色
+  ctx.globalAlpha = 0.2 * (1 - progress * 0.5)
+  ctx.fillStyle = 'rgba(139, 92, 246, 0.3)'
+  ctx.beginPath()
+  ctx.arc(pos.x, pos.y, e.radius, 0, Math.PI * 2)
+  ctx.fill()
+
+  // 中心毒液图标
+  ctx.globalAlpha = 0.8
+  ctx.font = '16px Arial'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('☠️', pos.x, pos.y)
+
   ctx.restore()
 }

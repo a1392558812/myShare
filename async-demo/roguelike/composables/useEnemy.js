@@ -2,17 +2,26 @@
  * useEnemy — 敌人 AI 行为、寻路、攻击判定、状态管理
  * 管理所有敌人的逐帧更新逻辑（含 bomber/summoner/charger/shielder 四种独立 AI）
  */
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import {
   ENEMY_PROJECTILE_SPEED,
   ENEMY_PROJECTILE_DAMAGE,
   ENEMY_PROJECTILE_SIZE,
+  SUMMONER_BOLT_SPEED,
+  SUMMONER_BOLT_DAMAGE,
+  SUMMONER_BOLT_SIZE,
+  SUMMONER_BOLT_COOLDOWN,
   FRAME_INTERVAL,
   FRAME_COUNT,
   DIRECTION,
   ENTITY_SIZE,
+  MAX_SUMMONS,
 } from '../constants.js'
 import { useDebug } from './useDebug.js'
+import { pushBattleLog } from './useBattleLog.js'
+
+// 地面毒区管理（模块级，供绘制函数访问）
+export const groundZones = ref([])
 
 /**
  * @param {import('vue').Ref<Array>} enemies - 敌人列表
@@ -23,14 +32,11 @@ import { useDebug } from './useDebug.js'
  * @param {import('vue').Ref<Array>} battleLog - 战斗日志
  * @param {import('vue').Ref<Array>} effects - 视觉特效列表
  */
-export function useEnemy(enemies, player, projectiles, gameState, mapUtils, battleLog, effects) {
+export function useEnemy(enemies, player, projectiles, gameState, mapUtils, battleLog, effects, gainExp) {
   const { checkCollision } = mapUtils
   const { debugFlags } = useDebug()
 
-  const log = (msg) => {
-    battleLog.value.unshift({ time: Date.now(), text: msg })
-    if (battleLog.value.length > 50) battleLog.value.pop()
-  }
+  const log = (msg) => pushBattleLog(battleLog, msg)
 
   /** 根据移动方向更新朝向 + 帧动画 */
   const updateDirection = (e, dx, dy, dist, dt) => {
@@ -52,6 +58,16 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
    * 每帧更新所有敌人：AI 行为 + 移动 + 攻击
    */
   const updateEnemies = (dt) => {
+    // ═════ 地面毒区生命周期管理 ═════
+    const aliveZones = []
+    groundZones.value.forEach(z => {
+      z.elapsed += dt
+      if (z.elapsed < z.duration) {
+        aliveZones.push(z)
+      }
+    })
+    groundZones.value = aliveZones
+
     enemies.value.forEach(e => {
       if (e.dead) return
 
@@ -107,7 +123,7 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             color2: e.color2,
           })
 
-          player.exp += e.expReward
+          gainExp(e.expReward || 0)
           gameState.killCount++
           e.dead = true
           log('敌人自爆！')
@@ -137,11 +153,31 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
           }
         }
 
+        // 死灵弹幕：召唤冷却期间的主动攻击（受调试暂停攻击控制）
+        if (!debugFlags?.pauseEnemyAttack && dist <= (e.skillRange || 300) && dist > 1) {
+          e.boltTimer = (e.boltTimer || 0) + dt
+          if (e.boltTimer >= SUMMONER_BOLT_COOLDOWN) {
+            e.boltTimer = 0
+            const ndx = dx / dist
+            const ndy = dy / dist
+            projectiles.value.push({
+              type: 'summonerBolt',
+              x: e.x, y: e.y,
+              vx: ndx * SUMMONER_BOLT_SPEED,
+              vy: ndy * SUMMONER_BOLT_SPEED,
+              damage: SUMMONER_BOLT_DAMAGE,
+              size: SUMMONER_BOLT_SIZE,
+              owner: 'enemy',
+            })
+          }
+        }
+
         // 召唤小怪（受调试暂停攻击控制）
         if (!debugFlags?.pauseEnemyAttack) {
           e.summonTimer = (e.summonTimer || 0) + dt
           if (e.summonTimer >= (e.summonCooldown || 4000)) {
             e.summonTimer = 0
+            e.boltTimer = 0  // 召唤时重置弹幕计时，避免同帧双触发
             const batchSize = e.summonCount || 2
             const maxMinions = e.summonMaxMinions || 6
             const sacrificeDmg = e.summonSacrificeDmg || 10
@@ -194,7 +230,10 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
 
             // 计算剩余可生成数量
             const afterDestroy = enemies.value.filter(m => m.summonedBy === e.eid && !m.dead).length
-            const toSpawn = Math.min(batchSize, maxMinions - afterDestroy)
+            let toSpawn = Math.min(batchSize, maxMinions - afterDestroy)
+            // 全局安全阀：所有召唤师共享的召唤物总数上限
+            const globalSummons = enemies.value.filter(m => m.summonedBy && !m.dead).length
+            toSpawn = Math.max(0, Math.min(toSpawn, MAX_SUMMONS - globalSummons))
             for (let i = 0; i < toSpawn; i++) {
               const angle = (Math.PI * 2 / toSpawn) * i + Math.random() * 0.5
               const spawnR = e.size + 20
@@ -366,6 +405,77 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
 
       // ══════════════════ 通用 AI（melee / ranged / hybrid）══════════════════
 
+      
+      // ══════════ 精英怪 — 牧师 AI ══════════
+      if (e.type === 'elitePriest') {
+        const comfort = (e.skillRange || 200) * 0.6
+        if (!debugFlags?.pauseEnemyMovement) {
+          if (dist > comfort + 80) {
+            e.x += (dx / dist) * e.speed
+            e.y += (dy / dist) * e.speed
+          } else if (dist < comfort) {
+            e.x -= (dx / dist) * e.speed * 0.7
+            e.y -= (dy / dist) * e.speed * 0.7
+          }
+        }
+        e.priestHealTimer = (e.priestHealTimer || 0) + dt
+        if (e.priestHealTimer >= (e.priestHealInterval || 2000)) {
+          e.priestHealTimer = 0
+          enemies.value.forEach(other => {
+            if (other === e || other.dead) return
+            const od = Math.sqrt((other.x - e.x) ** 2 + (other.y - e.y) ** 2)
+            if (od <= (e.priestAuraRange || 130)) {
+              const heal = e.priestHealAmount || 8
+              other.hp = Math.min(other.maxHp, other.hp + heal)
+            }
+          })
+        }
+        updateDirection(e, dx, dy, dist, dt)
+        if (e.hitFlash > 0) e.hitFlash--
+        return
+      }
+
+      // ══════════ 精英怪 — 毒虫 AI ══════════
+      if (e.type === 'eliteVenom') {
+        if (!debugFlags?.pauseEnemyMovement && dist > 1) {
+          e.x += (dx / dist) * e.speed
+          e.y += (dy / dist) * e.speed
+        }
+        if (!debugFlags?.pauseEnemyAttack && dist <= (e.skillRange || 300) && dist > 1) {
+          e.venomBoltTimer = (e.venomBoltTimer || 0) + dt
+          if (e.venomBoltTimer >= (e.skillCooldown || 3000)) {
+            e.venomBoltTimer = 0
+            // 发射毒弹投射物
+            const boltSpeed = e.venomBoltSpeed || 4
+            const ndx = dx / dist
+            const ndy = dy / dist
+            projectiles.value.push({
+              type: 'venomBolt',
+              x: e.x,
+              y: e.y,
+              vx: ndx * boltSpeed,
+              vy: ndy * boltSpeed,
+              damage: e.venomBoltDamage || 10,
+              size: 8,
+              owner: 'enemy',
+              // 毒弹专属属性
+              warnDuration: e.venomWarnDuration || 800,
+              zoneDuration: e.venomZoneDuration || 5000,
+              zoneDamage: e.venomZoneDamage || 2,
+              zoneRadius: e.venomZoneRadius || 50,
+              ownerEid: e.eid,
+              venomMaxZones: e.venomMaxZones || 3,
+              // 飞行时限（避免无限飞行）
+              maxFlightTime: 2000,
+              flightTime: 0,
+            })
+          }
+        }
+        updateDirection(e, dx, dy, dist, dt)
+        if (e.hitFlash > 0) e.hitFlash--
+        return
+      }
+
       e.isMoving = true
 
       if (dist > 1) {
@@ -433,6 +543,23 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
       // 受击闪白衰减
       if (e.hitFlash > 0) e.hitFlash--
     })
+
+    // ═════ 玩家地面毒区扣血（每秒 tick 一次） ═════
+    const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+    if (!debugFlags?.godMode && !isInvincible) {
+      groundZones.value.forEach(z => {
+        const d = Math.sqrt((player.x - z.x) ** 2 + (player.y - z.y) ** 2)
+        if (d <= z.radius) {
+          const now = Date.now()
+          if (now - (z.lastTickTime || 0) >= (z.tickInterval || 1000)) {
+            player.hp -= (z.damagePerTick || 2)
+            player.hitFlash = 6
+            z.lastTickTime = now
+            if (player.hp <= 0) { player.hp = 0; gameState.isDead = true; log('玩家阵亡！') }
+          }
+        }
+      })
+    }
   }
 
   return { updateEnemies }

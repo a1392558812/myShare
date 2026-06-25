@@ -435,6 +435,116 @@ export const drawShielderEnemy = (ctx, half, dir, legOff, color, color2, elapsed
   ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, half + 10, 0, Math.PI * 2); ctx.stroke()
 }
 
+// ════════ 精英怪 — 疾风（青色高速） ════════
+export const drawEliteWind = (ctx, half, dir, legOff, color, color2) => {
+  // 青色尾迹粒子（3 颗，跟随身后）
+  const angles = [0, 0.4, -0.4]
+  angles.forEach((a, i) => {
+    const px = -Math.cos(dir === 'front' ? 0 : (dir === 'right' ? 0.3 : -0.3)) * (half + 6 + i * 5)
+    const py = Math.sin(dir === 'front' ? 0 : (dir === 'right' ? 0.3 : -0.3)) * (half + 6 + i * 5) + 4
+    ctx.save()
+    ctx.globalAlpha = 0.35 - i * 0.1
+    ctx.fillStyle = '#67e8f9'
+    ctx.beginPath(); ctx.arc(px, py, 3 - i * 0.5, 0, Math.PI * 2); ctx.fill()
+    ctx.restore()
+  })
+  // 主体用近战精灵（青色）
+  const tmpC = color || '#06b6d4'
+  const tmpC2 = color2 || '#0891b2'
+  if (dir === 'front') {
+    ctx.fillStyle = '#bfdbfe'; ctx.fillRect(-7, -half + 2, 14, 12)
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(-4, -half + 6, 3, 3); ctx.fillRect(1, -half + 6, 3, 3)
+    ctx.fillStyle = tmpC; ctx.fillRect(-11, -half + 14, 22, 16)
+    ctx.fillStyle = tmpC2; ctx.fillRect(-9, -half + 16, 18, 5)
+    ctx.fillStyle = '#78350f'; ctx.fillRect(-8 + legOff, -half + 30, 7, 7); ctx.fillRect(1 - legOff, -half + 30, 7, 7)
+  } else {
+    ctx.fillStyle = '#bfdbfe'; ctx.fillRect(-6, -half + 2, 12, 12)
+    ctx.fillStyle = tmpC; ctx.fillRect(-10, -half + 14, 20, 16)
+    ctx.fillStyle = '#78350f'; ctx.fillRect(-7 + legOff, -half + 30, 7, 7); ctx.fillRect(0 - legOff, -half + 30, 7, 7)
+  }
+}
+
+// ════════ 精英怪 — 血牛（暗红巨体） ════════
+export const drawEliteBlood = (ctx, half, dir, legOff, color, color2) => {
+  const headColor = '#fca5a5'
+  if (dir === 'front') {
+    ctx.fillStyle = headColor; ctx.fillRect(-12, -half + 2, 24, 16)
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(-8, -half + 8, 5, 5); ctx.fillRect(3, -half + 8, 5, 5)
+    ctx.fillStyle = color || '#991b1b'; ctx.fillRect(-18, -half + 18, 36, 24)
+    ctx.fillStyle = color2 || '#7f1d1d'; ctx.fillRect(-15, -half + 21, 30, 8)
+    ctx.fillStyle = '#5c1a1a'; ctx.fillRect(-14 + legOff, -half + 42, 12, 12); ctx.fillRect(2 - legOff, -half + 42, 12, 12)
+  } else {
+    ctx.fillStyle = headColor; ctx.fillRect(-10, -half + 2, 20, 16)
+    ctx.fillStyle = color || '#991b1b'; ctx.fillRect(-16, -half + 18, 32, 24)
+    ctx.fillStyle = '#5c1a1a'; ctx.fillRect(-12 + legOff, -half + 42, 10, 12); ctx.fillRect(2 - legOff, -half + 42, 10, 12)
+  }
+}
+
+// ════════ 精英怪 — 牧师（亡灵牧师，血色光环） ════════
+export const drawElitePriest = (ctx, half, dir, legOff, color, color2, elapsed) => {
+  // 血色光环
+  if (elapsed !== undefined) {
+    ctx.save()
+    ctx.strokeStyle = `rgba(220, 38, 38, ${0.25 + 0.1 * Math.sin((elapsed || 0) * 0.006)})`
+    ctx.lineWidth = 3
+    ctx.beginPath(); ctx.arc(0, 0, half + 12, 0, Math.PI * 2); ctx.stroke()
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.08)'
+    ctx.fill()
+    ctx.restore()
+  }
+  // 主体（紫红长袍）
+  const headColor = '#fca5a5'
+  if (dir === 'front') {
+    ctx.fillStyle = headColor; ctx.fillRect(-8, -half + 2, 16, 13)
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(-5, -half + 7, 4, 4); ctx.fillRect(1, -half + 7, 4, 4)
+    ctx.fillStyle = color || '#7f1d1d'; ctx.fillRect(-12, -half + 15, 24, 17)
+    ctx.fillStyle = color2 || '#fca5a5'; ctx.fillRect(-10, -half + 17, 20, 6)
+    ctx.fillStyle = '#6b1a1a'; ctx.fillRect(-8 + legOff, -half + 32, 7, 8); ctx.fillRect(1 - legOff, -half + 32, 7, 8)
+    // 法杖（右侧，红发光）
+    ctx.fillStyle = '#fca5a5'; ctx.fillRect(14, -half + 8, 3, 20)
+    ctx.save(); ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8
+    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(15.5, -half + 6, 5, 0, Math.PI * 2); ctx.fill()
+    ctx.restore()
+  } else {
+    ctx.fillStyle = headColor; ctx.fillRect(-6, -half + 2, 14, 13)
+    ctx.fillStyle = color || '#7f1d1d'; ctx.fillRect(-11, -half + 15, 22, 17)
+    ctx.fillStyle = '#6b1a1a'; ctx.fillRect(-7 + legOff, -half + 32, 7, 8); ctx.fillRect(1 - legOff, -half + 32, 7, 8)
+    ctx.fillStyle = '#fca5a5'; ctx.fillRect(12, -half + 8, 3, 18)
+    ctx.save(); ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8
+    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(13.5, -half + 6, 4, 0, Math.PI * 2); ctx.fill()
+    ctx.restore()
+  }
+}
+
+// ════════ 精英怪 — 毒虫（毒液虫，绿色毒雾） ════════
+export const drawEliteVenom = (ctx, half, dir, legOff, color, color2, elapsed) => {
+  // 绿色毒液粒子（环绕身体）
+  if (elapsed !== undefined) {
+    for (let i = 0; i < 4; i++) {
+      const angle = (Math.PI * 2 / 4) * i + (elapsed || 0) * 0.003
+      const px = Math.cos(angle) * (half + 6)
+      const py = Math.sin(angle) * (half + 6) - 2
+      ctx.save()
+      ctx.globalAlpha = 0.4 + 0.2 * Math.sin((elapsed || 0) * 0.008 + i)
+      ctx.fillStyle = '#4ade80'
+      ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill()
+      ctx.restore()
+    }
+  }
+  const headColor = '#86efac'
+  if (dir === 'front') {
+    ctx.fillStyle = headColor; ctx.fillRect(-7, -half + 2, 14, 12)
+    ctx.fillStyle = '#14532d'; ctx.fillRect(-4, -half + 6, 3, 3); ctx.fillRect(1, -half + 6, 3, 3)
+    ctx.fillStyle = color || '#166534'; ctx.fillRect(-10, -half + 14, 20, 15)
+    ctx.fillStyle = color2 || '#4ade80'; ctx.fillRect(-8, -half + 16, 16, 5)
+    ctx.fillStyle = '#365314'; ctx.fillRect(-7 + legOff, -half + 29, 6, 7); ctx.fillRect(1 - legOff, -half + 29, 6, 7)
+  } else {
+    ctx.fillStyle = headColor; ctx.fillRect(-5, -half + 2, 12, 12)
+    ctx.fillStyle = color || '#166534'; ctx.fillRect(-9, -half + 14, 18, 15)
+    ctx.fillStyle = '#365314'; ctx.fillRect(-6 + legOff, -half + 29, 6, 7); ctx.fillRect(0 - legOff, -half + 29, 6, 7)
+  }
+}
+
 export const drawEnemySprite = (ctx, sx, sy, enemy) => {
   const s = enemy.size; const half = s / 2
   ctx.save(); ctx.translate(sx, sy)
@@ -458,7 +568,16 @@ export const drawEnemySprite = (ctx, sx, sy, enemy) => {
     drawChargerEnemy(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2, enemy)
   } else if (enemy.type === 'shielder') {
     drawShielderEnemy(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2, enemy.skillTimer || 0)
+  } else if (enemy.type === 'eliteWind') {
+    drawEliteWind(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2)
+  } else if (enemy.type === 'eliteBlood') {
+    drawEliteBlood(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2)
+  } else if (enemy.type === 'elitePriest') {
+    drawElitePriest(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2, enemy.priestHealTimer || 0)
+  } else if (enemy.type === 'eliteVenom') {
+    drawEliteVenom(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2, enemy.venomBoltTimer || 0)
   } else {
+    // 未知类型兜底：用混合敌人精灵
     drawHybridEnemy(ctx, half, enemy.direction, legOffset, enemy.color, enemy.color2)
   }
 
