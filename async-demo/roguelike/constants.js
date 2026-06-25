@@ -387,6 +387,23 @@ export const SPAWN_MARGIN = 20
 /** 场上最大敌人数，超出后不再刷新新敌人 */
 export const MAX_ENEMIES = 60
 
+// ─────────────────────────── 敌人属性随玩家等级缩放 ───────────────────────────
+/** 每级生命值缩放比例（Lv1 为基准，每升一级 HP 增加该比例 × 基础值） */
+export const ENEMY_HP_SCALE_RATE = 0.06
+/** 每级攻击力缩放比例 */
+export const ENEMY_ATTACK_SCALE_RATE = 0.05
+
+/**
+ * 敌人属性随玩家等级动态缩放（仅缩放 HP 和攻击力；移速、攻击距离不变）
+ * @param {number} playerLevel - 玩家当前等级
+ * @param {number} baseValue  - 基础属性值
+ * @param {number} scaleRate  - 每级缩放比例
+ * @returns {number} 缩放后的属性值（取整）
+ */
+export function scaleEnemyStat(playerLevel, baseValue, scaleRate) {
+  return Math.round(baseValue * (1 + (playerLevel - 1) * scaleRate))
+}
+
 // ─────────────────────────── 弹幕参数 ───────────────────────────
 /** 敌人远程弹幕飞行速度 */
 export const ENEMY_PROJECTILE_SPEED = 5

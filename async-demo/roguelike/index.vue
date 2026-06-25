@@ -175,7 +175,7 @@ const { updateEnemies } = useEnemy(
 
 // 4. 敌人生成层
 const { spawnEnemy, handleSpawning, cleanupDead } = useEnemySpawner(
-  enemies, gameState, camera, gameCanvasRef, {}, battleLog,
+  enemies, gameState, camera, gameCanvasRef, { player }, battleLog,
 )
 
 // 5. 游戏主循环层

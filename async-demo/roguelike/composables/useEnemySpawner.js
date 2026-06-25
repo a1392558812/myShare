@@ -11,6 +11,9 @@ import {
   SPAWN_MARGIN,
   MAX_ENEMIES,
   DIRECTION,
+  ENEMY_HP_SCALE_RATE,
+  ENEMY_ATTACK_SCALE_RATE,
+  scaleEnemyStat,
 } from '../constants.js'
 import { useDebug } from './useDebug.js'
 
@@ -47,6 +50,11 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
 
     const attrs = chosenType.attrs
 
+    // 根据玩家等级缩放敌人 HP 和攻击力（移速、攻击距离保持不变）
+    const playerLevel = playerRefs?.player?.level ?? 1
+    const scaledHp = scaleEnemyStat(playerLevel, attrs.maxHp, ENEMY_HP_SCALE_RATE)
+    const scaledAttack = scaleEnemyStat(playerLevel, attrs.attack, ENEMY_ATTACK_SCALE_RATE)
+
     // 通过组件 expose 的方法获取画布尺寸
     const size = canvas.getCanvasSize ? canvas.getCanvasSize() : { width: 800, height: 600 }
     if (!size.width || !size.height) return
@@ -67,11 +75,11 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
     enemies.value.push(reactive({
       type: chosenType.type,
       x: spawnX, y: spawnY,
-      hp: attrs.maxHp,
-      maxHp: attrs.maxHp,
+      hp: scaledHp,
+      maxHp: scaledHp,
       speed: attrs.speed,
       size: attrs.size,
-      attack: attrs.attack,
+      attack: scaledAttack,
       attackRange: attrs.attackRange,
       skillRange: attrs.skillRange,
       skillCooldown: attrs.skillCooldown,

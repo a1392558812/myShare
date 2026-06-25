@@ -3,7 +3,7 @@
     <!-- 生命值 -->
     <div class="hud-hp">
       <div class="hud-hp-bar" :style="{ width: hpPercent + '%' }"></div>
-      <span class="hud-hp-text">{{ player.hp }} / {{ maxHp }}</span>
+      <span class="hud-hp-text">{{ (player.hp).toFixed(2) }} / {{ (maxHp).toFixed(2) }}</span>
     </div>
     <!-- 等级 & 经验 -->
     <div class="hud-level">
