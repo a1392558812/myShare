@@ -16,7 +16,6 @@ import {
   calcSkillValue,
   calcSkillValueLinear,
 } from '../constants.js'
-import { useDebug } from './useDebug.js'
 
 /**
  * @param {import('vue').UnwrapNestedRefs} player - 玩家响应式状态
@@ -47,7 +46,6 @@ export function usePlayer(
     if (battleLog.value.length > 50) battleLog.value.pop()
   }
 
-  const { debugFlags } = useDebug()
 
   const gainExp = (amount) => {
     player.exp += amount
@@ -151,7 +149,18 @@ export function usePlayer(
   const damageEnemy = (enemy, dmg) => {
     // 无敌伤害加成
     const invSkill = player.skills.find(s => s.id === 'invincible' && s.active)
-    const finalDmg = invSkill ? dmg * (1 + invSkill.invincibleDamageBoost) : dmg
+    let finalDmg = invSkill ? dmg * (1 + invSkill.invincibleDamageBoost) : dmg
+
+    // 护盾兵减伤检查
+    if (enemy.shieldedBy) {
+      const shielder = enemies.value.find(e => e.eid === enemy.shieldedBy && !e.dead)
+      if (shielder) {
+        finalDmg *= (1 - (shielder.shieldReduction || 0.4))
+      } else {
+        delete enemy.shieldedBy  // 护盾兵已死，清除引用
+      }
+    }
+
     enemy.hp -= finalDmg
     enemy.hitFlash = 6
     if (enemy.hp <= 0) {
@@ -588,33 +597,6 @@ export function usePlayer(
         activateSkill(meleeSkill)
       }
     }
-
-    // 敌人近战攻击玩家（受调试标志控制）
-    if (!debugFlags?.pauseEnemyAttack) {
-      enemies.value.forEach(e => {
-        if (e.dead || e.frozen) return
-        if (e.hasMelee) {
-        const meleeDist = Math.sqrt((player.x - e.x) ** 2 + (player.y - e.y) ** 2)
-        if (e.meleeCooldownTimer > 0) {
-          e.meleeCooldownTimer -= dt
-        }
-          if (meleeDist <= e.attackRange && e.meleeCooldownTimer <= 0) {
-          const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-          if (!debugFlags?.godMode && !isInvincible) {
-            player.hp -= e.attack
-          }
-          player.hitFlash = 6
-          e.meleeCooldownTimer = e.skillCooldown
-          log(`受到 ${e.type} 敌人 ${e.attack} 点近战伤害`)
-          if (player.hp <= 0) {
-            player.hp = 0
-            gameState.isDead = true
-            log('玩家阵亡！')
-          }
-        }
-      }
-    })
-    } // ← end pauseEnemyAttack
 
     // 玩家受击闪红衰减
     if (player.hitFlash > 0) player.hitFlash--

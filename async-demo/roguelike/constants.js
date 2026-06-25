@@ -38,6 +38,8 @@ export const PLAYER_ATTRS = {
  * @property {number} skillCooldown  - 技能冷却时间（ms）
  * @property {string} color          - 主色（用于绘制外观）
  * @property {string} color2         - 辅色（用于绘制外观细节）
+ * @property {string} icon           - 图标 emoji（用于 HUD 列表）
+ * @property {string} name           - 中文显示名称
  * @property {number} expReward      - 击杀后给予玩家的经验值
  * @property {boolean} hasMelee      - 是否拥有近战攻击
  * @property {boolean} hasRanged     - 是否拥有远程攻击
@@ -52,8 +54,10 @@ export const ENEMY_MELEE = {
   attackRange: 50,
   skillRange: 0,
   skillCooldown: 800,
-  color: '#dc2626',
-  color2: '#991b1b',
+  color: '#ea580c',        // 橙褐武士主色
+  color2: '#9a3412',       // 深褐腰带/武器
+  icon: '⚔️',
+  name: '近战武士',
   expReward: 20,
   hasMelee: true,
   hasRanged: false,
@@ -70,6 +74,8 @@ export const ENEMY_RANGED = {
   skillCooldown: 1500,
   color: '#2563eb',
   color2: '#1e40af',
+  icon: '🏹',
+  name: '远程射手',
   expReward: 25,
   hasMelee: false,
   hasRanged: true,
@@ -84,18 +90,115 @@ export const ENEMY_HYBRID = {
   attackRange: 45,
   skillRange: 200,
   skillCooldown: 1200,
-  color: '#7c3aed',
-  color2: '#5b21b6',
+  color: '#0891b2',        // 青蓝战法师主色
+  color2: '#0e7490',       // 深青细节/披风
+  icon: '🗡️',
+  name: '战法师',
   expReward: 35,
   hasMelee: true,
   hasRanged: true,
 }
 
+// ══════════════════ 自爆怪 bomber ══════════════════
+/** 低血量高速、近身自爆 AoE，压迫玩家走位 */
+export const ENEMY_BOMBER = {
+  maxHp: 25,
+  speed: 3.5,
+  size: ENTITY_SIZE * 0.8,
+  attack: 30,              // 自爆伤害
+  attackRange: 0,
+  skillRange: 0,
+  skillCooldown: 0,
+  color: '#f59e0b',        // 橙黄色警告色
+  color2: '#d97706',
+  icon: '💣',
+  name: '自爆怪',
+  expReward: 15,
+  hasMelee: false,
+  hasRanged: false,
+  bomberRange: 55,         // 自爆触发距离
+}
+
+// ══════════════════ 召唤师 summoner ══════════════════
+/** 远程站位，不直接攻击，定期召唤小怪 */
+export const ENEMY_SUMMONER = {
+  maxHp: 50,
+  speed: 1.5,
+  size: ENTITY_SIZE * 1.1,
+  attack: 0,
+  attackRange: 0,
+  skillRange: 300,          // 保持距离的"舒适区"
+  skillCooldown: 0,
+  color: '#7e22ce',         // 深紫死灵师主色
+  color2: '#3b0764',       // 近黑紫暗影
+  icon: '🧙',
+  name: '召唤师',
+  expReward: 40,
+  hasMelee: false,
+  hasRanged: false,
+  summonCooldown: 4000,     // 召唤间隔 ms
+  summonCount: 2,           // 每次召唤数量
+  summonMinionHp: 30,       // 召唤物 HP
+  summonMinionAttack: 8,    // 召唤物攻击力
+  summonMaxMinions: 6,      // 同时存在的召唤物最大数量
+  summonSacrificeDmg: 10,   // 上限溢出时，旧召唤物自爆 AoE 伤害
+  summonSacrificeRadius: 50,// 自爆 AoE 半径
+}
+
+// ══════════════════ 冲锋者 charger ══════════════════
+/** 周期性直线冲锋，撞到玩家造成大量伤害 + 击退 */
+export const ENEMY_CHARGER = {
+  maxHp: 70,
+  speed: 2.2,
+  size: ENTITY_SIZE * 1.2,
+  attack: 25,               // 冲锋撞击伤害
+  attackRange: 45,          // 冲锋碰撞判定范围
+  skillRange: 0,
+  skillCooldown: 0,
+  color: '#991b1b',         // 血红重甲骑士主色
+  color2: '#1a1a2e',       // 暗夜黑铁铠
+  icon: '⚡',
+  name: '冲锋者',
+  expReward: 30,
+  hasMelee: false,          // 不参与通用近战，用独立冲锋逻辑
+  hasRanged: false,
+  chargeCooldown: 3000,     // 冲锋冷却 ms
+  chargeSpeed: 12,          // 冲锋时速度
+  windUpDuration: 500,      // 蓄力前摇 ms（视觉预警）
+  chargeDuration: 400,      // 冲锋持续 ms
+  recoveryDuration: 800,    // 冲锋后僵直 ms
+}
+
+// ══════════════════ 护盾兵 shielder ══════════════════
+/** 跟随并保护最近友方敌人，提供减伤光环 */
+export const ENEMY_SHIELDER = {
+  maxHp: 90,
+  speed: 1.8,
+  size: ENTITY_SIZE * 1.15,
+  attack: 10,               // 无保护对象时自身攻击力
+  attackRange: 45,
+  skillRange: 0,
+  skillCooldown: 1000,
+  color: '#06b6d4',         // 青色
+  color2: '#0891b2',
+  icon: '🛡️',
+  name: '护盾兵',
+  expReward: 35,
+  hasMelee: true,           // 无友方时自身有近战能力
+  hasRanged: false,
+  shieldAuraRange: 120,     // 寻找友方范围
+  shieldReduction: 0.4,     // 减伤比例 40%
+}
+
 /** 敌人类型注册表（按权重随机抽取） */
 export const ENEMY_TYPE_TABLE = [
-  { type: 'melee',   attrs: ENEMY_MELEE,   weight: 3 },
-  { type: 'ranged',  attrs: ENEMY_RANGED,  weight: 2 },
-  { type: 'hybrid',  attrs: ENEMY_HYBRID,  weight: 1 },
+  { type: 'melee',    attrs: ENEMY_MELEE,    weight: 4 },
+  { type: 'ranged',   attrs: ENEMY_RANGED,   weight: 3 },
+  { type: 'hybrid',   attrs: ENEMY_HYBRID,   weight: 2 },
+  { type: 'bomber',   attrs: ENEMY_BOMBER,   weight: 2 },
+  { type: 'summoner', attrs: ENEMY_SUMMONER, weight: 1 },
+  { type: 'charger',  attrs: ENEMY_CHARGER,  weight: 2 },
+  { type: 'shielder', attrs: ENEMY_SHIELDER, weight: 1 },
 ]
 
 // ─────────────────────────── 技能属性表 ───────────────────────────

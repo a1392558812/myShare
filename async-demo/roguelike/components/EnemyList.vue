@@ -21,6 +21,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { ENEMY_TYPE_TABLE } from '../constants.js'
 
 const props = defineProps({
   enemies: { type: Array, required: true },
@@ -34,15 +35,14 @@ const aliveCount = computed(() =>
   props.enemies.filter(e => !e.dead).length
 )
 
-const getTypeIcon = (type) => {
-  const map = { melee: '⚔️', ranged: '🏹', hybrid: '🗡️' }
-  return map[type] || '👾'
-}
+/** 从 ENEMY_TYPE_TABLE 构建 type → { icon, name } 查找表 */
+const typeInfoMap = Object.fromEntries(
+  ENEMY_TYPE_TABLE.map(({ type, attrs }) => [type, { icon: attrs.icon, name: attrs.name }])
+)
 
-const getTypeName = (type) => {
-  const map = { melee: '近战', ranged: '远程', hybrid: '混合' }
-  return map[type] || type
-}
+const getTypeIcon = (type) => typeInfoMap[type]?.icon || '👾'
+
+const getTypeName = (type) => typeInfoMap[type]?.name || type
 </script>
 
 <style scoped lang="scss">

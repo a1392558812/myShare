@@ -171,7 +171,7 @@ const {
 
 // 3. 敌人 AI 层
 const { updateEnemies } = useEnemy(
-  enemies, player, projectiles, gameState, mapUtils, battleLog,
+  enemies, player, projectiles, gameState, mapUtils, battleLog, effects,
 )
 
 // 4. 敌人生成层

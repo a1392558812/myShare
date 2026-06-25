@@ -72,13 +72,20 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
       case 3: spawnX = camera.x - hw; spawnY = camera.y + (Math.random() - 0.5) * 2 * hh; break
     }
 
-    enemies.value.push(reactive({
+    // ═══════ 属性随机浮动 ═══════
+    const floatHp = Math.round(scaledHp * (0.85 + Math.random() * 0.3))        // ±15%
+    const floatSpeed = attrs.speed * (0.9 + Math.random() * 0.2)                // ±10%
+    const floatSize = attrs.size * (0.9 + Math.random() * 0.3)                  // -10%~+20%
+
+    // 基础敌人对象
+    const enemyData = {
+      eid: Date.now() + Math.random(),   // 唯一 ID（供护盾兵引用）
       type: chosenType.type,
       x: spawnX, y: spawnY,
-      hp: scaledHp,
-      maxHp: scaledHp,
-      speed: attrs.speed,
-      size: attrs.size,
+      hp: floatHp,
+      maxHp: floatHp,
+      speed: floatSpeed,
+      size: floatSize,
       attack: scaledAttack,
       attackRange: attrs.attackRange,
       skillRange: attrs.skillRange,
@@ -99,7 +106,37 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
       skillTimer: 0,
       meleeAttacking: false,
       meleeCooldownTimer: 0,
-    }))
+    }
+
+    // ═══════ 类型专属字段初始化 ═══════
+    if (chosenType.type === 'bomber') {
+      enemyData.bomberRange = attrs.bomberRange || 55
+    }
+    if (chosenType.type === 'summoner') {
+      enemyData.summonTimer = Math.random() * 2000  // 错峰启动
+      enemyData.summonCooldown = attrs.summonCooldown || 4000
+      enemyData.summonCount = attrs.summonCount || 2
+    }
+    if (chosenType.type === 'charger') {
+      enemyData.chargeTimer = Math.random() * 2000   // 错峰启动
+      enemyData.chargeCooldown = attrs.chargeCooldown || 3000
+      enemyData.chargeState = 'idle'
+      enemyData.chargeStateTimer = 0
+      enemyData.chargeDirX = 0
+      enemyData.chargeDirY = 0
+      enemyData.chargeSpeed = attrs.chargeSpeed || 12
+      enemyData.normalSpeed = floatSpeed
+      enemyData.windUpDuration = attrs.windUpDuration || 500
+      enemyData.chargeDuration = attrs.chargeDuration || 400
+      enemyData.recoveryDuration = attrs.recoveryDuration || 800
+    }
+    if (chosenType.type === 'shielder') {
+      enemyData.shieldAuraRange = attrs.shieldAuraRange || 120
+      enemyData.shieldReduction = attrs.shieldReduction || 0.4
+      enemyData.shieldedAllyId = null
+    }
+
+    enemies.value.push(reactive(enemyData))
   }
 
   /**
