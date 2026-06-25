@@ -116,6 +116,9 @@ export function useEnemySpawner(enemies, gameState, camera, gameCanvas, playerRe
       enemyData.summonTimer = Math.random() * 2000  // 错峰启动
       enemyData.summonCooldown = attrs.summonCooldown || 4000
       enemyData.summonCount = attrs.summonCount || 2
+      enemyData.summonMaxMinions = attrs.summonMaxMinions || 6
+      enemyData.summonSacrificeDmg = attrs.summonSacrificeDmg || 10
+      enemyData.summonSacrificeRadius = attrs.summonSacrificeRadius || 50
     }
     if (chosenType.type === 'charger') {
       enemyData.chargeTimer = Math.random() * 2000   // 错峰启动

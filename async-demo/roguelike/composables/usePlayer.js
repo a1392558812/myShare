@@ -52,17 +52,22 @@ export function usePlayer(
     checkLevelUp()
   }
 
+  // 只处理一次升级；剩余经验由 onLevelUpChoice 选择后再次调用本函数逐级处理，
+  // 避免一次性获得大量经验时 while 循环跳级导致升级奖励丢失/卡等级。
   const checkLevelUp = () => {
-    while (player.level < EXP_LEVEL_TABLE.length && player.exp >= EXP_LEVEL_TABLE[player.level]) {
+    if (gameState.levelUpPending) return  // 已有待玩家选择的升级面板，不重复触发
+
+    let needExp
+    if (player.level < EXP_LEVEL_TABLE.length) {
+      needExp = EXP_LEVEL_TABLE[player.level]
+    } else {
+      // 超出经验表，按线性公式计算下一级所需累计经验
+      needExp = EXP_LEVEL_TABLE[EXP_LEVEL_TABLE.length - 1] + (player.level - EXP_LEVEL_TABLE.length + 1) * 2000
+    }
+
+    if (player.exp >= needExp) {
       player.level++
       showLevelUpOptions()
-    }
-    if (player.level >= EXP_LEVEL_TABLE.length) {
-      const threshold = EXP_LEVEL_TABLE[EXP_LEVEL_TABLE.length - 1] + (player.level - EXP_LEVEL_TABLE.length + 1) * 2000
-      if (player.exp >= threshold) {
-        player.level++
-        showLevelUpOptions()
-      }
     }
   }
 
@@ -466,6 +471,8 @@ export function usePlayer(
     }
     recalcPassiveBuffs()
     gameState.levelUpPending = false
+    // 选择完毕后，检查是否还有剩余经验可继续升级（逐级弹出，不跳级）
+    checkLevelUp()
   }
 
   // ─── 每帧更新 ───
@@ -638,5 +645,6 @@ export function usePlayer(
     createSkillInstance,
     resetPlayer,
     recalcPassiveBuffs,
+    gainExp,
   }
 }

@@ -36,7 +36,7 @@
       @set-player-hp="player.hp = Math.min($event, player.maxHp)" @set-player-speed="player.speed = $event"
       @set-player-base-attack="player.baseAttack = $event" @set-player-level="debugSetLevel($event)"
       @set-player-exp="player.exp = $event" @set-player-pos="debugSetPos" @change-skill-level="debugChangeSkillLevel"
-      @reset-skill-cd="debugResetSkillCd" @unlock-skill="debugUnlockSkill" />
+      @reset-skill-cd="debugResetSkillCd" @unlock-skill="debugUnlockSkill" @remove-skill="debugRemoveSkill" @add-exp="gainExp" />
   </div>
 </template>
 
@@ -166,7 +166,7 @@ const {
   updatePlayer, fireArrow, activateSkill, onSkillClick,
   damageEnemy, findNearestEnemy,
   showLevelUpOptions, onLevelUpChoice,
-  createSkillInstance, resetPlayer, recalcPassiveBuffs,
+  createSkillInstance, resetPlayer, recalcPassiveBuffs, gainExp,
 } = playerUtils
 
 // 3. 敌人 AI 层
@@ -281,7 +281,7 @@ const debugKillAll = () => {
       e.hp = 0
       e.dead = true
       gameState.killCount++
-      player.exp += (e.expReward || 0)
+      gainExp(e.expReward || 0)
     }
   })
 }
@@ -317,7 +317,18 @@ const debugResetSkillCd = (id) => {
 const debugUnlockSkill = (id) => {
   if (player.skills.find(s => s.id === id)) return
   const tpl = SKILL_TABLE.find(s => s.id === id)
-  if (tpl) player.skills.push(createSkillInstance(tpl, 1))
+  if (tpl) {
+    player.skills.push(createSkillInstance(tpl, 1))
+    if (id === 'bodyStrength') recalcPassiveBuffs()
+  }
+}
+
+const debugRemoveSkill = (id) => {
+  const idx = player.skills.findIndex(s => s.id === id)
+  if (idx === -1) return
+  player.skills.splice(idx, 1)
+  // 移除被动技能后需要重算属性
+  if (id === 'bodyStrength') recalcPassiveBuffs()
 }
 
 // ═════════════════════ 生命周期 ═════════════════════

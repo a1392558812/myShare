@@ -85,18 +85,23 @@
           <span v-if="!sections.skill" class="dp-collapse-hint">（点击展开）</span>
         </legend>
         <div v-if="sections.skill" class="dp-section-body">
-          <div v-for="sk in allSkills" :key="sk.id" class="dp-skill-row">
+          <div v-for="sk in allSkills" :key="sk.id" class="dp-skill-row" :class="{ 'dp-skill-locked': !hasSkill(sk.id) }">
             <span class="dp-skill-icon">{{ sk.icon }}</span>
             <span class="dp-skill-name">{{ sk.name }}</span>
             <span class="dp-skill-lv">Lv.{{ sk.currentLevel || 0 }}</span>
-            <button class="dp-btn dp-btn-sm" @click="$emit('change-skill-level', sk.id, -1)">-</button>
-            <button class="dp-btn dp-btn-sm" @click="$emit('change-skill-level', sk.id, 1)">+</button>
-            <button class="dp-btn dp-btn-sm" @click="$emit('reset-skill-cd', sk.id)">⏱重置CD</button>
-            <span v-if="!hasSkill(sk.id)" class="dp-skill-status">（未习得）</span>
+            <template v-if="hasSkill(sk.id)">
+              <button class="dp-btn dp-btn-sm" @click="$emit('change-skill-level', sk.id, -1)">-</button>
+              <button class="dp-btn dp-btn-sm" @click="$emit('change-skill-level', sk.id, 1)">+</button>
+              <button class="dp-btn dp-btn-sm" @click="$emit('reset-skill-cd', sk.id)">⏱CD</button>
+              <button class="dp-btn dp-btn-sm dp-btn-red" @click="$emit('remove-skill', sk.id)">❌</button>
+            </template>
+            <template v-else>
+              <button class="dp-btn dp-btn-sm dp-btn-green" @click="$emit('unlock-skill', sk.id)">✅ 解锁</button>
+            </template>
           </div>
           <div class="dp-row" style="margin-top:8px">
             <button class="dp-btn" @click="unlockAll">解锁全部技能</button>
-            <button class="dp-btn" @click="resetAllCd">全部技能重置CD</button>
+            <button class="dp-btn" @click="resetAllCd">全部重置CD</button>
           </div>
         </div>
       </fieldset>
@@ -132,7 +137,7 @@ const props = defineProps({
   skills: { type: Array, required: true },
 })
 
-const emit = defineEmits(['close', 'kill-all-enemies', 'freeze-enemies', 'set-player-hp', 'set-player-speed', 'set-player-base-attack', 'set-player-level', 'set-player-exp', 'set-player-pos', 'change-skill-level', 'reset-skill-cd', 'unlock-skill'])
+const emit = defineEmits(['close', 'kill-all-enemies', 'freeze-enemies', 'set-player-hp', 'set-player-speed', 'set-player-base-attack', 'set-player-level', 'set-player-exp', 'set-player-pos', 'change-skill-level', 'reset-skill-cd', 'unlock-skill', 'remove-skill', 'add-exp'])
 
 const { debugFlags, playerOverride, enemyDebug } = useDebug()
 const flags = debugFlags
@@ -189,8 +194,7 @@ const resetBaseAttack = () => {
 const emitLevel = () => { emit('set-player-level', local.level) }
 const emitExp = () => { emit('set-player-exp', local.exp) }
 const addExp = (amt) => {
-  props.player.exp += amt
-  local.exp = props.player.exp
+  emit('add-exp', amt)
 }
 const emitPos = () => { emit('set-player-pos', local.px, local.py) }
 const resetPos = () => {
@@ -344,6 +348,7 @@ const formatTime = (ms) => {
   &:hover { background: rgba(71, 85, 105, 0.9); border-color: #fbbf24; }
   &-sm { padding: 2px 5px; font-size: 10px; }
   &-red { color: #f87171; border-color: rgba(248, 113, 113, 0.4); }
+  &-green { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
 }
 
 .dp-skill-row {
@@ -360,4 +365,5 @@ const formatTime = (ms) => {
 .dp-skill-name { flex: 1; font-size: 11px; }
 .dp-skill-lv { color: #fbbf24; font-size: 10px; white-space: nowrap; }
 .dp-skill-status { color: #64748b; font-size: 10px; }
+.dp-skill-locked { opacity: 0.6; }
 </style>

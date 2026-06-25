@@ -146,8 +146,8 @@ export const renderEffect = (ctx, e, toScreen) => {
       const fade = 1 - progress
       ctx.save()
 
-      // 核心光点（淡紫，非纯白）
-      ctx.globalAlpha = fade * 0.4
+      // 核心光点（淡紫）
+      ctx.globalAlpha = fade * 0.95
       ctx.fillStyle = '#d8b4fe'
       ctx.shadowColor = '#a855f7'
       ctx.shadowBlur = 6
@@ -162,7 +162,7 @@ export const renderEffect = (ctx, e, toScreen) => {
       ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2); ctx.stroke()
 
       // 内圈填充（半透明）
-      ctx.globalAlpha = fade * 0.35
+      ctx.globalAlpha = fade * 0.75
       ctx.fillStyle = e.color || '#7e22ce'
       ctx.shadowBlur = 0
       ctx.beginPath(); ctx.arc(pos.x, pos.y, r * 0.4, 0, Math.PI * 2); ctx.fill()
@@ -173,7 +173,7 @@ export const renderEffect = (ctx, e, toScreen) => {
         const dist = r * (0.5 + progress * 0.5)
         const px = pos.x + Math.cos(angle) * dist
         const py = pos.y + Math.sin(angle) * dist
-        ctx.globalAlpha = fade * 0.5
+        ctx.globalAlpha = fade * 0.55
         ctx.fillStyle = i % 2 === 0 ? '#c084fc' : '#a855f7'
         ctx.beginPath(); ctx.arc(px, py, 1.5 * fade, 0, Math.PI * 2); ctx.fill()
       }
@@ -219,6 +219,8 @@ export const renderEffect = (ctx, e, toScreen) => {
 
       ctx.restore()
     }
-    ctx.restore()
   }
-}
+  // 统一恢复外层 save——修复 meleeSlash / freezeCircle / magicFireball 分支
+  // 未配对 restore 导致 globalAlpha 泄漏，使所有单位跟着闪烁的问题
+  ctx.restore()
+}

@@ -178,13 +178,13 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
                   }
                 })
 
-                // 自爆特效（弱化版，区别于正版自爆怪）
+                // 自爆特效（紫色调，区别于正版橙色自爆怪）
                 effects.value.push({
                   type: 'explosion',
                   variant: 'sacrifice',
                   x: old.x, y: old.y,
                   radius: sacrificeRadius,
-                  duration: 400, elapsed: 0,
+                  duration: 550, elapsed: 0,
                   color: e.color, color2: e.color2,
                 })
                 old.dead = true
