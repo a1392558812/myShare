@@ -1,16 +1,10 @@
 <template>
   <div class="action-bar">
-    <div
-      v-for="(sk, idx) in skills"
-      :key="idx"
-      class="skill-slot"
-      :class="{
-        'skill-empty': !sk,
-        'skill-cooldown': sk && sk.remainingCooldown > 0,
-        'skill-active': sk && sk.active
-      }"
-      @click="sk && $emit('skill-click', sk)"
-    >
+    <div v-for="(sk, idx) in skills" :key="idx" class="skill-slot" :class="{
+      'skill-empty': !sk,
+      'skill-cooldown': sk && sk.remainingCooldown > 0,
+      'skill-active': sk && sk.active
+    }" @click="sk && $emit('skill-click', sk)">
       <template v-if="sk">
         <span class="skill-icon">{{ sk.icon }}</span>
         <span class="skill-level">Lv{{ sk.currentLevel }}</span>
@@ -18,12 +12,16 @@
           {{ Math.ceil(sk.remainingCooldown / 1000) }}s
         </span>
       </template>
-      <span class="skill-key">{{ idx + 1 }}</span>
+      <span class="skill-key">{{ SKILL_KEY_MAP[sk.id] }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import {
+  SKILL_KEY_MAP,
+} from '../constants.js'
+
 defineProps({
   skills: { type: Array, required: true },
 })

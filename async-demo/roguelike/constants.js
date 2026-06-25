@@ -189,11 +189,12 @@ export const SKILL_AUTO_SEEK = {
   id: 'autoSeek',
   name: '追踪弹幕',
   icon: '🔮',
-  description: '自动向最近敌人发射追踪弹幕',
+  description: '自动向最近敌人发射追踪弹幕，每升一级额外增加1颗弹幕（最多5颗额外）',
   cooldown: 2000,
   damage: 15,
   range: 400,
   projectileSpeed: 6,
+  extraProjectiles: 0,  // 基础额外弹幕数为0，每升一级+1，最多5
   duration: 0,
   lifestealPercent: 0,
   unlockLevel: 1,
@@ -201,7 +202,7 @@ export const SKILL_AUTO_SEEK = {
     damage:          { ratio: 1.35, cap: null },      // Lv1=15, Lv2≈20, Lv3≈27 …
     cooldown:        { ratio: 0.92, cap: 800 },       // 冷却缩短，最低 800ms
     range:           { ratio: 1.08, cap: 360 },       // 搜索范围扩大，上限 360px
-    projectileSpeed: { ratio: 1.15, cap: 12 },        // 弹速提升，上限 12
+    projectileSpeed: { ratio: 1.15, cap: 5 },        // 弹速提升，上限 5
   },
 }
 
@@ -273,6 +274,29 @@ export const SKILL_BODY_STRENGTH = {
   },
 }
 
+/** 无敌 — 主动技能，按 Q 键释放，短暂时间内不受伤害并提升移速与伤害 */
+export const SKILL_INVINCIBLE = {
+  id: 'invincible',
+  name: '无敌',
+  icon: '🛡️',
+  description: '短时间内免疫所有伤害，提升移速与伤害加成',
+  cooldown: 20000,         // 冷却 20s
+  damage: 0,               // 无直接伤害
+  range: 0,
+  projectileSpeed: 0,
+  duration: 3000,          // 无敌持续 3s（基础）
+  speedBoost: 0.1,         // 移速加成 10%（基础）
+  damageBoost: 0.1,        // 伤害加成 10%（基础）
+  lifestealPercent: 0,
+  unlockLevel: 1,
+  growth: {
+    cooldown:    { ratio: 0.92, cap: 9000 },   // 冷却缩短，最低 9s
+    duration:    { ratio: 1.10, cap: 8000 },     // 持续时间延长，上限 8s
+    speedBoost:  { ratio: 1.10, cap: 2.0 },      // 移速加成提升，上限 200%
+    damageBoost: { ratio: 1.12, cap: null },      // 伤害加成提升，无上限
+  },
+}
+
 /** 技能注册表 */
 export const SKILL_TABLE = [
   SKILL_ARROW,
@@ -281,6 +305,7 @@ export const SKILL_TABLE = [
   SKILL_FREEZE,
   SKILL_VAMPIRE_AURA,
   SKILL_BODY_STRENGTH,
+  SKILL_INVINCIBLE,
 ]
 
 /**
@@ -293,6 +318,7 @@ export const SKILL_KEY_MAP = {
   autoSeek:      3,
   freeze:        4,
   vampireAura:   5,
+  invincible:   'Q',
 }
 
 // ─────────────────────────── 经验等级对照表 ───────────────────────────
@@ -355,6 +381,8 @@ export const KEY_BINDINGS = {
   skill2:    ['2'],
   skill3:    ['3'],
   skill4:    ['4'],
+  skill5:    ['5'],
+  invincible:['q'],          // Q 键释放无敌
 }
 
 // ─────────────────────────── 碰撞检测阈值 ───────────────────────────

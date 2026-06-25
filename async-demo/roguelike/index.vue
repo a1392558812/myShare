@@ -1,31 +1,16 @@
 <template>
-  <div class="roguelike-game" ref="gameRoot" @mousemove="onMouseMove"
-      @mousedown="onMouseDown"
-      @mouseup="onMouseUp">
+  <div class="roguelike-game" ref="gameRoot" @mousemove="onMouseMove" @mousedown="onMouseDown" @mouseup="onMouseUp">
     <!-- 地图渲染区 -->
-    <GameCanvas
-      ref="gameCanvasRef"
-      :camera="camera"
-    />
+    <GameCanvas ref="gameCanvasRef" :camera="camera" />
 
     <!-- HUD 界面层 -->
-    <div class="hud" >
+    <div class="hud">
       <!-- 玩家状态面板 -->
-      <PlayerStatusPanel
-        :player="player"
-        :max-hp="player.maxHp"
-        :hp-percent="hpPercent"
-        :exp-percent="expPercent"
-        :next-level-exp="nextLevelExp"
-        :game-time="gameState.gameTime"
-        :kill-count="gameState.killCount"
-        :format-time="formatTime"
-      />
-    <!-- 操作按钮栏（技能） -->
-    <ActionBar
-      :skills="skillSlots"
-      @skill-click="onSkillClick"
-    />
+      <PlayerStatusPanel :player="player" :max-hp="player.maxHp" :hp-percent="hpPercent" :exp-percent="expPercent"
+        :next-level-exp="nextLevelExp" :game-time="gameState.gameTime" :kill-count="gameState.killCount"
+        :format-time="formatTime" />
+      <!-- 操作按钮栏（技能） -->
+      <ActionBar :skills="skillSlots" @skill-click="onSkillClick" />
       <!-- 敌人列表 -->
       <EnemyList :enemies="enemies" />
       <!-- 战斗日志 -->
@@ -33,22 +18,12 @@
     </div>
 
     <!-- 升级选择面板 -->
-    <LevelUpPanel
-      v-if="gameState.levelUpPending"
-      :player="player"
-      :options="levelUpOptions"
-      @choice="onLevelUpChoice"
-    />
+    <LevelUpPanel v-if="gameState.levelUpPending" :player="player" :options="levelUpOptions"
+      @choice="onLevelUpChoice" />
 
     <!-- 死亡界面 -->
-    <DeathPanel
-      v-if="gameState.isDead"
-      :game-time="gameState.gameTime"
-      :kill-count="gameState.killCount"
-      :player-level="player.level"
-      :format-time="formatTime"
-      @restart="restartGame"
-    />
+    <DeathPanel v-if="gameState.isDead" :game-time="gameState.gameTime" :kill-count="gameState.killCount"
+      :player-level="player.level" :format-time="formatTime" @restart="restartGame" />
 
     <!-- 调试面板开关（右下角浮动按钮） -->
     <button class="debug-toggle-btn" @click="toggleDebug" :title="debugOpen ? '关闭调试面板' : '打开调试面板 (~ 键)'">
@@ -56,25 +31,12 @@
     </button>
 
     <!-- 调试面板 -->
-    <DebugPanel
-      v-if="debugOpen"
-      :player="player"
-      :enemies="enemies"
-      :game-state="gameState"
-      :skills="player.skills"
-      @close="debugOpen = false"
-      @kill-all-enemies="debugKillAll"
-      @freeze-enemies="debugFreeze"
-      @set-player-hp="player.hp = Math.min($event, player.maxHp)"
-      @set-player-speed="player.speed = $event"
-      @set-player-base-attack="player.baseAttack = $event"
-      @set-player-level="debugSetLevel($event)"
-      @set-player-exp="player.exp = $event"
-      @set-player-pos="debugSetPos"
-      @change-skill-level="debugChangeSkillLevel"
-      @reset-skill-cd="debugResetSkillCd"
-      @unlock-skill="debugUnlockSkill"
-    />
+    <DebugPanel v-if="debugOpen" :player="player" :enemies="enemies" :game-state="gameState" :skills="player.skills"
+      @close="debugOpen = false" @kill-all-enemies="debugKillAll" @freeze-enemies="debugFreeze"
+      @set-player-hp="player.hp = Math.min($event, player.maxHp)" @set-player-speed="player.speed = $event"
+      @set-player-base-attack="player.baseAttack = $event" @set-player-level="debugSetLevel($event)"
+      @set-player-exp="player.exp = $event" @set-player-pos="debugSetPos" @change-skill-level="debugChangeSkillLevel"
+      @reset-skill-cd="debugResetSkillCd" @unlock-skill="debugUnlockSkill" />
   </div>
 </template>
 
@@ -83,10 +45,10 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import {
   PLAYER_ATTRS,
   SKILL_TABLE,
-  SKILL_KEY_MAP,
   EXP_LEVEL_TABLE,
   ENTITY_SIZE,
   DIRECTION,
+  SKILL_KEY_MAP
 } from './constants.js'
 
 // ─── Composables ───
@@ -177,11 +139,10 @@ const formatTime = (ms) => {
 
 // ─── 技能固定槽位 ───
 const skillSlots = computed(() => {
-  const slots = new Array(5).fill(null)
+  const slots = []
   player.skills.forEach(sk => {
     if (sk.isPassive) return
-    const idx = SKILL_KEY_MAP[sk.id]
-    if (idx !== undefined) slots[idx - 1] = sk
+    slots.push(sk)
   })
   return slots
 })
@@ -258,19 +219,25 @@ const onKeyDown = (e) => {
     return
   }
 
-  keysDown[e.key.toLowerCase()] = true
-
-  // 数字键激活技能（固定映射，按键编号对应 SKILL_KEY_MAP 中的槽位）
-  const keyNum = parseInt(e.key)
-  if (keyNum >= 1 && keyNum <= 5) {
-    const skill = skillSlots.value[keyNum - 1]
-    if (skill) activateSkill(skill)
-  }
-
   // 空格键射击
   if (e.key === ' ') {
     e.preventDefault()
     fireArrow()
+  }
+
+  const targetKeysDown = e.key.toLowerCase()
+  keysDown[targetKeysDown] = true
+
+  const targetIndex = skillSlots.value.findIndex(item => {
+    const skillKeyVal = (SKILL_KEY_MAP[`${item.id}`] + '').toLowerCase()
+    const flag = skillKeyVal === `${targetKeysDown}`
+    console.log('targetKeysDown', skillKeyVal, targetKeysDown, flag)
+    return flag
+  })
+
+  console.log('targetIndex', skillSlots.value, targetKeysDown, targetIndex)
+  if (targetIndex !== -1) {
+    activateSkill(skillSlots.value[targetIndex])
   }
 }
 
@@ -393,7 +360,7 @@ onUnmounted(() => {
   z-index: 10;
   pointer-events: none;
 
-  > * {
+  >* {
     pointer-events: auto;
   }
 }

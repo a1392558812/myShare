@@ -88,6 +88,12 @@ export function usePlayer(
       auraLifesteal: 0,
       auraRange: 0,
       auraTickTimer: 0,
+      speedBoost: template.speedBoost || 0,
+      damageBoost: template.damageBoost || 0,
+      extraProjectiles: template.extraProjectiles || 0,
+      invincibleTimer: 0,
+      invincibleSpeedBoost: 0,
+      invincibleDamageBoost: 0,
       isPassive: template.isPassive || false,
       maxHpBonusBase: template.maxHpBonusBase || 0,
       speedBonusBase: template.speedBonusBase || 0,
@@ -137,7 +143,10 @@ export function usePlayer(
 
   /** 对敌人造成伤害 */
   const damageEnemy = (enemy, dmg) => {
-    enemy.hp -= dmg
+    // 无敌伤害加成
+    const invSkill = player.skills.find(s => s.id === 'invincible' && s.active)
+    const finalDmg = invSkill ? dmg * (1 + invSkill.invincibleDamageBoost) : dmg
+    enemy.hp -= finalDmg
     enemy.hitFlash = 6
     if (enemy.hp <= 0) {
       enemy.dead = true
@@ -211,21 +220,55 @@ export function usePlayer(
       const effectiveProjSpeed = calcSkillValue(skill.projectileSpeed, skill.growth?.projectileSpeed, skill.currentLevel)
       const nearest = findNearestEnemy(effectiveRange)
       if (nearest) {
-        const dx = nearest.x - player.x
-        const dy = nearest.y - player.y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        projectiles.value.push({
-          type: 'autoSeek',
-          x: player.x, y: player.y,
-          vx: (dx / dist) * effectiveProjSpeed,
-          vy: (dy / dist) * effectiveProjSpeed,
-          damage: dmg,
-          size: 10,
-          owner: 'player',
-          targetEnemy: nearest,
-          seekSpeed: effectiveProjSpeed,
-        })
-        log('追踪弹幕发射！')
+        // 额外弹幕数 = min(currentLevel - 1, 5)，Lv1=0颗额外，Lv2=1颗，以此类推，最多5颗
+        const extraCount = Math.min((skill.currentLevel || 1) - 1, 5)
+        const totalCount = 1 + extraCount  // 主弹幕 + 额外弹幕
+
+        // 生成所有可命中的候选目标（按距离排序）
+        const candidateTargets = enemies.value
+          .filter(e => !e.dead)
+          .map(e => {
+            const edx = e.x - player.x
+            const edy = e.y - player.y
+            return { enemy: e, dist: Math.sqrt(edx * edx + edy * edy) }
+          })
+          .filter(({ dist }) => dist <= effectiveRange)
+          .sort((a, b) => a.dist - b.dist)
+          .map(({ enemy }) => enemy)
+
+        for (let i = 0; i < totalCount; i++) {
+          // 每颗弹幕尽量锁定不同目标（循环复用）
+          const target = candidateTargets[i % candidateTargets.length] || nearest
+
+          const dx = target.x - player.x
+          const dy = target.y - player.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+
+          // 额外弹幕加一点随机偏角（±15°），避免完全重叠
+          let vx = (dx / dist) * effectiveProjSpeed
+          let vy = (dy / dist) * effectiveProjSpeed
+          if (i > 0) {
+            const jitter = (Math.random() - 0.5) * (Math.PI / 6)  // ±15°
+            const cos = Math.cos(jitter)
+            const sin = Math.sin(jitter)
+            const newVx = vx * cos - vy * sin
+            const newVy = vx * sin + vy * cos
+            vx = newVx
+            vy = newVy
+          }
+
+          projectiles.value.push({
+            type: 'autoSeek',
+            x: player.x, y: player.y,
+            vx, vy,
+            damage: dmg,
+            size: 10,
+            owner: 'player',
+            targetEnemy: target,
+            seekSpeed: effectiveProjSpeed,
+          })
+        }
+        log(`追踪弹幕发射！×${totalCount}`)
       }
       skill.remainingCooldown = effectiveCooldown
     } else if (skill.id === 'freeze') {
@@ -258,6 +301,16 @@ export function usePlayer(
       skill.auraTickTimer = 0
       skill.remainingCooldown = effectiveCooldown
       log('吸血光环启动！')
+    } else if (skill.id === 'invincible') {
+      const effectiveDuration = calcSkillValue(skill.duration, skill.growth?.duration, skill.currentLevel)
+      const effectiveSpeedBoost = calcSkillValue(skill.speedBoost, skill.growth?.speedBoost, skill.currentLevel)
+      const effectiveDamageBoost = calcSkillValue(skill.damageBoost, skill.growth?.damageBoost, skill.currentLevel)
+      skill.active = true
+      skill.invincibleTimer = effectiveDuration
+      skill.invincibleSpeedBoost = effectiveSpeedBoost
+      skill.invincibleDamageBoost = effectiveDamageBoost
+      skill.remainingCooldown = effectiveCooldown
+      log('无敌启动！')
     }
   }
 
@@ -280,6 +333,13 @@ export function usePlayer(
         const nextSpd = calcSkillValue(sk.speedBonusBase, sk.growth?.speedBonus, nextLv)
         const nextAtk = calcSkillValue(sk.attackBonusBase, sk.growth?.attackBonus, nextLv)
         desc = `生命+${Math.round(nextHp)} 速度+${nextSpd.toFixed(1)} 攻击+${Math.round(nextAtk)}`
+      } else if (sk.speedBoost || sk.damageBoost) {
+        // 无敌类技能：展示冷却、持续、移速加成、伤害加成四项属性
+        const nextCooldown = calcSkillValue(sk.cooldown, sk.growth?.cooldown, nextLv)
+        const nextDuration = calcSkillValue(sk.duration, sk.growth?.duration, nextLv)
+        const nextSpeed = calcSkillValue(sk.speedBoost, sk.growth?.speedBoost, nextLv)
+        const nextDmgBoost = calcSkillValue(sk.damageBoost, sk.growth?.damageBoost, nextLv)
+        desc = `冷却${(nextCooldown/1000).toFixed(1)}s 持续${(nextDuration/1000).toFixed(1)}s 移速+${Math.round(nextSpeed*100)}% 伤害+${Math.round(nextDmgBoost*100)}%`
       } else {
         const nextDmg = calcSkillValue(sk.damage, sk.growth?.damage, nextLv)
         desc = `伤害 ${Math.round(nextDmg)}`
@@ -291,9 +351,6 @@ export function usePlayer(
     SKILL_TABLE.forEach(sk => {
       if (sk.unlockLevel <= player.level && !player.skills.find(s => s.id === sk.id)) {
         let desc = sk.description
-        if (sk.isPassive) {
-          desc = `生命+${sk.maxHpBonusBase} 速度+${sk.speedBonusBase} 攻击+${sk.attackBonusBase}`
-        }
         options.push({ ...sk, isNew: true, nextLevel: 1, description: desc })
       }
     })
@@ -342,8 +399,13 @@ export function usePlayer(
     if (player.isMoving) {
       const len = Math.sqrt(dx * dx + dy * dy)
       dx /= len; dy /= len
-      player.x += dx * player.speed
-      player.y += dy * player.speed
+      // 无敌加速：存在且 active 时应用移速加成
+      const invFrame = player.skills.find(s => s.id === 'invincible' && s.active)
+      const currentSpeed = invFrame
+        ? player.speed * (1 + invFrame.invincibleSpeedBoost)
+        : player.speed
+      player.x += dx * currentSpeed
+      player.y += dy * currentSpeed
 
       if (Math.abs(dx) > Math.abs(dy)) {
         player.direction = dx > 0 ? DIRECTION.RIGHT : DIRECTION.LEFT
@@ -379,6 +441,15 @@ export function usePlayer(
       }
       if (vampireSkill.auraTimer <= 0) {
         vampireSkill.active = false
+      }
+    }
+
+    // 无敌持续计时
+    const invincibleSkill = player.skills.find(s => s.id === 'invincible' && s.active)
+    if (invincibleSkill) {
+      invincibleSkill.invincibleTimer -= dt
+      if (invincibleSkill.invincibleTimer <= 0) {
+        invincibleSkill.active = false
       }
     }
 
@@ -436,7 +507,8 @@ export function usePlayer(
           e.meleeCooldownTimer -= dt
         }
           if (meleeDist <= e.attackRange && e.meleeCooldownTimer <= 0) {
-          if (!debugFlags?.godMode) {
+          const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+          if (!debugFlags?.godMode && !isInvincible) {
             player.hp -= e.attack
           }
           player.hitFlash = 6

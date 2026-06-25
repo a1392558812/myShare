@@ -64,7 +64,8 @@ export function useGameLoop(
         })
       } else if (p.owner === 'enemy') {
         if (checkCollisionLocal(p.x, p.y, p.size, player.x, player.y, ENTITY_SIZE)) {
-          if (!debugFlags.godMode) {
+          const isSkillInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+          if (!debugFlags.godMode && !isSkillInvincible) {
             player.hp -= p.damage
             if (player.hp <= 0) {
               player.hp = 0
