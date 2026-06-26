@@ -1,13 +1,11 @@
 <template>
   <div class="event-indicators">
-    <!-- 活跃 Buff -->
     <div v-for="buff in buffs" :key="buff.type" class="buff-item" :class="buff.type">
       <span class="buff-icon">{{ getBuffIcon(buff.type) }}</span>
       <span class="buff-text">{{ buff.label }}</span>
       <span class="buff-timer">{{ formatRemaining(buff.remaining) }}</span>
     </div>
 
-    <!-- 诅咒石碑状态 -->
     <div v-if="cursedActive" class="buff-item cursed">
       <span class="buff-icon">⚠️</span>
       <span class="buff-text">诅咒：敌人+30%，掉落×2.5</span>
@@ -106,3 +104,4 @@ const formatRemaining = (ms) => {
   to { box-shadow: 0 0 16px rgba(124, 58, 237, 0.6); }
 }
 </style>
+</template>

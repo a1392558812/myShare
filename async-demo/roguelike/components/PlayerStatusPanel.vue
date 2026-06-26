@@ -1,11 +1,9 @@
 <template>
   <div class="player-status-panel">
-    <!-- 生命值 -->
     <div class="hud-hp">
       <div class="hud-hp-bar" :style="{ width: hpPercent + '%' }"></div>
       <span class="hud-hp-text">{{ (player.hp).toFixed(2) }} / {{ (maxHp).toFixed(2) }}</span>
     </div>
-    <!-- 等级 & 经验 -->
     <div class="hud-level">
       <span>Lv.{{ player.level }}</span>
       <div class="hud-exp-bar">
@@ -109,3 +107,4 @@ defineProps({
   border-radius: 4px;
 }
 </style>
+</template>

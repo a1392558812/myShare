@@ -1,9 +1,4 @@
-/**
- * 背景网格绘制
- * @param {CanvasRenderingContext2D} ctx
- * @param {{ x: number, y: number }} camera — 镜头坐标
- * @param {(lx: number, ly: number, ctx: CanvasRenderingContext2D) => { x: number, y: number }} toScreen
- */
+
 export function drawBackgroundGrid(ctx, camera, toScreen) {
   const gridSize = 80
   ctx.save()
@@ -27,7 +22,7 @@ export function drawBackgroundGrid(ctx, camera, toScreen) {
   }
   ctx.restore()
 
-  // 原点标记
+  
   const origin = toScreen(0, 0, ctx)
   ctx.save()
   ctx.strokeStyle = 'rgba(100, 116, 139, 0.5)'

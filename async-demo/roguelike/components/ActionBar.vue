@@ -11,6 +11,9 @@
         <span v-if="sk.remainingCooldown > 0" class="skill-cd-text">
           {{ Math.ceil(sk.remainingCooldown / 1000) }}s
         </span>
+        <span v-else-if="sk.active && getActiveRemaining(sk)" class="skill-active-text">
+          {{ getActiveRemaining(sk) }}s
+        </span>
       </template>
       <span class="skill-key">{{ SKILL_KEY_MAP[sk.id] }}</span>
     </div>
@@ -22,9 +25,16 @@ import {
   SKILL_KEY_MAP,
 } from '../constants.js'
 
-defineProps({
+const props = defineProps({
   skills: { type: Array, required: true },
 })
+
+const getActiveRemaining = (sk) => {
+  if (sk.id === 'invincible') return Math.ceil((sk.invincibleTimer || 0) / 1000)
+  if (sk.id === 'vampireAura') return Math.ceil((sk.auraTimer || 0) / 1000)
+  if (sk.id === 'dash') return Math.ceil((sk.dashTimer || 0) / 1000)
+  return ''
+}
 
 defineEmits(['skill-click'])
 </script>
@@ -72,8 +82,9 @@ defineEmits(['skill-click'])
   }
 
   &.skill-active {
-    border-color: #dc2626;
-    box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+    border-color: #fbbf24;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    animation: activePulse 0.7s ease-in-out infinite alternate;
   }
 
   .skill-icon {
@@ -93,6 +104,14 @@ defineEmits(['skill-click'])
     font-weight: 600;
   }
 
+  .skill-active-text {
+    position: absolute;
+    bottom: 2px;
+    font-size: 10px;
+    color: #4ade80;
+    font-weight: 600;
+  }
+
   .skill-key {
     position: absolute;
     top: 2px;
@@ -102,4 +121,10 @@ defineEmits(['skill-click'])
     font-weight: 700;
   }
 }
+
+@keyframes activePulse {
+  0%   { box-shadow: 0 0 6px rgba(251, 191, 36, 0.35); }
+  100% { box-shadow: 0 0 14px rgba(251, 191, 36, 0.65); }
+}
 </style>
+</template></template>

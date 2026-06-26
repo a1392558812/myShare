@@ -35,7 +35,6 @@ const aliveCount = computed(() =>
   props.enemies.filter(e => !e.dead).length
 )
 
-/** 从 ENEMY_TYPE_TABLE 构建 type → { icon, name } 查找表 */
 const typeInfoMap = Object.fromEntries(
   ENEMY_TYPE_TABLE.map(({ type, attrs }) => [type, { icon: attrs.icon, name: attrs.name }])
 )
@@ -111,3 +110,4 @@ const getTypeName = (type) => typeInfoMap[type]?.name || type
   padding: 4px 0;
 }
 </style>
+</template>

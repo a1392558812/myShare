@@ -1,30 +1,27 @@
 <template>
   <div class="start-panel">
     <div class="start-content">
-      <!-- 标题区 -->
       <h1 class="game-title">🎮 Roguelike 冒险</h1>
       <p class="game-subtitle">肉鸽射击游戏</p>
 
-      <!-- 按钮行（居中） -->
       <div class="button-row">
         <button class="start-button" @click="$emit('start')">
           <span class="button-text">开始游戏</span>
-          <span class="button-icon">⚔️</span>
         </button>
-        <!-- 占位按钮：后续可启用 -->
-        <button class="placeholder-btn" disabled title="即将上线">
-          <span class="button-icon">⚙️</span>
+        <button
+          class="placeholder-btn"
+          title="即将上线"
+          @click="alertFun('即将上线')"
+        >
           <span class="button-text">设置</span>
         </button>
       </div>
 
-      <!-- 信息区：左侧操作说明 + 右侧游戏特色 -->
       <div class="info-section">
         <div class="instructions">
-          <h3>📖 操作说明</h3>
+          <h3>操作说明</h3>
           <div class="instruction-list">
             <div class="instruction-item">
-              <span class="instruction-key">🖱️</span>
               <span class="instruction-text">鼠标瞄准，点击射击</span>
             </div>
             <div class="instruction-item">
@@ -43,41 +40,119 @@
         </div>
 
         <div class="features">
-          <h3>✨ 游戏特色</h3>
+          <h3>游戏特色</h3>
           <ul>
-            <li>🎲 随机技能组合，每次游戏都不同</li>
-            <li>👹 精英敌人系统，挑战你的操作</li>
-            <li>💎 击杀敌人掉落宝物与装备</li>
-            <li>🔮 魔法技能，华丽视觉特效</li>
-            <li>⬆️ 线性成长，越玩越强</li>
+            <li>随机技能组合，每次游戏都不同</li>
+            <li>精英敌人系统，挑战你的操作</li>
+            <li>击杀敌人掉落宝物与装备</li>
+            <li>魔法技能，华丽视觉特效</li>
+            <li>线性成长，越玩越强</li>
           </ul>
         </div>
       </div>
 
-      <!-- 底部预留按钮区 -->
       <div class="bottom-actions">
-        <button class="ghost-btn" disabled title="即将上线">
+        <button class="ghost-btn" @click="showDocs = true">需求文档</button>
+        <button class="ghost-btn" @click="showGuide = true">新手指导</button>
+        <button
+          class="ghost-btn"
+          title="即将上线"
+          @click="alertFun('即将上线')"
+        >
           🏆 排行榜
         </button>
-        <button class="ghost-btn" disabled title="即将上线">
-          📜 更新日志
-        </button>
+      </div>
+
+      <div v-if="showDocs" class="modal-overlay" @click.self="showDocs = false">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>📋 需求文档</h2>
+            <button class="close-btn" @click="showDocs = false">✕</button>
+          </div>
+          <div class="modal-body">
+            <markdownFn :text="markdownStr" />
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="showGuide"
+        class="modal-overlay"
+        @click.self="showGuide = false"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>📖 新手指导</h2>
+            <button class="close-btn" @click="showGuide = false">✕</button>
+          </div>
+          <div class="modal-body">
+            <markdownFn :text="guideStr" />
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 背景粒子效果 -->
     <div class="particles">
-      <div class="particle" v-for="i in 20" :key="i" :style="getParticleStyle(i)"></div>
+      <div
+        class="particle"
+        v-for="i in 20"
+        :key="i"
+        :style="getParticleStyle(i)"
+      ></div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineEmits(['start'])
+import { ref, onMounted } from "vue";
+defineEmits(["start"]);
 
-// 生成随机粒子样式
+const props = defineProps({
+  markdownComponent: {
+    type: Function,
+    default: null,
+  },
+});
+
+const showDocs = ref(false);
+const showGuide = ref(false);
+
+const markdownFn = props.markdownComponent();
+
+const markdownStr = ref("加载中...");
+const guideStr = ref("加载中...");
+
+const loadDocs = async () => {
+  try {
+    const response = await fetch("./async-demo/roguelike/README.md");
+    const text = await response.text();
+    markdownStr.value = text;
+  } catch (error) {
+    console.error("加载需求文档失败:", error);
+    markdownStr.value = "加载失败，请检查文件路径";
+  }
+};
+
+const loadGuide = async () => {
+  try {
+    const response = await fetch("./async-demo/roguelike/guide.md");
+    const text = await response.text();
+    guideStr.value = text;
+  } catch (error) {
+    console.error("加载新手指导失败:", error);
+    guideStr.value = "加载失败，请检查文件路径";
+  }
+};
+
+const alertFun = (text) => alert(text);
+
+onMounted(() => {
+  loadDocs();
+  loadGuide();
+});
+
 const getParticleStyle = (i) => {
-  const size = 2 + Math.random() * 4
+  const size = 2 + Math.random() * 4;
   return {
     width: `${size}px`,
     height: `${size}px`,
@@ -85,8 +160,8 @@ const getParticleStyle = (i) => {
     top: `${Math.random() * 100}%`,
     animationDelay: `${Math.random() * 20}s`,
     animationDuration: `${15 + Math.random() * 10}s`,
-  }
-}
+  };
+};
 </script>
 
 <style scoped lang="scss">
@@ -111,8 +186,14 @@ const getParticleStyle = (i) => {
   animation: fadeInUp 0.8s ease-out;
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .game-title {
@@ -125,8 +206,13 @@ const getParticleStyle = (i) => {
     animation: titleGlow 3s ease-in-out infinite;
 
     @keyframes titleGlow {
-      0%, 100% { filter: brightness(1); }
-      50%      { filter: brightness(1.3); }
+      0%,
+      100% {
+        filter: brightness(1);
+      }
+      50% {
+        filter: brightness(1.3);
+      }
     }
   }
 
@@ -137,7 +223,6 @@ const getParticleStyle = (i) => {
     letter-spacing: 4px;
   }
 
-  // ─── 按钮行 ───
   .button-row {
     display: flex;
     align-items: center;
@@ -160,12 +245,9 @@ const getParticleStyle = (i) => {
     gap: 10px;
     box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
 
-    .button-text { font-weight: 600; letter-spacing: 2px; }
-    .button-icon { font-size: 22px; animation: iconBounce 1s ease-in-out infinite; }
-
-    @keyframes iconBounce {
-      0%, 100% { transform: translateX(0); }
-      50%      { transform: translateX(5px); }
+    .button-text {
+      font-weight: 600;
+      letter-spacing: 2px;
     }
 
     &:hover {
@@ -174,10 +256,11 @@ const getParticleStyle = (i) => {
       background: linear-gradient(135deg, #60a5fa, #3b82f6);
     }
 
-    &:active { transform: scale(0.98); }
+    &:active {
+      transform: scale(0.98);
+    }
   }
 
-  // 占位按钮
   .placeholder-btn {
     font-size: 14px;
     padding: 14px 28px;
@@ -185,16 +268,19 @@ const getParticleStyle = (i) => {
     color: #64748b;
     border: 1px dashed rgba(100, 116, 139, 0.4);
     border-radius: 10px;
-    cursor: not-allowed;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    &[disabled] {
+      cursor: not-allowed;
+    }
 
-    .button-icon { font-size: 16px; opacity: 0.7; }
-    .button-text { letter-spacing: 1px; }
+    .button-text {
+      letter-spacing: 1px;
+    }
   }
 
-  // ─── 信息区（左右两栏）──
   .info-section {
     display: flex;
     gap: 40px;
@@ -203,7 +289,8 @@ const getParticleStyle = (i) => {
     margin: 0 auto;
   }
 
-  .instructions, .features {
+  .instructions,
+  .features {
     flex: 1;
     min-width: 260px;
 
@@ -213,10 +300,13 @@ const getParticleStyle = (i) => {
     }
   }
 
-  .instructions h3 { color: #fbbf24; }
-  .features h3  { color: #a78bfa; }
+  .instructions h3 {
+    color: #fbbf24;
+  }
+  .features h3 {
+    color: #a78bfa;
+  }
 
-  // 操作说明列表
   .instruction-list {
     display: flex;
     flex-direction: column;
@@ -237,7 +327,7 @@ const getParticleStyle = (i) => {
       min-width: 72px;
       color: #60a5fa;
       font-weight: 600;
-      font-family: 'Consolas', monospace;
+      font-family: "Consolas", monospace;
     }
 
     .instruction-text {
@@ -246,7 +336,6 @@ const getParticleStyle = (i) => {
     }
   }
 
-  // 游戏特色列表
   .features ul {
     list-style: none;
     padding: 0;
@@ -259,7 +348,7 @@ const getParticleStyle = (i) => {
       position: relative;
 
       &::before {
-        content: '▸';
+        content: "▸";
         position: absolute;
         left: 0;
         color: #a78bfa;
@@ -267,7 +356,6 @@ const getParticleStyle = (i) => {
     }
   }
 
-  // ─── 底部占位按钮区 ───
   .bottom-actions {
     margin-top: 32px;
     display: flex;
@@ -283,13 +371,15 @@ const getParticleStyle = (i) => {
     color: #475569;
     border: 1px dashed rgba(71, 85, 105, 0.5);
     border-radius: 6px;
-    cursor: not-allowed;
     letter-spacing: 1px;
     transition: all 0.2s;
+    cursor: pointer;
+    &[disabled] {
+      cursor: not-allowed;
+    }
   }
 }
 
-// 背景粒子效果
 .particles {
   position: absolute;
   top: 0;
@@ -305,11 +395,124 @@ const getParticleStyle = (i) => {
     animation: float linear infinite;
 
     @keyframes float {
-      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+      0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) scale(1);
+        opacity: 0;
+      }
+    }
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 16px;
+  width: 90vw;
+  min-width: 900px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+
+  h2 {
+    font-size: 24px;
+    color: #e2e8f0;
+    margin: 0;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+  }
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.8;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.5);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(100, 116, 139, 0.7);
     }
   }
 }
 </style>
+</template>

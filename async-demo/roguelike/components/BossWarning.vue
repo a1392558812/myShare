@@ -5,6 +5,7 @@
         <div class="warning-icon">&#x26A0;&#xFE0F;</div>
         <div class="warning-text">强大的敌人正在接近...</div>
         <div class="warning-sub">{{ bossName }}</div>
+        <div class="warning-countdown">{{ countdownText }}</div>
       </div>
     </div>
   </transition>
@@ -16,6 +17,7 @@ import { computed, ref, watch } from 'vue'
 const props = defineProps({
   isWarning: { type: Boolean, default: false },
   bossName: { type: String, default: '' },
+  warningRemaining: { type: Number, default: 0 },
 })
 
 const pulsing = ref(true)
@@ -26,6 +28,7 @@ watch(() => props.isWarning, (val) => {
 })
 
 const isVisible = computed(() => props.isWarning)
+const countdownText = computed(() => Math.ceil(props.warningRemaining / 1000) + 's')
 </script>
 
 <style scoped>
@@ -87,6 +90,15 @@ const isVisible = computed(() => props.isWarning)
   color: #fbbf24;
 }
 
+.warning-countdown {
+  margin-top: 12px;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fbbf24;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+  font-family: 'Consolas', monospace;
+}
+
 .warn-fade-enter-active {
   transition: opacity 0.4s ease;
 }
@@ -98,3 +110,4 @@ const isVisible = computed(() => props.isWarning)
   opacity: 0;
 }
 </style>
+</template>

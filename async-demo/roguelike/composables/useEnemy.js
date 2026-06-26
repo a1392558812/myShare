@@ -1,7 +1,3 @@
-/**
- * useEnemy — 敌人 AI 行为、寻路、攻击判定、状态管理
- * 管理所有敌人的逐帧更新逻辑（含 bomber/summoner/charger/shielder 四种独立 AI）
- */
 import { reactive, ref } from 'vue'
 import {
   ENEMY_PROJECTILE_SPEED,
@@ -20,38 +16,24 @@ import {
 import { useDebug } from './useDebug.js'
 import { pushBattleLog } from './useBattleLog.js'
 
-// 地面毒区管理（模块级，供绘制函数访问）
 export const groundZones = ref([])
 
-/**
- * @param {import('vue').Ref<Array>} enemies - 敌人列表
- * @param {import('vue').UnwrapNestedRefs} player - 玩家状态
- * @param {import('vue').Ref<Array>} projectiles - 弹幕列表（敌人远程攻击写入）
- * @param {import('vue').UnwrapNestedRefs} gameState - 游戏状态
- * @param {object} mapUtils - { checkCollision }
- * @param {import('vue').Ref<Array>} battleLog - 战斗日志
- * @param {import('vue').Ref<Array>} effects - 视觉特效列表
- */
+
 export function useEnemy(enemies, player, projectiles, gameState, mapUtils, battleLog, effects, gainExp, buffGetters = null) {
   const { checkCollision } = mapUtils
   const { debugFlags } = useDebug()
 
   const log = (msg) => pushBattleLog(battleLog, msg)
 
-  /**
-   * 对玩家施加伤害，应用闪避判定 + 诅咒石碑增益
-   * @param {number} rawDmg - 基础伤害值
-   * @returns {boolean} true = 造成了伤害, false = 闪避/无敌/godMode 挡掉
-   */
+  
   const tryDamagePlayer = (rawDmg) => {
+    if (player._dashInvincibleTimer > 0) return false
     const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
     if (debugFlags?.godMode || isInvincible) return false
 
-    // 闪避判定（速度神龛 + 未来闪避技能）
     const totalDodge = (player.dodgeChance || 0) + (buffGetters?.getDodgeChance?.() || 0)
     if (totalDodge > 0 && Math.random() < totalDodge) return false
 
-    // 诅咒石碑敌人增益
     const curseMult = buffGetters?.getEnemyDamageMultiplier?.() || 1
     const finalDmg = rawDmg * curseMult
 
@@ -61,7 +43,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
     return true
   }
 
-  /** 根据移动方向更新朝向 + 帧动画 */
   const updateDirection = (e, dx, dy, dist, dt) => {
     if (dist > 1) {
       if (Math.abs(dx) > Math.abs(dy)) {
@@ -77,11 +58,8 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
     }
   }
 
-  /**
-   * 每帧更新所有敌人：AI 行为 + 移动 + 攻击
-   */
+
   const updateEnemies = (dt) => {
-    // ═════ 地面毒区生命周期管理 ═════
     const aliveZones = []
     groundZones.value.forEach(z => {
       z.elapsed += dt
@@ -94,7 +72,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
     enemies.value.forEach(e => {
       if (e.dead) return
 
-      // 冰冻处理：定身，不移动不攻击，只递减计时器
       if (e.frozen) {
         e.frozenTimer -= dt
         if (e.frozenTimer <= 0) {
@@ -103,21 +80,17 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // 朝玩家移动向量（始终计算，供攻击方向使用）
       const dx = player.x - e.x
       const dy = player.y - e.y
       const dist = Math.sqrt(dx * dx + dy * dy)
 
-      e.skillTimer += dt  // 始终计时
+      e.skillTimer += dt
 
-      // ══════════════════ 自爆怪 AI ══════════════════
       if (e.type === 'bomber') {
         const bomRange = e.bomberRange || 55
         if (!debugFlags?.pauseEnemyAttack && dist <= bomRange) {
-          // 自爆！
           tryDamagePlayer(e.attack || 30)
 
-          // AoE 伤害周围敌人（自爆 AoE 不受 godMode 影响，仅玩家免伤）
           enemies.value.forEach(other => {
             if (other === e || other.dead) return
             const od = Math.sqrt((other.x - e.x) ** 2 + (other.y - e.y) ** 2)
@@ -131,7 +104,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             }
           })
 
-          // 爆炸特效
           effects.value.push({
             type: 'explosion',
             x: e.x, y: e.y,
@@ -146,7 +118,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
           e.dead = true
           log('敌人自爆！')
         } else if (dist > 1 && !debugFlags?.pauseEnemyMovement) {
-          // 高速追踪
           e.x += (dx / dist) * e.speed
           e.y += (dy / dist) * e.speed
         }
@@ -155,23 +126,19 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // ══════════════════ 召唤师 AI ══════════════════
       if (e.type === 'summoner') {
         const comfortDist = (e.skillRange || 300) * 0.7
 
         if (!debugFlags?.pauseEnemyMovement) {
           if (dist < comfortDist && dist > 1) {
-            // 玩家太近 → 远离
             e.x -= (dx / dist) * e.speed
             e.y -= (dy / dist) * e.speed
           } else if (dist > (e.skillRange || 300) && dist > 1) {
-            // 玩家太远 → 靠近
             e.x += (dx / dist) * e.speed
             e.y += (dy / dist) * e.speed
           }
         }
 
-        // 死灵弹幕：召唤冷却期间的主动攻击（受调试暂停攻击控制）
         if (!debugFlags?.pauseEnemyAttack && dist <= (e.skillRange || 300) && dist > 1) {
           e.boltTimer = (e.boltTimer || 0) + dt
           if (e.boltTimer >= SUMMONER_BOLT_COOLDOWN) {
@@ -190,34 +157,29 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
           }
         }
 
-        // 召唤小怪（受调试暂停攻击控制）
         if (!debugFlags?.pauseEnemyAttack) {
           e.summonTimer = (e.summonTimer || 0) + dt
           if (e.summonTimer >= (e.summonCooldown || 4000)) {
             e.summonTimer = 0
-            e.boltTimer = 0  // 召唤时重置弹幕计时，避免同帧双触发
+            e.boltTimer = 0
             const batchSize = e.summonCount || 2
             const maxMinions = e.summonMaxMinions || 6
             const sacrificeDmg = e.summonSacrificeDmg || 10
             const sacrificeRadius = e.summonSacrificeRadius || 50
 
-            // 统计当前存活召唤物（按插入顺序 = 最老在数组最前）
             const aliveMinions = enemies.value.filter(m => m.summonedBy === e.eid && !m.dead)
             const excess = aliveMinions.length + batchSize - maxMinions
 
-            // 上限溢出 → 销毁最老的召唤物（自爆腾位）
             if (excess > 0) {
               for (let i = 0; i < excess && i < aliveMinions.length; i++) {
                 const old = aliveMinions[i]
 
-                // 伤害玩家
                 const pdist = Math.sqrt((player.x - old.x) ** 2 + (player.y - old.y) ** 2)
                 if (pdist < sacrificeRadius + ENTITY_SIZE / 2) {
                   tryDamagePlayer(sacrificeDmg)
                   player.hitFlash = 6
                 }
 
-                // AoE 伤害周围敌人（友方减免 40%，与自爆怪逻辑一致）
                 enemies.value.forEach(other => {
                   if (other === old || other.dead) return
                   const od = Math.sqrt((other.x - old.x) ** 2 + (other.y - old.y) ** 2)
@@ -228,7 +190,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
                   }
                 })
 
-                // 自爆特效（紫色调，区别于正版橙色自爆怪）
                 effects.value.push({
                   type: 'explosion',
                   variant: 'sacrifice',
@@ -242,10 +203,8 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
               }
             }
 
-            // 计算剩余可生成数量
             const afterDestroy = enemies.value.filter(m => m.summonedBy === e.eid && !m.dead).length
             let toSpawn = Math.min(batchSize, maxMinions - afterDestroy)
-            // 全局安全阀：所有召唤师共享的召唤物总数上限
             const globalSummons = enemies.value.filter(m => m.summonedBy && !m.dead).length
             toSpawn = Math.max(0, Math.min(toSpawn, MAX_SUMMONS - globalSummons))
             for (let i = 0; i < toSpawn; i++) {
@@ -280,9 +239,7 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // ══════════════════ 冲锋者 AI（状态机） ══════════════════
       if (e.type === 'charger') {
-        // 确保字段存在
         e.chargeTimer = (e.chargeTimer || 0)
         e.chargeState = e.chargeState || 'idle'
         e.chargeStateTimer = (e.chargeStateTimer || 0)
@@ -292,7 +249,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
 
         switch (e.chargeState) {
           case 'idle': {
-            // 缓慢追踪 + 累计冲锋计时（受调试暂停移动控制）
             if (!debugFlags?.pauseEnemyMovement && dist > 1) {
               e.x += (dx / dist) * e.speed
               e.y += (dy / dist) * e.speed
@@ -320,7 +276,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             break
           }
           case 'charging': {
-            // 高速直线冲刺（受调试暂停移动控制）
             if (!debugFlags?.pauseEnemyMovement) {
               e.x += e.chargeDirX * e.speed
               e.y += e.chargeDirY * e.speed
@@ -328,14 +283,12 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             e.chargeStateTimer += dt
             e.direction = e.chargeDirX >= 0 ? DIRECTION.RIGHT : DIRECTION.LEFT
 
-            // 碰撞玩家判定
             if (!debugFlags?.pauseEnemyAttack) {
               const cdx = player.x - e.x
               const cdy = player.y - e.y
               const cdist = Math.sqrt(cdx * cdx + cdy * cdy)
               if (cdist <= (e.attackRange || 45) + ENTITY_SIZE / 2) {
                 tryDamagePlayer(e.attack || 25)
-                // 击退
                 if (cdist > 0) {
                   player.x += (cdx / cdist) * 40
                   player.y += (cdy / cdist) * 40
@@ -346,7 +299,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
                 e.speed = 0
               }
             }
-            // 冲锋持续时间到 → 无论是否碰撞都进入恢复（不受暂停影响）
             if (e.chargeState !== 'recovery' && e.chargeStateTimer >= (e.chargeDuration || 400)) {
               e.chargeState = 'recovery'
               e.chargeStateTimer = 0
@@ -369,9 +321,7 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // ══════════════════ 护盾兵 AI ══════════════════
       if (e.type === 'shielder') {
-        // 寻找最近的非护盾兵、非死亡友方
         let bestAlly = null
         let bestAllyDist = e.shieldAuraRange || 120
         enemies.value.forEach(other => {
@@ -384,11 +334,9 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         })
 
         if (bestAlly) {
-          // 为友方施加保护标记
           bestAlly.shieldedBy = e.eid
           e.shieldedAllyId = bestAlly.eid
 
-          // 保持在友方附近（受调试暂停移动控制）
           if (!debugFlags?.pauseEnemyMovement) {
             const adx = bestAlly.x - e.x
             const ady = bestAlly.y - e.y
@@ -399,7 +347,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             }
           }
         } else {
-          // 无友方 → 自身追踪玩家（受调试暂停移动控制）
           e.shieldedAllyId = null
           if (!debugFlags?.pauseEnemyMovement && dist > 1) {
             e.x += (dx / dist) * e.speed
@@ -412,10 +359,8 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // ══════════════════ 通用 AI（melee / ranged / hybrid）══════════════════
 
       
-      // ══════════ 精英怪 — 牧师 AI ══════════
       if (e.type === 'elitePriest') {
         const comfort = (e.skillRange || 200) * 0.6
         if (!debugFlags?.pauseEnemyMovement) {
@@ -444,7 +389,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         return
       }
 
-      // ══════════ 精英怪 — 毒虫 AI ══════════
       if (e.type === 'eliteVenom') {
         if (!debugFlags?.pauseEnemyMovement && dist > 1) {
           e.x += (dx / dist) * e.speed
@@ -454,7 +398,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
           e.venomBoltTimer = (e.venomBoltTimer || 0) + dt
           if (e.venomBoltTimer >= (e.skillCooldown || 3000)) {
             e.venomBoltTimer = 0
-            // 发射毒弹投射物
             const boltSpeed = e.venomBoltSpeed || 4
             const ndx = dx / dist
             const ndy = dy / dist
@@ -467,14 +410,12 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
               damage: e.venomBoltDamage || 10,
               size: 8,
               owner: 'enemy',
-              // 毒弹专属属性
               warnDuration: e.venomWarnDuration || 800,
               zoneDuration: e.venomZoneDuration || 5000,
               zoneDamage: e.venomZoneDamage || 2,
               zoneRadius: e.venomZoneRadius || 50,
               ownerEid: e.eid,
               venomMaxZones: e.venomMaxZones || 3,
-              // 飞行时限（避免无限飞行）
               maxFlightTime: 2000,
               flightTime: 0,
             })
@@ -488,14 +429,12 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
       e.isMoving = true
 
       if (dist > 1) {
-        // 方向判定
         if (Math.abs(dx) > Math.abs(dy)) {
           e.direction = dx > 0 ? DIRECTION.RIGHT : DIRECTION.LEFT
         } else {
           e.direction = DIRECTION.FRONT
         }
 
-        // 帧动画
         e.frameTimer += dt
         if (e.frameTimer >= FRAME_INTERVAL) {
           e.frameTimer -= FRAME_INTERVAL
@@ -503,7 +442,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         }
       }
 
-      // 远程攻击：受调试标志控制
       if (!debugFlags?.pauseEnemyAttack && e.hasRanged && e.skillRange > 0 && dist <= e.skillRange && e.skillTimer >= e.skillCooldown) {
         const ndx = dx / dist
         const ndy = dy / dist
@@ -519,7 +457,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         e.skillTimer = 0
       }
 
-      // 近战攻击：受调试标志控制
       if (!debugFlags?.pauseEnemyAttack && e.hasMelee) {
         if (e.meleeCooldownTimer > 0) {
           e.meleeCooldownTimer -= dt
@@ -531,7 +468,6 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         }
       }
 
-      // 移动逻辑：受调试标志控制
       if (!debugFlags?.pauseEnemyMovement) {
         const shouldChase = e.hasMelee || (e.hasRanged && dist > e.skillRange) || (!e.hasMelee && !e.hasRanged)
         if (shouldChase && dist > 1) {
@@ -540,11 +476,9 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
         }
       }
 
-      // 受击闪白衰减
       if (e.hitFlash > 0) e.hitFlash--
     })
 
-    // ═════ 玩家地面毒区扣血（每秒 tick 一次） ═════
     groundZones.value.forEach(z => {
       const d = Math.sqrt((player.x - z.x) ** 2 + (player.y - z.y) ** 2)
       if (d <= z.radius) {

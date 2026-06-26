@@ -1,10 +1,4 @@
-/**
- * 绘制魔法阵火雨——灼烧地面 + 发光双圈 + 8符文 + 消散冲击波。
- * @param {CanvasRenderingContext2D} ctx
- * @param {Array}  circles  - 魔法阵数组（响应式 ref）
- * @param {number} now      - gameTime
- * @param {Function} toScreen
- */
+
 export function renderMagicCircles(ctx, circles, now, toScreen) {
   if (!circles) return
 
@@ -19,7 +13,7 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
     ctx.save()
     ctx.globalAlpha = alpha * dissolve
 
-    // ═══════ 灼烧地面底色 ═══════
+    
     const burnGrad = ctx.createRadialGradient(pos.x, pos.y, vr * 0.25, pos.x, pos.y, vr * 1.05)
     burnGrad.addColorStop(0, 'rgba(255, 45, 0, 0.22)')
     burnGrad.addColorStop(0.55, 'rgba(255, 85, 10, 0.10)')
@@ -28,21 +22,21 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
     ctx.shadowBlur = 0
     ctx.beginPath(); ctx.arc(pos.x, pos.y, vr * 1.05, 0, Math.PI * 2); ctx.fill()
 
-    // ═══════ 发光外圈 ═══════
+    
     ctx.strokeStyle = 'rgba(255, 102, 34, 0.75)'
     ctx.lineWidth = 2.5 * dissolve
     ctx.shadowColor = '#FF4400'
     ctx.shadowBlur = 22 * dissolve
     ctx.beginPath(); ctx.arc(pos.x, pos.y, vr, 0, Math.PI * 2); ctx.stroke()
 
-    // ═══════ 内圈符文线 ═══════
+    
     ctx.strokeStyle = 'rgba(255, 200, 55, 0.3)'
     ctx.lineWidth = 1.5
     ctx.shadowColor = '#FFAA33'
     ctx.shadowBlur = 12
     ctx.beginPath(); ctx.arc(pos.x, pos.y, vr * 0.72, 0, Math.PI * 2); ctx.stroke()
 
-    // ═══════ 外圈顺时针弧段 ═══════
+    
     const arcRot = now / 600
     ctx.strokeStyle = 'rgba(255, 160, 30, 0.6)'
     ctx.lineWidth = 2.8
@@ -52,7 +46,7 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
     ctx.arc(pos.x, pos.y, vr * 0.98, arcRot, arcRot + Math.PI * 1.2)
     ctx.stroke()
 
-    // ═══════ 内圈逆时针弧段 ═══════
+    
     ctx.strokeStyle = 'rgba(255, 200, 60, 0.45)'
     ctx.lineWidth = 2
     ctx.shadowColor = '#FFAA44'
@@ -61,7 +55,7 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
     ctx.arc(pos.x, pos.y, vr * 0.74, -arcRot * 0.7, -arcRot * 0.7 + Math.PI * 1.0)
     ctx.stroke()
 
-    // ═══════ 中心呼吸光点 ═══════
+    
     const coreSize = vr * 0.14 * (1 + 0.35 * Math.sin(now * 0.0035 * Math.PI * 2))
     const coreGrad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, coreSize * 2.5)
     coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)')
@@ -72,7 +66,7 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
     ctx.shadowBlur = 16
     ctx.beginPath(); ctx.arc(pos.x, pos.y, coreSize * 2.5, 0, Math.PI * 2); ctx.fill()
 
-    // ═══════ 8 个符文标记（4 种形状轮替：三角/菱形/圆/十字） ═══════
+    
     const runeRot = now / 1800 * Math.PI * 2
     const shapes = ['triangle', 'diamond', 'circle', 'cross']
     for (let r = 0; r < 8; r++) {
@@ -117,10 +111,10 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
       ctx.restore()
     }
 
-    // ═══════ 消散效果（后 30% 进度）：扩散冲击波 + 粒子 ═══════
+    
     if (progress > 0.7) {
       const dissProgress = (progress - 0.7) / 0.3
-      // 扩散冲击波
+      
       ctx.globalAlpha = (1 - dissProgress) * 0.5
       ctx.strokeStyle = '#FF7722'
       ctx.lineWidth = 3 * (1 - dissProgress)
@@ -128,7 +122,7 @@ export function renderMagicCircles(ctx, circles, now, toScreen) {
       ctx.shadowBlur = 16 * (1 - dissProgress)
       ctx.beginPath(); ctx.arc(pos.x, pos.y, vr * (1 + dissProgress * 1.2), 0, Math.PI * 2); ctx.stroke()
 
-      // 12 个消散粒子
+      
       for (let p = 0; p < 12; p++) {
         const pa = p * Math.PI / 6 + dissProgress * 2.5
         const pd = vr * (0.7 + dissProgress * 1.6)

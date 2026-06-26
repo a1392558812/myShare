@@ -13,7 +13,9 @@
           <span class="opt-icon">{{ opt.icon }}</span>
           <span class="opt-name">{{ opt.name }}</span>
           <span class="opt-desc">{{ opt.description }}</span>
-          <span class="opt-level">{{ opt.isNew ? '新技能' : `Lv${opt.nextLevel}` }}</span>
+          <span class="opt-level">{{
+            opt.isNew ? "新技能" : `Lv${opt.nextLevel}`
+          }}</span>
         </div>
       </div>
     </div>
@@ -24,9 +26,9 @@
 defineProps({
   player: { type: Object, required: true },
   options: { type: Array, required: true },
-})
+});
 
-defineEmits(['choice'])
+defineEmits(["choice"]);
 </script>
 
 <style scoped lang="scss">
@@ -34,7 +36,7 @@ defineEmits(['choice'])
   position: absolute;
   inset: 0;
   background: rgba(15, 23, 42, 0.85);
-  z-index: 100;
+  z-index: 250;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,9 +88,23 @@ defineEmits(['choice'])
     transform: translateY(-2px);
   }
 
-  .opt-icon { font-size: 28px; }
-  .opt-name { font-size: 14px; font-weight: 600; color: #e2e8f0; }
-  .opt-desc { font-size: 11px; color: #94a3b8; }
-  .opt-level { font-size: 12px; color: #fbbf24; font-weight: 600; }
+  .opt-icon {
+    font-size: 28px;
+  }
+  .opt-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .opt-desc {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .opt-level {
+    font-size: 12px;
+    color: #fbbf24;
+    font-weight: 600;
+  }
 }
 </style>
+</template>

@@ -1,30 +1,13 @@
-/**
- * useGameLoop — 回合控制、游戏状态机（准备 / 进行中 / 结束）
- * 管理主循环调度、弹幕/特效生命周期、技能冷却
- */
 import { ENTITY_SIZE } from '../constants.js'
 import { useDebug } from './useDebug.js'
 
-/**
- * @param {import('vue').UnwrapNestedRefs} player - 玩家状态
- * @param {import('vue').UnwrapNestedRefs} gameState - 游戏全局状态
- * @param {import('vue').Ref<Array>} enemies - 敌人列表
- * @param {import('vue').Ref<Array>} projectiles - 弹幕列表
- * @param {import('vue').Ref<Array>} effects - 特效列表
- * @param {import('vue').Ref<Array>} lootDrops - 掉落物列表
- * @param {import('vue').Ref<Array>} magicCircles - 魔法阵火雨实例列表
- * @param {import('vue').Ref<HTMLCanvasElement|null>} gameCanvas - 画布引用
- * @param {import('vue').UnwrapNestedRefs} camera - 摄像机
- * @param {object} updaters - { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy }
- * @param {object} mapUtils - { toScreen, checkCollision, updateCamera }
- * @param {object} options - { onRender }
- */
+
 export function useGameLoop(
   player, gameState, enemies, projectiles, effects, lootDrops, magicCircles,
   gameCanvas, camera,
   updaters, mapUtils, options,
-  groundZones, // 地面毒区引用
-  eventUtils = null, // { tickEvents, tickBuffs, tickDeathZones, tryDamagePlayer, getSpeedMultiplier }
+  groundZones,
+  eventUtils = null,
 ) {
   const { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy } = updaters
   const { updateCamera } = mapUtils
@@ -32,17 +15,14 @@ export function useGameLoop(
   const { debugFlags } = useDebug()
   const groundZonesRef = groundZones
 
-  /** 死亡区域减速系数（0 = 无减速）*/
   let deathZoneSlow = 0
 
   let animFrameId = null
   let lastTimestamp = 0
 
-  // ─── 弹幕更新 ───
 
   const updateProjectiles = (dt) => {
     projectiles.value.forEach(p => {
-      // 追踪弹幕持续修正方向
       if (p.type === 'autoSeek' && p.targetEnemy && !p.targetEnemy.dead) {
         const tdx = p.targetEnemy.x - p.x
         const tdy = p.targetEnemy.y - p.y
@@ -58,7 +38,6 @@ export function useGameLoop(
         }
       }
 
-      // Boss 追踪弹幕（shadowOrb / voidProjectile）
       if (p.isTracking) {
         const tdx = player.x - p.x
         const tdy = player.y - p.y
@@ -79,10 +58,8 @@ export function useGameLoop(
       p.x += p.vx
       p.y += p.vy
 
-      // ═══ 毒弹特殊处理 ═══
       if (p.type === 'venomBolt') {
         p.flightTime = (p.flightTime || 0) + dt
-        // 检查是否应该着陆（超时或命中玩家）
         let shouldLand = false
         if (p.flightTime >= (p.maxFlightTime || 2000)) {
           shouldLand = true
@@ -92,7 +69,6 @@ export function useGameLoop(
         }
 
         if (shouldLand) {
-          // 创建预警圈特效
           effects.value.push({
             type: 'venomWarn',
             x: p.x,
@@ -100,7 +76,6 @@ export function useGameLoop(
             radius: p.zoneRadius || 50,
             duration: p.warnDuration || 800,
             elapsed: 0,
-            // 地面毒区参数（预警结束后创建）
             zoneDuration: p.zoneDuration,
             zoneDamage: p.zoneDamage,
             zoneRadius: p.zoneRadius,
@@ -110,13 +85,20 @@ export function useGameLoop(
           p.hit = true
         }
       } else {
-        // 普通投射物碰撞检测
         if (p.owner === 'player') {
           enemies.value.forEach(e => {
             if (e.dead) return
+            if (p.penetratedEnemies && p.penetratedEnemies.includes(e.eid)) return
             if (checkCollisionLocal(p.x, p.y, p.size, e.x, e.y, e.size)) {
               damageEnemy(e, p.damage)
-              p.hit = true
+              if (p.penetration !== undefined) {
+                if (!p.penetratedEnemies) p.penetratedEnemies = []
+                p.penetratedEnemies.push(e.eid)
+                p.penetration -= 1
+                if (p.penetration < 0) p.hit = true
+              } else {
+                p.hit = true
+              }
             }
           })
         } else if (p.owner === 'enemy') {
@@ -138,14 +120,12 @@ export function useGameLoop(
         }
       }
 
-      // 超出范围销毁
       const maxDist = 800
       const pdx = p.x - player.x
       const pdy = p.y - player.y
       if (Math.sqrt(pdx * pdx + pdy * pdy) > maxDist) {
         p.hit = true
       }
-      // fireBarrage 飞行距离限制
       if (p.type === 'fireBarrage') {
         p.traveled = (p.traveled || 0) + Math.sqrt(p.vx ** 2 + p.vy ** 2)
         if (p.traveled >= (p.range || 600)) {
@@ -157,19 +137,17 @@ export function useGameLoop(
     projectiles.value = projectiles.value.filter(p => !p.hit)
   }
 
-  /** 碰撞检测（本地副本，不依赖 mapUtils 避免循环依赖） */
+  
   const checkCollisionLocal = (x1, y1, s1, x2, y2, s2) => {
     const dx = x1 - x2
     const dy = y1 - y2
     return Math.sqrt(dx * dx + dy * dy) < (s1 + s2) / 2 * 0.8
   }
 
-  // ─── 特效更新 ───
 
   const updateEffects = (dt) => {
     effects.value.forEach(e => { e.elapsed += dt })
 
-    // ═══ 火柱预警：预警结束时触发伤害 ═══
     effects.value.forEach(e => {
       if (e.type === 'firePillarWarn' && !e._damageTriggered && e.elapsed >= e.duration - 50) {
         e._damageTriggered = true
@@ -184,7 +162,6 @@ export function useGameLoop(
       }
     })
 
-    // ═══ 暗影波纹：持续扩张 + 伤害检测 ═══
     effects.value.forEach(e => {
       if (e.type === 'shadowWave' && e.playerRef) {
         const currentRadius = e.radius + (e.elapsed / e.duration) * (e.maxRadius - e.radius)
@@ -201,11 +178,9 @@ export function useGameLoop(
       }
     })
 
-    // ═══ 处理毒液预警：预警结束后创建地面毒区 ═══
     if (groundZonesRef) {
       effects.value.forEach(e => {
         if (e.type === 'venomWarn' && e.elapsed >= e.duration) {
-          // 创建地面毒区
           const zone = {
             x: e.x,
             y: e.y,
@@ -219,11 +194,9 @@ export function useGameLoop(
           }
           groundZonesRef.value.push(zone)
 
-          // 限制每个毒虫的最大毒区数
           const maxZ = e.venomMaxZones || 3
           const myZones = groundZonesRef.value.filter(z => z.ownerEid === e.ownerEid)
           if (myZones.length > maxZ) {
-            // 移除最老的毒区
             const oldestIdx = groundZonesRef.value.indexOf(myZones[0])
             if (oldestIdx !== -1) {
               groundZonesRef.value.splice(oldestIdx, 1)
@@ -236,7 +209,6 @@ export function useGameLoop(
     effects.value = effects.value.filter(e => e.elapsed < e.duration)
   }
 
-  // ─── 技能冷却更新 ───
 
   const updateSkillCooldowns = (dt) => {
     player.skills.forEach(sk => {
@@ -246,27 +218,23 @@ export function useGameLoop(
     })
   }
 
-  // ─── 掉落物生命周期 ───
 
   const updateLoot = () => {
     const now = gameState.gameTime
     lootDrops.value = lootDrops.value.filter(d => now - d.spawnedAt < d.lifetime)
   }
 
-  // ─── 魔法阵火雨更新 ───
 
   const updateMagicCircles = (dt) => {
     for (let i = magicCircles.value.length - 1; i >= 0; i--) {
       const circle = magicCircles.value[i]
       circle.elapsed += dt
 
-      // 过期移除
       if (circle.elapsed >= circle.duration) {
         magicCircles.value.splice(i, 1)
         continue
       }
 
-      // 灼烧伤害：每 burnTickInterval ms 对范围内敌人造成一次持续伤害
       circle.burnTickTimer += dt
       if (circle.burnTickTimer >= circle.burnTickInterval) {
         circle.burnTickTimer -= circle.burnTickInterval
@@ -280,18 +248,15 @@ export function useGameLoop(
         })
       }
 
-      // 火球坠落：每 fireballInterval ms 在半径内随机位置生成一波火球
       circle.fireballTimer += dt
       if (circle.fireballTimer >= circle.fireballInterval) {
         circle.fireballTimer -= circle.fireballInterval
         for (let j = 0; j < circle.fireballCount; j++) {
-          // 随机角度 + 随机距圆心距离（限制在半径内）
           const angleR = Math.random() * Math.PI * 2
           const distR = Math.random() * circle.radius
           const fx = circle.x + Math.cos(angleR) * distR
           const fy = circle.y + Math.sin(angleR) * distR
 
-          // 火球 AoE 伤害
           const fireR = circle.fireballRadius || 25
           enemies.value.forEach(e => {
             if (e.dead) return
@@ -302,7 +267,6 @@ export function useGameLoop(
             }
           })
 
-          // 火球视觉特效
           effects.value.push({
             type: 'magicFireball',
             x: fx, y: fy,
@@ -315,7 +279,6 @@ export function useGameLoop(
     }
   }
 
-  // ─── 主循环 ───
 
   const gameLoop = (timestamp) => {
     if (!lastTimestamp) lastTimestamp = timestamp
@@ -327,7 +290,6 @@ export function useGameLoop(
       updatePlayer(dt)
       updateCamera(player.x, player.y)
 
-      // Boss 波次 tick
       if (tickBossSpawn) tickBossSpawn(dt)
       if (updateBoss) updateBoss(dt)
 
@@ -340,11 +302,9 @@ export function useGameLoop(
       updateLoot()
       updateMagicCircles(dt)
 
-      // 事件系统 tick
       if (eventUtils) {
         if (eventUtils.tickBuffs) eventUtils.tickBuffs(dt)
         if (eventUtils.tickEvents) eventUtils.tickEvents(dt)
-        // 死亡区域减速
         if (eventUtils.tickDeathZones) {
           const zoneResult = eventUtils.tickDeathZones(dt)
           deathZoneSlow = zoneResult?.inZoneSlow || 0
@@ -357,7 +317,6 @@ export function useGameLoop(
     animFrameId = requestAnimationFrame(gameLoop)
   }
 
-  // ─── 启停 ───
 
   const startLoop = () => {
     lastTimestamp = 0

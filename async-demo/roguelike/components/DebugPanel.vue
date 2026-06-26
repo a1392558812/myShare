@@ -6,7 +6,6 @@
     </div>
 
     <div class="dp-body">
-      <!-- 玩家状态 -->
       <fieldset class="dp-section">
         <legend @click="sections.player = !sections.player">
           ▾ 玩家状态
@@ -70,7 +69,6 @@
         </div>
       </fieldset>
 
-      <!-- 敌人控制 -->
       <fieldset class="dp-section">
         <legend @click="sections.enemy = !sections.enemy">
           ▾ 敌人控制
@@ -96,7 +94,6 @@
         </div>
       </fieldset>
 
-      <!-- 事件调试 -->
       <fieldset class="dp-section">
         <legend @click="sections.event = !sections.event">
           ▾ 事件调试
@@ -116,7 +113,6 @@
         </div>
       </fieldset>
 
-      <!-- 刷怪调试 -->
       <fieldset class="dp-section">
         <legend @click="sections.spawn = !sections.spawn">
           ▾ 刷怪调试
@@ -150,14 +146,12 @@
         </div>
       </fieldset>
 
-      <!-- Boss 调试 -->
       <fieldset class="dp-section">
         <legend @click="sections.boss = !sections.boss">
           ▾ Boss 调试
           <span v-if="!sections.boss" class="dp-collapse-hint">（点击展开）</span>
         </legend>
         <div v-if="sections.boss" class="dp-section-body">
-          <!-- 当前 Boss 状态（只读） -->
           <div class="dp-row" v-if="activeBoss">
             <span class="dp-boss-info">
               {{ activeBoss.bossName }} | Lv.{{ player.level }} x {{ bossHpScale }}
@@ -171,7 +165,6 @@
           <div class="dp-row" v-if="!activeBoss">
             <span class="dp-hint">无活跃 Boss</span>
           </div>
-          <!-- Boss 控制 -->
           <div class="dp-row">
             <select v-model="bossDbg.bossId" class="dp-select">
               <option value="">随机选择</option>
@@ -186,7 +179,6 @@
         </div>
       </fieldset>
 
-      <!-- Buff 面板 -->
       <fieldset class="dp-section" v-if="buffs && buffs.length > 0">
         <legend @click="sections.buff = !sections.buff">
           ▾ 当前 Buff（{{ buffs.length }}）
@@ -201,7 +193,6 @@
         </div>
       </fieldset>
 
-      <!-- 技能管理 -->
       <fieldset class="dp-section">
         <legend @click="sections.skill = !sections.skill">
           ▾ 技能管理
@@ -229,7 +220,6 @@
         </div>
       </fieldset>
 
-      <!-- 全局 -->
       <fieldset class="dp-section">
         <legend @click="sections.global = !sections.global">
           ▾ 全局
@@ -267,17 +257,11 @@ const props = defineProps({
   enemies: { type: Array, required: true },
   gameState: { type: Object, required: true },
   skills: { type: Array, required: true },
-  /** 活跃事件列表（只读展示数量） */
   events: { type: Array, default: () => [] },
-  /** 活跃 Boss 实体（只读展示） */
   activeBoss: { type: Object, default: null },
-  /** Boss 状态机字符串 */
   bossState: { type: String, default: 'idle' },
-  /** Boss 冷却剩余 ms */
   bossCooldownRemaining: { type: Number, default: 0 },
-  /** 当前 Boss 阶段信息 */
   bossPhase: { type: Object, default: null },
-  /** 活跃 buff 列表 */
   buffs: { type: Array, default: () => [] },
 })
 
@@ -301,17 +285,14 @@ const spawnDbg = enemySpawnDebug
 
 const sections = reactive({ player: true, enemy: true, event: true, spawn: true, boss: true, buff: true, skill: true, global: false })
 
-// ─── Boss 选项下拉 ───
 const bossOptions = computed(() => BOSS_TABLE)
 
-// ─── Boss 状态文本映射 ───
 const bossStateMap = {
   idle: '空闲', warning: '⚠ 预警中', spawning: '正在生成', active: '战斗中', dying: '濒死', defeated: '已击败',
 }
 const bossStateText = computed(() => bossStateMap[props.bossState] || props.bossState)
 const activeBossPhase = computed(() => props.bossPhase)
 
-// ─── Boss HP 倍率（Lv vs 基础 HP 之比） ───
 const bossHpScale = computed(() => {
   if (!props.activeBoss) return ''
   const cfg = BOSS_TABLE.find(b => b.id === props.activeBoss.bossId)
@@ -320,7 +301,6 @@ const bossHpScale = computed(() => {
   return `${scale}%HP`
 })
 
-// ─── 事件选项下拉 ───
 const eventOptions = computed(() => {
   return Object.values(EVENT_TYPES).map(cfg => ({
     id: cfg.id,
@@ -330,7 +310,6 @@ const eventOptions = computed(() => {
 })
 const eventsCount = computed(() => props.events?.length || 0)
 
-// ─── 刷怪选项下拉（分组） ───
 const normalEnemyOptions = computed(() => {
   return ENEMY_TYPE_TABLE
     .filter(t => !t.attrs.eliteTier)
@@ -348,7 +327,6 @@ const eliteEnemyOptions = computed(() => {
     }))
 })
 
-// ─── 本地编辑缓冲 ───
 const local = reactive({
   hp: 0,
   maxHp: PLAYER_ATTRS.maxHp,
@@ -363,7 +341,6 @@ const local = reactive({
   gameSpeed: 1.0,
 })
 
-// ─── 观察 player  → local 同步 ───
 watch(() => props.player.hp, v => { local.hp = Math.round(v) }, { immediate: true })
 watch(() => props.player.maxHp, v => { if (playerOverride.maxHp === null) local.maxHp = v }, { immediate: true })
 watch(() => props.player.speed, v => { if (playerOverride.speed === null) local.speed = v }, { immediate: true })
@@ -376,7 +353,6 @@ watch(() => props.player.x, v => { local.px = Math.round(v) }, { immediate: true
 watch(() => props.player.y, v => { local.py = Math.round(v) }, { immediate: true })
 watch(gameSpeed, v => { local.gameSpeed = v }, { immediate: true })
 
-// ─── 技能列表 ───
 const allSkills = computed(() => {
   return SKILL_TABLE.map(tpl => {
     const owned = props.skills.find(s => s.id === tpl.id)
@@ -386,7 +362,6 @@ const allSkills = computed(() => {
 
 const hasSkill = (id) => props.skills.find(s => s.id === id)
 
-// ─── 已有 emit 方法 ───
 const emitHp = () => { emit('set-player-hp', local.hp) }
 const emitSpeed = () => {
   playerOverride.speed = local.speed
@@ -415,7 +390,6 @@ const resetPos = () => {
   emit('set-player-pos', 0, 0)
 }
 
-// ─── 新增 emit 方法 ───
 const emitDodge = () => {
   playerOverride.dodgeChance = local.dodge
   emit('set-player-dodge', local.dodge)
@@ -646,3 +620,4 @@ const formatTime = (ms) => {
 .dp-buff-name { flex: 1; font-size: 11px; }
 .dp-buff-time { color: #fbbf24; font-size: 10px; white-space: nowrap; }
 </style>
+</template>

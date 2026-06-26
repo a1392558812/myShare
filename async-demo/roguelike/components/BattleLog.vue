@@ -21,11 +21,9 @@ import { BATTLE_LOG_MAX_DISPLAY } from '../constants.js'
 
 const props = defineProps({
   log: { type: Array, required: true },
-  // 最大显示条数，默认取常量配置，也可外部覆盖
   maxDisplay: { type: Number, default: BATTLE_LOG_MAX_DISPLAY },
 })
 
-// 只取前 maxDisplay 条渲染，log 内部可存储更多但不全部渲染
 const displayLog = computed(() => props.log.slice(0, props.maxDisplay))
 
 const formatLogTime = (timestamp) => {
@@ -89,3 +87,4 @@ const formatLogTime = (timestamp) => {
   padding: 8px 0;
 }
 </style>
+</template>

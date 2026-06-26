@@ -66,3 +66,4 @@ defineEmits(['restart'])
   }
 }
 </style>
+</template>

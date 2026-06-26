@@ -1,11 +1,8 @@
-/**
- * usePlayer — 玩家移动、攻击、状态更新、死亡判定
- * 管理所有与玩家直接相关的游戏逻辑
- */
 import { reactive } from 'vue'
 import {
   PLAYER_ATTRS,
   SKILL_TABLE,
+  SKILL_ARROW,
   LOOT_TABLE,
   getExpThreshold,
   ENTITY_SIZE,
@@ -18,22 +15,7 @@ import {
 } from '../constants.js'
 import { pushBattleLog } from './useBattleLog.js'
 
-/**
- * @param {import('vue').UnwrapNestedRefs} player - 玩家响应式状态
- * @param {import('vue').UnwrapNestedRefs} gameState - 游戏全局状态
- * @param {object} keysDown - 键盘按下状态
- * @param {import('vue').Ref<boolean>} mouseHeld - 鼠标是否持续按下
- * @param {import('vue').UnwrapNestedRefs} mouseScreen - 鼠标屏幕坐标
- * @param {import('vue').Ref<HTMLCanvasElement|null>} gameCanvas - 画布引用
- * @param {import('vue').Ref<Array>} enemies - 敌人列表
- * @param {import('vue').Ref<Array>} projectiles - 弹幕列表
- * @param {import('vue').Ref<Array>} effects - 视觉特效列表
- * @param {object} mapUtils - { toLogical, checkCollision }
- * @param {import('vue').Ref<Array>} battleLog - 战斗日志
- * @param {import('vue').Ref<Array>} levelUpOptions - 升级选项
- * @param {import('vue').Ref<Array>} lootDrops - 掉落物列表
- * @param {import('vue').Ref<Array>} magicCircles - 魔法阵火雨实例列表
- */
+
 export function usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvas, enemies, projectiles, effects,
@@ -43,7 +25,7 @@ export function usePlayer(
 ) {
   const { toLogical, checkCollision } = mapUtils
 
-  // ─── 内部辅助 ───
+  
   const log = (msg) => pushBattleLog(battleLog, msg)
 
 
@@ -53,19 +35,19 @@ export function usePlayer(
   }
 
   const checkLevelUp = () => {
-    if (gameState.levelUpPending) return  // 已有待玩家选择的升级面板，不重复触发
+    if (gameState.levelUpPending) return  
 
     const needExp = getExpThreshold(player.level + 1)
 
     if (player.exp >= needExp) {
       player.level++
+      recalcPassiveBuffs()   
       showLevelUpOptions()
     }
   }
 
-  // ─── 技能实例工厂 ───
+  
 
-  /** 从技能模板创建响应式技能实例 */
   const createSkillInstance = (template, level = 1) => {
     return reactive({
       id: template.id,
@@ -91,46 +73,53 @@ export function usePlayer(
       damageBoost: template.damageBoost || 0,
       extraProjectiles: template.extraProjectiles || 0,
       invincibleTimer: 0,
+      invincibleTotalDuration: 0,
       invincibleSpeedBoost: 0,
       invincibleDamageBoost: 0,
       isPassive: template.isPassive || false,
+      maxLevel: template.maxLevel || null,
       maxHpBonusBase: template.maxHpBonusBase || 0,
       speedBonusBase: template.speedBonusBase || 0,
       attackBonusBase: template.attackBonusBase || 0,
       burnDamage: template.burnDamage,
       fireballCount: template.fireballCount,
+      dashDistance: 0,
+      dashDuration: 0,
+      dashDx: 0,
+      dashDy: 0,
     })
   }
 
-  // ─── 被动技能加成计算 ───
+  
 
-  /** 根据被动技能等级重算玩家基础属性（maxHp / speed / baseAttack） */
+  
   const recalcPassiveBuffs = () => {
+    const levelHpBonus = (player.level - 1) * 5  
     const passive = player.skills.find(s => s.id === 'bodyStrength')
-    if (!passive) {
-      player.maxHp = PLAYER_ATTRS.maxHp
-      player.speed = PLAYER_ATTRS.speed
-      player.baseAttack = PLAYER_ATTRS.baseAttack
-      return
-    }
-    const maxHpBonus = calcSkillValue(passive.maxHpBonusBase, passive.growth.maxHpBonus, passive.currentLevel)
-    const speedBonus = calcSkillValue(passive.speedBonusBase, passive.growth.speedBonus, passive.currentLevel)
-    const attackBonus = calcSkillValue(passive.attackBonusBase, passive.growth.attackBonus, passive.currentLevel)
+    const maxHpBonus = passive
+      ? calcSkillValue(passive.maxHpBonusBase, passive.growth.maxHpBonus, passive.currentLevel)
+      : 0
+    const speedBonus = passive
+      ? calcSkillValue(passive.speedBonusBase, passive.growth.speedBonus, passive.currentLevel)
+      : 0
+    const attackBonus = passive
+      ? calcSkillValue(passive.attackBonusBase, passive.growth.attackBonus, passive.currentLevel)
+      : 0
 
     const oldMaxHp = player.maxHp
-    player.maxHp = PLAYER_ATTRS.maxHp + maxHpBonus
+    player.maxHp = PLAYER_ATTRS.maxHp + levelHpBonus + maxHpBonus
     player.speed = PLAYER_ATTRS.speed + speedBonus
     player.baseAttack = PLAYER_ATTRS.baseAttack + attackBonus
 
-    // 升级被动时，按增量回复血量
+    
     if (oldMaxHp && player.maxHp > oldMaxHp) {
       player.hp += (player.maxHp - oldMaxHp)
     }
   }
 
-  // ─── 玩家操作 ───
+  
 
-  /** 寻找最近敌人 */
+  
   const findNearestEnemy = (maxRange) => {
     let nearest = null
     let minDist = maxRange
@@ -142,36 +131,36 @@ export function usePlayer(
     return nearest
   }
 
-  /** 对敌人造成伤害 */
+  
   const damageEnemy = (enemy, dmg) => {
-    // Boss 敌人委托给 useBoss
+    
     if (enemy.isBoss) {
-      // 假身：穿透特效但不扣血
+      
       if (enemy.isClone) {
-        enemy.hitFlash = 4  // 小闪白反馈
+        enemy.hitFlash = 4  
         return
       }
-      // 真身：委托给 Boss 伤害系统
+      
       if (onDamageBoss) onDamageBoss(dmg)
       return
     }
 
-    // 无敌伤害加成
+    
     const invSkill = player.skills.find(s => s.id === 'invincible' && s.active)
     let finalDmg = invSkill ? dmg * (1 + invSkill.invincibleDamageBoost) : dmg
 
-    // 增益攻击倍率（力量祭坛等）
+    
     if (buffGetters?.getAttackMultiplier) {
       finalDmg *= buffGetters.getAttackMultiplier()
     }
 
-    // 护盾兵减伤检查
+    
     if (enemy.shieldedBy) {
       const shielder = enemies.value.find(e => e.eid === enemy.shieldedBy && !e.dead)
       if (shielder) {
         finalDmg *= (1 - (shielder.shieldReduction || 0.4))
       } else {
-        delete enemy.shieldedBy  // 护盾兵已死，清除引用
+        delete enemy.shieldedBy  
       }
     }
 
@@ -183,7 +172,7 @@ export function usePlayer(
       gainExp(enemy.expReward)
       log(`击杀 ${enemy.type} 敌人`)
 
-      // 掉落判定：遍历掉落表，每种道具独立概率
+      
       const dropMult = buffGetters?.getDropRateMultiplier?.() || 1
       Object.values(LOOT_TABLE).forEach(loot => {
         if (Math.random() < loot.dropChance * dropMult) {
@@ -207,12 +196,12 @@ export function usePlayer(
     }
   }
 
-  /** 射箭 */
+  
   const fireArrow = () => {
     const arrowSkill = player.skills.find(s => s.id === 'arrow')
     if (!arrowSkill || arrowSkill.remainingCooldown > 0) return
 
-    // 通过暴露的 canvasRef 拿到真正的 <canvas> DOM 元素，传给 toLogical
+    
     const canvas = gameCanvas.value?.canvasRef
     if (!canvas) return
     const mouseLogical = toLogical(mouseScreen.x, mouseScreen.y, canvas)
@@ -224,24 +213,67 @@ export function usePlayer(
     const dmg = calcSkillValue(arrowSkill.damage, arrowSkill.growth.damage, arrowSkill.currentLevel) + (player.baseAttack || 0)
     const effectiveSpeed = calcSkillValue(arrowSkill.projectileSpeed, arrowSkill.growth.projectileSpeed, arrowSkill.currentLevel)
     const effectiveCooldown = calcSkillValue(arrowSkill.cooldown, arrowSkill.growth.cooldown, arrowSkill.currentLevel)
+    
+    
+    
+    const penetration = Math.min(Math.max(0, arrowSkill.currentLevel - 1), 5)
 
-    projectiles.value.push({
-      type: 'arrow',
-      x: player.x, y: player.y,
-      vx: (dx / dist) * effectiveSpeed,
-      vy: (dy / dist) * effectiveSpeed,
-      damage: dmg,
-      size: ARROW_SIZE,
-      owner: 'player',
-      direction: dx >= 0 ? DIRECTION.RIGHT : DIRECTION.LEFT,
-    })
+    
+    const createArrow = (vx, vy, damageMultiplier = 1) => {
+      projectiles.value.push({
+        type: 'arrow',
+        x: player.x, y: player.y,
+        vx, vy,
+        damage: dmg * damageMultiplier,
+        size: ARROW_SIZE,
+        owner: 'player',
+        direction: vx >= 0 ? DIRECTION.RIGHT : DIRECTION.LEFT,
+        penetration,
+        penetratedEnemies: [],
+      })
+    }
+
+    
+    createArrow((dx / dist) * effectiveSpeed, (dy / dist) * effectiveSpeed)
+
+    
+    const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 7
+    const maxSplitArrows = SKILL_ARROW.splitArrow?.maxArrows || 1
+    if (arrowSkill.currentLevel >= splitUnlockLevel && enemies?.value) {
+      const splitCount = Math.min(arrowSkill.currentLevel - splitUnlockLevel + 1, maxSplitArrows)
+      
+      
+      const nearestEnemies = enemies.value
+        .filter(e => !e.dead)
+        .map(e => ({
+          e,
+          dist: Math.sqrt((e.x - player.x) ** 2 + (e.y - player.y) ** 2)
+        }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, splitCount)
+      
+      nearestEnemies.forEach(({ e }) => {
+        const edx = e.x - player.x
+        const edy = e.y - player.y
+        const edist = Math.sqrt(edx * edx + edy * edy)
+        if (edist < 1) return
+        
+        
+        const baseAngle = Math.atan2(edy, edx)
+        const spreadAngle = baseAngle + (Math.random() - 0.5) * 0.3
+        const spreadVx = Math.cos(spreadAngle) * effectiveSpeed
+        const spreadVy = Math.sin(spreadAngle) * effectiveSpeed
+        
+        createArrow(spreadVx, spreadVy, 0.7)  
+      })
+    }
 
     arrowSkill.remainingCooldown = effectiveCooldown
   }
 
-  /** 激活技能 */
+  
   const activateSkill = (skill) => {
-    // 被动技能不可主动释放
+    
     if (skill.isPassive) return
     if (skill.remainingCooldown > 0 || gameState.isDead || gameState.levelUpPending || gameState.stelePending) return
     const dmg = calcSkillValue(skill.damage, skill.growth?.damage, skill.currentLevel) + (player.baseAttack || 0)
@@ -271,11 +303,11 @@ export function usePlayer(
       const effectiveProjSpeed = calcSkillValue(skill.projectileSpeed, skill.growth?.projectileSpeed, skill.currentLevel)
       const nearest = findNearestEnemy(effectiveRange)
       if (nearest) {
-        // 额外弹幕数 = min(currentLevel - 1, 5)，Lv1=0颗额外，Lv2=1颗，以此类推，最多5颗
+        
         const extraCount = Math.min((skill.currentLevel || 1) - 1, 5)
-        const totalCount = 1 + extraCount  // 主弹幕 + 额外弹幕
+        const totalCount = 1 + extraCount  
 
-        // 生成所有可命中的候选目标（按距离排序）
+        
         const candidateTargets = enemies.value
           .filter(e => !e.dead)
           .map(e => {
@@ -288,18 +320,18 @@ export function usePlayer(
           .map(({ enemy }) => enemy)
 
         for (let i = 0; i < totalCount; i++) {
-          // 每颗弹幕尽量锁定不同目标（循环复用）
+          
           const target = candidateTargets[i % candidateTargets.length] || nearest
 
           const dx = target.x - player.x
           const dy = target.y - player.y
           const dist = Math.sqrt(dx * dx + dy * dy)
 
-          // 额外弹幕加一点随机偏角（±15°），避免完全重叠
+          
           let vx = (dx / dist) * effectiveProjSpeed
           let vy = (dy / dist) * effectiveProjSpeed
           if (i > 0) {
-            const jitter = (Math.random() - 0.5) * (Math.PI / 6)  // ±15°
+            const jitter = (Math.random() - 0.5) * (Math.PI / 6)  
             const cos = Math.cos(jitter)
             const sin = Math.sin(jitter)
             const newVx = vx * cos - vy * sin
@@ -358,12 +390,13 @@ export function usePlayer(
       const effectiveDamageBoost = calcSkillValue(skill.damageBoost, skill.growth?.damageBoost, skill.currentLevel)
       skill.active = true
       skill.invincibleTimer = effectiveDuration
+      skill.invincibleTotalDuration = effectiveDuration
       skill.invincibleSpeedBoost = effectiveSpeedBoost
       skill.invincibleDamageBoost = effectiveDamageBoost
       skill.remainingCooldown = effectiveCooldown
       log('无敌启动！')
     } else if (skill.id === 'magicCircle') {
-      // 鼠标世界坐标
+      
       const canvas = gameCanvas.value?.canvasRef
       if (!canvas) { skill.remainingCooldown = effectiveCooldown; return }
       const mouseWorld = toLogical(mouseScreen.x, mouseScreen.y, canvas)
@@ -394,6 +427,48 @@ export function usePlayer(
 
       skill.remainingCooldown = effectiveCooldown
       log(`魔法阵火雨降临！`)
+    } else if (skill.id === 'dash') {
+      
+      let dx = 0, dy = 0
+      if (keysDown['w'] || keysDown['arrowup']) dy -= 1
+      if (keysDown['s'] || keysDown['arrowdown']) dy += 1
+      if (keysDown['a'] || keysDown['arrowleft']) dx -= 1
+      if (keysDown['d'] || keysDown['arrowright']) dx += 1
+
+      if (dx === 0 && dy === 0) {
+        if (player.direction === DIRECTION.LEFT) dx = -1
+        else if (player.direction === DIRECTION.RIGHT) dx = 1
+        else dy = 1
+      } else {
+        const len = Math.sqrt(dx * dx + dy * dy)
+        dx /= len; dy /= len
+      }
+
+      
+      const effectiveDuration = calcSkillValue(skill.duration, skill.growth?.duration, skill.currentLevel)
+      const effectiveDistance = calcSkillValue(skill.range, skill.growth?.range, skill.currentLevel)
+
+      
+      skill.active = true
+      skill.dashTimer = effectiveDuration
+      skill.dashDuration = effectiveDuration
+      skill.dashDistance = effectiveDistance
+      skill.dashDx = dx
+      skill.dashDy = dy
+      skill.remainingCooldown = effectiveCooldown
+
+      
+      player._dashInvincibleTimer = 150
+
+      
+      effects.value.push({
+        type: 'dashTrail',
+        x: player.x, y: player.y,
+        duration: 250, elapsed: 0,
+        direction: player.direction,
+      })
+
+      log('冲刺！')
     }
   }
 
@@ -401,14 +476,17 @@ export function usePlayer(
     activateSkill(sk)
   }
 
-  // ─── 升级系统 ───
+  
 
   const showLevelUpOptions = () => {
     gameState.levelUpPending = true
     const options = []
 
-    // 已拥有技能升级选项
+    
     player.skills.forEach(sk => {
+      
+      if (sk.maxLevel && sk.currentLevel >= sk.maxLevel) return
+
       const nextLv = sk.currentLevel + 1
       let desc
       if (sk.isPassive) {
@@ -417,14 +495,14 @@ export function usePlayer(
         const nextAtk = calcSkillValue(sk.attackBonusBase, sk.growth?.attackBonus, nextLv)
         desc = `生命+${Math.round(nextHp)} 速度+${nextSpd.toFixed(1)} 攻击+${Math.round(nextAtk)}`
       } else if (sk.speedBoost || sk.damageBoost) {
-        // 无敌类技能：展示冷却、持续、移速加成、伤害加成四项属性
+        
         const nextCooldown = calcSkillValue(sk.cooldown, sk.growth?.cooldown, nextLv)
         const nextDuration = calcSkillValue(sk.duration, sk.growth?.duration, nextLv)
         const nextSpeed = calcSkillValue(sk.speedBoost, sk.growth?.speedBoost, nextLv)
         const nextDmgBoost = calcSkillValue(sk.damageBoost, sk.growth?.damageBoost, nextLv)
         desc = `冷却${(nextCooldown/1000).toFixed(1)}s 持续${(nextDuration/1000).toFixed(1)}s 移速+${Math.round(nextSpeed*100)}% 伤害+${Math.round(nextDmgBoost*100)}%`
       } else if (sk.burnDamage !== undefined) {
-        // 魔法阵火雨：展示火球伤害、灼烧伤害、半径、火球数、持续时间、冷却
+        
         const nextDmg = calcSkillValueLinear(sk.damage, sk.growth?.damage, nextLv)
         const nextBurn = calcSkillValueLinear(sk.burnDamage, sk.growth?.burnDamage, nextLv)
         const nextRadius = calcSkillValueLinear(sk.range, sk.growth?.range, nextLv)
@@ -432,6 +510,26 @@ export function usePlayer(
         const nextDur = calcSkillValueLinear(sk.duration, sk.growth?.duration, nextLv)
         const nextCd = calcSkillValueLinear(sk.cooldown, sk.growth?.cooldown, nextLv)
         desc = `火球${Math.round(nextDmg)} 灼烧${Math.round(nextBurn)} 半径${Math.round(nextRadius)}px ${nextCount}颗 ${(nextDur/1000).toFixed(1)}s 冷却${(nextCd/1000).toFixed(1)}s`
+      } else if (sk.id === 'dash') {
+        const nextCooldown = calcSkillValue(sk.cooldown, sk.growth?.cooldown, nextLv)
+        const nextRange = calcSkillValue(sk.range, sk.growth?.range, nextLv)
+        desc = `冷却${(nextCooldown/1000).toFixed(1)}s 距离${Math.round(nextRange)}px`
+      } else if (sk.id === 'arrow') {
+        
+        const nextDmg = calcSkillValue(sk.damage, sk.growth?.damage, nextLv)
+        const nextPenetration = calcSkillValue(0, sk.growth?.penetration, nextLv)
+        let descParts = [`伤害 ${Math.round(nextDmg)}`]
+        if (nextPenetration > 0) {
+          descParts.push(`穿透${Math.round(nextPenetration)}`)
+        }
+        
+        const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 7
+        if (nextLv >= splitUnlockLevel) {
+          const maxSplit = SKILL_ARROW.splitArrow?.maxArrows || 1
+          const splitCount = Math.min(nextLv - splitUnlockLevel + 1, maxSplit)
+          descParts.push(`分裂${splitCount}`)
+        }
+        desc = descParts.join(' ')
       } else {
         const nextDmg = calcSkillValue(sk.damage, sk.growth?.damage, nextLv)
         desc = `伤害 ${Math.round(nextDmg)}`
@@ -439,7 +537,7 @@ export function usePlayer(
       options.push({ ...sk, isNew: false, nextLevel: nextLv, description: desc })
     })
 
-    // 未拥有技能解锁选项
+    
     SKILL_TABLE.forEach(sk => {
       if (sk.unlockLevel <= player.level && !player.skills.find(s => s.id === sk.id)) {
         let desc = sk.description
@@ -449,12 +547,25 @@ export function usePlayer(
           desc = `冷却${(sk.cooldown/1000).toFixed(1)}s 持续${(sk.duration/1000).toFixed(1)}s 移速+${Math.round(sk.speedBoost*100)}% 伤害+${Math.round(sk.damageBoost*100)}%`
         } else if (sk.burnDamage !== undefined) {
           desc = `火球${sk.damage} 灼烧${sk.burnDamage} 半径${sk.range}px ${sk.fireballCount}颗 ${(sk.duration/1000).toFixed(1)}s`
+        } else if (sk.id === 'dash') {
+          desc = `冷却${(sk.cooldown/1000).toFixed(1)}s 距离${sk.range}px`
+        } else if (sk.id === 'arrow') {
+          
+          const baseDmg = sk.damage
+          const penetration = calcSkillValue(0, sk.growth?.penetration, 1)
+          let descParts = [`伤害 ${baseDmg}`]
+          if (penetration > 0) {
+            descParts.push(`穿透${Math.round(penetration)}`)
+          }
+          const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 7
+          descParts.push(`Lv${splitUnlockLevel}解锁分裂`)
+          desc = descParts.join(' ')
         }
         options.push({ ...sk, isNew: true, nextLevel: 1, description: desc })
       }
     })
 
-    // Fisher-Yates 洗牌，保证每次升级随机出 3 个选项
+    
     for (let i = options.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[options[i], options[j]] = [options[j], options[i]]
@@ -481,14 +592,34 @@ export function usePlayer(
     }
     recalcPassiveBuffs()
     gameState.levelUpPending = false
-    // 选择完毕后，检查是否还有剩余经验可继续升级（逐级弹出，不跳级）
+    
     checkLevelUp()
   }
 
-  // ─── 每帧更新 ───
+  
 
   const updatePlayer = (dt) => {
-    // 键盘移动
+    
+    const dashSkill = player.skills.find(s => s.id === 'dash' && s.active)
+    if (dashSkill) {
+      dashSkill.dashTimer -= dt
+      const step = (dashSkill.dashDistance / dashSkill.dashDuration) * dt
+      player.x += dashSkill.dashDx * step
+      player.y += dashSkill.dashDy * step
+
+      effects.value.push({
+        type: 'dashTrail',
+        x: player.x, y: player.y,
+        duration: 200, elapsed: 0,
+        direction: player.direction,
+      })
+
+      if (dashSkill.dashTimer <= 0) {
+        dashSkill.active = false
+      }
+    }
+
+    
     let dx = 0, dy = 0
     if (keysDown['w'] || keysDown['arrowup']) dy -= 1
     if (keysDown['s'] || keysDown['arrowdown']) dy += 1
@@ -500,21 +631,21 @@ export function usePlayer(
     if (player.isMoving) {
       const len = Math.sqrt(dx * dx + dy * dy)
       dx /= len; dy /= len
-      // 无敌加速：存在且 active 时应用移速加成
+      
       const invFrame = player.skills.find(s => s.id === 'invincible' && s.active)
       let currentSpeed = invFrame
         ? player.speed * (1 + invFrame.invincibleSpeedBoost)
         : player.speed
-      // 增益移速倍率（速度神龛等）
+      
       if (buffGetters?.getSpeedMultiplier) {
         currentSpeed *= buffGetters.getSpeedMultiplier()
       }
-      // 死亡区域减速
+      
       if (buffGetters?.getDeathZoneSlow) {
         const slow = buffGetters.getDeathZoneSlow()
         if (slow > 0) currentSpeed *= (1 - slow)
       }
-      // Boss 减速场
+      
       if (buffGetters?.getBossSlowMultiplier) {
         currentSpeed *= buffGetters.getBossSlowMultiplier()
       }
@@ -537,7 +668,7 @@ export function usePlayer(
       player.frameTimer = 0
     }
 
-    // 掉落物拾取检测
+    
     const pickupRange = ENTITY_SIZE / 2 + 8
     for (let i = lootDrops.value.length - 1; i >= 0; i--) {
       const drop = lootDrops.value[i]
@@ -554,7 +685,7 @@ export function usePlayer(
       }
     }
 
-    // 吸血光环持续伤害
+    
     const vampireSkill = player.skills.find(s => s.id === 'vampireAura' && s.active)
     if (vampireSkill) {
       vampireSkill.auraTimer -= dt
@@ -575,7 +706,7 @@ export function usePlayer(
       }
     }
 
-    // 无敌持续计时
+    
     const invincibleSkill = player.skills.find(s => s.id === 'invincible' && s.active)
     if (invincibleSkill) {
       invincibleSkill.invincibleTimer -= dt
@@ -584,7 +715,7 @@ export function usePlayer(
       }
     }
 
-    // 鼠标持续按下 → 自动射箭
+    
     if (mouseHeld.value && !gameState.isDead && !gameState.levelUpPending) {
       const arrowSkill = player.skills.find(s => s.id === 'arrow')
       if (arrowSkill && arrowSkill.remainingCooldown <= 0) {
@@ -592,7 +723,7 @@ export function usePlayer(
       }
     }
 
-    // 追踪弹幕自动释放：冷却好了且范围内有敌人时自动发射
+    
     const autoSeekSkill = player.skills.find(s => s.id === 'autoSeek')
     if (autoSeekSkill && autoSeekSkill.remainingCooldown <= 0 && !gameState.isDead && !gameState.levelUpPending) {
       const effectiveAutoSeekRange = calcSkillValue(autoSeekSkill.range, autoSeekSkill.growth?.range, autoSeekSkill.currentLevel)
@@ -607,13 +738,13 @@ export function usePlayer(
       }
     }
 
-    // 吸血光环自动释放：冷却好了且光环未激活时自动开启
+    
     const vampireAutoSkill = player.skills.find(s => s.id === 'vampireAura')
     if (vampireAutoSkill && vampireAutoSkill.remainingCooldown <= 0 && !vampireAutoSkill.active && !gameState.isDead && !gameState.levelUpPending) {
       activateSkill(vampireAutoSkill)
     }
 
-    // 近战自动劈斩
+    
     const meleeSkill = player.skills.find(s => s.id === 'meleeAttack')
     if (meleeSkill && meleeSkill.remainingCooldown <= 0 && !gameState.isDead && !gameState.levelUpPending) {
       const effectiveMeleeRange = calcSkillValue(meleeSkill.range, meleeSkill.growth?.range, meleeSkill.currentLevel)
@@ -628,11 +759,14 @@ export function usePlayer(
       }
     }
 
-    // 玩家受击闪红衰减
+    
     if (player.hitFlash > 0) player.hitFlash--
+
+    
+    if (player._dashInvincibleTimer > 0) player._dashInvincibleTimer -= dt
   }
 
-  // ─── 重置 ───
+  
 
   const resetPlayer = () => {
     player.x = 0

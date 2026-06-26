@@ -1,6 +1,6 @@
 import { ENTITY_SIZE, DIRECTION } from '../constants.js'
 
-export const drawPlayerSprite = (ctx, sx, sy, direction, frame, flash) => {
+export const drawPlayerSprite = (ctx, sx, sy, direction, frame, flash, isInvincible = false, invincibleRemaining = 0, invincibleDuration = 0) => {
   const s = ENTITY_SIZE
   const half = s / 2
   ctx.save()
@@ -8,6 +8,56 @@ export const drawPlayerSprite = (ctx, sx, sy, direction, frame, flash) => {
 
   if (flash) {
     ctx.globalAlpha = 0.6 + 0.4 * (frame % 2)
+  }
+
+  
+  if (isInvincible && invincibleDuration > 0) {
+    const progress = Math.max(0, Math.min(1, invincibleRemaining / invincibleDuration))
+    const radius = s * (0.7 + (1 - progress) * 0.3)
+    const alpha = 0.2 + progress * 0.4
+
+    
+    ctx.globalAlpha = alpha * 0.35
+    ctx.beginPath()
+    ctx.arc(0, 0, radius + 8, 0, Math.PI * 2)
+    ctx.fillStyle = '#fbbf24'
+    ctx.fill()
+
+    
+    ctx.globalAlpha = alpha
+    ctx.beginPath()
+    ctx.arc(0, 0, radius, 0, Math.PI * 2)
+    ctx.fillStyle = '#fde68a'
+    ctx.fill()
+
+    
+    ctx.globalAlpha = alpha * 1.4
+    ctx.strokeStyle = '#facc15'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(0, 0, radius + 4, 0, Math.PI * 2)
+    ctx.stroke()
+
+    
+    ctx.globalAlpha = alpha * 1.5
+    ctx.strokeStyle = '#ef4444'
+    ctx.lineWidth = 2
+    const sweepAngle = Math.PI * 2 * progress
+    ctx.beginPath()
+    ctx.arc(0, 0, radius + 4, -Math.PI / 2, -Math.PI / 2 + sweepAngle)
+    ctx.stroke()
+
+    
+    if (invincibleRemaining < 2000) {
+      ctx.globalAlpha = 0.3 + 0.45 * Math.sin(Date.now() / 70)
+      ctx.beginPath()
+      ctx.arc(0, 0, radius + 10, 0, Math.PI * 2)
+      ctx.strokeStyle = '#ef4444'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
+
+    ctx.globalAlpha = 1
   }
 
   const bodyColor = '#fbbf24'
@@ -47,4 +97,4 @@ export const drawPlayerSprite = (ctx, sx, sy, direction, frame, flash) => {
   }
 
   ctx.restore()
-}
+}

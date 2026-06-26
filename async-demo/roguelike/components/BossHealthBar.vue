@@ -110,3 +110,4 @@ const barColor = computed(() => {
   border-radius: 4px 4px 0 0;
 }
 </style>
+</template>

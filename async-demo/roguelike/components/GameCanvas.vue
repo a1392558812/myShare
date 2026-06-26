@@ -19,12 +19,10 @@ const canvasRef = ref(null)
 
 const { toScreen } = useMap(props.camera)
 
-// ─── 输入事件透传 ───
 const onMouseMove = (e) => emit('mousemove', e)
 const onMouseDown = (e) => emit('mousedown', e)
 const onMouseUp = (e) => emit('mouseup', e)
 
-// ═════════════════════ 绘制函数（已抽取至 draw/ 目录） ═════════════════════
 import { drawBackgroundGrid } from '../draw/background.js'
 import { drawPlayerSprite } from '../draw/player.js'
 import { drawHpBar } from '../draw/hpBar.js'
@@ -38,17 +36,10 @@ import { renderGroundZones } from '../draw/effects.js'
 import { drawBossSprite, drawVoidLines, drawSlowFields } from '../draw/boss.js'
 import { renderDeathZones, renderEvents } from '../draw/events.js'
 
-// ═════════════════════ 对外暴露的渲染方法 ═════════════════════
-
-/**
- * 渲染一帧。由父组件在 gameLoop 中调用。
- * @param {Object} state - { player, enemies, projectiles, effects, gameState }
- */
 const render = (state) => {
   const canvas = canvasRef.value
   if (!canvas) return
 
-  // 画布尺寸适配容器
   const parent = canvas.parentElement
   if (parent) {
     canvas.width = parent.clientWidth
@@ -62,32 +53,23 @@ const render = (state) => {
   const cw = canvas.width
   const ch = canvas.height
 
-  // 背景网格
   drawBackgroundGrid(ctx, props.camera, toScreen)
 
-  // 视觉特效
   effects.value.forEach(e => renderEffect(ctx, e, toScreen))
 
-  // 地面毒区
   renderGroundZones(ctx, groundZones.value, toScreen)
 
-  // Boss 虚空线 & 减速场
   if (voidLines && voidLines.length > 0) drawVoidLines(ctx, voidLines, toScreen, gameState.gameTime)
   if (slowFields && slowFields.length > 0) drawSlowFields(ctx, slowFields, toScreen, gameState.gameTime)
 
-  // 死亡区域
   renderDeathZones(ctx, props.events, toScreen, gameState.gameTime)
 
-  // 事件图标（祭坛/神龛/宝箱/石碑）
   renderEvents(ctx, props.events, toScreen, gameState.gameTime, cw, ch)
 
-  // 吸血光环
   renderVampireAura(ctx, player, gameState.gameTime, toScreen)
 
-  // 魔法阵火雨
   renderMagicCircles(ctx, magicCircles, gameState.gameTime, toScreen)
 
-  // 敌人（视口裁剪：跳过屏幕外的实体）
   enemies.value.forEach(e => {
     if (e.dead) return
     const pos = toScreen(e.x, e.y, ctx)
@@ -108,10 +90,8 @@ const render = (state) => {
     }
   })
 
-  // 掉落物
   renderLootDrops(ctx, lootDrops, gameState.gameTime, toScreen)
 
-  // 弹幕（视口裁剪）
   projectiles.value.forEach(p => {
     const pos = toScreen(p.x, p.y, ctx)
     const psize = p.size || 10
@@ -119,17 +99,20 @@ const render = (state) => {
     renderProjectile(ctx, pos.x, pos.y, p)
   })
 
-  // 玩家
   const playerScreen = toScreen(player.x, player.y, ctx)
-  drawPlayerSprite(ctx, playerScreen.x, playerScreen.y, player.direction, player.frame, player.hitFlash > 0)
+  const invSkill = player.skills?.find(s => s.id === 'invincible' && s.active)
+  drawPlayerSprite(
+    ctx, playerScreen.x, playerScreen.y,
+    player.direction, player.frame, player.hitFlash > 0,
+    !!invSkill,
+    invSkill ? invSkill.invincibleTimer : 0,
+    invSkill ? invSkill.invincibleTotalDuration : 0
+  )
 }
 
-/** 供父组件获取当前画布尺寸（spawnEnemy 等需要） */
 const getCanvasSize = () => {
   const canvas = canvasRef.value
   if (!canvas) return { width: 0, height: 0 }
-  // canvas.width/height 是 render() 中设置的绘制尺寸
-  // 若尚未渲染，则回退到父容器布局尺寸
   if (canvas.width && canvas.height) {
     return { width: canvas.width, height: canvas.height }
   }
@@ -150,3 +133,4 @@ canvas {
   height: 100%;
 }
 </style>
+</template>
