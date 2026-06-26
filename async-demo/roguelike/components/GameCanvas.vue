@@ -10,6 +10,7 @@ import { groundZones } from '../composables/useEnemy.js'
 
 const props = defineProps({
   camera: { type: Object, required: true },
+  events: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['mousemove', 'mousedown', 'mouseup'])
@@ -34,6 +35,8 @@ import { renderVampireAura } from '../draw/vampireAura.js'
 import { renderMagicCircles } from '../draw/magicCircles.js'
 import { renderLootDrops } from '../draw/lootDrops.js'
 import { renderGroundZones } from '../draw/effects.js'
+import { drawBossSprite, drawVoidLines, drawSlowFields } from '../draw/boss.js'
+import { renderDeathZones, renderEvents } from '../draw/events.js'
 
 // ═════════════════════ 对外暴露的渲染方法 ═════════════════════
 
@@ -55,7 +58,7 @@ const render = (state) => {
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  const { player, enemies, projectiles, effects, lootDrops, magicCircles, gameState } = state
+  const { player, enemies, projectiles, effects, lootDrops, magicCircles, gameState, voidLines, slowFields } = state
   const cw = canvas.width
   const ch = canvas.height
 
@@ -67,6 +70,16 @@ const render = (state) => {
 
   // 地面毒区
   renderGroundZones(ctx, groundZones.value, toScreen)
+
+  // Boss 虚空线 & 减速场
+  if (voidLines && voidLines.length > 0) drawVoidLines(ctx, voidLines, toScreen, gameState.gameTime)
+  if (slowFields && slowFields.length > 0) drawSlowFields(ctx, slowFields, toScreen, gameState.gameTime)
+
+  // 死亡区域
+  renderDeathZones(ctx, props.events, toScreen, gameState.gameTime)
+
+  // 事件图标（祭坛/神龛/宝箱/石碑）
+  renderEvents(ctx, props.events, toScreen, gameState.gameTime, cw, ch)
 
   // 吸血光环
   renderVampireAura(ctx, player, gameState.gameTime, toScreen)
@@ -80,7 +93,11 @@ const render = (state) => {
     const pos = toScreen(e.x, e.y, ctx)
     const margin = e.size
     if (pos.x < -margin || pos.x > cw + margin || pos.y < -margin || pos.y > ch + margin) return
-    drawEnemySprite(ctx, pos.x, pos.y, e)
+    if (e.isBoss) {
+      drawBossSprite(ctx, pos.x, pos.y, e, gameState.gameTime)
+    } else {
+      drawEnemySprite(ctx, pos.x, pos.y, e)
+    }
     drawHpBar(ctx, pos.x, pos.y - e.size / 2 - 8, e.hp, e.maxHp, e.size, e.color)
     if (e.frozen) {
       ctx.save()

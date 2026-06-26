@@ -20,6 +20,12 @@ const debugFlags = reactive({
 const playerOverride = reactive({
   speed: null,
   baseAttack: null,
+  /** 闪避率 0~1，null=不覆盖 */
+  dodgeChance: null,
+  /** 金币，null=不覆盖 */
+  gold: null,
+  /** 最大生命值，null=不覆盖 */
+  maxHp: null,
 })
 
 const enemyDebug = reactive({
@@ -28,6 +34,37 @@ const enemyDebug = reactive({
   /** 一键秒杀所有敌人 */
   killAll: false,
 })
+
+/** Boss 调试控制 */
+const bossDebug = reactive({
+  /** 强制刷 Boss（选择 Boss id，'' 为随机） */
+  forceSpawn: false,
+  /** 目标 Boss id */
+  bossId: '',
+  /** 强制击杀当前 Boss */
+  forceKill: false,
+  /** 跳过 Boss 冷却 */
+  skipCooldown: false,
+})
+
+/** 事件调试控制 */
+const eventDebug = reactive({
+  /** 选中要生成的事件类型 */
+  eventType: 'altar',
+})
+
+/** 刷怪调试控制 */
+const enemySpawnDebug = reactive({
+  /** 选中要生成的敌人类型 */
+  enemyType: 'melee',
+  /** 单次生成数量 */
+  spawnCount: 3,
+  /** 是否在玩家附近生成 */
+  nearPlayer: true,
+})
+
+/** 游戏倍速（1 = 正常） */
+const gameSpeed = ref(1.0)
 
 export function useDebug() {
   const toggleDebug = () => {
@@ -45,7 +82,19 @@ export function useDebug() {
     debugFlags.showEnemyPaths = false
     playerOverride.speed = null
     playerOverride.baseAttack = null
+    playerOverride.dodgeChance = null
+    playerOverride.gold = null
+    playerOverride.maxHp = null
     enemyDebug.pauseSpawn = false
+    bossDebug.forceSpawn = false
+    bossDebug.bossId = ''
+    bossDebug.forceKill = false
+    bossDebug.skipCooldown = false
+    eventDebug.eventType = 'altar'
+    enemySpawnDebug.enemyType = 'melee'
+    enemySpawnDebug.spawnCount = 3
+    enemySpawnDebug.nearPlayer = true
+    gameSpeed.value = 1.0
   }
 
   return {
@@ -53,6 +102,10 @@ export function useDebug() {
     debugFlags,
     playerOverride,
     enemyDebug,
+    bossDebug,
+    eventDebug,
+    enemySpawnDebug,
+    gameSpeed,
     toggleDebug,
     setFlag,
     resetAll,

@@ -2,6 +2,13 @@
 document.getElementById('btnFullscreen').addEventListener('click', async () => {
   try {
     const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'png' });
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    // 写入剪贴板
+    const item = new ClipboardItem({ 'image/png': blob });
+    await navigator.clipboard.write([item]);
+    alert('图片已复制到剪贴板，可粘贴到工具');
+    
     await chrome.downloads.download({
       url: dataUrl,
       filename: generateFilename('full'),

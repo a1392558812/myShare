@@ -32,11 +32,34 @@ export const groundZones = ref([])
  * @param {import('vue').Ref<Array>} battleLog - 战斗日志
  * @param {import('vue').Ref<Array>} effects - 视觉特效列表
  */
-export function useEnemy(enemies, player, projectiles, gameState, mapUtils, battleLog, effects, gainExp) {
+export function useEnemy(enemies, player, projectiles, gameState, mapUtils, battleLog, effects, gainExp, buffGetters = null) {
   const { checkCollision } = mapUtils
   const { debugFlags } = useDebug()
 
   const log = (msg) => pushBattleLog(battleLog, msg)
+
+  /**
+   * 对玩家施加伤害，应用闪避判定 + 诅咒石碑增益
+   * @param {number} rawDmg - 基础伤害值
+   * @returns {boolean} true = 造成了伤害, false = 闪避/无敌/godMode 挡掉
+   */
+  const tryDamagePlayer = (rawDmg) => {
+    const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+    if (debugFlags?.godMode || isInvincible) return false
+
+    // 闪避判定（速度神龛 + 未来闪避技能）
+    const totalDodge = (player.dodgeChance || 0) + (buffGetters?.getDodgeChance?.() || 0)
+    if (totalDodge > 0 && Math.random() < totalDodge) return false
+
+    // 诅咒石碑敌人增益
+    const curseMult = buffGetters?.getEnemyDamageMultiplier?.() || 1
+    const finalDmg = rawDmg * curseMult
+
+    player.hp -= finalDmg
+    player.hitFlash = 10
+    if (player.hp <= 0) { player.hp = 0; gameState.isDead = true; log('玩家阵亡！') }
+    return true
+  }
 
   /** 根据移动方向更新朝向 + 帧动画 */
   const updateDirection = (e, dx, dy, dist, dt) => {
@@ -91,13 +114,8 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
       if (e.type === 'bomber') {
         const bomRange = e.bomberRange || 55
         if (!debugFlags?.pauseEnemyAttack && dist <= bomRange) {
-          // 自爆！（受调试暂停 + 无敌/godMode 保护）
-          const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-          if (!debugFlags?.godMode && !isInvincible) {
-            player.hp -= (e.attack || 30)
-          }
-          player.hitFlash = 10
-          if (player.hp <= 0) { player.hp = 0; gameState.isDead = true; log('玩家阵亡！') }
+          // 自爆！
+          tryDamagePlayer(e.attack || 30)
 
           // AoE 伤害周围敌人（自爆 AoE 不受 godMode 影响，仅玩家免伤）
           enemies.value.forEach(other => {
@@ -192,15 +210,11 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
               for (let i = 0; i < excess && i < aliveMinions.length; i++) {
                 const old = aliveMinions[i]
 
-                // 伤害玩家（受 godMode / 无敌保护，与自爆怪逻辑一致）
-                const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+                // 伤害玩家
                 const pdist = Math.sqrt((player.x - old.x) ** 2 + (player.y - old.y) ** 2)
                 if (pdist < sacrificeRadius + ENTITY_SIZE / 2) {
-                  if (!debugFlags?.godMode && !isInvincible) {
-                    player.hp -= sacrificeDmg
-                  }
+                  tryDamagePlayer(sacrificeDmg)
                   player.hitFlash = 6
-                  if (player.hp <= 0) { player.hp = 0; gameState.isDead = true; log('玩家阵亡！') }
                 }
 
                 // AoE 伤害周围敌人（友方减免 40%，与自爆怪逻辑一致）
@@ -314,23 +328,18 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             e.chargeStateTimer += dt
             e.direction = e.chargeDirX >= 0 ? DIRECTION.RIGHT : DIRECTION.LEFT
 
-            // 碰撞玩家判定（受调试暂停攻击 + 无敌/godMode 保护）
+            // 碰撞玩家判定
             if (!debugFlags?.pauseEnemyAttack) {
               const cdx = player.x - e.x
               const cdy = player.y - e.y
               const cdist = Math.sqrt(cdx * cdx + cdy * cdy)
               if (cdist <= (e.attackRange || 45) + ENTITY_SIZE / 2) {
-                const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-                if (!debugFlags?.godMode && !isInvincible) {
-                  player.hp -= (e.attack || 25)
-                }
-                player.hitFlash = 8
+                tryDamagePlayer(e.attack || 25)
                 // 击退
                 if (cdist > 0) {
                   player.x += (cdx / cdist) * 40
                   player.y += (cdy / cdist) * 40
                 }
-                if (player.hp <= 0) { player.hp = 0; gameState.isDead = true; log('玩家阵亡！') }
                 log('被冲锋者撞击！')
                 e.chargeState = 'recovery'
                 e.chargeStateTimer = 0
@@ -516,18 +525,9 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
           e.meleeCooldownTimer -= dt
         }
         if (dist <= e.attackRange && e.meleeCooldownTimer <= 0) {
-          const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-          if (!debugFlags?.godMode && !isInvincible) {
-            player.hp -= e.attack
-          }
-          player.hitFlash = 6
+          tryDamagePlayer(e.attack)
           e.meleeCooldownTimer = e.skillCooldown
           log(`受到 ${e.type} 敌人 ${e.attack} 点近战伤害`)
-          if (player.hp <= 0) {
-            player.hp = 0
-            gameState.isDead = true
-            log('玩家阵亡！')
-          }
         }
       }
 
@@ -545,22 +545,17 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
     })
 
     // ═════ 玩家地面毒区扣血（每秒 tick 一次） ═════
-    const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-    if (!debugFlags?.godMode && !isInvincible) {
-      groundZones.value.forEach(z => {
-        const d = Math.sqrt((player.x - z.x) ** 2 + (player.y - z.y) ** 2)
-        if (d <= z.radius) {
-          const now = Date.now()
-          if (now - (z.lastTickTime || 0) >= (z.tickInterval || 1000)) {
-            player.hp -= (z.damagePerTick || 2)
-            player.hitFlash = 6
-            z.lastTickTime = now
-            if (player.hp <= 0) { player.hp = 0; gameState.isDead = true; log('玩家阵亡！') }
-          }
+    groundZones.value.forEach(z => {
+      const d = Math.sqrt((player.x - z.x) ** 2 + (player.y - z.y) ** 2)
+      if (d <= z.radius) {
+        const now = Date.now()
+        if (now - (z.lastTickTime || 0) >= (z.tickInterval || 1000)) {
+          tryDamagePlayer(z.damagePerTick || 2)
+          z.lastTickTime = now
         }
-      })
-    }
+      }
+    })
   }
 
-  return { updateEnemies }
+  return { updateEnemies, tryDamagePlayer }
 }

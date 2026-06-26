@@ -280,7 +280,11 @@
         Math.round(cropRect.width * dpr),
         Math.round(cropRect.height * dpr)
       );
-      canvas.toBlob((blob) => {
+      canvas.toBlob(async (blob) => {
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        alert('图片已复制到剪贴板，可粘贴到工具');
+
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;

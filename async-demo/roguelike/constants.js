@@ -797,3 +797,273 @@ export const DIRECTION = {
   LEFT:  'left',
   RIGHT: 'right',
 }
+
+// ═════════════════════ 随机事件与环境交互 ═════════════════════
+
+/** 事件系统解锁等级（可配置） */
+export const EVENT_UNLOCK_LEVEL = 8
+
+/** 事件生成间隔范围 [min, max] ms */
+export const EVENT_SPAWN_INTERVAL = [30000, 60000]
+
+/** 场上最多同时存在的事件数 */
+export const EVENT_MAX_COUNT = 3
+
+/** 同类型事件冷却时间 ms */
+export const EVENT_TYPE_COOLDOWN = 60000
+
+/** 事件类型配置 */
+export const EVENT_TYPES = {
+  ALTAR: {
+    id: 'altar',
+    name: '力量祭坛',
+    icon: '🗿',
+    color: '#f59e0b',         // 橙金主色
+    color2: '#d97706',         // 深橙辅色
+    duration: 30000,           // 祭坛存在时间 30s
+    buffType: 'attackBoost',
+    buffLabel: '攻击力 +50%',
+    buffValue: 0.5,            // +50% 攻击
+    buffDuration: 30000,       // buff 持续 30s
+    activateRange: 40,         // 靠近 40px 自动激活
+    cooldown: 60000,           // 同类型 60s 不重复
+    blockOnDeathZone: true,
+  },
+  SHRINE: {
+    id: 'shrine',
+    name: '速度神龛',
+    icon: '🔵',
+    color: '#3b82f6',         // 蓝色主色
+    color2: '#1d4ed8',
+    duration: 20000,           // 神龛存在时间 20s
+    buffType: 'speedShrine',
+    buffLabel: '移速+40% 闪避20%',
+    buffValue: { speedBoost: 0.4, dodgeChance: 0.2 },
+    buffDuration: 20000,
+    activateRange: 40,
+    cooldown: 60000,
+    blockOnDeathZone: true,
+  },
+  CHEST: {
+    id: 'chest',
+    name: '宝箱',
+    icon: '📦',
+    color: '#fbbf24',         // 金色主色
+    color2: '#b45309',
+    duration: 45000,           // 宝箱存在时间 45s
+    itemCountMin: 2,
+    itemCountMax: 3,
+    activateRange: 30,         // 靠近 30px 自动拾取
+    cooldown: 60000,
+    blockOnDeathZone: true,
+  },
+  CURSED_STELE: {
+    id: 'cursedStele',
+    name: '诅咒石碑',
+    icon: '⚠️',
+    color: '#7c3aed',         // 紫色主色
+    color2: '#5b21b6',
+    duration: 30000,           // 石碑存在时间 30s（可交互窗口）
+    enemyBuffRatio: 1.3,       // 敌人 +30%
+    dropRateMultiplier: 2.5,   // 掉落率 ×2.5
+    effectDuration: 60000,     // 诅咒效果持续 60s
+    activateRange: 50,         // 靠近 50px 弹窗
+    promptRange: 50,
+    cooldown: 60000,
+    blockOnDeathZone: true,
+  },
+  DEATH_ZONE: {
+    id: 'deathZone',
+    name: '死亡区域',
+    icon: '💀',
+    color: '#991b1b',         // 暗红主色
+    color2: '#7f1d1d',
+    duration: Infinity,         // 区域内永久
+    maxCount: 5,                // 全场最多 5 个
+    damagePerSec: 3,            // 每秒扣血
+    slowRatio: 0.3,             // 减速 30%
+    radius: 80,                 // 区域半径 px
+    zoneRadius: 80,
+    minPlayerDistance: 150,     // 生成位置避开玩家 150px
+    cooldown: 60000,
+    blockOnDeathZone: false,    // 可生成在死亡区域旁（本身即为区域）
+  },
+}
+
+/** 宝箱物品池 */
+export const CHEST_ITEM_TABLE = [
+  { id: 'healthPotion',    name: '生命药水',   icon: '❤️', weight: 4, healAmount: 15 },
+  { id: 'bigHealthPotion', name: '大生命药水', icon: '💖', weight: 2, healAmount: 40 },
+  { id: 'expBook',         name: '经验书',     icon: '📖', weight: 3, expAmount: 200 },
+  { id: 'skillScroll',     name: '技能卷轴',   icon: '📜', weight: 1, effect: 'upgradeRandomSkill' },
+  { id: 'goldCoin',        name: '金币',       icon: '🪙', weight: 2, goldAmount: 1 },
+  { id: 'goldPouch',       name: '金币袋',     icon: '💰', weight: 1, goldAmount: 5 },
+]
+
+// ═════════════════════ Boss 波次系统 ═════════════════════
+
+/** Boss 波次冷却时间 ms（任意 Boss 被击败后到下次可触发的最小间隔） */
+export const BOSS_COOLDOWN = 180000
+
+/** Boss 首次触发最小游戏时间 ms */
+export const BOSS_FIRST_TRIGGER_TIME = 120000
+
+/** Boss 登场前警告持续时间 ms */
+export const BOSS_WARNING_DURATION = 2000
+
+/** Boss 警告期内暂停普通刷新的总时长 ms */
+export const BOSS_SPAWN_PAUSE_DURATION = 5000
+
+/** Boss 登场动画持续时间 ms */
+export const BOSS_SPAWN_ANIM_DURATION = 1500
+
+/** Boss 战中普通刷新倍率 */
+export const BOSS_SPAWN_RATE_MULTIPLIER = 0.5
+
+/** Boss 死亡爆炸特效时长 ms */
+export const BOSS_DEATH_EFFECT_DURATION = 1200
+
+/** 暗影聚合体 — 分身重分配间隔 ms */
+export const BOSS_CLONE_REASSIGN_INTERVAL = 5000
+
+/** Boss 攻击参数 */
+export const BOSS_SLAM_RANGE = 150          // 近战拍击范围
+export const BOSS_SLAM_ANGLE = 120          // 扇形角度（度）
+export const BOSS_SLAM_DAMAGE = 20          // 拍击伤害
+export const BOSS_SLAM_COOLDOWN = 2000      // 拍击冷却
+export const BOSS_SLAM_WARN_DURATION = 400  // 拍击预警
+
+export const BOSS_SHADOW_ORB_COUNT_PHASE1 = 3
+export const BOSS_SHADOW_ORB_COUNT_PHASE2 = 5
+export const BOSS_SHADOW_ORB_DAMAGE = 15
+export const BOSS_SHADOW_ORB_SPEED = 2.5
+export const BOSS_SHADOW_ORB_TRACK_STRENGTH = 0.3
+export const BOSS_SHADOW_ORB_COOLDOWN = 3000
+export const BOSS_SHADOW_ORB_SIZE = 10
+
+export const BOSS_SHADOW_WAVE_DAMAGE = 10
+export const BOSS_SHADOW_WAVE_INTERVAL = 3000
+export const BOSS_SHADOW_WAVE_SPEED = 4
+export const BOSS_SHADOW_WAVE_MAX_RADIUS = 300
+
+export const BOSS_FIRE_PILLAR_DAMAGE = 30
+export const BOSS_FIRE_PILLAR_INTERVAL = 2500
+export const BOSS_FIRE_PILLAR_WARN = 800
+export const BOSS_FIRE_PILLAR_RADIUS = 40
+export const BOSS_FIRE_PILLAR_MAX = 4
+
+export const BOSS_FIRE_BARRAGE_DAMAGE = 12
+export const BOSS_FIRE_BARRAGE_INTERVAL = 4000
+export const BOSS_FIRE_BARRAGE_SPEED = 4
+export const BOSS_FIRE_BARRAGE_DIRECTIONS = 8
+export const BOSS_FIRE_BARRAGE_RANGE = 600
+export const BOSS_FIRE_BARRAGE_SIZE = 8
+
+export const BOSS_VOID_TELEPORT_INTERVAL = 3000
+export const BOSS_VOID_LINE_INTERVAL = 5000
+export const BOSS_VOID_LINE_DAMAGE_PER_SEC = 25
+export const BOSS_VOID_LINE_DURATION = 8000
+export const BOSS_VOID_LINE_COUNT = 3
+
+export const BOSS_VOID_SLOW_INTERVAL = 8000
+export const BOSS_VOID_SLOW_RADIUS = 120
+export const BOSS_VOID_SLOW_RATIO = 0.4
+export const BOSS_VOID_SLOW_DURATION = 5000
+
+export const BOSS_VOID_PROJECTILE_DAMAGE = 18
+export const BOSS_VOID_PROJECTILE_SPEED = 3.5
+export const BOSS_VOID_PROJECTILE_TRACK = 0.4
+export const BOSS_VOID_PROJECTILE_INTERVAL = 2000
+export const BOSS_VOID_PROJECTILE_SIZE = 10
+
+/** Boss 配置表 */
+export const BOSS_TABLE = [
+  {
+    id: 'shadowAmalgam',
+    name: '暗影聚合体',
+    unlockPlayerLevel: 3,
+    hp: 300,
+    hpPerLevel: 30,
+    speed: 1.5,
+    size: ENTITY_SIZE * 3,
+    color: '#4b0082',
+    color2: '#1a0033',
+    xpReward: 200,
+    phases: [
+      { threshold: 1.0,  name: '阶段一', attacks: ['meleeSlam', 'shadowOrbs'] },
+      { threshold: 0.6,  name: '阶段二', attacks: ['meleeSlam', 'shadowOrbs', 'clone'] },
+      { threshold: 0.25, name: '阶段三', attacks: ['meleeSlam', 'shadowOrbs', 'clone', 'frenzy', 'shadowWave'] },
+    ],
+    dropTable: {
+      guaranteed: [
+        { id: 'skillScroll', count: 1 },
+        { id: 'goldPouch', count: 1 },
+      ],
+      extra: [],
+    },
+  },
+  {
+    id: 'infernoCore',
+    name: '火焰核心',
+    unlockPlayerLevel: 8,
+    hp: 600,
+    hpPerLevel: 50,
+    speed: 2.2,
+    size: ENTITY_SIZE * 2.5,
+    color: '#f97316',
+    color2: '#ea580c',
+    xpReward: 500,
+    phases: [
+      { threshold: 1.0, name: '', attacks: ['firePillar', 'fireBarrage'] },
+    ],
+    dropTable: {
+      guaranteed: [
+        { id: 'skillScroll', count: 2 },
+        { id: 'goldPouch', count: 2 },
+      ],
+      extra: [],
+    },
+  },
+  {
+    id: 'voidWeaver',
+    name: '虚空织法者',
+    unlockPlayerLevel: 14,
+    hp: 1000,
+    hpPerLevel: 80,
+    speed: 0,
+    size: ENTITY_SIZE * 2,
+    color: '#a855f7',
+    color2: '#7c3aed',
+    xpReward: 1000,
+    phases: [
+      { threshold: 1.0, name: '', attacks: ['teleport', 'voidLines', 'slowField', 'voidProjectile'] },
+    ],
+    dropTable: {
+      guaranteed: [
+        { id: 'skillScroll', count: 3 },
+        { id: 'goldPouch', count: 3 },
+      ],
+      extra: [],
+    },
+  },
+]
+
+/**
+ * 计算 Boss 实际 HP
+ * @param {object} bossConfig - BOSS_TABLE 中的单条配置
+ * @param {number} playerLevel
+ */
+export function calcBossHP(bossConfig, playerLevel) {
+  const extra = Math.max(0, playerLevel - bossConfig.unlockPlayerLevel)
+  return bossConfig.hp + bossConfig.hpPerLevel * extra
+}
+
+/** 宝箱物品稀有度色系（HUD 展示用） */
+export const CHEST_ITEM_RARITY = {
+  healthPotion:     { name: '普通', color: '#22c55e' },
+  bigHealthPotion:  { name: '稀有', color: '#3b82f6' },
+  expBook:          { name: '普通', color: '#22c55e' },
+  skillScroll:      { name: '稀有', color: '#a855f7' },
+  goldCoin:         { name: '普通', color: '#22c55e' },
+  goldPouch:        { name: '稀有', color: '#fbbf24' },
+}

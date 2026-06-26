@@ -17,6 +17,25 @@ export const renderProjectile = (ctx, sx, sy, p) => {
     // 紫色光球 + 亮紫内核，匹配召唤师色调
     ctx.fillStyle = '#7F77DD'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 2, 0, Math.PI * 2); ctx.fill()
     ctx.fillStyle = '#E9D5FF'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 4, 0, Math.PI * 2); ctx.fill()
+  } else if (p.type === 'shadowOrb') {
+    // 暗影球：暗紫 + 核心亮紫
+    ctx.fillStyle = '#7c3aed'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 2, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#c084fc'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 3, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#ede9fe'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 6, 0, Math.PI * 2); ctx.fill()
+  } else if (p.type === 'fireBarrage') {
+    // 旋转火焰弹：橙红外圈 + 黄白核心
+    ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 2, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 3, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(sx, sy, p.size / 6, 0, Math.PI * 2); ctx.fill()
+  } else if (p.type === 'voidProjectile') {
+    // 虚空弹幕：紫色小菱形
+    ctx.fillStyle = '#a855f7'; ctx.beginPath()
+    const r = p.size / 2
+    ctx.moveTo(sx, sy - r); ctx.lineTo(sx + r * 0.7, sy)
+    ctx.lineTo(sx, sy + r); ctx.lineTo(sx - r * 0.7, sy)
+    ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#e9d5ff'; ctx.beginPath()
+    ctx.arc(sx, sy, r * 0.3, 0, Math.PI * 2); ctx.fill()
   }
   ctx.restore()
 }

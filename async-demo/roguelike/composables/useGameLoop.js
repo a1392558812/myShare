@@ -23,15 +23,17 @@ export function useGameLoop(
   player, gameState, enemies, projectiles, effects, lootDrops, magicCircles,
   gameCanvas, camera,
   updaters, mapUtils, options,
-  groundZones, // 新增：地面毒区引用
+  groundZones, // 地面毒区引用
+  eventUtils = null, // { tickEvents, tickBuffs, tickDeathZones, tryDamagePlayer, getSpeedMultiplier }
 ) {
   const { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy } = updaters
   const { updateCamera } = mapUtils
-  const { onRender } = options || {}
+  const { onRender, tickBossSpawn, updateBoss, getDtMultiplier } = options || {}
   const { debugFlags } = useDebug()
-
-  // 存储 groundZones 引用供内部函数使用
   const groundZonesRef = groundZones
+
+  /** 死亡区域减速系数（0 = 无减速）*/
+  let deathZoneSlow = 0
 
   let animFrameId = null
   let lastTimestamp = 0
@@ -52,6 +54,24 @@ export function useGameLoop(
           if (speed > p.seekSpeed) {
             p.vx = (p.vx / speed) * p.seekSpeed
             p.vy = (p.vy / speed) * p.seekSpeed
+          }
+        }
+      }
+
+      // Boss 追踪弹幕（shadowOrb / voidProjectile）
+      if (p.isTracking) {
+        const tdx = player.x - p.x
+        const tdy = player.y - p.y
+        const tdist = Math.sqrt(tdx * tdx + tdy * tdy)
+        if (tdist > 1) {
+          const strength = p.trackStrength || 0.3
+          p.vx += (tdx / tdist) * strength
+          p.vy += (tdy / tdist) * strength
+          const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
+          const maxSpd = p.maxSpeed || 5
+          if (speed > maxSpd) {
+            p.vx = (p.vx / speed) * maxSpd
+            p.vy = (p.vy / speed) * maxSpd
           }
         }
       }
@@ -101,12 +121,16 @@ export function useGameLoop(
           })
         } else if (p.owner === 'enemy') {
           if (checkCollisionLocal(p.x, p.y, p.size, player.x, player.y, ENTITY_SIZE)) {
-            const isSkillInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
-            if (!debugFlags.godMode && !isSkillInvincible) {
-              player.hp -= p.damage
-              if (player.hp <= 0) {
-                player.hp = 0
-                gameState.isDead = true
+            if (eventUtils?.tryDamagePlayer) {
+              eventUtils.tryDamagePlayer(p.damage)
+            } else {
+              const isSkillInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+              if (!debugFlags.godMode && !isSkillInvincible) {
+                player.hp -= p.damage
+                if (player.hp <= 0) {
+                  player.hp = 0
+                  gameState.isDead = true
+                }
               }
             }
             p.hit = true
@@ -120,6 +144,13 @@ export function useGameLoop(
       const pdy = p.y - player.y
       if (Math.sqrt(pdx * pdx + pdy * pdy) > maxDist) {
         p.hit = true
+      }
+      // fireBarrage 飞行距离限制
+      if (p.type === 'fireBarrage') {
+        p.traveled = (p.traveled || 0) + Math.sqrt(p.vx ** 2 + p.vy ** 2)
+        if (p.traveled >= (p.range || 600)) {
+          p.hit = true
+        }
       }
     })
 
@@ -137,6 +168,38 @@ export function useGameLoop(
 
   const updateEffects = (dt) => {
     effects.value.forEach(e => { e.elapsed += dt })
+
+    // ═══ 火柱预警：预警结束时触发伤害 ═══
+    effects.value.forEach(e => {
+      if (e.type === 'firePillarWarn' && !e._damageTriggered && e.elapsed >= e.duration - 50) {
+        e._damageTriggered = true
+        if (e.playerRef) {
+          const pdist = Math.sqrt((e.playerRef.x - e.x) ** 2 + (e.playerRef.y - e.y) ** 2)
+          if (pdist <= e.radius + ENTITY_SIZE / 2) {
+            if (eventUtils?.tryDamagePlayer) {
+              eventUtils.tryDamagePlayer(e.damage || 30)
+            }
+          }
+        }
+      }
+    })
+
+    // ═══ 暗影波纹：持续扩张 + 伤害检测 ═══
+    effects.value.forEach(e => {
+      if (e.type === 'shadowWave' && e.playerRef) {
+        const currentRadius = e.radius + (e.elapsed / e.duration) * (e.maxRadius - e.radius)
+        const pdist = Math.sqrt((e.playerRef.x - e.x) ** 2 + (e.playerRef.y - e.y) ** 2)
+        const hitBand = 12
+        if (!e._lastDamageId || e._lastDamageId !== Math.floor((currentRadius - e.radius) / hitBand)) {
+          e._lastDamageId = Math.floor((currentRadius - e.radius) / hitBand)
+          if (Math.abs(pdist - currentRadius) < hitBand && e.elapsed < e.duration * 0.9) {
+            if (eventUtils?.tryDamagePlayer) {
+              eventUtils.tryDamagePlayer(e.damage || 10)
+            }
+          }
+        }
+      }
+    })
 
     // ═══ 处理毒液预警：预警结束后创建地面毒区 ═══
     if (groundZonesRef) {
@@ -256,13 +319,18 @@ export function useGameLoop(
 
   const gameLoop = (timestamp) => {
     if (!lastTimestamp) lastTimestamp = timestamp
-    const dt = timestamp - lastTimestamp
+    const dt = (timestamp - lastTimestamp) * (getDtMultiplier ? getDtMultiplier() : 1)
     lastTimestamp = timestamp
 
-    if (!gameState.isDead && !gameState.levelUpPending) {
+    if (!gameState.isDead && !gameState.levelUpPending && !gameState.stelePending) {
       gameState.gameTime += dt
       updatePlayer(dt)
       updateCamera(player.x, player.y)
+
+      // Boss 波次 tick
+      if (tickBossSpawn) tickBossSpawn(dt)
+      if (updateBoss) updateBoss(dt)
+
       updateEnemies(dt)
       updateProjectiles(dt)
       updateEffects(dt)
@@ -271,6 +339,17 @@ export function useGameLoop(
       cleanupDead()
       updateLoot()
       updateMagicCircles(dt)
+
+      // 事件系统 tick
+      if (eventUtils) {
+        if (eventUtils.tickBuffs) eventUtils.tickBuffs(dt)
+        if (eventUtils.tickEvents) eventUtils.tickEvents(dt)
+        // 死亡区域减速
+        if (eventUtils.tickDeathZones) {
+          const zoneResult = eventUtils.tickDeathZones(dt)
+          deathZoneSlow = zoneResult?.inZoneSlow || 0
+        }
+      }
     }
 
     if (onRender) onRender()
@@ -298,5 +377,6 @@ export function useGameLoop(
     updateProjectiles,
     updateEffects,
     updateSkillCooldowns,
+    getDeathZoneSlow: () => deathZoneSlow,
   }
 }

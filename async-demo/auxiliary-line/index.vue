@@ -9,6 +9,12 @@
           </div>
         </div>
 
+        <div style="margin-bottom: 20px;">
+          <div>有更好第三方库实现了该需求</div>
+          链接：<a style="color: #0078d6;"
+            href="https://github.com/gorkys/vue-draggable-resizable-gorkys">vue-draggable-resizable-gorkys</a>
+        </div>
+
         <div class="control-group">
           <div class="control-item">
             <div class="control-label">

@@ -38,6 +38,8 @@ export function usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvas, enemies, projectiles, effects,
   mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
+  buffGetters = null,
+  onDamageBoss = null,
 ) {
   const { toLogical, checkCollision } = mapUtils
 
@@ -142,9 +144,26 @@ export function usePlayer(
 
   /** 对敌人造成伤害 */
   const damageEnemy = (enemy, dmg) => {
+    // Boss 敌人委托给 useBoss
+    if (enemy.isBoss) {
+      // 假身：穿透特效但不扣血
+      if (enemy.isClone) {
+        enemy.hitFlash = 4  // 小闪白反馈
+        return
+      }
+      // 真身：委托给 Boss 伤害系统
+      if (onDamageBoss) onDamageBoss(dmg)
+      return
+    }
+
     // 无敌伤害加成
     const invSkill = player.skills.find(s => s.id === 'invincible' && s.active)
     let finalDmg = invSkill ? dmg * (1 + invSkill.invincibleDamageBoost) : dmg
+
+    // 增益攻击倍率（力量祭坛等）
+    if (buffGetters?.getAttackMultiplier) {
+      finalDmg *= buffGetters.getAttackMultiplier()
+    }
 
     // 护盾兵减伤检查
     if (enemy.shieldedBy) {
@@ -165,8 +184,9 @@ export function usePlayer(
       log(`击杀 ${enemy.type} 敌人`)
 
       // 掉落判定：遍历掉落表，每种道具独立概率
+      const dropMult = buffGetters?.getDropRateMultiplier?.() || 1
       Object.values(LOOT_TABLE).forEach(loot => {
-        if (Math.random() < loot.dropChance) {
+        if (Math.random() < loot.dropChance * dropMult) {
           lootDrops.value.push({
             id: loot.id,
             name: loot.name,
@@ -223,7 +243,7 @@ export function usePlayer(
   const activateSkill = (skill) => {
     // 被动技能不可主动释放
     if (skill.isPassive) return
-    if (skill.remainingCooldown > 0 || gameState.isDead || gameState.levelUpPending) return
+    if (skill.remainingCooldown > 0 || gameState.isDead || gameState.levelUpPending || gameState.stelePending) return
     const dmg = calcSkillValue(skill.damage, skill.growth?.damage, skill.currentLevel) + (player.baseAttack || 0)
     const effectiveRange = calcSkillValue(skill.range, skill.growth?.range, skill.currentLevel)
     const effectiveCooldown = calcSkillValue(skill.cooldown, skill.growth?.cooldown, skill.currentLevel)
@@ -482,9 +502,22 @@ export function usePlayer(
       dx /= len; dy /= len
       // 无敌加速：存在且 active 时应用移速加成
       const invFrame = player.skills.find(s => s.id === 'invincible' && s.active)
-      const currentSpeed = invFrame
+      let currentSpeed = invFrame
         ? player.speed * (1 + invFrame.invincibleSpeedBoost)
         : player.speed
+      // 增益移速倍率（速度神龛等）
+      if (buffGetters?.getSpeedMultiplier) {
+        currentSpeed *= buffGetters.getSpeedMultiplier()
+      }
+      // 死亡区域减速
+      if (buffGetters?.getDeathZoneSlow) {
+        const slow = buffGetters.getDeathZoneSlow()
+        if (slow > 0) currentSpeed *= (1 - slow)
+      }
+      // Boss 减速场
+      if (buffGetters?.getBossSlowMultiplier) {
+        currentSpeed *= buffGetters.getBossSlowMultiplier()
+      }
       player.x += dx * currentSpeed
       player.y += dy * currentSpeed
 
@@ -616,6 +649,7 @@ export function usePlayer(
     player.isMoving = false
     player.hitFlash = 0
     player.gold = 0
+    player.dodgeChance = 0
 
     const arrowTemplate = SKILL_TABLE.find(s => s.id === 'arrow')
     player.skills.length = 0
