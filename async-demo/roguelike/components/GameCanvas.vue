@@ -133,4 +133,3 @@ canvas {
   height: 100%;
 }
 </style>
-</template>

@@ -104,4 +104,3 @@ const formatRemaining = (ms) => {
   to { box-shadow: 0 0 16px rgba(124, 58, 237, 0.6); }
 }
 </style>
-</template>

@@ -110,4 +110,3 @@ defineEmits(['activate', 'cancel'])
   to { transform: scale(1); opacity: 1; }
 }
 </style>
-</template>

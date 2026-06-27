@@ -87,4 +87,3 @@ const formatLogTime = (timestamp) => {
   padding: 8px 0;
 }
 </style>
-</template>

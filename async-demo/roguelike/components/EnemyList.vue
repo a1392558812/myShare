@@ -110,4 +110,3 @@ const getTypeName = (type) => typeInfoMap[type]?.name || type
   padding: 4px 0;
 }
 </style>
-</template>
