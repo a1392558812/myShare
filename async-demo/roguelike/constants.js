@@ -367,7 +367,7 @@ export const SKILL_ARROW = {
   },
   splitArrow: {
     unlockLevel: 4,   
-    maxArrows: 1,     
+    maxArrows: 2,     
   },
 }
 

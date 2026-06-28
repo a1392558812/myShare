@@ -132,7 +132,7 @@ export function usePlayer(
   }
 
   
-  const damageEnemy = (enemy, dmg) => {
+  const damageEnemy = (enemy, dmg, isMelee = false) => {
     
     if (enemy.isBoss) {
       
@@ -166,6 +166,15 @@ export function usePlayer(
 
     enemy.hp -= finalDmg
     enemy.hitFlash = 6
+
+    if (isMelee) {
+      const vampireSkill = player.skills.find(s => s.id === 'vampireAura' && s.active)
+      if (vampireSkill) {
+        const heal = vampireSkill.auraDamage * vampireSkill.auraLifesteal * 0.25
+        player.hp = Math.min(player.maxHp, player.hp + heal)
+      }
+    }
+
     if (enemy.hp <= 0) {
       enemy.dead = true
       gameState.killCount++
@@ -294,7 +303,7 @@ export function usePlayer(
         const dx = e.x - player.x
         const dy = e.y - player.y
         if (Math.sqrt(dx * dx + dy * dy) <= effectiveRange + e.size / 2) {
-          damageEnemy(e, dmg)
+          damageEnemy(e, dmg, true)
         }
       })
       skill.remainingCooldown = effectiveCooldown
