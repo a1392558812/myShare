@@ -33,6 +33,14 @@
     <DeathPanel v-if="gameState.isDead" :game-time="gameState.gameTime" :kill-count="gameState.killCount"
       :player-level="player.level" :format-time="formatTime" @restart="$emit('restart')" />
 
+    <div v-if="gameState.paused" class="pause-overlay">
+      <div class="pause-content">
+        <div class="pause-icon">⏸</div>
+        <div class="pause-title">暂停</div>
+        <div class="pause-hint">按空格键继续</div>
+      </div>
+    </div>
+
     <button class="debug-toggle-btn" @click="toggleDebug" :title="debugOpen ? '关闭调试面板' : '打开调试面板 (~ 键)'">
       {{ debugOpen ? '✕' : '🐞' }}
     </button>
@@ -132,6 +140,7 @@ const gameState = reactive({
   levelUpPending: false,
   stelePending: false,
   spawnTimer: 0,
+  paused: false,
 })
 
 const keysDown = reactive({})
@@ -293,7 +302,7 @@ const cursedTimerDisplay = computed(() => {
 
 
 const onMouseDown = (e) => {
-  if (gameState.isDead || gameState.levelUpPending || gameState.stelePending) return
+  if (gameState.isDead || gameState.levelUpPending || gameState.stelePending || gameState.paused) return
   mouseHeld.value = true
   fireArrow()
 }
@@ -329,20 +338,19 @@ const onKeyDown = (e) => {
 
   if (e.key === ' ') {
     e.preventDefault()
-    fireArrow()
+    gameState.paused = !gameState.paused
+    return
   }
 
+  if (gameState.paused) return
   const targetKeysDown = e.key.toLowerCase()
   keysDown[targetKeysDown] = true
 
   const targetIndex = skillSlots.value.findIndex(item => {
     const skillKeyVal = (SKILL_KEY_MAP[`${item.id}`] + '').toLowerCase()
-    const flag = skillKeyVal === `${targetKeysDown}`
-    console.log('targetKeysDown', skillKeyVal, targetKeysDown, flag)
-    return flag
+    return skillKeyVal === `${targetKeysDown}`
   })
 
-  console.log('targetIndex', skillSlots.value, targetKeysDown, targetIndex)
   if (targetIndex !== -1) {
     activateSkill(skillSlots.value[targetIndex])
   }
@@ -490,6 +498,46 @@ onUnmounted(() => {
   >* {
     pointer-events: auto;
   }
+}
+
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.pause-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 64px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid rgba(100, 116, 139, 0.5);
+}
+
+.pause-icon {
+  font-size: 48px;
+  color: #e2e8f0;
+  opacity: 0.9;
+}
+
+.pause-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 8px;
+}
+
+.pause-hint {
+  font-size: 14px;
+  color: #94a3b8;
 }
 
 .debug-toggle-btn {

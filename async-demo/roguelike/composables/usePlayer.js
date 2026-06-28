@@ -237,7 +237,7 @@ export function usePlayer(
     createArrow((dx / dist) * effectiveSpeed, (dy / dist) * effectiveSpeed)
 
     
-    const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 7
+    const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 4
     const maxSplitArrows = SKILL_ARROW.splitArrow?.maxArrows || 1
     if (arrowSkill.currentLevel >= splitUnlockLevel && enemies?.value) {
       const splitCount = Math.min(arrowSkill.currentLevel - splitUnlockLevel + 1, maxSplitArrows)
@@ -523,7 +523,7 @@ export function usePlayer(
           descParts.push(`穿透${Math.round(nextPenetration)}`)
         }
         
-        const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 7
+        const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 4
         if (nextLv >= splitUnlockLevel) {
           const maxSplit = SKILL_ARROW.splitArrow?.maxArrows || 1
           const splitCount = Math.min(nextLv - splitUnlockLevel + 1, maxSplit)
@@ -557,7 +557,7 @@ export function usePlayer(
           if (penetration > 0) {
             descParts.push(`穿透${Math.round(penetration)}`)
           }
-          const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 7
+          const splitUnlockLevel = SKILL_ARROW.splitArrow?.unlockLevel || 4
           descParts.push(`Lv${splitUnlockLevel}解锁分裂`)
           desc = descParts.join(' ')
         }

@@ -285,7 +285,7 @@ export function useGameLoop(
     const dt = (timestamp - lastTimestamp) * (getDtMultiplier ? getDtMultiplier() : 1)
     lastTimestamp = timestamp
 
-    if (!gameState.isDead && !gameState.levelUpPending && !gameState.stelePending) {
+    if (!gameState.isDead && !gameState.levelUpPending && !gameState.stelePending && !gameState.paused) {
       gameState.gameTime += dt
       updatePlayer(dt)
       updateCamera(player.x, player.y)

@@ -366,7 +366,7 @@ export const SKILL_ARROW = {
     penetration:     { increment: 1, cap: 2 },        
   },
   splitArrow: {
-    unlockLevel: 7,   
+    unlockLevel: 4,   
     maxArrows: 1,     
   },
 }

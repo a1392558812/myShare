@@ -100,7 +100,7 @@ defineEmits(['skill-click'])
     position: absolute;
     bottom: 2px;
     font-size: 10px;
-    color: #fbbf24;
+    color: #ff0000;
     font-weight: 600;
   }
 
