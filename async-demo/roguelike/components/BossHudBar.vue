@@ -194,4 +194,3 @@ const progressPct = computed(() => {
   transform: translateY(-8px);
 }
 </style>
-</template>

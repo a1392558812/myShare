@@ -110,4 +110,3 @@ const countdownText = computed(() => Math.ceil(props.warningRemaining / 1000) + 
   opacity: 0;
 }
 </style>
-</template>

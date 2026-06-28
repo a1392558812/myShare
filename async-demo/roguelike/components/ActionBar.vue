@@ -127,4 +127,3 @@ defineEmits(['skill-click'])
   100% { box-shadow: 0 0 14px rgba(251, 191, 36, 0.65); }
 }
 </style>
-</template></template>

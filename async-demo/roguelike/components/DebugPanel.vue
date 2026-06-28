@@ -620,4 +620,3 @@ const formatTime = (ms) => {
 .dp-buff-name { flex: 1; font-size: 11px; }
 .dp-buff-time { color: #fbbf24; font-size: 10px; white-space: nowrap; }
 </style>
-</template>

@@ -107,4 +107,3 @@ defineEmits(["choice"]);
   }
 }
 </style>
-</template>
