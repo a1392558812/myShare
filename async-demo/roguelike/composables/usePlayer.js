@@ -3,6 +3,7 @@ import {
   PLAYER_ATTRS,
   SKILL_TABLE,
   SKILL_ARROW,
+  BOUNDARY,
   LOOT_TABLE,
   getExpThreshold,
   ENTITY_SIZE,
@@ -22,8 +23,12 @@ export function usePlayer(
   mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
   buffGetters = null,
   onDamageBoss = null,
+  autoFire = null,
+  debugFlags = null,
 ) {
   const { toLogical, checkCollision } = mapUtils
+
+  let _boundarySlow = 0
 
   
   const log = (msg) => pushBattleLog(battleLog, msg)
@@ -608,7 +613,48 @@ export function usePlayer(
   
 
   const updatePlayer = (dt) => {
-    
+    _boundarySlow = 0
+    player._boundaryDamageTimer = (player._boundaryDamageTimer || 0) + dt
+
+    const canvas = gameCanvas.value?.canvasRef
+    if (canvas) {
+      const boundaryRadX = canvas.width * BOUNDARY.radiusX
+      const boundaryRadY = canvas.height * BOUNDARY.radiusY
+
+      const excessX = Math.max(0, Math.abs(player.x) - boundaryRadX)
+      const excessY = Math.max(0, Math.abs(player.y) - boundaryRadY)
+      const maxExcess = Math.max(excessX, excessY)
+
+      if (maxExcess > 0) {
+        const zones = BOUNDARY.zones
+        for (let i = zones.length - 1; i >= 0; i--) {
+          const zoneThreshold = zones[i].threshold * canvas.width
+          if (maxExcess >= zoneThreshold) {
+            _boundarySlow = zones[i].slow
+            player._boundaryDangerLevel = i + 1
+            const isSkillInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
+            const isWallInvincible = buffGetters?.isWallInvincible?.() || debugFlags?.godMode
+            if (!isSkillInvincible && !isWallInvincible) {
+              if (player._boundaryDamageTimer >= BOUNDARY.tickInterval) {
+                player._boundaryDamageTimer -= BOUNDARY.tickInterval
+                player.hp = Math.max(0, player.hp - player.maxHp * zones[i].hpPercent)
+              }
+            } else {
+              player._boundaryDamageTimer = 0
+            }
+            break
+          }
+        }
+        player._boundaryWarning = 0
+      } else {
+        player._boundaryDamageTimer = 0
+        player._boundaryDangerLevel = 0
+        const marginX = Math.max(0, boundaryRadX - Math.abs(player.x)) / (boundaryRadX * BOUNDARY.warningRatio)
+        const marginY = Math.max(0, boundaryRadY - Math.abs(player.y)) / (boundaryRadY * BOUNDARY.warningRatio)
+        player._boundaryWarning = 1 - Math.min(marginX, marginY)
+      }
+    }
+
     const dashSkill = player.skills.find(s => s.id === 'dash' && s.active)
     if (dashSkill) {
       dashSkill.dashTimer -= dt
@@ -658,6 +704,7 @@ export function usePlayer(
       if (buffGetters?.getBossSlowMultiplier) {
         currentSpeed *= buffGetters.getBossSlowMultiplier()
       }
+      if (_boundarySlow > 0) currentSpeed *= (1 - _boundarySlow)
       player.x += dx * currentSpeed
       player.y += dy * currentSpeed
 
@@ -725,7 +772,7 @@ export function usePlayer(
     }
 
     
-    if (mouseHeld.value && !gameState.isDead && !gameState.levelUpPending) {
+    if ((mouseHeld.value || autoFire?.value) && !gameState.isDead && !gameState.levelUpPending) {
       const arrowSkill = player.skills.find(s => s.id === 'arrow')
       if (arrowSkill && arrowSkill.remainingCooldown <= 0) {
         fireArrow()
@@ -813,5 +860,8 @@ export function usePlayer(
     resetPlayer,
     recalcPassiveBuffs,
     gainExp,
+    getBoundaryDangerLevel: () => player._boundaryDangerLevel || 0,
+    getBoundarySlow: () => _boundarySlow,
+    getBoundaryWarning: () => player._boundaryWarning || 0,
   }
 }

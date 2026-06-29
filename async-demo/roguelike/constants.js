@@ -903,6 +903,19 @@ export const BOSS_VOID_PROJECTILE_INTERVAL = 2000
 export const BOSS_VOID_PROJECTILE_SIZE = 10
 
 
+export const BOUNDARY = {
+  radiusX: 1.5,
+  radiusY: 1.5,
+  tickInterval: 500,
+  warningRatio: 0.2,
+  zones: [
+    { threshold: 0,   hpPercent: 0.01, slow: 0.10 },
+    { threshold: 0.3, hpPercent: 0.03, slow: 0.25 },
+    { threshold: 0.6, hpPercent: 0.06, slow: 0.50 },
+  ],
+}
+
+
 export const BOSS_TABLE = [
   {
     id: 'shadowAmalgam',

@@ -15,6 +15,7 @@
         :boss-cooldown-total="BOSS_COOLDOWN"
         :first-boss-early-warning="BOSS_FIRST_EARLY_WARNING" />
       <ActionBar :skills="skillSlots" @skill-click="onSkillClick" />
+      <AutoFireToggle v-model="autoFire" />
       <EnemyList :enemies="enemies" />
       <BattleLog :log="battleLog" />
     </div>
@@ -33,13 +34,7 @@
     <DeathPanel v-if="gameState.isDead" :game-time="gameState.gameTime" :kill-count="gameState.killCount"
       :player-level="player.level" :format-time="formatTime" @restart="$emit('restart')" />
 
-    <div v-if="gameState.paused" class="pause-overlay">
-      <div class="pause-content">
-        <div class="pause-icon">⏸</div>
-        <div class="pause-title">暂停</div>
-        <div class="pause-hint">按空格键继续</div>
-      </div>
-    </div>
+    <PauseOverlay v-if="gameState.paused" />
 
     <button class="debug-toggle-btn" @click="toggleDebug" :title="debugOpen ? '关闭调试面板' : '打开调试面板 (~ 键)'">
       {{ debugOpen ? '✕' : '🐞' }}
@@ -72,6 +67,7 @@ import {
   SKILL_KEY_MAP,
   BOSS_COOLDOWN,
   BOSS_FIRST_EARLY_WARNING,
+  BOUNDARY,
 } from '../constants.js'
 
 import { useMap } from '../composables/useMap.js'
@@ -98,6 +94,8 @@ import CursedStelePrompt from './CursedStelePrompt.vue'
 import BossHealthBar from './BossHealthBar.vue'
 import BossWarning from './BossWarning.vue'
 import BossHudBar from './BossHudBar.vue'
+import PauseOverlay from './PauseOverlay.vue'
+import AutoFireToggle from './AutoFireToggle.vue'
 
 defineEmits(['restart'])
 
@@ -146,6 +144,7 @@ const gameState = reactive({
 const keysDown = reactive({})
 const mouseScreen = reactive({ x: 0, y: 0 })
 const mouseHeld = ref(false)
+const autoFire = ref(false)
 
 const { debugOpen, toggleDebug, debugFlags, gameSpeed, bossDebug } = useDebug()
 
@@ -202,12 +201,15 @@ const playerUtils = usePlayer(
   mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
   buffGetters,
   (dmg) => { if (bossDamageRef.fn) bossDamageRef.fn(dmg) },
+  autoFire,
+  debugFlags,
 )
 const {
   updatePlayer, fireArrow, activateSkill, onSkillClick,
   damageEnemy, findNearestEnemy,
   showLevelUpOptions, onLevelUpChoice,
   createSkillInstance, resetPlayer, recalcPassiveBuffs, gainExp,
+  getBoundaryDangerLevel, getBoundarySlow, getBoundaryWarning,
 } = playerUtils
 
 const enemyUtils = useEnemy(
@@ -272,9 +274,17 @@ const loopUtils = useGameLoop(
     onRender: () => {
       checkEventActivation()
       gameState.stelePending = !!pendingStele.value
+      const canvasSize = getCanvasSizeForEvents()
+      const radX = canvasSize.width * BOUNDARY.radiusX
+      const radY = canvasSize.height * BOUNDARY.radiusY
       gameCanvasRef.value?.render({
         player, enemies, projectiles, effects, lootDrops, magicCircles, gameState,
         voidLines: voidLines.value, slowFields: slowFields.value,
+        boundary: {
+          radX, radY,
+          dangerLevel: getBoundaryDangerLevel(),
+          warningLevel: getBoundaryWarning(),
+        },
       })
     },
     tickBossSpawn: (dt) => tickBossSpawn(dt),
@@ -483,6 +493,7 @@ onUnmounted(() => {
   overflow: hidden;
   background: #0f172a;
   cursor: crosshair;
+  user-select: none;
 }
 
 .hud {
@@ -498,46 +509,6 @@ onUnmounted(() => {
   >* {
     pointer-events: auto;
   }
-}
-
-.pause-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-}
-
-.pause-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 48px 64px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 2px solid rgba(100, 116, 139, 0.5);
-}
-
-.pause-icon {
-  font-size: 48px;
-  color: #e2e8f0;
-  opacity: 0.9;
-}
-
-.pause-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #f8fafc;
-  letter-spacing: 8px;
-}
-
-.pause-hint {
-  font-size: 14px;
-  color: #94a3b8;
 }
 
 .debug-toggle-btn {

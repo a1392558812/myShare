@@ -37,7 +37,6 @@ const props = defineProps({
   }
 });
 
-// 切换展开/关闭
 const toggle = (node) => {
   emit('toggleFolder', node)
 }

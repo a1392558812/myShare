@@ -35,6 +35,7 @@ import { renderLootDrops } from '../draw/lootDrops.js'
 import { renderGroundZones } from '../draw/effects.js'
 import { drawBossSprite, drawVoidLines, drawSlowFields } from '../draw/boss.js'
 import { renderDeathZones, renderEvents } from '../draw/events.js'
+import { renderBoundaryLines, renderBoundaryWarning, renderBoundaryText } from '../draw/boundary.js'
 
 const render = (state) => {
   const canvas = canvasRef.value
@@ -49,11 +50,15 @@ const render = (state) => {
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  const { player, enemies, projectiles, effects, lootDrops, magicCircles, gameState, voidLines, slowFields } = state
+  const { player, enemies, projectiles, effects, lootDrops, magicCircles, gameState, voidLines, slowFields, boundary } = state
   const cw = canvas.width
   const ch = canvas.height
 
   drawBackgroundGrid(ctx, props.camera, toScreen)
+
+  if (boundary) {
+    renderBoundaryLines(ctx, props.camera, canvas, boundary.radX, boundary.radY, gameState.gameTime)
+  }
 
   effects.value.forEach(e => renderEffect(ctx, e, toScreen))
 
@@ -108,6 +113,11 @@ const render = (state) => {
     invSkill ? invSkill.invincibleTimer : 0,
     invSkill ? invSkill.invincibleTotalDuration : 0
   )
+
+  if (boundary) {
+    renderBoundaryWarning(ctx, cw, ch, boundary.warningLevel, boundary.dangerLevel, gameState.gameTime)
+    renderBoundaryText(ctx, cw, ch, boundary.warningLevel, boundary.dangerLevel, gameState.gameTime)
+  }
 }
 
 const getCanvasSize = () => {
