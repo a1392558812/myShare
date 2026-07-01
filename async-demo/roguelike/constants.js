@@ -359,11 +359,11 @@ export const SKILL_ARROW = {
   lifestealPercent: 0,
   unlockLevel: 1,
   growth: {
-    damage:          { ratio: 1.35, cap: null },      
+    damage:          { increment: 1, cap: null },   
     cooldown:        { ratio: 0.90, cap: 100 },       
     projectileSpeed: { ratio: 1.10, cap: 16 },        
     range:           { ratio: 1.00, cap: null },      
-    penetration:     { increment: 1, cap: 2 },        
+    penetration:     { increment: 1, cap: 5 },        
   },
   splitArrow: {
     unlockLevel: 4,   
@@ -385,9 +385,9 @@ export const SKILL_MELEE_ATTACK = {
   lifestealPercent: 0,
   unlockLevel: 1,
   growth: {
-    damage:   { ratio: 1.40, cap: null },    
+    damage:   { increment: 6, cap: null },    
     cooldown: { ratio: 0.88, cap: 300 },     
-    range:    { ratio: 1.12, cap: 180 },     
+    range:    { increment: 12, cap: 120 },     
   },
 }
 
@@ -448,9 +448,9 @@ export const SKILL_VAMPIRE_AURA = {
   lifestealPercent: 0.3,
   unlockLevel: 1,
   growth: {
-    damage:          { ratio: 1.40, cap: null },      
+    damage:          { increment: 5, cap: null },      
     cooldown:        { ratio: 0.92, cap: 3000 },      
-    range:           { ratio: 1.10, cap: 300 },       
+    range:           { increment: 16, cap: 160 },       
     duration:        { ratio: 1.10, cap: 10000 },     
     lifestealPercent:{ ratio: 1.10, cap: 0.8 },       
   },
@@ -500,7 +500,7 @@ export const SKILL_INVINCIBLE = {
     cooldown:    { ratio: 0.92, cap: 9000 },   
     duration:    { ratio: 1.10, cap: 8000 },     
     speedBoost:  { ratio: 1.10, cap: 2.0 },      
-    damageBoost: { ratio: 1.12, cap: null },      
+    damageBoost: { increment: 0.02, cap: null },      
   },
 }
 
@@ -537,7 +537,7 @@ export const SKILL_DASH = {
   name: '冲刺',
   icon: '💨',
   description: '向移动方向快速冲刺，可躲避敌人攻击',
-  cooldown: 8000,       
+  cooldown: 3500,       
   damage: 0,
   range: 120,           
   projectileSpeed: 0,
@@ -546,7 +546,7 @@ export const SKILL_DASH = {
   unlockLevel: 1,
   maxLevel: 12,         
   growth: {
-    cooldown: { ratio: 0.86, cap: 1500 },   
+    cooldown: { increment: -208, cap: 1000 },   
     range:    { ratio: 1.088, cap: 300 },    
     duration: { ratio: 0.955, cap: 120 },   
   },
@@ -845,6 +845,10 @@ export const BOSS_SPAWN_ANIM_DURATION = 1500
 
 
 export const BOSS_SPAWN_RATE_MULTIPLIER = 0.5
+
+// Boss 受击保护
+export const BOSS_HIT_INVINCIBLE_TIME = 150   // 受击后无敌时间(ms)
+export const BOSS_MAX_DAMAGE_RATIO = 0.08      // 单次伤害上限(最大生命值比例)
 
 
 export const BOSS_DEATH_EFFECT_DURATION = 1200

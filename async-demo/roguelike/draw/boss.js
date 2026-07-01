@@ -26,12 +26,13 @@ const drawShadowAmalgam = (ctx, x, y, b, gameTime) => {
   }
 
   
-  const flashOn = (b.hitFlash || 0) > 0
+  const hitFlashOn = (b.hitFlash || 0) > 0
+  const invFlashOn = b._hitInvincibleFlash
   const baseAlpha = ctx.globalAlpha
 
   
-  const bodyColor = flashOn ? '#ffffff' : b.color
-  const bodyColor2 = flashOn ? '#cccccc' : (b.color2 || '#1a0033')
+  const bodyColor = invFlashOn ? '#22d3ee' : (hitFlashOn ? '#ffffff' : b.color)
+  const bodyColor2 = invFlashOn ? '#0891b2' : (hitFlashOn ? '#cccccc' : (b.color2 || '#1a0033'))
 
   
   ctx.globalAlpha = baseAlpha * 0.3 * pulse
@@ -86,11 +87,12 @@ const drawShadowAmalgam = (ctx, x, y, b, gameTime) => {
 const drawInfernoCore = (ctx, x, y, b, gameTime) => {
   const r = b.size / 2
   const pulse = 1 + 0.06 * Math.sin(gameTime * 0.006)
-  const flashOn = (b.hitFlash || 0) > 0
+  const hitFlashOn = (b.hitFlash || 0) > 0
+  const invFlashOn = b._hitInvincibleFlash
 
   ctx.save()
-  const baseColor = flashOn ? '#ffffff' : b.color
-  const baseColor2 = flashOn ? '#ffcccc' : (b.color2 || '#ea580c')
+  const baseColor = invFlashOn ? '#22d3ee' : (hitFlashOn ? '#ffffff' : b.color)
+  const baseColor2 = invFlashOn ? '#0891b2' : (hitFlashOn ? '#ffcccc' : (b.color2 || '#ea580c'))
 
   
   ctx.globalAlpha = 0.3 * pulse
@@ -141,11 +143,12 @@ const drawInfernoCore = (ctx, x, y, b, gameTime) => {
 const drawVoidWeaver = (ctx, x, y, b, gameTime) => {
   const r = b.size / 2
   const pulse = 1 + 0.04 * Math.sin(gameTime * 0.007)
-  const flashOn = (b.hitFlash || 0) > 0
+  const hitFlashOn = (b.hitFlash || 0) > 0
+  const invFlashOn = b._hitInvincibleFlash
 
   ctx.save()
-  const baseColor = flashOn ? '#ffffff' : b.color
-  const baseColor2 = flashOn ? '#eeeeff' : (b.color2 || '#7c3aed')
+  const baseColor = invFlashOn ? '#22d3ee' : (hitFlashOn ? '#ffffff' : b.color)
+  const baseColor2 = invFlashOn ? '#0891b2' : (hitFlashOn ? '#eeeeff' : (b.color2 || '#7c3aed'))
 
   
   ctx.globalAlpha = 0.25 * pulse

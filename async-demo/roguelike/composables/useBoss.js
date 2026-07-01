@@ -38,6 +38,8 @@ import {
   BOSS_FIRE_BARRAGE_DIRECTIONS,
   BOSS_FIRE_BARRAGE_RANGE,
   BOSS_FIRE_BARRAGE_SIZE,
+  BOSS_HIT_INVINCIBLE_TIME,
+  BOSS_MAX_DAMAGE_RATIO,
   BOSS_VOID_TELEPORT_INTERVAL,
   BOSS_VOID_LINE_INTERVAL,
   BOSS_VOID_LINE_DAMAGE_PER_SEC,
@@ -243,48 +245,62 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     if (!activeBoss.value || activeBoss.value.dead) return
     if (bossState.value !== 'active') return
 
-    activeBoss.value.hp -= damage
-    activeBoss.value.hitFlash = 6
+    // 受击无敌帧检查
+    const boss = activeBoss.value
+    const now = gameState.gameTime
+    if (boss._hitInvincibleUntil && now < boss._hitInvincibleUntil) {
+      // 无敌期间白闪
+      boss._hitInvincibleFlash = true
+      return
+    }
 
-    if (activeBoss.value.hp <= 0) {
-      activeBoss.value.hp = 0
+    // 单次伤害上限
+    const maxDmg = boss.maxHp * BOSS_MAX_DAMAGE_RATIO
+    const clampedDmg = Math.min(damage, maxDmg)
+
+    boss.hp -= clampedDmg
+    boss.hitFlash = 6
+    boss._hitInvincibleUntil = now + BOSS_HIT_INVINCIBLE_TIME
+
+    if (boss.hp <= 0) {
+      boss.hp = 0
       bossState.value = 'dying'
       bossSpawnPauseTimer.value = 0
       effects.value.push({
         type: 'bossDeathExplosion',
-        x: activeBoss.value.x,
-        y: activeBoss.value.y,
-        radius: activeBoss.value.size * 1.5,
+        x: boss.x,
+        y: boss.y,
+        radius: boss.size * 1.5,
         duration: BOSS_DEATH_EFFECT_DURATION,
         elapsed: 0,
-        color: activeBoss.value.color,
-        color2: activeBoss.value.color2,
+        color: boss.color,
+        color2: boss.color2,
       })
-      log(`${activeBoss.value.bossName} 已被击败！`)
+      log(`${boss.bossName} 已被击败！`)
       return
     }
 
-    const hpRatio = activeBoss.value.hp / activeBoss.value.maxHp
+    const hpRatio = boss.hp / boss.maxHp
     let newPhaseIdx = 0
-    for (let i = activeBoss.value.phases.length - 1; i >= 0; i--) {
-      if (hpRatio <= activeBoss.value.phases[i].threshold) {
+    for (let i = boss.phases.length - 1; i >= 0; i--) {
+      if (hpRatio <= boss.phases[i].threshold) {
         newPhaseIdx = i
         break
       }
     }
-    if (newPhaseIdx !== activeBoss.value.currentPhaseIdx) {
-      activeBoss.value.currentPhaseIdx = newPhaseIdx
-      const p = activeBoss.value.phases[newPhaseIdx]
-      log(`${activeBoss.value.bossName} 进入 ${p.name || '新阶段'}！`)
+    if (newPhaseIdx !== boss.currentPhaseIdx) {
+      boss.currentPhaseIdx = newPhaseIdx
+      const p = boss.phases[newPhaseIdx]
+      log(`${boss.bossName} 进入 ${p.name || '新阶段'}！`)
 
       effects.value.push({
         type: 'phaseTransition',
-        x: activeBoss.value.x,
-        y: activeBoss.value.y,
-        radius: activeBoss.value.size,
+        x: boss.x,
+        y: boss.y,
+        radius: boss.size,
         duration: 600,
         elapsed: 0,
-        color: activeBoss.value.color,
+        color: boss.color,
       })
     }
   }
@@ -344,6 +360,11 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
   }
 
   const updateBoss = (dt) => {
+    // 清除 Boss 无敌闪白标记
+    if (activeBoss.value) {
+      activeBoss.value._hitInvincibleFlash = false
+    }
+    
     if (bossState.value === 'warning') {
       bossWarningTimer.value -= dt
       bossSpawnPauseTimer.value -= dt

@@ -175,7 +175,7 @@ export function usePlayer(
     if (isMelee) {
       const vampireSkill = player.skills.find(s => s.id === 'vampireAura' && s.active)
       if (vampireSkill) {
-        const heal = vampireSkill.auraDamage * vampireSkill.auraLifesteal * 0.25
+        const heal = vampireSkill.auraDamage * vampireSkill.auraLifesteal * 1
         player.hp = Math.min(player.maxHp, player.hp + heal)
       }
     }
@@ -230,7 +230,7 @@ export function usePlayer(
     
     
     
-    const penetration = Math.min(Math.max(0, arrowSkill.currentLevel - 1), 5)
+    const penetration = Math.round(calcSkillValue(0, arrowSkill.growth?.penetration, arrowSkill.currentLevel))
 
     
     const createArrow = (vx, vy, damageMultiplier = 1) => {
