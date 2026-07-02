@@ -849,6 +849,7 @@ export const BOSS_SPAWN_RATE_MULTIPLIER = 0.5
 // Boss 受击保护
 export const BOSS_HIT_INVINCIBLE_TIME = 150   // 受击后无敌时间(ms)
 export const BOSS_MAX_DAMAGE_RATIO = 0.08      // 单次伤害上限(最大生命值比例)
+export const PRIEST_HEAL_IMMUNITY_TIME = 1000  // ms，单个敌人被牧师实际治疗后进入免疫窗口
 
 
 export const BOSS_DEATH_EFFECT_DURATION = 1200

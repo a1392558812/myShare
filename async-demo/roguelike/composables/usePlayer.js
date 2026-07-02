@@ -23,7 +23,7 @@ export function usePlayer(
   mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
   buffGetters = null,
   onDamageBoss = null,
-  autoFire = null,
+  autoSkills = null,
   debugFlags = null,
 ) {
   const { toLogical, checkCollision } = mapUtils
@@ -772,7 +772,7 @@ export function usePlayer(
     }
 
     
-    if ((mouseHeld.value || autoFire?.value) && !gameState.isDead && !gameState.levelUpPending) {
+    if ((mouseHeld.value || autoSkills?.arrow?.value) && !gameState.isDead && !gameState.levelUpPending) {
       const arrowSkill = player.skills.find(s => s.id === 'arrow')
       if (arrowSkill && arrowSkill.remainingCooldown <= 0) {
         fireArrow()
@@ -813,6 +813,41 @@ export function usePlayer(
       if (hasEnemyInRange) {
         activateSkill(meleeSkill)
       }
+    }
+
+    const freezeSkill = player.skills.find(s => s.id === 'freeze')
+    if (autoSkills?.freeze?.value && freezeSkill && freezeSkill.remainingCooldown <= 0) {
+      const range = calcSkillValue(freezeSkill.range, freezeSkill.growth?.range, freezeSkill.currentLevel)
+      const hasEnemy = enemies.value.some(e => {
+        if (e.dead) return false
+        const edx = e.x - player.x; const edy = e.y - player.y
+        return Math.sqrt(edx * edx + edy * edy) <= range
+      })
+      if (hasEnemy) activateSkill(freezeSkill)
+    }
+
+    const autoInvSkill = player.skills.find(s => s.id === 'invincible')
+    if (autoSkills?.invincible?.value && autoInvSkill && autoInvSkill.remainingCooldown <= 0 && !autoInvSkill.active) {
+      const hasEnemy = enemies.value.some(e => !e.dead)
+      if (hasEnemy) activateSkill(autoInvSkill)
+    }
+
+    const autoMcSkill = player.skills.find(s => s.id === 'magicCircle')
+    if (autoSkills?.magicCircle?.value && autoMcSkill && autoMcSkill.remainingCooldown <= 0) {
+      const range = calcSkillValueLinear(autoMcSkill.range, autoMcSkill.growth?.range, autoMcSkill.currentLevel)
+      const hasEnemy = enemies.value.some(e => {
+        if (e.dead) return false
+        const edx = e.x - player.x; const edy = e.y - player.y
+        return Math.sqrt(edx * edx + edy * edy) <= range
+      })
+      if (hasEnemy) activateSkill(autoMcSkill)
+    }
+
+    const autoDashSkill = player.skills.find(s => s.id === 'dash')
+    if (autoSkills?.dash?.value && autoDashSkill && autoDashSkill.remainingCooldown <= 0 && !autoDashSkill.active) {
+      const hasDir = keysDown['w'] || keysDown['a'] || keysDown['s'] || keysDown['d']
+                  || keysDown['arrowup'] || keysDown['arrowleft'] || keysDown['arrowdown'] || keysDown['arrowright']
+      if (hasDir) activateSkill(autoDashSkill)
     }
 
     

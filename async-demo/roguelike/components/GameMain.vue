@@ -15,7 +15,13 @@
         :boss-cooldown-total="BOSS_COOLDOWN"
         :first-boss-early-warning="BOSS_FIRST_EARLY_WARNING" />
       <ActionBar :skills="skillSlots" @skill-click="onSkillClick" />
-      <AutoFireToggle v-model="autoFire" />
+      <AutoSkillPanel
+        v-model:arrow="autoFire"
+        v-model:freeze="autoFreeze"
+        v-model:invincible="autoInvincible"
+        v-model:magic-circle="autoMagicCircle"
+        v-model:dash="autoDash"
+      />
       <EnemyList :enemies="enemies" />
       <BattleLog :log="battleLog" />
     </div>
@@ -95,7 +101,7 @@ import BossHealthBar from './BossHealthBar.vue'
 import BossWarning from './BossWarning.vue'
 import BossHudBar from './BossHudBar.vue'
 import PauseOverlay from './PauseOverlay.vue'
-import AutoFireToggle from './AutoFireToggle.vue'
+import AutoSkillPanel from './AutoSkillPanel.vue'
 
 defineEmits(['restart'])
 
@@ -145,6 +151,12 @@ const keysDown = reactive({})
 const mouseScreen = reactive({ x: 0, y: 0 })
 const mouseHeld = ref(false)
 const autoFire = ref(false)
+const autoFreeze = ref(false)
+const autoInvincible = ref(false)
+const autoMagicCircle = ref(false)
+const autoDash = ref(false)
+
+const autoSkills = { arrow: autoFire, freeze: autoFreeze, invincible: autoInvincible, magicCircle: autoMagicCircle, dash: autoDash }
 
 const { debugOpen, toggleDebug, debugFlags, gameSpeed, bossDebug } = useDebug()
 
@@ -201,7 +213,7 @@ const playerUtils = usePlayer(
   mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
   buffGetters,
   (dmg) => { if (bossDamageRef.fn) bossDamageRef.fn(dmg) },
-  autoFire,
+  autoSkills,
   debugFlags,
 )
 const {

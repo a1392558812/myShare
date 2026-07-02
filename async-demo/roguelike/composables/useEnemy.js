@@ -12,6 +12,7 @@ import {
   DIRECTION,
   ENTITY_SIZE,
   MAX_SUMMONS,
+  PRIEST_HEAL_IMMUNITY_TIME,
 } from '../constants.js'
 import { useDebug } from './useDebug.js'
 import { pushBattleLog } from './useBattleLog.js'
@@ -379,8 +380,13 @@ export function useEnemy(enemies, player, projectiles, gameState, mapUtils, batt
             if (other === e || other.dead) return
             const od = Math.sqrt((other.x - e.x) ** 2 + (other.y - e.y) ** 2)
             if (od <= (e.priestAuraRange || 130)) {
+              if (other._lastPriestHeal && (gameState.gameTime - other._lastPriestHeal) < PRIEST_HEAL_IMMUNITY_TIME) return
+              const beforeHp = other.hp
               const heal = e.priestHealAmount || 8
               other.hp = Math.min(other.maxHp, other.hp + heal)
+              if (other.hp > beforeHp) {
+                other._lastPriestHeal = gameState.gameTime
+              }
             }
           })
         }
