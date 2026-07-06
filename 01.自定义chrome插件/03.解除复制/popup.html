@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>解除复制限制</title>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <header>
+      <div class="header-left">
+        <img src="icons/icon48.png" alt="logo" class="logo">
+        <span class="title">解除复制限制</span>
+      </div>
+      <label class="switch" title="总开关">
+        <input type="checkbox" id="enabledToggle">
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <!-- 当前域名卡片 -->
+    <div class="current-domain-card">
+      <div class="domain-info">
+        <span class="domain-label">当前域名</span>
+        <span class="domain-value" id="currentDomain">读取中...</span>
+      </div>
+      <button id="addDomainBtn" class="btn btn-primary" disabled>添加</button>
+    </div>
+
+    <!-- 状态指示器 -->
+    <div class="status-bar" id="statusBar">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">检测中...</span>
+    </div>
+
+    <!-- 刷新提示 -->
+    <div class="refresh-hint">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      <span>因为插件对页面的解除复制限制是侵入覆盖式的，导致原页面的行为被改变无法还原，所以添加域名/切换域名开关/切换总开关/删除域名后需刷新对应页面方可生效</span>
+    </div>
+
+    <!-- 域名列表 -->
+    <div class="domain-list-section">
+      <div class="section-header">
+        <span class="section-title">已配置域名</span>
+        <span class="domain-count" id="domainCount">0</span>
+      </div>
+      <div class="domain-list" id="domainList">
+        <div class="empty-state">暂无配置域名</div>
+      </div>
+    </div>
+
+    <!-- 导入导出 -->
+    <div class="actions">
+      <button id="exportBtn" class="btn btn-secondary" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        导出配置
+      </button>
+      <button id="importBtn" class="btn btn-secondary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        导入配置
+      </button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+
+    <!-- 添加域名输入框 -->
+    <div class="add-domain-section">
+      <input type="text" id="domainInput" class="domain-input" placeholder="输入域名，如 example.com 或 *.example.com">
+      <button id="addDomainInputBtn" class="btn btn-primary btn-sm">添加</button>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

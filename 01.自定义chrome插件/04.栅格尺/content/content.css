@@ -1,0 +1,21 @@
+.wb-grid-ruler-overlay {
+  pointer-events: none;
+  overflow: hidden;
+  background: transparent;
+}
+
+.wb-grid-ruler-overlay canvas {
+  display: block;
+  pointer-events: none;
+}
+
+.wb-grid-ruler-handle,
+.wb-grid-ruler-rotate-handle {
+  box-sizing: border-box;
+  transition: box-shadow 0.15s ease;
+}
+
+.wb-grid-ruler-handle:hover,
+.wb-grid-ruler-rotate-handle:hover {
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.35) !important;
+}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <header class="header">
+      <h1>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="logo">
+          <rect x="1" y="1" width="7" height="7" rx="1" fill="#4A90D9" opacity="0.8"/>
+          <rect x="11" y="1" width="7" height="7" rx="1" fill="#4A90D9" opacity="0.5"/>
+          <rect x="1" y="11" width="7" height="7" rx="1" fill="#4A90D9" opacity="0.5"/>
+          <rect x="11" y="11" width="7" height="7" rx="1" fill="#4A90D9" opacity="0.3"/>
+        </svg>
+        栅格尺
+      </h1>
+      <label class="toggle-main">
+        <input type="checkbox" id="enabled" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </header>
+
+    <div class="body" id="settingsBody">
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <span>挂载目标</span>
+        </div>
+        <input type="text" id="mountTarget" class="input" value="body" placeholder="CSS选择器, 如 body / .container / #app">
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">📐</span>
+          <span>网格间距</span>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label class="label">X轴间距</label>
+            <div class="input-with-unit">
+              <input type="number" id="xGap" class="input num" value="100" min="1" max="2000" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Y轴间距</label>
+            <div class="input-with-unit">
+              <input type="number" id="yGap" class="input num" value="100" min="1" max="2000" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">📏</span>
+          <span>背景内边距</span>
+        </div>
+        <div class="padding-grid">
+          <div class="field pad-center">
+            <label class="label">上</label>
+            <div class="input-with-unit">
+              <input type="number" id="paddingTop" class="input num" value="40" min="0" max="500" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">右</label>
+            <div class="input-with-unit">
+              <input type="number" id="paddingRight" class="input num" value="40" min="0" max="500" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">下</label>
+            <div class="input-with-unit">
+              <input type="number" id="paddingBottom" class="input num" value="40" min="0" max="500" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">左</label>
+            <div class="input-with-unit">
+              <input type="number" id="paddingLeft" class="input num" value="40" min="0" max="500" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">🎨</span>
+          <span>网格样式</span>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label class="label">颜色</label>
+            <div class="rgba-picker" id="gridColorPicker">
+              <div class="rgba-preview"></div>
+              <input type="color" class="rgba-rgb">
+              <div class="rgba-alpha-wrap">
+                <input type="range" class="rgba-alpha" min="0" max="100" value="100">
+                <span class="rgba-alpha-label">100%</span>
+              </div>
+              <input type="hidden" id="gridColor" value="rgba(200,204,208,1)">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">粗细</label>
+            <div class="input-with-unit">
+              <input type="number" id="gridThickness" class="input num" value="1" min="0.5" max="10" step="0.5">
+              <span class="unit">px</span>
+            </div>
+          </div>
+        </div>
+        <div class="row-2" style="margin-top:6px;">
+          <label class="toggle-row">
+            <input type="checkbox" id="showXGrid" checked>
+            <span class="toggle-slider small"></span>
+            <span class="toggle-label">X轴栅格线</span>
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="showYGrid" checked>
+            <span class="toggle-slider small"></span>
+            <span class="toggle-label">Y轴栅格线</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">📍</span>
+          <span>参考线</span>
+          <button id="addRefLine" class="btn-add" title="添加参考线">+</button>
+        </div>
+        <div id="refLinesContainer" class="ref-lines-list"></div>
+      </section>
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">🖱️</span>
+          <span>鼠标指示器</span>
+        </div>
+        <label class="toggle-row">
+          <input type="checkbox" id="showMouseIndicator">
+          <span class="toggle-slider small"></span>
+          <span class="toggle-label">显示十字线与坐标</span>
+        </label>
+        <div class="row-2" style="margin-top:6px;">
+          <div class="field">
+            <label class="label">线条颜色</label>
+            <div class="rgba-picker" id="indicatorColorPicker">
+              <div class="rgba-preview"></div>
+              <input type="color" class="rgba-rgb">
+              <div class="rgba-alpha-wrap">
+                <input type="range" class="rgba-alpha" min="0" max="100" value="70">
+                <span class="rgba-alpha-label">70%</span>
+              </div>
+              <input type="hidden" id="indicatorColor" value="rgba(0,188,212,0.7)">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">线条粗细</label>
+            <div class="input-with-unit">
+              <input type="number" id="indicatorThickness" class="input num" value="1" min="0.5" max="10" step="0.5">
+              <span class="unit">px</span>
+            </div>
+          </div>
+        </div>
+        <div class="row-2" style="margin-top:6px;">
+          <div class="field">
+            <label class="label">字体颜色</label>
+            <div class="rgba-picker" id="indicatorFontColorPicker">
+              <div class="rgba-preview"></div>
+              <input type="color" class="rgba-rgb">
+              <div class="rgba-alpha-wrap">
+                <input type="range" class="rgba-alpha" min="0" max="100" value="100">
+                <span class="rgba-alpha-label">100%</span>
+              </div>
+              <input type="hidden" id="indicatorFontColor" value="rgba(255,255,255,1)">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">字体大小</label>
+            <div class="input-with-unit">
+              <input type="number" id="indicatorFontSize" class="input num" value="11" min="8" max="24" step="1">
+              <span class="unit">px</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">⚙️</span>
+          <span>高级</span>
+        </div>
+        <div class="field">
+          <label class="label">层级 (z-index)</label>
+          <input type="number" id="overlayZIndex" class="input num" value="2147483647" min="0" max="2147483647" step="1">
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <span class="hint">所有修改实时生效</span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

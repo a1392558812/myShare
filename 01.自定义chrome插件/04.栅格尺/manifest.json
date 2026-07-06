@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "栅格尺",
+  "version": "1.0.0",
+  "description": "为网页添加栅格尺功能，支持自定义网格间距、四边坐标刻度尺、可拖拽旋转的参考线",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "栅格尺 - 设置面板"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

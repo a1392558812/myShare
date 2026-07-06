@@ -1,0 +1,447 @@
+/* ========== 全局重置 & 变量 ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #4f7cff;
+  --primary-hover: #3a64e0;
+  --primary-light: #e8efff;
+  --danger: #ff4d4f;
+  --danger-hover: #ff7875;
+  --success: #52c41a;
+  --text: #1a1a1a;
+  --text-secondary: #666;
+  --text-tertiary: #999;
+  --bg: #f5f6f8;
+  --bg-card: #ffffff;
+  --border: #e8e8e8;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+body {
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+}
+
+/* ========== 头部 ========== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ========== 开关 ========== */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 22px;
+  transition: 0.3s;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.switch input:checked + .slider {
+  background: var(--primary);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(16px);
+}
+
+/* ========== 当前域名卡片 ========== */
+.current-domain-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+
+.domain-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.domain-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.domain-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========== 状态栏 ========== */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.status-dot.active {
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.15);
+}
+
+.status-dot.inactive {
+  background: #d9d9d9;
+}
+
+.status-dot.disabled {
+  background: var(--danger);
+}
+
+.status-text {
+  color: var(--text-secondary);
+}
+
+/* ========== 刷新提示 ========== */
+.refresh-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 16px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: #fffbe6;
+  border-top: 1px solid #ffe58f;
+  border-bottom: 1px solid #ffe58f;
+}
+
+.refresh-hint svg {
+  flex-shrink: 0;
+  color: #faad14;
+}
+
+/* ========== 域名列表 ========== */
+.domain-list-section {
+  flex: 1;
+  padding: 8px 16px;
+  overflow-y: auto;
+  max-height: 180px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.domain-count {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg);
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+
+.domain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.domain-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.domain-item:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.domain-item .domain-name {
+  font-size: 12px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.domain-item .delete-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.domain-item .delete-btn:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: var(--danger);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  padding: 16px 0;
+}
+
+/* ========== 迷你开关（域名列表用） ========== */
+.mini-switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mini-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mini-switch .mini-slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 16px;
+  transition: 0.25s;
+}
+
+.mini-switch .mini-slider::before {
+  content: '';
+  position: absolute;
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.25s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.mini-switch input:checked + .mini-slider {
+  background: var(--primary);
+}
+
+.mini-switch input:checked + .mini-slider::before {
+  transform: translateX(14px);
+}
+
+.domain-item .domain-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ========== 按钮 ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+}
+
+/* ========== 操作区 ========== */
+.actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.actions .btn {
+  flex: 1;
+}
+
+/* ========== 添加域名区 ========== */
+.add-domain-section {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 12px;
+}
+
+.domain-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.domain-input:focus {
+  border-color: var(--primary);
+}
+
+/* ========== Toast ========== */
+.toast {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s;
+  z-index: 999;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ========== 滚动条 ========== */
+.domain-list-section::-webkit-scrollbar {
+  width: 4px;
+}
+
+.domain-list-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.domain-list-section::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 2px;
+}
+
+.domain-list-section::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
