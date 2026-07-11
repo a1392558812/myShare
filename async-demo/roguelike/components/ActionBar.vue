@@ -41,6 +41,7 @@ const getActiveTotal = (sk) => {
   if (sk.id === 'invincible') return sk.invincibleTotalDuration || 0
   if (sk.id === 'vampireAura') return sk.duration || 0
   if (sk.id === 'dash') return sk.dashDuration || 0
+  if (sk.id === 'ultimateRay') return sk.ultimateRayTotalDuration || 0
   return 0
 }
 
@@ -51,6 +52,7 @@ const getActiveBarStyle = (sk) => {
   if (sk.id === 'invincible') remaining = sk.invincibleTimer || 0
   if (sk.id === 'vampireAura') remaining = sk.auraTimer || 0
   if (sk.id === 'dash') remaining = sk.dashTimer || 0
+  if (sk.id === 'ultimateRay') remaining = sk.ultimateRayTimer || 0
   const ratio = Math.max(0, Math.min(1, remaining / total))
   return {
     transform: `scaleX(${ratio})`,

@@ -11,7 +11,8 @@
         { label: '自动冰冻', icon: '&#10052;', key: 'freeze', value: freeze },
         { label: '自动无敌', icon: '&#9889;', key: 'invincible', value: invincible },
         { label: '自动魔法阵', icon: '&#128293;', key: 'magicCircle', value: magicCircle },
-        { label: '自动冲刺', icon: '&#128168;', key: 'dash', value: dash }
+        { label: '自动冲刺', icon: '&#128168;', key: 'dash', value: dash },
+        { label: '自动大招', icon: '&#11088;', key: 'ultimateRay', value: ultimateRay }
       ]" :key="index" :label="item.label" :icon="item.icon" :modelValue="item.value"
         @update:modelValue="$emit('update:' + item.key, $event)" />
     </div>
@@ -28,8 +29,9 @@ defineProps({
   invincible: { type: Boolean, default: false },
   magicCircle: { type: Boolean, default: false },
   dash: { type: Boolean, default: false },
+  ultimateRay: { type: Boolean, default: false },
 })
-defineEmits(['update:arrow', 'update:freeze', 'update:invincible', 'update:magicCircle', 'update:dash'])
+defineEmits(['update:arrow', 'update:freeze', 'update:invincible', 'update:magicCircle', 'update:dash', 'update:ultimateRay'])
 
 const expanded = ref(false)
 </script>

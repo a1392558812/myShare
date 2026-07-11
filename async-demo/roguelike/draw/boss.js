@@ -215,6 +215,60 @@ const drawVoidWeaver = (ctx, x, y, b, gameTime) => {
   ctx.restore()
 }
 
+export const drawFireRay = (ctx, boss, player, toScreen, gameTime) => {
+  if (!boss._hasFireRay) return
+
+  const bossScreen = toScreen(boss.x, boss.y, ctx)
+  const playerScreen = toScreen(player.x, player.y, ctx)
+
+  ctx.save()
+
+  const pulse = 0.7 + 0.3 * Math.sin(gameTime * 0.008)
+  const gradient = ctx.createLinearGradient(bossScreen.x, bossScreen.y, playerScreen.x, playerScreen.y)
+  gradient.addColorStop(0, '#f97316')
+  gradient.addColorStop(0.3, '#ef4444')
+  gradient.addColorStop(0.7, '#fbbf24')
+  gradient.addColorStop(1, '#ffee00')
+
+  ctx.globalAlpha = pulse
+  ctx.strokeStyle = gradient
+  ctx.lineWidth = 5
+  ctx.shadowColor = '#f97316'
+  ctx.shadowBlur = 15
+  ctx.beginPath()
+  ctx.moveTo(bossScreen.x, bossScreen.y)
+  ctx.lineTo(playerScreen.x, playerScreen.y)
+  ctx.stroke()
+
+  ctx.globalAlpha = pulse * 0.6
+  ctx.lineWidth = 10
+  ctx.shadowBlur = 20
+  ctx.beginPath()
+  ctx.moveTo(bossScreen.x, bossScreen.y)
+  ctx.lineTo(playerScreen.x, playerScreen.y)
+  ctx.stroke()
+
+  ctx.shadowBlur = 0
+
+  const sparkCount = 8
+  for (let i = 0; i < sparkCount; i++) {
+    const t = (Math.sin(gameTime * 0.005 + i * 0.8) + 1) / 2
+    const sx = bossScreen.x + (playerScreen.x - bossScreen.x) * t
+    const sy = bossScreen.y + (playerScreen.y - bossScreen.y) * t
+    const offset = 3 + Math.sin(gameTime * 0.01 + i) * 3
+    const angle = Math.atan2(playerScreen.y - bossScreen.y, playerScreen.x - bossScreen.x) + Math.PI / 2
+    const px = sx + Math.cos(angle) * offset
+    const py = sy + Math.sin(angle) * offset
+
+    ctx.globalAlpha = 0.5 + 0.3 * Math.sin(gameTime * 0.006 + i)
+    ctx.fillStyle = '#ffee00'
+    ctx.beginPath()
+    ctx.arc(px, py, 2 + Math.sin(gameTime * 0.01 + i) * 1.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  ctx.restore()
+}
 
 export const drawVoidLines = (ctx, voidLines, toScreen, gameTime) => {
   ctx.save()

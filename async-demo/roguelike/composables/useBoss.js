@@ -8,55 +8,13 @@ import {
   BOSS_SPAWN_PAUSE_DURATION,
   BOSS_SPAWN_ANIM_DURATION,
   BOSS_SPAWN_RATE_MULTIPLIER,
-  BOSS_DEATH_EFFECT_DURATION,
-  BOSS_CLONE_REASSIGN_INTERVAL,
   BOSS_FIRST_EARLY_WARNING,
-  BOSS_SLAM_RANGE,
-  BOSS_SLAM_ANGLE,
-  BOSS_SLAM_DAMAGE,
-  BOSS_SLAM_COOLDOWN,
-  BOSS_SLAM_WARN_DURATION,
-  BOSS_SHADOW_ORB_COUNT_PHASE1,
-  BOSS_SHADOW_ORB_COUNT_PHASE2,
-  BOSS_SHADOW_ORB_DAMAGE,
-  BOSS_SHADOW_ORB_SPEED,
-  BOSS_SHADOW_ORB_TRACK_STRENGTH,
-  BOSS_SHADOW_ORB_COOLDOWN,
-  BOSS_SHADOW_ORB_SIZE,
-  BOSS_SHADOW_WAVE_DAMAGE,
-  BOSS_SHADOW_WAVE_INTERVAL,
-  BOSS_SHADOW_WAVE_SPEED,
-  BOSS_SHADOW_WAVE_MAX_RADIUS,
-  BOSS_FIRE_PILLAR_DAMAGE,
-  BOSS_FIRE_PILLAR_INTERVAL,
-  BOSS_FIRE_PILLAR_WARN,
-  BOSS_FIRE_PILLAR_RADIUS,
-  BOSS_FIRE_PILLAR_MAX,
-  BOSS_FIRE_BARRAGE_DAMAGE,
-  BOSS_FIRE_BARRAGE_INTERVAL,
-  BOSS_FIRE_BARRAGE_SPEED,
-  BOSS_FIRE_BARRAGE_DIRECTIONS,
-  BOSS_FIRE_BARRAGE_RANGE,
-  BOSS_FIRE_BARRAGE_SIZE,
-  BOSS_HIT_INVINCIBLE_TIME,
-  BOSS_MAX_DAMAGE_RATIO,
-  BOSS_VOID_TELEPORT_INTERVAL,
-  BOSS_VOID_LINE_INTERVAL,
-  BOSS_VOID_LINE_DAMAGE_PER_SEC,
-  BOSS_VOID_LINE_DURATION,
-  BOSS_VOID_LINE_COUNT,
-  BOSS_VOID_SLOW_INTERVAL,
-  BOSS_VOID_SLOW_RADIUS,
-  BOSS_VOID_SLOW_RATIO,
-  BOSS_VOID_SLOW_DURATION,
-  BOSS_VOID_PROJECTILE_DAMAGE,
-  BOSS_VOID_PROJECTILE_SPEED,
-  BOSS_VOID_PROJECTILE_TRACK,
-  BOSS_VOID_PROJECTILE_INTERVAL,
-  BOSS_VOID_PROJECTILE_SIZE,
-  calcBossHP,
+  HIT_FLASH_PLAYER,
+  HIT_FLASH_ENEMY,
+  BOUNDARY,
   ENTITY_SIZE,
-  LOOT_TABLE,
+  DIRECTION,
+  calcBossHP,
 } from '../constants.js'
 import { pushBattleLog } from './useBattleLog.js'
 
@@ -69,7 +27,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     const isInvincible = player.skills.some(s => s.id === 'invincible' && s.active)
     if (isInvincible) return false
     player.hp -= dmg
-    player.hitFlash = 10
+    player.hitFlash = HIT_FLASH_PLAYER
     if (player.hp <= 0) { player.hp = 0; gameState.isDead = true }
     return true
   })
@@ -106,7 +64,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
   })
 
 
-  const randomDropOffset = () => ({ dx: (Math.random() - 0.5) * 80, dy: (Math.random() - 0.5) * 80 })
+  const randomDropOffset = (range) => ({ dx: (Math.random() - 0.5) * range, dy: (Math.random() - 0.5) * range })
 
   const pickBoss = () => {
     const available = BOSS_TABLE.filter(b =>
@@ -139,6 +97,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
       expReward: config.xpReward,
       phases: config.phases,
       dropTable: config.dropTable,
+      config,
       dead: false,
       hitFlash: 0,
       frozen: false,
@@ -152,7 +111,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
       firePillarCooldown: 0,
       fireBarrageCooldown: 0,
       fireBarrageRotation: 0,
-      teleportTimer: BOSS_VOID_TELEPORT_INTERVAL * 0.5,
+      teleportTimer: config.voidTeleportInterval * config.voidTeleportInitialRatio,
       voidLineTimer: 0,
       slowFieldTimer: 0,
       voidProjectileCooldown: 0,
@@ -162,10 +121,11 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
   const spawnBossDrops = (boss, x, y) => {
     if (!boss.dropTable) return
     const allDrops = []
+    const dropRange = boss.config?.dropOffsetRange ?? 80
 
     boss.dropTable.guaranteed?.forEach(g => {
       for (let i = 0; i < g.count; i++) {
-        const off = randomDropOffset()
+        const off = randomDropOffset(dropRange)
         if (g.id === 'skillScroll') {
           allDrops.push({
             id: 'skillScroll',
@@ -211,7 +171,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     boss.dropTable.extra?.forEach(e => {
       if (Math.random() <= (e.chance ?? 1.0)) {
-        const off = randomDropOffset()
+        const off = randomDropOffset(dropRange)
         allDrops.push({
           id: e.id,
           name: e.name || '???',
@@ -245,22 +205,19 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     if (!activeBoss.value || activeBoss.value.dead) return
     if (bossState.value !== 'active') return
 
-    // 受击无敌帧检查
     const boss = activeBoss.value
     const now = gameState.gameTime
-    if (boss._hitInvincibleUntil && now < boss._hitInvincibleUntil) {
-      // 无敌期间白闪
+    if (boss._hitInvincibleEnd && now < boss._hitInvincibleEnd) {
       boss._hitInvincibleFlash = true
       return
     }
 
-    // 单次伤害上限
-    const maxDmg = boss.maxHp * BOSS_MAX_DAMAGE_RATIO
+    const maxDmg = boss.maxHp * boss.config.maxDamageRatio
     const clampedDmg = Math.min(damage, maxDmg)
 
     boss.hp -= clampedDmg
-    boss.hitFlash = 6
-    boss._hitInvincibleUntil = now + BOSS_HIT_INVINCIBLE_TIME
+    boss.hitFlash = HIT_FLASH_ENEMY
+    boss._hitInvincibleEnd = now + boss.config.hitInvincibleTime
 
     if (boss.hp <= 0) {
       boss.hp = 0
@@ -271,7 +228,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
         x: boss.x,
         y: boss.y,
         radius: boss.size * 1.5,
-        duration: BOSS_DEATH_EFFECT_DURATION,
+        duration: boss.config.deathEffectDuration,
         elapsed: 0,
         color: boss.color,
         color2: boss.color2,
@@ -360,7 +317,6 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
   }
 
   const updateBoss = (dt) => {
-    // 清除 Boss 无敌闪白标记
     if (activeBoss.value) {
       activeBoss.value._hitInvincibleFlash = false
     }
@@ -379,8 +335,8 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
       if (!activeBoss.value) {
         const config = BOSS_TABLE.find(b => b.id === lastBossId.value)
         if (config) {
-          const bx = player.x + (Math.random() - 0.5) * 200
-          const by = player.y + (Math.random() - 0.5) * 200
+          const bx = player.x + (Math.random() - 0.5) * config.spawnOffsetRange
+          const by = player.y + (Math.random() - 0.5) * config.spawnOffsetRange
           activeBoss.value = createBossEntity(config, bx, by)
           enemies.value.push(activeBoss.value)
 
@@ -447,7 +403,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
         activeBoss.value.cloneTimer -= dt
         if (activeBoss.value.cloneTimer <= 0) {
           reassignClones()
-          activeBoss.value.cloneTimer = BOSS_CLONE_REASSIGN_INTERVAL
+          activeBoss.value.cloneTimer = activeBoss.value.config.cloneReassignInterval
         }
       }
     }
@@ -464,8 +420,8 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     const ndy = dist > 0 ? dy / dist : 0
 
     const isFrenzied = b.currentPhaseIdx === 2
-    const speedMult = isFrenzied ? 2 : 1
-    const cdMult = isFrenzied ? 0.5 : 1
+    const speedMult = isFrenzied ? b.config.shadowFrenzySpeedMult : 1
+    const cdMult = isFrenzied ? b.config.shadowFrenzyCooldownMult : 1
     b.isFrenzied = isFrenzied
 
     if (b.isCloneMaster && dist > 1) {
@@ -474,25 +430,25 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     }
 
     b.slamCooldown -= dt
-    if (b.slamCooldown <= 0 && dist <= BOSS_SLAM_RANGE + b.size) {
-      b.slamCooldown = BOSS_SLAM_COOLDOWN * cdMult
+    if (b.slamCooldown <= 0 && dist <= b.config.slamRange + b.size) {
+      b.slamCooldown = b.config.slamCooldown * cdMult
       effects.value.push({
         type: 'bossSlamWarn',
         x: b.x, y: b.y,
-        radius: BOSS_SLAM_RANGE,
+        radius: b.config.slamRange,
         angle: Math.atan2(dy, dx),
-        duration: BOSS_SLAM_WARN_DURATION,
+        duration: b.config.slamWarnDuration,
         elapsed: 0,
         color: b.color,
       })
       const slamEffect = {
         type: 'bossSlamHit',
         x: b.x, y: b.y,
-        radius: BOSS_SLAM_RANGE,
+        radius: b.config.slamRange,
         angle: Math.atan2(dy, dx),
-        duration: 200,
+        duration: b.config.slamHitDuration,
         elapsed: 0,
-        damage: BOSS_SLAM_DAMAGE,
+        damage: b.config.slamDamage,
         color: b.color,
         playerX: player.x, playerY: player.y,
       }
@@ -502,50 +458,50 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
       const slamDist = Math.sqrt(slamDx * slamDx + slamDy * slamDy)
       const slamAngle = Math.atan2(slamDy, slamDx)
       const angleDiff = Math.abs(((slamAngle - Math.atan2(dy, dx) + Math.PI) % (Math.PI * 2)) - Math.PI)
-      if (slamDist <= BOSS_SLAM_RANGE + ENTITY_SIZE && angleDiff <= (BOSS_SLAM_ANGLE / 2) * Math.PI / 180) {
-        tryDamagePlayer(BOSS_SLAM_DAMAGE)
+      if (slamDist <= b.config.slamRange + ENTITY_SIZE && angleDiff <= (b.config.slamAngle / 2) * Math.PI / 180) {
+        tryDamagePlayer(b.config.slamDamage)
       }
     }
 
     b.orbCooldown -= dt
     if (b.orbCooldown <= 0) {
-      b.orbCooldown = BOSS_SHADOW_ORB_COOLDOWN * cdMult
-      const orbCount = b.currentPhaseIdx >= 1 ? BOSS_SHADOW_ORB_COUNT_PHASE2 : BOSS_SHADOW_ORB_COUNT_PHASE1
+      b.orbCooldown = b.config.shadowOrbCooldown * cdMult
+      const orbCount = b.currentPhaseIdx >= 1 ? b.config.shadowOrbCountPhase2 : b.config.shadowOrbCountPhase1
       for (let i = 0; i < orbCount; i++) {
         const angle = (Math.PI * 2 / orbCount) * i
-        const vx = Math.cos(angle) * BOSS_SHADOW_ORB_SPEED
-        const vy = Math.sin(angle) * BOSS_SHADOW_ORB_SPEED
+        const vx = Math.cos(angle) * b.config.shadowOrbSpeed
+        const vy = Math.sin(angle) * b.config.shadowOrbSpeed
         projectiles.value.push({
           type: 'shadowOrb',
           x: b.x, y: b.y,
           vx, vy,
-          damage: BOSS_SHADOW_ORB_DAMAGE,
-          size: BOSS_SHADOW_ORB_SIZE,
+          damage: b.config.shadowOrbDamage,
+          size: b.config.shadowOrbSize,
           owner: 'enemy',
           isTracking: true,
-          trackStrength: BOSS_SHADOW_ORB_TRACK_STRENGTH,
-          maxSpeed: BOSS_SHADOW_ORB_SPEED,
+          trackStrength: b.config.shadowOrbTrackStrength,
+          maxSpeed: b.config.shadowOrbSpeed,
         })
       }
     }
 
     if (b.currentPhaseIdx >= 1 && bossClones.value.length === 0 && b.cloneTimer <= 0) {
       createClones()
-      b.cloneTimer = BOSS_CLONE_REASSIGN_INTERVAL
+      b.cloneTimer = b.config.cloneReassignInterval
     }
 
     if (b.currentPhaseIdx >= 2) {
       b.waveTimer -= dt
       if (b.waveTimer <= 0) {
-        b.waveTimer = BOSS_SHADOW_WAVE_INTERVAL
+        b.waveTimer = b.config.shadowWaveInterval
         effects.value.push({
           type: 'shadowWave',
           x: b.x, y: b.y,
           radius: 10,
-          maxRadius: BOSS_SHADOW_WAVE_MAX_RADIUS,
-          speed: BOSS_SHADOW_WAVE_SPEED,
-          damage: BOSS_SHADOW_WAVE_DAMAGE,
-          duration: BOSS_SHADOW_WAVE_MAX_RADIUS / BOSS_SHADOW_WAVE_SPEED * 16,
+          maxRadius: b.config.shadowWaveMaxRadius,
+          speed: b.config.shadowWaveSpeed,
+          damage: b.config.shadowWaveDamage,
+          duration: b.config.shadowWaveMaxRadius / b.config.shadowWaveSpeed * 16,
           elapsed: 0,
           color: b.color,
           playerRef: player,
@@ -564,31 +520,32 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     const ndx = dist > 0 ? dx / dist : 0
     const ndy = dist > 0 ? dy / dist : 0
 
-    const comfortMin = 150
-    const comfortMax = 250
+    const comfortMin = b.config.fireComfortMin
+    const comfortMax = b.config.fireComfortMax
     if (dist > 0 && dist < comfortMin) {
       b.x -= ndx * b.speed
       b.y -= ndy * b.speed
     } else if (dist > comfortMax) {
-      b.x += ndx * b.speed * 0.7
-      b.y += ndy * b.speed * 0.7
+      b.x += ndx * b.speed * b.config.fireApproachSpeedRatio
+      b.y += ndy * b.speed * b.config.fireApproachSpeedRatio
     }
 
     b.firePillarCooldown -= dt
     if (b.firePillarCooldown <= 0) {
-      b.firePillarCooldown = BOSS_FIRE_PILLAR_INTERVAL
+      b.firePillarCooldown = b.config.firePillarInterval
       const existingWarns = effects.value.filter(e => e.type === 'firePillarWarn').length
-      if (existingWarns >= BOSS_FIRE_PILLAR_MAX) {
+      if (existingWarns >= b.config.firePillarMax) {
         const oldest = effects.value.findIndex(e => e.type === 'firePillarWarn')
         if (oldest !== -1) effects.value.splice(oldest, 1)
       }
       effects.value.push({
         type: 'firePillarWarn',
         x: player.x, y: player.y,
-        radius: BOSS_FIRE_PILLAR_RADIUS,
-        duration: BOSS_FIRE_PILLAR_WARN,
+        radius: b.config.firePillarRadius,
+        duration: b.config.firePillarWarn,
         elapsed: 0,
-        damage: BOSS_FIRE_PILLAR_DAMAGE,
+        damage: b.config.firePillarDamage,
+        warnSlow: b.config.firePillarWarnSlow,
         color: b.color,
         playerRef: player,
       })
@@ -596,23 +553,31 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     b.fireBarrageCooldown -= dt
     if (b.fireBarrageCooldown <= 0) {
-      b.fireBarrageCooldown = BOSS_FIRE_BARRAGE_INTERVAL
-      b.fireBarrageRotation = (b.fireBarrageRotation || 0) + Math.PI / 6
-      for (let i = 0; i < BOSS_FIRE_BARRAGE_DIRECTIONS; i++) {
-        const angle = (Math.PI * 2 / BOSS_FIRE_BARRAGE_DIRECTIONS) * i + (b.fireBarrageRotation || 0)
-        const vx = Math.cos(angle) * BOSS_FIRE_BARRAGE_SPEED
-        const vy = Math.sin(angle) * BOSS_FIRE_BARRAGE_SPEED
+      b.fireBarrageCooldown = b.config.fireBarrageInterval
+      b.fireBarrageRotation = (b.fireBarrageRotation || 0) + b.config.fireBarrageRotationStep
+      for (let i = 0; i < b.config.fireBarrageDirections; i++) {
+        const angle = (Math.PI * 2 / b.config.fireBarrageDirections) * i + (b.fireBarrageRotation || 0)
+        const vx = Math.cos(angle) * b.config.fireBarrageSpeed
+        const vy = Math.sin(angle) * b.config.fireBarrageSpeed
         projectiles.value.push({
           type: 'fireBarrage',
           x: b.x, y: b.y,
           vx, vy,
-          damage: BOSS_FIRE_BARRAGE_DAMAGE,
-          size: BOSS_FIRE_BARRAGE_SIZE,
+          damage: b.config.fireBarrageDamage,
+          size: b.config.fireBarrageSize,
           owner: 'enemy',
-          range: BOSS_FIRE_BARRAGE_RANGE,
+          range: b.config.fireBarrageRange,
           traveled: 0,
         })
       }
+    }
+
+    if (dist > b.config.fireRayTriggerDist) {
+      b._hasFireRay = true
+      player._fireRaySlowMultiplier = b.config.fireRaySlowRatio
+    } else {
+      b._hasFireRay = false
+      player._fireRaySlowMultiplier = 1
     }
   }
 
@@ -626,7 +591,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     b.teleportTimer -= dt
     if (b.teleportTimer <= 0) {
-      b.teleportTimer = BOSS_VOID_TELEPORT_INTERVAL
+      b.teleportTimer = b.config.voidTeleportInterval
       effects.value.push({
         type: 'voidTeleportOut',
         x: b.x, y: b.y,
@@ -636,7 +601,7 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
         color: b.color,
       })
       const angle = Math.random() * Math.PI * 2
-      const rad = 100 + Math.random() * 200
+      const rad = b.config.voidTeleportMinRadius + Math.random() * (b.config.voidTeleportMaxRadius - b.config.voidTeleportMinRadius)
       const nx = player.x + Math.cos(angle) * rad
       const ny = player.y + Math.sin(angle) * rad
       setTimeout(() => {
@@ -656,12 +621,12 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     b.voidLineTimer -= dt
     if (b.voidLineTimer <= 0) {
-      b.voidLineTimer = BOSS_VOID_LINE_INTERVAL
-      const centerX = player.x + (Math.random() - 0.5) * 300
-      const centerY = player.y + (Math.random() - 0.5) * 300
+      b.voidLineTimer = b.config.voidLineInterval
+      const centerX = player.x + (Math.random() - 0.5) * b.config.voidLineSpawnRange
+      const centerY = player.y + (Math.random() - 0.5) * b.config.voidLineSpawnRange
       const lineAngle = Math.random() * Math.PI
-      const lineLen = 200 + Math.random() * 150
-      const gap = 60 + Math.random() * 40
+      const lineLen = b.config.voidLineMinLength + Math.random() * (b.config.voidLineMaxLength - b.config.voidLineMinLength)
+      const gap = b.config.voidLineGapMin + Math.random() * (b.config.voidLineGapMax - b.config.voidLineGapMin)
       const perpX = Math.cos(lineAngle + Math.PI / 2)
       const perpY = Math.sin(lineAngle + Math.PI / 2)
 
@@ -681,8 +646,8 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
       voidLines.value.push({
         type: 'voidLineSet',
         l1, l2,
-        damagePerSec: BOSS_VOID_LINE_DAMAGE_PER_SEC,
-        duration: BOSS_VOID_LINE_DURATION,
+        damagePerSec: b.config.voidLineDamagePerSec,
+        duration: b.config.voidLineDuration,
         elapsed: 0,
         centerX, centerY,
         gap,
@@ -691,14 +656,14 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     b.slowFieldTimer -= dt
     if (b.slowFieldTimer <= 0) {
-      b.slowFieldTimer = BOSS_VOID_SLOW_INTERVAL
+      b.slowFieldTimer = b.config.voidSlowInterval
       slowFields.value.push({
         type: 'voidSlowField',
         x: player.x,
         y: player.y,
-        radius: BOSS_VOID_SLOW_RADIUS,
-        slowRatio: BOSS_VOID_SLOW_RATIO,
-        duration: BOSS_VOID_SLOW_DURATION,
+        radius: b.config.voidSlowRadius,
+        slowRatio: b.config.voidSlowRatio,
+        duration: b.config.voidSlowDuration,
         elapsed: 0,
         color: b.color,
       })
@@ -706,29 +671,29 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     b.voidProjectileCooldown -= dt
     if (b.voidProjectileCooldown <= 0) {
-      b.voidProjectileCooldown = BOSS_VOID_PROJECTILE_INTERVAL
-      for (let i = 0; i < 2; i++) {
+      b.voidProjectileCooldown = b.config.voidProjectileInterval
+      for (let i = 0; i < b.config.voidProjectileCount; i++) {
         const angle = Math.random() * Math.PI * 2
-        const vx = Math.cos(angle) * BOSS_VOID_PROJECTILE_SPEED
-        const vy = Math.sin(angle) * BOSS_VOID_PROJECTILE_SPEED
+        const vx = Math.cos(angle) * b.config.voidProjectileSpeed
+        const vy = Math.sin(angle) * b.config.voidProjectileSpeed
         projectiles.value.push({
           type: 'voidProjectile',
-          x: b.x + (Math.random() - 0.5) * 30,
-          y: b.y + (Math.random() - 0.5) * 30,
+          x: b.x + (Math.random() - 0.5) * b.config.voidProjectileSpawnOffset,
+          y: b.y + (Math.random() - 0.5) * b.config.voidProjectileSpawnOffset,
           vx, vy,
-          damage: BOSS_VOID_PROJECTILE_DAMAGE,
-          size: BOSS_VOID_PROJECTILE_SIZE,
+          damage: b.config.voidProjectileDamage,
+          size: b.config.voidProjectileSize,
           owner: 'enemy',
           isTracking: true,
-          trackStrength: BOSS_VOID_PROJECTILE_TRACK,
-          maxSpeed: BOSS_VOID_PROJECTILE_SPEED,
+          trackStrength: b.config.voidProjectileTrack,
+          maxSpeed: b.config.voidProjectileSpeed,
         })
       }
     }
 
     voidLines.value.forEach(v => {
       const lastTick = v.lastDamageTick || 0
-      if (gameState.gameTime - lastTick >= 1000) {
+      if (gameState.gameTime - lastTick >= b.config.voidLineTickInterval) {
         v.lastDamageTick = gameState.gameTime
         if (isPointBetweenLines(player.x, player.y, v.l1, v.l2, v.gap)) {
           tryDamagePlayer(v.damagePerSec)
@@ -748,10 +713,14 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
 
   const isPointBetweenLines = (px, py, l1, l2, gap) => {
+    const cfg = activeBoss.value?.config
+    const distFudge = cfg?.voidLineDistFudge ?? 1.5
+    const sumFudge = cfg?.voidLineSumFudge ?? 1.2
+    const tMargin = cfg?.voidLineTMargin ?? 0.2
     const cx = (l1.x1 + l2.x1) / 2
     const cy = (l1.y1 + l2.y1) / 2
     const dist = Math.sqrt((px - cx) ** 2 + (py - cy) ** 2)
-    if (dist > gap * 1.5) return false
+    if (dist > gap * distFudge) return false
 
     const d1 = pointToLine(px, py, l1.x1, l1.y1, l1.x2, l1.y2)
     const d2 = pointToLine(px, py, l2.x1, l2.y1, l2.x2, l2.y2)
@@ -760,8 +729,8 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     const lineLen = Math.sqrt(lineDirX * lineDirX + lineDirY * lineDirY)
     if (lineLen === 0) return false
     const t = ((px - l1.x1) * lineDirX + (py - l1.y1) * lineDirY) / (lineLen * lineLen)
-    if (t < -0.2 || t > 1.2) return false
-    if (d1 + d2 < gap * 1.2 && d1 < gap && d2 < gap) return true
+    if (t < -tMargin || t > 1 + tMargin) return false
+    if (d1 + d2 < gap * sumFudge && d1 < gap && d2 < gap) return true
     return false
   }
 
@@ -789,15 +758,13 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
 
     const positions = [
       { x: b.x, y: b.y },
-      {
-        x: player.x + (Math.random() - 0.5) * 300,
-        y: player.y + (Math.random() - 0.5) * 300,
-      },
-      {
-        x: player.x + (Math.random() - 0.5) * 300,
-        y: player.y + (Math.random() - 0.5) * 300,
-      },
     ]
+    for (let i = 1; i < b.config.cloneCount; i++) {
+      positions.push({
+        x: player.x + (Math.random() - 0.5) * b.config.cloneSpawnRadius,
+        y: player.y + (Math.random() - 0.5) * b.config.cloneSpawnRadius,
+      })
+    }
 
     for (let i = positions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
@@ -818,8 +785,8 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
         isCloneMaster: false,
         x: positions[i].x, y: positions[i].y,
         hp: b.hp, maxHp: b.maxHp,
-        speed: b.speed * 1.1,
-        size: b.size * 0.85,
+        speed: b.speed * b.config.cloneSpeedMultiplier,
+        size: b.size * b.config.cloneSizeRatio,
         color: b.color,
         color2: b.color2,
         bossName: b.bossName,
@@ -843,12 +810,12 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     })
     bossClones.value = []
 
-    const posCount = 3
+    const posCount = b.config.cloneCount
     const positions = []
     for (let i = 0; i < posCount; i++) {
       positions.push({
-        x: player.x + (Math.random() - 0.5) * 300,
-        y: player.y + (Math.random() - 0.5) * 300,
+        x: player.x + (Math.random() - 0.5) * b.config.cloneSpawnRadius,
+        y: player.y + (Math.random() - 0.5) * b.config.cloneSpawnRadius,
       })
     }
     for (let i = positions.length - 1; i > 0; i--) {
@@ -870,8 +837,8 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
         isCloneMaster: false,
         x: positions[i].x, y: positions[i].y,
         hp: b.hp, maxHp: b.maxHp,
-        speed: b.speed * 1.1,
-        size: b.size * 0.85,
+        speed: b.speed * b.config.cloneSpeedMultiplier,
+        size: b.size * b.config.cloneSizeRatio,
         color: b.color,
         color2: b.color2,
         bossName: b.bossName,
@@ -907,10 +874,14 @@ export function useBoss(player, gameState, enemies, projectiles, effects, lootDr
     cleanupClones()
     voidLines.value = []
     slowFields.value = []
+    player._fireRaySlowMultiplier = 1
   }
 
   const getBossSlowMultiplier = () => {
-    return player._bossSlowMultiplier ?? 1
+    const bossSlow = player._bossSlowMultiplier ?? 1
+    const fireRaySlow = player._fireRaySlowMultiplier ?? 1
+    const firePillarSlow = player._firePillarSlowMultiplier ?? 1
+    return bossSlow * fireRaySlow * firePillarSlow
   }
 
   return {

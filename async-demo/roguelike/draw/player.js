@@ -98,3 +98,10 @@ export const drawPlayerSprite = (ctx, sx, sy, direction, frame, flash, isInvinci
 
   ctx.restore()
 }
+
+export const drawPlayerConfusion = (ctx, sx, sy) => {
+  ctx.font = '24px Arial'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('💫', sx, sy - 40)
+}

@@ -1,43 +1,49 @@
-# 分享一些日常学习收获
+# 日常学习收获分享
 
-> 面试题在`前端圣经`文件夹中
-> `日常分享-xx`系列为基础前端技能的前置学习内容
-> `杂项整理`包含工作中可能用到的知识和工具方法
+> - 面试题请查阅 `前端圣经`  
+> - `日常分享-xx` 系列属于前端基础技能的前置学习内容  
+> - `杂项整理` 收录了工作中可能用到的实用知识与工具方法
+
+---
 
 ## FAQ
 
 ### 关于页面风格
 
-个人偏好简约风格，但技术展示最直观的方式往往是通过炫酷的效果和华丽的页面。因此，将一些"特效演示"和"开发工具"统一放在[特效/工具 demo](https://awen-blog.netlify.app/#/demo)中，主页则专注于展示知识点。
+我个人偏爱简约干净的视觉呈现，但技术类内容最直观的表达方式，往往离不开炫酷的交互效果与华丽的页面设计。因此，我将所有“特效演示”和“开发工具”统一归入 [特效/工具 demo](https://awen-blog.netlify.app/#/demo) 页面，而主站则专注于知识点的系统梳理与展示。
 
-虚假的特效首页： [首页](https://awen-blog.netlify.app/#/demo/blog-home)
+如果你对“特效风”首页感兴趣，可以移步这里体验：[首页（特效版）](https://awen-blog.netlify.app/#/demo/blog-home)
 
-### 特效demo中有些可以直接预览源码，有些不可以
+---
 
-由于历史原因，早期项目设计较为简单，原本计划直接打包部署到 GitHub Pages。但随着博客文章逐渐增多，出现了一个问题：**每次新增或更新文章，都需要重新打包整个项目，即便项目本身的代码没有任何改动。**
+### 为什么部分 demo 可以直接预览源码，而另一些不行？
 
-后来我将博客拆分为两个项目：一个是负责打包生成博客基础结构的[壳子项目](https://github.com/a1392558812/vue-blog)，另一个是专门存放文章与 demo 的展示项目（即当前仓库）。这样后续更新只需修改展示项目，无需重复打包整个前端工程。
+这背后有一段“历史遗留”问题。早期项目结构比较简单，当时计划将所有内容打包后直接部署到 GitHub Pages。但随着博客文章越来越多，一个痛点逐渐显现：**每次新增或修改文章，都必须重新构建整个项目，即便项目本身的代码没有发生任何改动**。
 
-许多早期的demo与**壳子项目**耦合在一起，由于精力有限，目前只有[box-shadow生成器](https://awen-blog.netlify.app/#/demo)及之后的demo完成了迁移。这些迁移后的demo可以通过F12或页面按钮直接查看源码，而之前的demo仍需到blog项目（壳子项目github仓库）中查看。
+为解决这个问题，我将博客拆分为两个独立仓库：
+- **壳子项目**（[vue-blog](https://github.com/a1392558812/vue-blog)）：负责博客基础框架的构建与打包；
+- **展示项目**（即当前仓库）：专门存放所有文章内容与 demo 示例。
 
-### 关于图片路径的问题
+这样一来，后续更新只需维护展示项目，无需反复打包前端工程。
 
-这也是无奈之举，兼顾了Markdown的便捷性就难以兼顾网页的展示效果（主要是不想花费成本购买服务器，之前买过一年但点击量很低，相当于白花了钱）
+遗憾的是，早期很多 demo 与壳子项目耦合较深，受限于个人精力，目前仅有 `box-shadow生成器`（[点击体验](https://awen-blog.netlify.app/#/demo)）及之后的 demo 完成了迁移。已迁移的 demo 可以通过 F12 开发者工具或页面上的按钮直接查看源码；更早的 demo 仍需移步壳子项目的 GitHub 仓库中查阅，敬请谅解。
 
-### 有一些文章加载比较慢
+---
 
-主要是为了解决上面提到的图片路径问题（一直没找到合适的免费图床，经常遇到图片失效的情况），所以直接将图片嵌入到Markdown文件中，导致文件体积较大，只能在便捷性和加载速度之间做出取舍。此外，3D模型文件本身就比较大，部署到GitHub后访问速度也会受到影响，还请大家多包涵。
+### 关于图片路径的说明
 
-### 为什么在 markdown 里写代码
+这也是一个无奈的取舍。Markdown 写作足够便捷，但要兼顾网页端的展示效果，往往需要额外成本（例如购买服务器或图床服务）。我曾自费购买过一年服务器，但由于站点访问量不大，性价比不高，最终放弃。目前仍未找到稳定且免费的图床方案（此前尝试过多个，均存在图片失效问题），因此部分图片直接以 base64 方式嵌入 Markdown 文件中，导致文件体积偏大。在便捷性与加载速度之间，我选择了前者，还请大家多多包涵。
 
-原因其实很简单，就是为了方便大家复制粘贴。很多时候，大家需要的并不是完整的文件，而是其中的某个功能点。因此，我将一些讲解直接写在代码注释中，兼顾了工作和学习的需求。时间紧迫时可以直接复制粘贴代码，删除注释即可；时间充裕时则可以仔细阅读注释，加深对知识点的理解。
+此外，3D 模型等资源文件本身较大，且部署在 GitHub 后国内访问速度可能不理想，也望各位见谅。
 
-### 有时候页面循环无限刷新
+---
 
-这个还不是我的问题，是chrome的问题，详情可以参考
+### 为什么在 Markdown 中直接写代码？
 
-- [Reload app button causes infinite reload loop](https://github.com/vite-pwa/vite-plugin-pwa/issues/900)
-- [DevTools "Update on reload" Bug](https://github.com/vite-pwa/vite-plugin-pwa/issues/889)
+出发点很简单——**方便大家复制粘贴**。  
+很多时候，读者需要的并不是一整个项目文件，而是其中某个功能点或片段。因此，我会在代码注释中融入讲解，既满足快速取用的需求（删掉注释即可），也方便有时间的同学细读注释，加深对实现原理的理解。希望能同时兼顾工作实战与学习提升。
+
+---
 
 ## **纵使困顿难行，亦当砥砺奋进！**
 
@@ -45,14 +51,18 @@
     <img src="./image/jiangwei.jpg" alt="avatar" style="zoom:50%" />
 </div>
 
-## github 地址
+---
 
-- github 地址：[https://github.com/a1392558812/myShare](https://github.com/a1392558812/myShare)
-- gitee 地址：[https://gitee.com/a1392558812/miscellaneous/tree/master](https://gitee.com/a1392558812/miscellaneous/tree/master)
+## 代码仓库
 
-## 博客站点
+- GitHub：[https://github.com/a1392558812/myShare](https://github.com/a1392558812/myShare)
+- Gitee（国内镜像）：[https://gitee.com/a1392558812/miscellaneous/tree/master](https://gitee.com/a1392558812/miscellaneous/tree/master)
 
-- 站点 1：[https://awen-blog.netlify.app/#/](https://awen-blog.netlify.app/#/)
-- 站点 2：[https://awen-blog.pages.dev/#/](https://awen-blog.pages.dev/#/)
-- 站点 3（国内访问可能较慢）：[https://a1392558812.github.io/myShare/#/](https://a1392558812.github.io/myShare/#/)
-- 站点 4（国内访问可能较慢）：[https://my-share-ten.vercel.app/#/](https://my-share-ten.vercel.app/#/)
+---
+
+## 博客站点（多线路备用）
+
+- 站点 1（Netlify）：[https://awen-blog.netlify.app/#/](https://awen-blog.netlify.app/#/)
+- 站点 2（Cloudflare Pages）：[https://awen-blog.pages.dev/#/](https://awen-blog.pages.dev/#/)
+- 站点 3（GitHub Pages，国内访问可能较慢）：[https://a1392558812.github.io/myShare/#/](https://a1392558812.github.io/myShare/#/)
+- 站点 4（Vercel，国内访问可能较慢）：[https://my-share-ten.vercel.app/#/](https://my-share-ten.vercel.app/#/)

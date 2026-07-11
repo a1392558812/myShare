@@ -6,6 +6,7 @@ import {
   EVENT_SPAWN_INTERVAL,
   EVENT_MAX_COUNT,
   EVENT_TYPE_COOLDOWN,
+  EVENT_SPAWN_MARGIN,
 } from '../constants.js'
 import { pushBattleLog } from './useBattleLog.js'
 
@@ -24,6 +25,9 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
   const cursedRemainingRef = ref(0)
   const enemyDamageMultiplier = ref(1)
   const dropRateMultiplier = ref(1)
+
+  const lightningSlowRatio = ref(0)
+  const lightningDamageBoost = ref(0)
 
   const pendingStele = ref(null)
 
@@ -55,7 +59,35 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
 
     const cfg = availableTypes[Math.floor(Math.random() * availableTypes.length)]
 
-    const margin = 60
+    if (cfg.id === 'lightningQuadrants') {
+      const event = reactive({
+        id: Date.now() + Math.random(),
+        type: cfg.id,
+        name: cfg.name,
+        icon: cfg.icon,
+        color: cfg.color,
+        color2: cfg.color2,
+        x: 0,
+        y: 0,
+        duration: cfg.duration,
+        remaining: cfg.duration,
+        activated: true,
+        config: cfg,
+        currentGroup: Math.random() > 0.5 ? 'AC' : 'BD',
+       nextSwitchTime: cfg.switchMin + Math.random() * (cfg.switchMax - cfg.switchMin),
+        warning: false,
+        warningEndTime: 0,
+        nextGroup: '',
+        damageTimer: 0,
+        isLightningEvent: true,
+      })
+      events.value.push(event)
+      typeCooldowns[cfg.id] = now + cfg.cooldown
+      log(`${cfg.icon} ${cfg.name} 来袭！`)
+      return
+    }
+
+    const margin = EVENT_SPAWN_MARGIN
     let sx, sy
     let attempts = 0
     do {
@@ -152,7 +184,7 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
 
       if (cfg.id === 'cursedStele') {
         if (!event.activated) {
-          if (event._steleRejectAt && Date.now() - event._steleRejectAt < 3000) continue
+          if (event._steleRejectAt && gameState.gameTime - event._steleRejectAt < cfg.rejectCooldown) continue
           stelePrompt = true
           pendingStele.value = event
         }
@@ -197,8 +229,9 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
         if (callbacks.onUpgradeRandomSkill) {
           callbacks.onUpgradeRandomSkill()
         } else {
-          player.exp += 300
-          if (callbacks.onGainExp) callbacks.onGainExp(300)
+          const fallback = event.config.fallbackExpReward || 300
+          player.exp += fallback
+          if (callbacks.onGainExp) callbacks.onGainExp(fallback)
         }
       }
       if (item.goldAmount) {
@@ -230,7 +263,7 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
 
   const cancelCursedStele = () => {
     if (pendingStele.value) {
-      pendingStele.value._steleRejectAt = Date.now()
+      pendingStele.value._steleRejectAt = gameState.gameTime
     }
     pendingStele.value = null
   }
@@ -252,8 +285,9 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
       if (dist <= r) {
         slowAmount = Math.max(slowAmount, zone.slowRatio || 0.3)
         zone.damageTimer = (zone.damageTimer || 0) + dt
-        if (zone.damageTimer >= 1000) {
-          zone.damageTimer -= 1000
+        const tickInterval = zone.config?.tickInterval || 1000
+        if (zone.damageTimer >= tickInterval) {
+          zone.damageTimer -= tickInterval
           if (callbacks.onTryDamagePlayer) {
             callbacks.onTryDamagePlayer(zone.damagePerSec || 3)
           }
@@ -266,6 +300,79 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
 
   const getDeathZones = () => events.value.filter(e => e.type === 'deathZone')
 
+  const getLightningQuadrantsEvents = () => events.value.filter(e => e.type === 'lightningQuadrants')
+
+  const getPlayerQuadrant = () => {
+    const x = player.x
+    const y = player.y
+    if (x >= 0 && y <= 0) return 1
+    if (x < 0 && y <= 0) return 2
+    if (x < 0 && y > 0) return 3
+    if (x >= 0 && y > 0) return 4
+    return 1
+  }
+
+  const isInLightningGroup = (quadrant, group) => {
+    if (group === 'AC') return quadrant === 1 || quadrant === 3
+    if (group === 'BD') return quadrant === 2 || quadrant === 4
+    return false
+  }
+
+  const tickLightningQuadrants = (dt) => {
+    const lightningEvents = events.value.filter(e => e.type === 'lightningQuadrants')
+    if (lightningEvents.length === 0) {
+      lightningSlowRatio.value = 0
+      lightningDamageBoost.value = 0
+      return
+    }
+
+    const event = lightningEvents[0]
+    const cfg = event.config
+    event.remaining -= dt
+    event.nextSwitchTime -= dt
+
+    if (event.warning) {
+      if (gameState.gameTime >= event.warningEndTime) {
+        event.warning = false
+        event.currentGroup = event.nextGroup
+        event.nextSwitchTime = cfg.switchMin + Math.random() * (cfg.switchMax - cfg.switchMin)
+      }
+    } else if (event.nextSwitchTime <= 0) {
+      event.warning = true
+      event.warningEndTime = gameState.gameTime + cfg.warnDuration
+      event.nextGroup = event.currentGroup === 'AC' ? 'BD' : 'AC'
+    }
+
+    const playerQuadrant = getPlayerQuadrant()
+    const activeGroup = event.currentGroup
+    const inLightningZone = isInLightningGroup(playerQuadrant, activeGroup)
+
+    if (inLightningZone) {
+      lightningSlowRatio.value = cfg.slowRatio
+      lightningDamageBoost.value = 0
+      event.damageTimer += dt
+      if (event.damageTimer >= cfg.tickInterval) {
+        event.damageTimer -= cfg.tickInterval
+        if (callbacks.onTryDamagePlayer) {
+          callbacks.onTryDamagePlayer(cfg.damagePerSec * (cfg.tickInterval / 1000))
+        }
+      }
+    } else {
+      lightningSlowRatio.value = 0
+      lightningDamageBoost.value = cfg.safeDamageBoost
+    }
+
+    if (event.remaining <= 0) {
+      const idx = events.value.findIndex(e => e.id === event.id)
+      if (idx !== -1) events.value.splice(idx, 1)
+      lightningSlowRatio.value = 0
+      lightningDamageBoost.value = 0
+    }
+  }
+
+  const getLightningSlowRatio = () => lightningSlowRatio.value
+  const getLightningDamageBoost = () => lightningDamageBoost.value
+
 
   
   const debugSpawnEvent = (typeId) => {
@@ -273,8 +380,37 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
     if (!key) return
     const cfg = EVENT_TYPES[key]
 
+    if (cfg.id === 'lightningQuadrants') {
+      const event = reactive({
+        id: Date.now() + Math.random(),
+        type: cfg.id,
+        name: cfg.name,
+        icon: cfg.icon,
+        color: cfg.color,
+        color2: cfg.color2,
+        x: 0,
+        y: 0,
+        duration: cfg.duration,
+        remaining: cfg.duration,
+        activated: true,
+        config: cfg,
+        currentGroup: Math.random() > 0.5 ? 'AC' : 'BD',
+       nextSwitchTime: cfg.switchMin + Math.random() * (cfg.switchMax - cfg.switchMin),
+        warning: false,
+        warningEndTime: 0,
+        nextGroup: '',
+        damageTimer: 0,
+        isLightningEvent: true,
+      })
+      events.value.push(event)
+      log(`${cfg.icon} ${cfg.name} 来袭！`)
+      return
+    }
+
     const angle = Math.random() * Math.PI * 2
-    const dist = 100 + Math.random() * 120
+    const spawnMin = cfg.spawnMinDist || 100
+    const spawnMax = cfg.spawnMaxDist || 120
+    const dist = spawnMin + Math.random() * (spawnMax - spawnMin)
     const sx = player.x + Math.cos(angle) * dist
     const sy = player.y + Math.sin(angle) * dist
 
@@ -307,6 +443,7 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
       if (e.activated) continue
 
       if (e.type === 'deathZone') continue
+      if (e.type === 'lightningQuadrants') continue
 
       e.remaining -= dt
       if (e.remaining <= 0) {
@@ -315,6 +452,7 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
     }
 
     tickDeathZones(dt)
+    tickLightningQuadrants(dt)
 
     if (cursedActive.value) {
       cursedRemainingRef.value -= dt
@@ -349,6 +487,9 @@ export function useEvents(enemies, player, gameState, buffUtils, battleLog, call
     cancelCursedStele,
     getDeathZones,
     tickDeathZones,
+    getLightningQuadrantsEvents,
+    getLightningSlowRatio,
+    getLightningDamageBoost,
     getEnemyDamageMultiplier,
     getDropRateMultiplier,
     isCursedActive,

@@ -36,6 +36,17 @@ export const renderProjectile = (ctx, sx, sy, p) => {
     ctx.closePath(); ctx.fill()
     ctx.fillStyle = '#e9d5ff'; ctx.beginPath()
     ctx.arc(sx, sy, r * 0.3, 0, Math.PI * 2); ctx.fill()
+  } else if (p.type === 'shuriken') {
+    const angle = Math.atan2(p.vy, p.vx)
+    ctx.translate(sx, sy); ctx.rotate(angle)
+    const r = p.size / 2
+    ctx.fillStyle = "#cbd5e1";
+    ctx.beginPath()
+    ctx.moveTo(0, -r); ctx.lineTo(r * 0.4, -r * 0.4)
+    ctx.lineTo(r, 0); ctx.lineTo(r * 0.4, r * 0.4)
+    ctx.lineTo(0, r); ctx.lineTo(-r * 0.4, r * 0.4)
+    ctx.lineTo(-r, 0); ctx.lineTo(-r * 0.4, -r * 0.4)
+    ctx.closePath(); ctx.fill()
   }
   ctx.restore()
 }

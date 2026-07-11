@@ -2,7 +2,7 @@
   <div class="start-panel">
     <div class="start-content">
       <h1 class="game-title">🎮 Roguelike 冒险</h1>
-      <p class="game-subtitle">肉鸽射击游戏</p>
+      <p class="game-subtitle">肉鸽射击给木</p>
 
       <div class="button-row">
         <button class="start-button" @click="$emit('start')">
@@ -22,7 +22,7 @@
           <div class="instruction-list">
             <div class="instruction-item">
               <span class="instruction-key">我社！</span>
-              <span class="instruction-text">鼠标瞄准，点击射击</span>
+              <span class="instruction-text">鼠标瞄准，开启肘击</span>
             </div>
             <div class="instruction-item">
               <span class="instruction-key">W A S D</span>

@@ -21,6 +21,7 @@
         v-model:invincible="autoInvincible"
         v-model:magic-circle="autoMagicCircle"
         v-model:dash="autoDash"
+        v-model:ultimate-ray="autoUltimateRay"
       />
       <EnemyList :enemies="enemies" />
       <BattleLog :log="battleLog" />
@@ -33,7 +34,7 @@
     <BossHealthBar :boss="activeBoss" :phase="activeBossPhase" />
 
     <LevelUpPanel v-if="gameState.levelUpPending" :player="player" :options="levelUpOptions"
-      @choice="onLevelUpChoice" />
+      @choice="handleLevelUpChoice" />
 
     <CursedStelePrompt v-if="pendingStele" @activate="onSteleActivate" @cancel="onSteleCancel" />
 
@@ -86,6 +87,7 @@ import { useBuffs } from '../composables/useBuffs.js'
 import { useEvents } from '../composables/useEvents.js'
 import { useBoss } from '../composables/useBoss.js'
 import { resetBattleLogId } from '../composables/useBattleLog.js'
+import { createAutoSkillRef } from '../composables/usePersistentRef.js'
 
 import GameCanvas from './GameCanvas.vue'
 import PlayerStatusPanel from './PlayerStatusPanel.vue'
@@ -126,6 +128,9 @@ const player = reactive({
   size: ENTITY_SIZE,
   isMoving: false,
   dodgeChance: 0,
+  _fireRaySlowMultiplier: 1,
+  _bossSlowMultiplier: 1,
+  _firePillarSlowMultiplier: 1,
 })
 
 const camera = reactive({ x: 0, y: 0 })
@@ -134,6 +139,7 @@ const projectiles = ref([])
 const effects = ref([])
 const lootDrops = ref([])
 const magicCircles = ref([])
+const traps = ref([])
 const battleLog = ref([])
 const levelUpOptions = ref([])
 
@@ -150,28 +156,31 @@ const gameState = reactive({
 const keysDown = reactive({})
 const mouseScreen = reactive({ x: 0, y: 0 })
 const mouseHeld = ref(false)
-const autoFire = ref(false)
-const autoFreeze = ref(false)
-const autoInvincible = ref(false)
-const autoMagicCircle = ref(false)
-const autoDash = ref(false)
+const autoFire = createAutoSkillRef('arrow')
+const autoFreeze = createAutoSkillRef('freeze')
+const autoInvincible = createAutoSkillRef('invincible')
+const autoMagicCircle = createAutoSkillRef('magicCircle')
+const autoDash = createAutoSkillRef('dash')
+const autoUltimateRay = createAutoSkillRef('ultimateRay')
 
-const autoSkills = { arrow: autoFire, freeze: autoFreeze, invincible: autoInvincible, magicCircle: autoMagicCircle, dash: autoDash }
+const autoSkills = { arrow: autoFire, freeze: autoFreeze, invincible: autoInvincible, magicCircle: autoMagicCircle, dash: autoDash, ultimateRay: autoUltimateRay }
 
 const { debugOpen, toggleDebug, debugFlags, gameSpeed, bossDebug } = useDebug()
 
 
-const hpPercent = computed(() => (player.hp / player.maxHp) * 100)
+const hpPercent = ref(100)
+const expPercent = ref(0)
+const nextLevelExp = ref(getExpThreshold(2))
 
-const nextLevelExp = computed(() => getExpThreshold(player.level + 1))
-
-const expPercent = computed(() => {
+const updateHudValues = () => {
+  hpPercent.value = (player.hp / player.maxHp) * 100
   const curThreshold = getExpThreshold(player.level)
   const nextThreshold = getExpThreshold(player.level + 1)
+  nextLevelExp.value = nextThreshold
   const needed = nextThreshold - curThreshold
   const current = player.exp - curThreshold
-  return needed > 0 ? (current / needed) * 100 : 0
-})
+  expPercent.value = needed > 0 ? (current / needed) * 100 : 0
+}
 
 const formatTime = (ms) => {
   const s = Math.floor(ms / 1000)
@@ -179,14 +188,16 @@ const formatTime = (ms) => {
   return `${m}分${s % 60}秒`
 }
 
-const skillSlots = computed(() => {
+const skillSlots = ref([])
+
+const updateSkillSlots = () => {
   const slots = []
   player.skills.forEach(sk => {
     if (sk.isPassive) return
     slots.push(sk)
   })
-  return slots
-})
+  skillSlots.value = slots
+}
 
 
 const buffUtils = useBuffs()
@@ -203,6 +214,8 @@ const buffGetters = {
   getDropRateMultiplier: () => 1,
   getDeathZoneSlow: () => 0,
   getBossSlowMultiplier: () => 1,
+  getLightningSlowRatio: () => 0,
+  getLightningDamageBoost: () => 0,
 }
 
 const bossDamageRef = { fn: null }
@@ -210,7 +223,7 @@ const bossDamageRef = { fn: null }
 const playerUtils = usePlayer(
   player, gameState, keysDown, mouseHeld, mouseScreen,
   gameCanvasRef, enemies, projectiles, effects,
-  mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles,
+  mapUtils, battleLog, levelUpOptions, lootDrops, magicCircles, traps,
   buffGetters,
   (dmg) => { if (bossDamageRef.fn) bossDamageRef.fn(dmg) },
   autoSkills,
@@ -219,10 +232,15 @@ const playerUtils = usePlayer(
 const {
   updatePlayer, fireArrow, activateSkill, onSkillClick,
   damageEnemy, findNearestEnemy,
-  showLevelUpOptions, onLevelUpChoice,
+  showLevelUpOptions, _onLevelUpChoice: onLevelUpChoice,
   createSkillInstance, resetPlayer, recalcPassiveBuffs, gainExp,
   getBoundaryDangerLevel, getBoundarySlow, getBoundaryWarning,
 } = playerUtils
+
+const handleLevelUpChoice = (opt) => {
+  onLevelUpChoice(opt)
+  updateSkillSlots()
+}
 
 const enemyUtils = useEnemy(
   enemies, player, projectiles, gameState, mapUtils, battleLog, effects, gainExp, buffGetters,
@@ -245,8 +263,13 @@ const {
 bossDamageRef.fn = damageBoss
 
 const activeBossPhase = currentPhase
-const bossWarning = computed(() => isBossWarning.value)
-const bossWarningName = computed(() => activeBoss.value?.bossName || '')
+const bossWarning = ref(false)
+const bossWarningName = ref('')
+
+const updateBossWarning = () => {
+  bossWarning.value = isBossWarning.value
+  bossWarningName.value = activeBoss.value?.bossName || ''
+}
 
 const { spawnEnemy, debugSpawnEnemies, handleSpawning, cleanupDead } = useEnemySpawner(
   enemies, gameState, camera, gameCanvasRef, { player, gainExp }, battleLog,
@@ -269,6 +292,7 @@ const {
   tickEvents, checkEventActivation,
   activateCursedStele, cancelCursedStele,
   getDeathZones, tickDeathZones,
+  getLightningSlowRatio, getLightningDamageBoost,
   getEnemyDamageMultiplier, getDropRateMultiplier, isCursedActive,
   debugSpawnEvent,
 } = eventUtils
@@ -276,9 +300,11 @@ const {
 buffGetters.getEnemyDamageMultiplier = getEnemyDamageMultiplier
 buffGetters.getDropRateMultiplier = getDropRateMultiplier
 buffGetters.getBossSlowMultiplier = getBossSlowMultiplier
+buffGetters.getLightningSlowRatio = getLightningSlowRatio
+buffGetters.getLightningDamageBoost = getLightningDamageBoost
 
 const loopUtils = useGameLoop(
-  player, gameState, enemies, projectiles, effects, lootDrops, magicCircles,
+  player, gameState, enemies, projectiles, effects, lootDrops, magicCircles, traps,
   gameCanvasRef, camera,
   { updatePlayer, updateEnemies, handleSpawning, cleanupDead, damageEnemy },
   mapUtils,
@@ -286,12 +312,14 @@ const loopUtils = useGameLoop(
     onRender: () => {
       checkEventActivation()
       gameState.stelePending = !!pendingStele.value
+      updateHudValues()
+      updateBossWarning()
       const canvasSize = getCanvasSizeForEvents()
       const radX = canvasSize.width * BOUNDARY.radiusX
       const radY = canvasSize.height * BOUNDARY.radiusY
       gameCanvasRef.value?.render({
-        player, enemies, projectiles, effects, lootDrops, magicCircles, gameState,
-        voidLines: voidLines.value, slowFields: slowFields.value,
+        player, enemies, projectiles, effects, lootDrops, magicCircles, traps, gameState,
+        voidLines: voidLines.value, slowFields: slowFields.value, activeBoss: activeBoss.value,
         boundary: {
           radX, radY,
           dangerLevel: getBoundaryDangerLevel(),
@@ -444,6 +472,7 @@ const debugUnlockSkill = (id) => {
   const tpl = SKILL_TABLE.find(s => s.id === id)
   if (tpl) {
     player.skills.push(createSkillInstance(tpl, 1))
+    updateSkillSlots()
     if (id === 'bodyStrength') recalcPassiveBuffs()
   }
 }
@@ -452,6 +481,7 @@ const debugRemoveSkill = (id) => {
   const idx = player.skills.findIndex(s => s.id === id)
   if (idx === -1) return
   player.skills.splice(idx, 1)
+  updateSkillSlots()
   if (id === 'bodyStrength') recalcPassiveBuffs()
 }
 
@@ -477,7 +507,10 @@ const debugClearBuff = (idx) => {
 
 onMounted(() => {
   const arrowTemplate = SKILL_TABLE.find(s => s.id === 'arrow')
+  const ultimateRayTemplate = SKILL_TABLE.find(s => s.id === 'ultimateRay')
   player.skills.push(createSkillInstance(arrowTemplate, 1))
+  player.skills.push(createSkillInstance(ultimateRayTemplate, 1))
+  updateSkillSlots()
   recalcPassiveBuffs()
 
   window.addEventListener('keydown', onKeyDown)
