@@ -22,6 +22,8 @@ const filterDirPath = [
   path.join(basePath, "changed"),
   path.join(basePath, "git-push"),
   path.join(basePath, ".trae"),
+  path.join(basePath, ".workbuddy"),
+  path.join(basePath, ".codebuddy"),
 ];
 // 过滤的文件
 const filterFilePath = [

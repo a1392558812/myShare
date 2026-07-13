@@ -7,10 +7,10 @@ export const PLAYER_ATTRS = {
   speed: 3,
   size: ENTITY_SIZE,
   baseAttack: 10,
-  baseHitInvincibleTime: 0,
+  baseHitInvincibleTime: 10,
   healthBonusLogMultiplier: 0.2,
   healthBonusMinRatio: 0.3,
-  hitInvincibleBonusPerLog: 5,
+  hitInvincibleBonusPerLog: 10,
   hitBlockedEffectDuration: 500,
 };
 
@@ -374,16 +374,21 @@ export function getEnemyTypeTable(playerLevel) {
     return mid;
   }
 
-  return [
+  const elite13 = [
     ...base,
     { type: "eliteWind", attrs: ENEMY_ELITE_WIND, weight: 2 },
     { type: "eliteBlood", attrs: ENEMY_ELITE_BLOOD, weight: 2 },
     { type: "elitePriest", attrs: ENEMY_ELITE_PRIEST, weight: 1 },
     { type: "eliteVenom", attrs: ENEMY_ELITE_VENOM, weight: 1 },
-    { type: "eliteRoadhog", attrs: ENEMY_ELITE_ROADHOG, weight: 1 },
     { type: "eliteThrower", attrs: ENEMY_ELITE_THROWER, weight: 1 },
-    { type: "eliteHacker", attrs: ENEMY_ELITE_HACKER, weight: 2 },
   ];
+
+  if (playerLevel <= 16) return elite13;
+  elite13.push({ type: "eliteHacker", attrs: ENEMY_ELITE_HACKER, weight: 2 });
+
+  if (playerLevel <= 18) return elite13;
+  elite13.push({ type: "eliteRoadhog", attrs: ENEMY_ELITE_ROADHOG, weight: 1 });
+  return elite13;
 }
 
 export const ENEMY_TYPE_TABLE = [
