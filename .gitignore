@@ -5,3 +5,11 @@ node_modules
 .workbuddy/*
 .codebuddy
 .codebuddy/*
+
+*/.workbuddy
+*/.workbuddy/*
+*/.codebuddy
+*/.codebuddy/*
+
+*/node_modules
+*/.workbuddy/*

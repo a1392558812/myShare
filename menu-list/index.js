@@ -6,6 +6,15 @@ const currentFilePath = fileURLToPath(import.meta.url);
 const basePath = path.dirname(path.dirname(currentFilePath));
 
 const list = [];
+
+const filterDirName = [
+  "node_modules",
+  ".workbuddy",
+  ".codebuddy",
+  ".trae",
+  ".git",
+];
+
 // 过滤的文件夹
 const filterDirPath = [
   path.join(basePath, ".git"),
@@ -126,7 +135,11 @@ const traverseDirectory = (directoryPath, list = []) => {
       if (stats.isDirectory()) {
         // 递归遍历子文件夹
         const children = [];
-        if (filterDirPath.findIndex((item) => item === filePath) === -1) {
+        const isFilterPath =
+          filterDirPath.findIndex((item) => item === filePath) !== -1;
+        const isFilterDir =
+          filterDirName.findIndex((item) => item === file) !== -1;
+        if (!isFilterPath && !isFilterDir) {
           const index = linkListPath.findIndex(
             (item) => item.path === filePath,
           );

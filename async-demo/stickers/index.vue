@@ -1,7 +1,8 @@
 <template>
   <div class="sticker-page">
     <app-container>
-      <layout-com style="width: 400px;" title="贴纸控制面板" type="panel">
+      <layout-com style="width: 400px;" title="贴纸控制面板" type="panel"
+        :addLayerBtnList="[{ label: '显示源码', callback: () => openDialog({ overlayStyle: { zIndex: 1000 } }) }]">
         <control-item label="输入类型:">
           <select-com :options="tabOptions" v-model="activeTab" />
         </control-item>
@@ -66,6 +67,13 @@ import {
   layoutCom,
   appContainer,
 } from '../components/form-control/index.vue'
+
+import baseConfig from '../static/hooks/extends.js'
+defineOptions({
+  extends: baseConfig({
+    customDialog: import('../components/dialog/index.vue'),
+  }),
+})
 
 const boardRef = ref(null)
 
