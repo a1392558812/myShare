@@ -12,4 +12,5 @@ node_modules
 */.codebuddy/*
 
 */node_modules
-*/.workbuddy/*
+*/.trae
+*/.trae/*
