@@ -447,17 +447,19 @@ export const RELICS = [
     id: 'auraRing',
     name: '范围光环',
     icon: '💫',
-    description: '近战溅射范围与伤害比对数增长，渐近1.5倍上限',
+    description: '近战溅射范围与伤害按对数增长，渐近1.5倍上限（最多5层）',
     rarity: 'rare',
     effect: { type: 'splash', radius: 40, ratio: 0.5 },
+    maxStacks: 5,
   },
   {
     id: 'goldPouch',
     name: '金币袋',
     icon: '💰',
-    description: '每回合额外获得 2 金币',
+    description: '每回合额外获得 2 金币（最多5层）',
     rarity: 'common',
     effect: { type: 'extraGold', value: 2 },
+    maxStacks: 5,
   },
   {
     id: 'berserkerMask',
@@ -472,9 +474,10 @@ export const RELICS = [
     id: 'crystalBall',
     name: '水晶球',
     icon: '🔮',
-    description: '全体兄弟攻击范围对数增长，渐近1.5倍上限',
+    description: '全体兄弟攻击范围按对数增长，渐近1.5倍上限（最多5层）',
     rarity: 'common',
     effect: { type: 'attackRangeMult', value: 0.2 },
+    maxStacks: 5,
   },
   {
     id: 'ironWall',
@@ -552,23 +555,99 @@ export const RELICS = [
     id: 'infernoCore',
     name: '烈焰核心',
     icon: '🔥',
-    description: '攻击附带燃烧，3 秒内造成 50% 攻击力的持续伤害',
+    description: '攻击附带燃烧，3 秒内造成 50% 攻击力的持续伤害（最多5层）',
     rarity: 'epic',
     effect: { type: 'burn', duration: 180, ratio: 0.5 },
+    maxStacks: 5,
   },
 ];
+
+/**
+ * 传说遗物池（二阶段）
+ * 普通遗物（有 maxStacks 的）全部满层后解锁，单独接管三选一；
+ * 同样走「叠层 → 升格 → 毕业」闭环，全部毕业后遗物选择结束。
+ */
+export const LEGENDARY_RELICS = [
+  {
+    id: 'warGodMark',
+    name: '战神之印',
+    icon: '⚔️',
+    description: '全体兄弟 +30% 攻击力',
+    rarity: 'legendary',
+    effect: { type: 'attackMult', value: 0.3 },
+    maxStacks: 3,
+  },
+  {
+    id: 'titanHeart',
+    name: '泰坦之心',
+    icon: '❤️',
+    description: '全体兄弟 +40% 最大生命',
+    rarity: 'legendary',
+    effect: { type: 'maxHpMult', value: 0.4 },
+    maxStacks: 3,
+  },
+  {
+    id: 'windRune',
+    name: '疾风神符',
+    icon: '🌪️',
+    description: '全体兄弟攻击间隔乘性缩短 20%（攻速大幅提升）',
+    rarity: 'legendary',
+    effect: { type: 'attackSpeedMult', value: 0.2 },
+    maxStacks: 3,
+  },
+  {
+    id: 'abyssEye',
+    name: '深渊之眼',
+    icon: '👁️',
+    description: '12% 暴击率，暴击造成 3 倍伤害',
+    rarity: 'legendary',
+    effect: { type: 'crit', chance: 0.12, multiplier: 3 },
+    maxStacks: 3,
+  },
+  {
+    id: 'eternalFurnace',
+    name: '永恒熔炉',
+    icon: '🔥',
+    description: '攻击附带燃烧，3 秒内造成 80% 攻击力的持续伤害',
+    rarity: 'legendary',
+    effect: { type: 'burn', duration: 180, ratio: 0.8 },
+    maxStacks: 3,
+  },
+  {
+    id: 'holyHalo',
+    name: '圣辉光环',
+    icon: '✨',
+    description: '近战溅射范围与伤害按对数增长，渐近1.5倍上限',
+    rarity: 'legendary',
+    effect: { type: 'splash', radius: 60, ratio: 0.7 },
+    maxStacks: 3,
+  },
+];
+
+export const LEGENDARY_RELIC_MAP = LEGENDARY_RELICS.reduce((map, r) => {
+  map[r.id] = r;
+  return map;
+}, {});
 
 /** 按稀有度分组的遗物权重 */
 export const RELIC_RARITY_WEIGHT = {
   common: 5,
   rare: 3,
   epic: 1,
+  legendary: 1,
 };
 
-export const RELIC_MAP = RELICS.reduce((map, r) => {
+/** 普通遗物查找表（不含传说） */
+const RELIC_MAP_RAW = RELICS.reduce((map, r) => {
   map[r.id] = r;
   return map;
 }, {});
+
+/** 全部遗物（普通 + 传说）查找表，传说遗物也走统一结算链路 */
+export const RELIC_MAP = {
+  ...RELIC_MAP_RAW,
+  ...LEGENDARY_RELIC_MAP,
+};
 
 /** 重铸系统常量 */
 export const RELIC_REFORGE_BASE_COST = 2;
@@ -874,6 +953,46 @@ export const REROLL_COST = 1;
 /** 同种兄弟可叠加数量上限 */
 export const MAX_DUPLICATES = 5;
 
+/* ============ 合成升星系统 ============ */
+/** 合成费用（金币） */
+export const MERGE_COST = 2;
+/** 每星属性倍率（全属性乘 1.5^star） */
+export const MERGE_STAR_MULT = 1.5;
+/** 星级上限 */
+export const MAX_STAR = 5;
+
+/* ============ 超限强化 ============ */
+/**
+ * 超限费用 = baseCost × 4 × 2^超限级
+ * 攻击第1档8金 → 第6档256金 → 第11档8192金，指数增长形成后期金币黑洞
+ * @param {string} upgradeId - 升级类型 id
+ * @param {number} transLevel - 超限级数
+ * @returns {number}
+ */
+export const getTranscendCost = (upgradeId, transLevel) => {
+  const def = getUpgradeDef(upgradeId);
+  if (!def) return Infinity;
+  return def.baseCost * 4 * Math.pow(2, transLevel);
+};
+
+/* ============ 遗物升格 ============ */
+/** 最大升格次数 */
+export const RELIC_REFINE_MAX = 3;
+/** 每次升格效果提升比例 */
+export const RELIC_REFINE_STEP = 0.25;
+/**
+ * 升格后效果倍率：1 + 0.25 × 次数（满3次 = 1.75 倍）
+ * @param {number} refine - 升格次数
+ * @returns {number}
+ */
+export const getRelicRefineMult = (refine) => 1 + RELIC_REFINE_STEP * (refine || 0);
+
+/* ============ 无尽精英敌人 ============ */
+/** 精英倍率：生命 */
+export const ELITE_HP_MULT = 2.5;
+/** 精英倍率：攻击 */
+export const ELITE_ATK_MULT = 1.6;
+
 /**
  * 根据当前回合计算兄弟上阵上限
  * @param {number} round - 当前回合索引（0-based）
@@ -953,6 +1072,19 @@ export const getUpgradeCost = (upgradeId, currentLevel) => {
 export const ENDLESS_MAX_SMALL = 200;
 
 /**
+ * 无尽模式敌人血量成长系数（相对攻击的额外加成）
+ * 攻击倍率 = 1 + wave × growthRate；血量倍率 = 1 + wave × growthRate × 本系数。
+ * 血量比攻击更肉，战斗更持久，给后期升星/超限/遗物成长提供压力。
+ */
+export const ENDLESS_HP_GROWTH_MULT = 1.6;
+
+/**
+ * 无尽模式 Boss 额外血量倍率（乘在 hpMult 之上）
+ * Boss 敌人在无尽模式下比小怪更耐打，突出 Boss 战的持久感与压力感。
+ */
+export const ENDLESS_BOSS_HP_MULT = 3.0;
+
+/**
  * 生成无尽模式波次配置
  * @param {number} wave - 无尽波次（0-based，第 0 波 = 通关后第一波）
  * @returns {{ enemies: Array, reward: number, isBoss: boolean, statMult: number, endlessWave: number }}
@@ -975,20 +1107,23 @@ export const generateEndlessWave = (wave) => {
   while (remaining > 0) {
     const type = smallPool[Math.floor(Math.random() * smallPool.length)];
     const chunk = Math.min(remaining, Math.ceil(smallCount / 3) + Math.floor(Math.random() * 5));
-    enemies.push({ id: type, count: chunk });
+    // W15+ 每组小怪 15% 概率整体精英化（属性强化 + 金色光环）
+    const elite = wave >= 15 && Math.random() < 0.15;
+    enemies.push({ id: type, count: chunk, ...(elite ? { elite: true } : {}) });
     remaining -= chunk;
-  }
-
-  // Boss 概率出现：第 0 波 20%，每波 +5%，上限 80%
-  const bossChance = Math.min(0.2 + wave * 0.05, 0.8);
-  if (Math.random() < bossChance) {
-    const bossType = bossPool[Math.floor(Math.random() * bossPool.length)];
-    const bossCount = 1 + Math.floor(wave / 5);
-    enemies.push({ id: bossType, count: Math.min(bossCount, 5) });
   }
 
   // 每 5 波固定 Boss 战
   const isBoss = wave % 5 === 4;
+
+  // Boss 概率出现：第 0 波 20%，每波 +5%，上限 80%
+  // 固定 Boss 波保底必出一个 Boss
+  const bossChance = Math.min(0.2 + wave * 0.05, 0.8);
+  if (isBoss || Math.random() < bossChance) {
+    const bossType = bossPool[Math.floor(Math.random() * bossPool.length)];
+    const bossCount = 1 + Math.floor(wave / 5);
+    enemies.push({ id: bossType, count: Math.min(bossCount, 5), boss: true });
+  }
 
   // 成长系数从 0.08 起步，随波次缓慢提升
   const growthRate = 0.08 + 0.02 * Math.sqrt(wave);
@@ -997,7 +1132,10 @@ export const generateEndlessWave = (wave) => {
     enemies,
     reward: 5 + wave * 2,
     isBoss,
+    // 攻击倍率：整体成长曲线
     statMult: 1 + wave * growthRate,
+    // 血量倍率：比攻击更陡（×ENDLESS_HP_GROWTH_MULT），战斗更持久
+    hpMult: 1 + wave * growthRate * ENDLESS_HP_GROWTH_MULT,
     endlessWave: wave,
   };
 };
@@ -1018,7 +1156,7 @@ export const getTierColor = (tier) => {
  * @returns {string}
  */
 export const getRarityColor = (rarity) => {
-  const colors = { common: '#64748b', rare: '#3b82f6', epic: '#a855f7' };
+  const colors = { common: '#64748b', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b' };
   return colors[rarity] || '#64748b';
 };
 

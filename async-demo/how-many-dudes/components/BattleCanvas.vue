@@ -13,6 +13,7 @@ const props = defineProps({
   bros: Array,
   enemyConfig: Object,
   statMult: { type: Number, default: 1 },
+  hpMult: { type: Number, default: 1 },
   relics: Array,
   synergies: Array,
 });
@@ -54,7 +55,7 @@ onMounted(() => {
     });
     resizeObserver.observe(containerRef.value);
 
-    battle = useBattle(props.bros, props.enemyConfig, props.relics, props.synergies, props.statMult);
+    battle = useBattle(props.bros, props.enemyConfig, props.relics, props.synergies, props.statMult, props.hpMult);
 
     const pixelW = () => Math.round(canvasW * dpr);
     const pixelH = () => Math.round(canvasH * dpr);

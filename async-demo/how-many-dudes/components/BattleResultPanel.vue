@@ -6,18 +6,25 @@
 
       <div v-if="relicCandidates && relicCandidates.length > 0" class="relic-choice">
         <p class="choice-label">选择一件遗物（可叠加）</p>
+        <div v-if="legendaryUnlocked" class="legendary-banner">✨ 传说遗物池已解锁</div>
         <div class="candidates-row">
           <div
             v-for="relic in relicCandidates"
             :key="relic.id"
             class="candidate-card"
-            :style="{ borderColor: getRarityColor(relic.rarity) }"
+            :class="{ 'candidate-refine': isRefineCandidate(relic.id), 'candidate-legendary': relic.rarity === 'legendary' }"
+            :style="{ borderColor: isRefineCandidate(relic.id) ? '#fde047' : getRarityColor(relic.rarity) }"
             @click="$emit('pick', relic.id)"
           >
             <div class="candidate-header">
               <span class="relic-icon">{{ relic.icon }}</span>
               <span
-                v-if="getOwnedCount(relic.id) > 0"
+                v-if="isRefineCandidate(relic.id)"
+                class="refine-badge"
+                title="已满层，本次选择将升格该遗物"
+              >升格 ✦{{ getOwnedRefine(relic.id) }}</span>
+              <span
+                v-else-if="getOwnedCount(relic.id) > 0"
                 class="owned-badge"
               >×{{ getOwnedCount(relic.id) }}</span>
               <span v-else class="new-badge">新</span>
@@ -25,6 +32,12 @@
             <span class="relic-name">{{ relic.name }}</span>
             <span class="relic-rarity" :style="{ color: getRarityColor(relic.rarity) }">{{ rarityText(relic.rarity) }}</span>
             <p class="relic-desc">{{ relic.description }}</p>
+            <div v-if="isRefineCandidate(relic.id)" class="relic-preview">
+              <span class="preview-current">效果 ×{{ (1 + 0.25 * getOwnedRefine(relic.id)).toFixed(2) }}</span>
+              <span class="preview-arrow">→</span>
+              <span class="preview-next">×{{ (1 + 0.25 * (getOwnedRefine(relic.id) + 1)).toFixed(2) }}</span>
+              <span class="preview-cap">上限 ×1.75</span>
+            </div>
             <div v-if="getRelicPreview(relic.id)" class="relic-preview">
               <span v-if="getRelicPreview(relic.id).current > 0" class="preview-current">
                 当前 {{ getRelicPreview(relic.id).currentMult.toFixed(3) }}x
@@ -35,7 +48,7 @@
               </span>
               <span class="preview-cap">上限 1.5x</span>
             </div>
-            <div v-if="relic.maxStacks" class="stack-info">
+            <div v-if="relic.maxStacks && !isRefineCandidate(relic.id)" class="stack-info">
               {{ getOwnedCount(relic.id) }}/{{ relic.maxStacks }}
             </div>
           </div>
@@ -71,12 +84,13 @@ const props = defineProps({
   gold: Number,
   reforgeCost: Number,
   ownedRelics: Array,
+  legendaryUnlocked: Boolean,
 });
 
 defineEmits(['pick', 'skip', 'reforge']);
 
 const rarityText = (rarity) => {
-  const map = { common: '普通', rare: '稀有', epic: '史诗' };
+  const map = { common: '普通', rare: '稀有', epic: '史诗', legendary: '传说' };
   return map[rarity] || '';
 };
 
@@ -86,7 +100,21 @@ const getOwnedCount = (relicId) => {
   return found ? found.count : 0;
 };
 
-const LOG_RELIC_IDS = ['crystalBall', 'auraRing'];
+/** 已升格次数 */
+const getOwnedRefine = (relicId) => {
+  if (!props.ownedRelics) return 0;
+  const found = props.ownedRelics.find((r) => r.id === relicId);
+  return found ? (found.refine || 0) : 0;
+};
+
+/** 是否为升格候选（该遗物已满层） */
+const isRefineCandidate = (relicId) => {
+  const relic = props.relicCandidates.find((r) => r.id === relicId);
+  if (!relic || !relic.maxStacks) return false;
+  return getOwnedCount(relicId) >= relic.maxStacks;
+};
+
+const LOG_RELIC_IDS = ['crystalBall', 'auraRing', 'holyHalo'];
 
 const getRelicPreview = (relicId) => {
   if (!LOG_RELIC_IDS.includes(relicId)) return null;
@@ -163,6 +191,50 @@ const getRelicPreview = (relicId) => {
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
+
+  &.candidate-refine {
+    background: #2a1f08;
+
+    &:hover {
+      background: #3a2a08;
+      box-shadow: 0 4px 12px rgba(253, 224, 71, 0.25);
+    }
+  }
+
+  &.candidate-legendary {
+    background: linear-gradient(180deg, #2a1d05 0%, #0f0f1a 62%);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.22), inset 0 0 20px rgba(245, 158, 11, 0.07);
+
+    &:hover {
+      background: linear-gradient(180deg, #3a2a08 0%, #1a1a2e 62%);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+    }
+  }
+}
+
+.legendary-banner {
+  display: inline-block;
+  margin: 0 auto 14px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fbbf24;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+}
+
+.refine-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  background: #fde047;
+  color: #713f12;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
 }
 
 .candidate-header {

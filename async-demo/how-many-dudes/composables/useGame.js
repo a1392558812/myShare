@@ -5,8 +5,16 @@ import {
   SHOP_CHOICES,
   REROLL_COST,
   MAX_DUPLICATES,
+  MERGE_COST,
+  MERGE_STAR_MULT,
+  MAX_STAR,
+  getTranscendCost,
+  RELIC_REFINE_MAX,
+  getRelicRefineMult,
   BRO_TABLE,
   RELICS,
+  LEGENDARY_RELICS,
+  LEGENDARY_RELIC_MAP,
   RELIC_MAP,
   RELIC_RARITY_WEIGHT,
   RELIC_REFORGE_BASE_COST,
@@ -20,6 +28,7 @@ import {
   getMaxBros,
   getUpgradeDef,
   getUpgradeCost,
+  UPGRADE_TYPES,
   generateEndlessWave,
   logMult15,
 } from '../constants.js';
@@ -74,6 +83,8 @@ const createBroInstance = (broId, instanceId) => {
     chargeDamage: def.chargeDamage || 0,
     chargeSplashRadius: def.chargeSplashRadius || 0,
     size: def.size || 7,
+    star: 0,
+    transLevels: { attack: 0, maxHp: 0, attackSpeed: 0, moveSpeed: 0 },
     upgradeLevels: { attack: 0, maxHp: 0, attackSpeed: 0, moveSpeed: 0 },
     alive: true,
     revived: false,
@@ -101,18 +112,30 @@ const generateShopChoices = () => {
 };
 
 /**
- * 生成遗物候选列表（3 个，排除已达上限的）
- * @param {Array<Object>} ownedRelics - 已拥有遗物 [{ id, count }]
+ * 生成遗物候选列表（3 个）
+ * 满层遗物在升格次数未用完时仍会出现（选中 = 升格，全部效果 +25%）
+ * 二阶段：已获取的普通遗物全部满层后，传说遗物池接管三选一（未获取的普通遗物视为弃权）
+ * @param {Array<Object>} ownedRelics - 已拥有遗物 [{ id, count, refine }]
  * @returns {Array} 遗物定义数组（最多 RELIC_CANDIDATE_COUNT 个）
  */
 const generateRelicCandidates = (ownedRelics) => {
   const ownedMap = {};
-  ownedRelics.forEach((r) => { ownedMap[r.id] = r.count; });
+  ownedRelics.forEach((r) => { ownedMap[r.id] = { count: r.count, refine: r.refine || 0 }; });
 
-  const available = RELICS.filter((r) => {
+  // 二阶段切换：已获取的普通遗物（有 maxStacks 且非传说）全部满层 → 传说池接管
+  const ownedNormal = ownedRelics.filter((r) => {
+    const def = RELIC_MAP[r.id];
+    return def && def.maxStacks && !LEGENDARY_RELIC_MAP[r.id];
+  });
+  const legendaryUnlocked = ownedNormal.length > 0 && ownedNormal.every((r) => r.count >= RELIC_MAP[r.id].maxStacks);
+  const sourcePool = legendaryUnlocked ? LEGENDARY_RELICS : RELICS;
+
+  const available = sourcePool.filter((r) => {
     if (!r.maxStacks) return true;
-    const owned = ownedMap[r.id] || 0;
-    return owned < r.maxStacks;
+    const owned = ownedMap[r.id];
+    if (!owned || owned.count < r.maxStacks) return true;
+    // 已满层：升格次数未用完仍可作为升格候选
+    return owned.refine < RELIC_REFINE_MAX;
   });
 
   if (available.length === 0) return [];
@@ -156,8 +179,10 @@ const calcActiveSynergies = (bros) => {
  */
 const applyRelicEffects = (bro, relics) => {
   const def = getBroDef(bro.defId);
-  let maxHp = def.maxHp;
-  let attack = def.attack;
+  // 升星：基础属性 × 1.5^star（在所有强化之前）
+  const starMult = Math.pow(MERGE_STAR_MULT, bro.star || 0);
+  let maxHp = def.maxHp * starMult;
+  let attack = def.attack * starMult;
   let moveSpeed = def.moveSpeed;
   let attackSpeed = def.attackSpeed;
   let attackRange = def.attackRange;
@@ -177,26 +202,32 @@ const applyRelicEffects = (bro, relics) => {
     if (!relicDef) return;
     const e = relicDef.effect;
     const stacks = relic.count;
+    // 升格倍率：满层遗物可升格，全部效果按比例增强
+    const rm = getRelicRefineMult(relic.refine);
     switch (e.type) {
       case 'attackMult':
-        attack *= 1 + e.value * stacks;
+        attack *= 1 + e.value * stacks * rm;
         break;
       case 'flatAttack':
-        attack += e.value * stacks;
+        attack += e.value * stacks * rm;
         break;
       case 'maxHpMult':
-        maxHp *= 1 + e.value * stacks;
+        maxHp *= 1 + e.value * stacks * rm;
         break;
       case 'moveSpeedMult':
-        moveSpeed *= 1 + e.value * stacks;
+        moveSpeed *= 1 + e.value * stacks * rm;
         break;
       case 'attackRangeMult':
-        attackRange *= logMult15(stacks);
+        attackRange *= logMult15(stacks) * rm;
         break;
       case 'attackSpeedBoost':
         if (e.targetTypes && e.targetTypes.includes(bro.attackType)) {
-          attackSpeed *= 1 - e.ratio * stacks;
+          attackSpeed *= 1 - e.ratio * stacks * rm;
         }
+        break;
+      case 'attackSpeedMult':
+        // 攻击间隔乘性缩短：1/(1+v×n×rm)，渐近 0 永不归零（对应攻速翻倍提升）
+        attackSpeed *= 1 / (1 + e.value * stacks * rm);
         break;
     }
   });
@@ -206,6 +237,11 @@ const applyRelicEffects = (bro, relics) => {
   bro.moveSpeed = Math.round(moveSpeed * 100) / 100;
   bro.attackSpeed = Math.max(100, Math.round(attackSpeed));
   bro.attackRange = Math.round(attackRange);
+  // 升星同步强化衍生技能数值与体型
+  bro.healAmount = Math.round((def.healAmount || 0) * starMult);
+  bro.explodeDamage = Math.round((def.explodeDamage || 0) * starMult);
+  bro.chargeDamage = Math.round((def.chargeDamage || 0) * starMult);
+  bro.size = (def.size || 7) + Math.min(3, bro.star || 0);
   if (bro.hp > bro.maxHp) bro.hp = bro.maxHp;
 };
 
@@ -253,12 +289,22 @@ export const useGame = () => {
   const endlessWave = ref(0);
   const endlessEnemyConfig = ref(null);
   const endlessStatMult = ref(1);
+  const endlessHpMult = ref(1);
 
   let instanceCounter = 0;
 
   const aliveBros = computed(() => bros.filter((b) => b.alive));
 
   const activeSynergies = computed(() => calcActiveSynergies(bros));
+
+  /** 传说遗物池是否已解锁：已获取的普通遗物全部满层 */
+  const isLegendaryUnlocked = computed(() => {
+    const ownedNormal = relics.filter((r) => {
+      const def = RELIC_MAP[r.id];
+      return def && def.maxStacks && !LEGENDARY_RELIC_MAP[r.id];
+    });
+    return ownedNormal.length > 0 && ownedNormal.every((r) => r.count >= RELIC_MAP[r.id].maxStacks);
+  });
 
   const currentRoundData = computed(() => {
     if (isEndless.value) return endlessEnemyConfig.value;
@@ -282,6 +328,12 @@ export const useGame = () => {
     return 1;
   });
 
+  /** 当前敌人血量倍率（无尽模式比攻击更肉，战斗更持久；普通关卡 = 1） */
+  const currentHpMult = computed(() => {
+    if (isEndless.value) return endlessHpMult.value;
+    return 1;
+  });
+
 
   const startNewGame = () => {
     phase.value = PHASE.SHOP;
@@ -298,6 +350,7 @@ export const useGame = () => {
     endlessWave.value = 0;
     endlessEnemyConfig.value = null;
     endlessStatMult.value = 1;
+    endlessHpMult.value = 1;
   };
 
   const buyBro = (broDef) => {
@@ -318,7 +371,7 @@ export const useGame = () => {
   };
 
   /**
-   * 升级兄弟
+   * 升级兄弟：普通档线性费用；满级后自动进入"超限档"，费用指数增长，无上限
    * @param {number} instanceId - 兄弟实例 id
    * @param {string} upgradeId - 升级类型 id: attack/maxHp/attackSpeed/moveSpeed
    * @returns {boolean} 是否升级成功
@@ -331,13 +384,71 @@ export const useGame = () => {
     if (!def) return false;
 
     const currentLevel = bro.upgradeLevels[upgradeId] || 0;
-    if (currentLevel >= def.maxLevel) return false;
+    const trans = bro.transLevels || (bro.transLevels = { attack: 0, maxHp: 0, attackSpeed: 0, moveSpeed: 0 });
 
-    const cost = getUpgradeCost(upgradeId, currentLevel);
+    let cost;
+    if (currentLevel < def.maxLevel) {
+      cost = getUpgradeCost(upgradeId, currentLevel);
+    } else {
+      // 超限档：费用 baseCost × 4 × 2^超限级
+      cost = getTranscendCost(upgradeId, trans[upgradeId] || 0);
+    }
     if (gold.value < cost) return false;
 
     gold.value -= cost;
+    if (currentLevel >= def.maxLevel) {
+      trans[upgradeId] = (trans[upgradeId] || 0) + 1;
+    }
     bro.upgradeLevels[upgradeId] = currentLevel + 1;
+    recalcAllBros();
+    bro.hp = bro.maxHp;
+    return true;
+  };
+
+  /**
+   * 判断兄弟是否四项强化全部满级（攻击/生命/攻速/移速 ≥ maxLevel，含超限）
+   * @param {Object} bro - 兄弟实例
+   * @returns {boolean}
+   */
+  const isFullyMaxed = (bro) =>
+    UPGRADE_TYPES.every((u) => (bro.upgradeLevels?.[u.id] || 0) >= u.maxLevel);
+
+  /**
+   * 合成升星：将两个同种同星兄弟合并为高一星
+   * 前提：双方四项强化都必须满级；继承两者各强化项的最高等级；费用 2 金；星级上限 MAX_STAR
+   * @param {number} instanceId - 主动保留的兄弟实例 id
+   * @returns {boolean} 是否合成成功
+   */
+  const mergeBros = (instanceId) => {
+    const bro = bros.find((b) => b.instanceId === instanceId);
+    if (!bro || (bro.star || 0) >= MAX_STAR) return false;
+    if (gold.value < MERGE_COST) return false;
+    // 四项强化必须全部满级才有资格参与合成
+    if (!isFullyMaxed(bro)) return false;
+
+    // 找同种同星且同样四项满级的另一只（优先吃掉强化等级最低的）
+    const others = bros.filter(
+      (b) => b.instanceId !== bro.instanceId && b.defId === bro.defId && (b.star || 0) === (bro.star || 0) && isFullyMaxed(b)
+    );
+    if (others.length === 0) return false;
+    const sumLevels = (b) => {
+      const lv = b.upgradeLevels || {};
+      return (lv.attack || 0) + (lv.maxHp || 0) + (lv.attackSpeed || 0) + (lv.moveSpeed || 0);
+    };
+    others.sort((a, b) => sumLevels(a) - sumLevels(b));
+    const other = others[0];
+
+    gold.value -= MERGE_COST;
+
+    // 继承两者每项强化等级与超限等级的最大值
+    const keys = ['attack', 'maxHp', 'attackSpeed', 'moveSpeed'];
+    keys.forEach((k) => {
+      bro.upgradeLevels[k] = Math.max(bro.upgradeLevels[k] || 0, other.upgradeLevels?.[k] || 0);
+      bro.transLevels[k] = Math.max(bro.transLevels?.[k] || 0, other.transLevels?.[k] || 0);
+    });
+
+    bro.star = (bro.star || 0) + 1;
+    bros.splice(bros.indexOf(other), 1);
     recalcAllBros();
     bro.hp = bro.maxHp;
     return true;
@@ -366,12 +477,19 @@ export const useGame = () => {
     recalcAllBros();
   };
 
+  /**
+   * 选取遗物：未满层 = 叠加层数；已满层且升格未用完 = 升格（全部效果 +25%）
+   */
   const pickRelic = (relicId) => {
+    const def = RELIC_MAP[relicId];
     const existing = relics.find((r) => r.id === relicId);
-    if (existing) {
+    if (existing && def?.maxStacks && existing.count >= def.maxStacks) {
+      // 升格
+      existing.refine = (existing.refine || 0) + 1;
+    } else if (existing) {
       existing.count++;
     } else {
-      relics.push({ id: relicId, count: 1 });
+      relics.push({ id: relicId, count: 1, refine: 0 });
     }
     relicCandidates.value = [];
     recalcAllBros();
@@ -395,7 +513,7 @@ export const useGame = () => {
   const proceedToNextRound = () => {
     const extraGold = relics
       .filter((r) => RELIC_MAP[r.id]?.effect.type === 'extraGold')
-      .reduce((s, r) => s + RELIC_MAP[r.id].effect.value * r.count, 0);
+      .reduce((s, r) => s + Math.round(RELIC_MAP[r.id].effect.value * r.count * getRelicRefineMult(r.refine)), 0);
     gold.value += extraGold;
 
     if (isEndless.value) {
@@ -403,6 +521,7 @@ export const useGame = () => {
       const wave = generateEndlessWave(endlessWave.value);
       endlessEnemyConfig.value = wave;
       endlessStatMult.value = wave.statMult;
+      endlessHpMult.value = wave.hpMult;
       shopChoices.value = generateShopChoices();
       phase.value = PHASE.SHOP;
       return;
@@ -424,6 +543,7 @@ export const useGame = () => {
     const wave = generateEndlessWave(0);
     endlessEnemyConfig.value = wave;
     endlessStatMult.value = wave.statMult;
+    endlessHpMult.value = wave.hpMult;
     shopChoices.value = generateShopChoices();
     bros.forEach((bro) => {
       bro.alive = true;
@@ -495,6 +615,7 @@ export const useGame = () => {
     endlessWave.value = 0;
     endlessEnemyConfig.value = null;
     endlessStatMult.value = 1;
+    endlessHpMult.value = 1;
   };
 
   return {
@@ -510,6 +631,7 @@ export const useGame = () => {
     totalRounds,
     isEndless,
     endlessWave,
+    isLegendaryUnlocked,
     aliveBros,
     activeSynergies,
     currentRoundData,
@@ -517,9 +639,11 @@ export const useGame = () => {
     currentMaxBros,
     currentEnemyConfig,
     currentStatMult,
+    currentHpMult,
     startNewGame,
     buyBro,
     upgradeBro,
+    mergeBros,
     rerollShop,
     sellBro,
     pickRelic,

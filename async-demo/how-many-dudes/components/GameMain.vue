@@ -18,6 +18,7 @@
         @sell="onSell"
         @fight="onFight"
         @upgrade="onUpgrade"
+        @merge="onMerge"
       />
     </div>
 
@@ -27,6 +28,7 @@
         :bros="bros"
         :enemyConfig="currentEnemyConfig"
         :statMult="currentStatMult"
+        :hpMult="currentHpMult"
         :relics="relics"
         :synergies="activeSynergies"
         @end="onBattleEnd"
@@ -42,6 +44,7 @@
       :gold="gold"
       :reforgeCost="reforgeCost"
       :ownedRelics="relics"
+      :legendaryUnlocked="isLegendaryUnlocked"
       @pick="onPickRelic"
       @skip="onSkipRelic"
       @reforge="onReforge"
@@ -76,9 +79,10 @@ const {
   phase, round, gold, bros, relics, shopChoices,
   relicCandidates, reforgeCost, totalRounds, aliveBros, activeSynergies,
   currentRoundData, currentMaxBros,
-  currentEnemyConfig, currentStatMult,
+  currentEnemyConfig, currentStatMult, currentHpMult,
   isEndless, endlessWave,
-  startNewGame, buyBro, upgradeBro, rerollShop,
+  isLegendaryUnlocked,
+  startNewGame, buyBro, upgradeBro, mergeBros, rerollShop,
   sellBro, pickRelic, skipRelic, reforgeRelics, startBattle, startEndless,
   endBattle,
 } = useGame();
@@ -89,6 +93,7 @@ startNewGame();
 
 const onBuy = (broDef) => buyBro(broDef);
 const onUpgrade = (instanceId, upgradeId) => upgradeBro(instanceId, upgradeId);
+const onMerge = (instanceId) => mergeBros(instanceId);
 const onReroll = () => rerollShop();
 const onSell = (instanceId) => sellBro(instanceId);
 const onFight = () => {

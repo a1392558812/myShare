@@ -15,9 +15,10 @@
     <div class="enemy-preview">
       <span class="section-label">本回合敌人</span>
       <div class="enemy-list">
-        <span v-for="(enemy, i) in previewEnemies" :key="i" class="enemy-chip">
-          <span class="enemy-icon">{{ enemy.icon }}</span>
-          <span class="enemy-name">{{ enemy.name }}</span>
+        <span v-for="(enemy, i) in previewEnemies" :key="i" class="enemy-chip"
+          :class="{ 'enemy-elite': enemy.elite, 'enemy-boss': enemy.boss }">
+          <span class="enemy-icon">{{ enemy.boss ? '♛' : enemy.elite ? '✨' : '' }}{{ enemy.icon }}</span>
+          <span class="enemy-name">{{ enemy.elite ? '精英' : enemy.boss ? 'Boss' : '' }}{{ enemy.name }}</span>
           <span class="enemy-count">x{{ enemy.count }}</span>
         </span>
       </div>
@@ -62,7 +63,7 @@
     <div class="roster-section">
       <div class="roster-header">
         <span class="section-label">当前阵容 ({{ bros.length }}/{{ currentMaxBros }})</span>
-        <span class="hint-text">点击兄弟升级</span>
+        <span class="hint-text">点击兄弟升级；两个同种同星可合成升星</span>
       </div>
       <div class="roster-list">
         <div v-for="group in groupedBros" :key="group.defId" class="roster-group"
@@ -70,15 +71,20 @@
           <div class="roster-group-header" :style="{ background: getFamilyColor(group.family) + '22' }">
             <span class="roster-icon">{{ group.icon }}</span>
             <span class="roster-name">{{ group.name }}</span>
+            <span v-if="group.maxStar > 0" class="group-star">★{{ group.maxStar }}</span>
             <span class="roster-count">×{{ group.items.length }}</span>
           </div>
           <div class="roster-group-items">
             <div v-for="bro in group.items" :key="bro.instanceId" class="roster-item"
-              :class="{ 'roster-selected': selectedBroId === bro.instanceId }"
+              :class="{ 'roster-selected': selectedBroId === bro.instanceId, 'roster-mergeable': canMerge(bro) }"
               @click="toggleSelectBro(bro.instanceId)">
+              <span v-if="bro.star > 0" class="star-badge">★{{ bro.star }}</span>
+              <span v-if="hasSameStarPartner(bro) && !isFullyMaxed(bro)" class="merge-lock" title="四项强化（攻击/生命/攻速/移速）全部满级后才能参与合成">🔒满级可合</span>
               <span class="roster-hp">❤️{{ bro.maxHp }}</span>
               <span class="roster-atk">⚔️{{ bro.attack }}</span>
               <span v-if="totalUpgradeLevels(bro) > 0" class="upgrade-badge">+{{ totalUpgradeLevels(bro) }}</span>
+              <button v-if="canMerge(bro)" class="merge-btn" @click.stop="$emit('merge', bro.instanceId)"
+                :title="`与另一只四项满级的★${bro.star}合并为★${bro.star + 1}（${MERGE_COST}金）`">合 {{ MERGE_COST }}💰</button>
               <button class="sell-btn" @click.stop="$emit('sell', bro.instanceId)">卖</button>
             </div>
           </div>
@@ -88,17 +94,18 @@
 
       <div v-if="selectedBro" class="upgrade-panel">
         <div class="upgrade-panel-header">
-          <span class="upgrade-bro-name">{{ selectedBro.icon }} {{ selectedBro.name }}</span>
+          <span class="upgrade-bro-name">{{ selectedBro.icon }} {{ selectedBro.name }}<span v-if="selectedBro.star > 0" class="upgrade-star">★{{ selectedBro.star }}</span></span>
           <span class="upgrade-bro-stats">❤️{{ selectedBro.maxHp }} ⚔️{{ selectedBro.attack }} ⚡{{ (1000 / selectedBro.attackSpeed).toFixed(1) }}/s 🏃{{ selectedBro.moveSpeed.toFixed(1) }}</span>
         </div>
         <div class="upgrade-options">
           <button v-for="upg in upgradeTypes" :key="upg.id" class="upgrade-btn"
-            :disabled="isUpgradeMaxed(selectedBro, upg.id) || gold < getUpgradeCost(upg.id, selectedBro.upgradeLevels[upg.id])"
+            :class="{ 'transcend-btn': isTranscend(selectedBro, upg.id) }"
+            :disabled="gold < getUpgCost(selectedBro, upg.id)"
             @click.stop="$emit('upgrade', selectedBro.instanceId, upg.id)">
             <span class="upg-icon">{{ upg.icon }}</span>
             <span class="upg-name">{{ upg.name }}</span>
-            <span class="upg-level">Lv.{{ selectedBro.upgradeLevels[upg.id] }}/{{ upg.maxLevel }}</span>
-            <span class="upg-cost">{{ isUpgradeMaxed(selectedBro, upg.id) ? 'MAX' : getUpgradeCost(upg.id, selectedBro.upgradeLevels[upg.id]) + '💰' }}</span>
+            <span class="upg-level">{{ getUpgLevelText(selectedBro, upg) }}</span>
+            <span class="upg-cost">{{ getUpgCost(selectedBro, upg.id) }}💰</span>
           </button>
         </div>
       </div>
@@ -118,8 +125,9 @@
         <span class="section-label">已获遗物</span>
         <div class="relic-list">
           <span v-for="relic in relicDisplayList" :key="relic.id" class="relic-chip" :title="relic.description"
+            :class="{ 'relic-refined': relic.refine > 0, 'relic-legendary': relic.rarity === 'legendary' }"
             :style="{ borderColor: getRarityColor(relic.rarity) }">
-            {{ relic.icon }} {{ relic.name }}<span v-if="relic.count > 1" class="relic-count">×{{ relic.count }}</span>
+            {{ relic.icon }} {{ relic.name }}<span v-if="relic.refine > 0" class="refine-mark">✦{{ relic.refine }}</span><span v-if="relic.count > 1" class="relic-count">×{{ relic.count }}</span>
           </span>
           <span v-if="relics.length === 0" class="empty-text">无</span>
         </div>
@@ -136,7 +144,10 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { getEnemyDef, getTierColor, getRarityColor, UPGRADE_TYPES, getUpgradeCost, getUpgradeDef, RELIC_MAP, MAX_DUPLICATES } from '../constants.js';
+import {
+  getEnemyDef, getTierColor, getRarityColor, UPGRADE_TYPES, getUpgradeCost, getUpgradeDef,
+  getTranscendCost, RELIC_MAP, MAX_DUPLICATES, MERGE_COST, MAX_STAR,
+} from '../constants.js';
 
 const props = defineProps({
   round: Number,
@@ -152,16 +163,16 @@ const props = defineProps({
   endlessWave: Number,
 });
 
-const emit = defineEmits(['buy', 'reroll', 'sell', 'fight', 'upgrade']);
+const emit = defineEmits(['buy', 'reroll', 'sell', 'fight', 'upgrade', 'merge']);
 
 const selectedBroId = ref(null);
 
-/** 遗物显示列表（从 { id, count } 映射为完整显示对象） */
+/** 遗物显示列表（从 { id, count, refine } 映射为完整显示对象） */
 const relicDisplayList = computed(() => {
   return props.relics.map((r) => {
     const def = RELIC_MAP[r.id];
     if (!def) return null;
-    return { ...def, count: r.count };
+    return { ...def, count: r.count, refine: r.refine || 0 };
   }).filter(Boolean);
 });
 
@@ -181,10 +192,13 @@ const groupedBros = computed(() => {
         name: bro.name,
         tier: bro.tier,
         family: bro.family,
+        maxStar: 0,
         items: [],
       });
     }
-    map.get(bro.defId).items.push(bro);
+    const group = map.get(bro.defId);
+    group.items.push(bro);
+    group.maxStar = Math.max(group.maxStar, bro.star || 0);
   }
   return Array.from(map.values());
 });
@@ -196,8 +210,39 @@ const previewEnemies = computed(() => {
   return props.currentRoundData.enemies.map((e) => ({
     ...getEnemyDef(e.id),
     count: e.count,
+    elite: !!e.elite,
+    boss: !!e.boss,
   }));
 });
+
+/**
+ * 判断兄弟四项强化是否全部满级（攻击/生命/攻速/移速 ≥ maxLevel，含超限）
+ * @param {Object} bro
+ * @returns {boolean}
+ */
+const isFullyMaxed = (bro) =>
+  UPGRADE_TYPES.every((u) => (bro.upgradeLevels?.[u.id] || 0) >= u.maxLevel);
+
+/** 判断是否存在同种同星的其他兄弟（不看强化，用于锁定提示） */
+const hasSameStarPartner = (bro) =>
+  props.bros.some((b) => b.instanceId !== bro.instanceId && b.defId === bro.defId && (b.star || 0) === (bro.star || 0));
+
+/** 判断是否存在同种同星且四项满级的可合成对象 */
+const hasMergePartner = (bro) =>
+  props.bros.some((b) => b.instanceId !== bro.instanceId && b.defId === bro.defId && (b.star || 0) === (bro.star || 0) && isFullyMaxed(b));
+
+/**
+ * 判断该兄弟是否可合成升星
+ * 前提：自身四项强化满级 + 存在同种同星且四项满级的另一只 + 金币足够 + 未到星级上限
+ * @param {Object} bro
+ * @returns {boolean}
+ */
+const canMerge = (bro) => {
+  if ((bro.star || 0) >= MAX_STAR) return false;
+  if (props.gold < MERGE_COST) return false;
+  if (!isFullyMaxed(bro)) return false;
+  return hasMergePartner(bro);
+};
 
 const getFamilyColor = (family) => {
   const colors = {
@@ -247,10 +292,29 @@ const totalUpgradeLevels = (bro) => {
   return (lv.attack || 0) + (lv.maxHp || 0) + (lv.attackSpeed || 0) + (lv.moveSpeed || 0);
 };
 
-const isUpgradeMaxed = (bro, upgradeId) => {
+/** 是否已进入超限档（普通等级已满） */
+const isTranscend = (bro, upgradeId) => {
   const def = getUpgradeDef(upgradeId);
-  if (!def) return true;
+  if (!def) return false;
   return (bro.upgradeLevels[upgradeId] || 0) >= def.maxLevel;
+};
+
+/** 升级按钮费用：普通档线性，超限档指数 */
+const getUpgCost = (bro, upgradeId) => {
+  const lv = bro.upgradeLevels[upgradeId] || 0;
+  if (isTranscend(bro, upgradeId)) {
+    return getTranscendCost(upgradeId, bro.transLevels?.[upgradeId] || 0);
+  }
+  return getUpgradeCost(upgradeId, lv);
+};
+
+/** 升级按钮等级文案：普通档 Lv.X/max，超限档 Lv.X · 超限n */
+const getUpgLevelText = (bro, upg) => {
+  const lv = bro.upgradeLevels[upg.id] || 0;
+  if (isTranscend(bro, upg.id)) {
+    return `Lv.${lv} · 超限${bro.transLevels?.[upg.id] || 0}`;
+  }
+  return `Lv.${lv}/${upg.maxLevel}`;
 };
 </script>
 
@@ -345,6 +409,18 @@ const isUpgradeMaxed = (bro, upgradeId) => {
   background: #1e293b;
   border: 1px solid #334155;
   font-size: 12px;
+
+  &.enemy-elite {
+    background: #3a2a08;
+    border-color: #fde047;
+    color: #fde047;
+  }
+
+  &.enemy-boss {
+    background: #3a0a0a;
+    border-color: #ef4444;
+    color: #fca5a5;
+  }
 }
 
 .enemy-icon {
@@ -576,6 +652,55 @@ const isUpgradeMaxed = (bro, upgradeId) => {
   color: #000;
 }
 
+.star-badge {
+  display: inline-block;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: #fde047;
+  color: #713f12;
+}
+
+.group-star {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fde047;
+}
+
+.upgrade-star {
+  margin-left: 4px;
+  color: #fde047;
+  font-size: 12px;
+}
+
+.roster-mergeable {
+  border-color: #fde047;
+  box-shadow: 0 0 3px rgba(253, 224, 71, 0.35);
+}
+
+.merge-lock {
+  margin-left: 2px;
+  font-size: 10px;
+  color: #94a3b8;
+  cursor: help;
+}
+
+.merge-btn {
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid #fde047;
+  border-radius: 4px;
+  background: rgba(253, 224, 71, 0.12);
+  color: #fde047;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(253, 224, 71, 0.3);
+  }
+}
+
 .sell-btn {
   padding: 1px 6px;
   font-size: 10px;
@@ -652,6 +777,21 @@ const isUpgradeMaxed = (bro, upgradeId) => {
     opacity: 0.35;
     cursor: not-allowed;
   }
+
+  &.transcend-btn {
+    border-color: #b45309;
+    background: #2a1f08;
+
+    .upg-level {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: #fde047;
+      background: #3a2a08;
+    }
+  }
 }
 
 .upg-icon {
@@ -706,6 +846,22 @@ const isUpgradeMaxed = (bro, upgradeId) => {
   border-radius: 10px;
   background: #1e293b;
   font-size: 11px;
+
+  &.relic-refined {
+    background: #3a2a08;
+  }
+
+  &.relic-legendary {
+    background: #2a1d05;
+    color: #fde68a;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.35);
+  }
+}
+
+.refine-mark {
+  color: #fde047;
+  font-weight: 700;
+  margin-left: 2px;
 }
 
 .relic-count {

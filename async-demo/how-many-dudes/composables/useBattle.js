@@ -8,17 +8,28 @@ import {
   getEnemyDef,
   RELIC_MAP,
   logMult15,
+  getRelicRefineMult,
+  ELITE_HP_MULT,
+  ELITE_ATK_MULT,
+  ENDLESS_BOSS_HP_MULT,
 } from '../constants.js';
 
 /**
  * 乘算递减：N 层同效果叠加时，每层作用于"剩余部分"而非基数。
  * 1 层 = base；N 层 → 1-(1-base)^N，永远 < 100%，不会溢出。
  * 用于概率/减伤/反弹/吸血等百分比效果，防后期数值爆炸。
- * @param {number} base - 单层效果值（0~1）
+ * 注意：base 会先乘升格倍率（最高 ×1.75），若某遗物单层值 ≥ 0.58，
+ * base 可能 ≥ 1，此时 (1-base) 为负数，奇数次幂会产生 >100% 的伪概率，
+ * 故钳位到 0.99 兜底（0.99^N 仍趋近但永不到 1）。
+ * @param {number} base - 单层效果值（0~1，超界会被钳位）
  * @param {number} n - 层数
  * @returns {number} 叠加后的总效果值（0~1）
  */
-const diminish = (base, n) => (n <= 0 ? 0 : 1 - Math.pow(1 - base, n));
+const diminish = (base, n) => {
+  if (n <= 0) return 0;
+  const b = Math.min(base, 0.99);
+  return 1 - Math.pow(1 - b, n);
+};
 
 /**
  * 创建敌人实例
@@ -26,70 +37,86 @@ const diminish = (base, n) => (n <= 0 ? 0 : 1 - Math.pow(1 - base, n));
  * @param {number} instanceId
  * @param {number} x
  * @param {number} y
+ * @param {boolean} [elite] - 精英变体：生命×2.5 攻击×1.6 体型变大
  * @returns {Object} 敌人实例
  */
-const createEnemyInstance = (def, instanceId, x, y) => ({
-  instanceId,
-  defId: def.id,
-  name: def.name,
-  icon: def.icon,
-  maxHp: def.maxHp,
-  hp: def.maxHp,
-  attack: def.attack,
-  attackRange: def.attackRange,
-  attackSpeed: def.attackSpeed,
-  moveSpeed: def.moveSpeed,
-  attackType: def.attackType,
-  aoeRadius: def.aoeRadius || 0,
-  projectileSpeed: def.projectileSpeed || 0,
-  slamRange: def.slamRange || 0,
-  slamDamage: def.slamDamage || 0,
-  slamCooldown: def.slamCooldown || 0,
-  summonCooldown: def.summonCooldown || 0,
-  summonCount: def.summonCount || 0,
-  summonId: def.summonId || 'kid',
-  deathExplosion: def.deathExplosion || null,
-  healAmount: def.healAmount || 0,
-  healTargetCount: def.healTargetCount || 0,
-  size: def.size,
-  color: def.color,
-  reward: def.reward,
-  alive: true,
-  x,
-  y,
-  target: null,
-  lastAttackTime: 0,
-  lastSlamTime: 0,
-  lastSummonTime: 0,
-  moving: false,
-  side: 'enemy',
-});
+const createEnemyInstance = (def, instanceId, x, y, elite = false) => {
+  const hpMult = elite ? ELITE_HP_MULT : 1;
+  const atkMult = elite ? ELITE_ATK_MULT : 1;
+  return {
+    instanceId,
+    defId: def.id,
+    name: elite ? `精英${def.name}` : def.name,
+    icon: def.icon,
+    maxHp: Math.round(def.maxHp * hpMult),
+    hp: Math.round(def.maxHp * hpMult),
+    attack: Math.round(def.attack * atkMult),
+    attackRange: def.attackRange,
+    attackSpeed: def.attackSpeed,
+    moveSpeed: def.moveSpeed,
+    attackType: def.attackType,
+    aoeRadius: def.aoeRadius || 0,
+    projectileSpeed: def.projectileSpeed || 0,
+    slamRange: def.slamRange || 0,
+    slamDamage: Math.round((def.slamDamage || 0) * atkMult),
+    slamCooldown: def.slamCooldown || 0,
+    summonCooldown: def.summonCooldown || 0,
+    summonCount: def.summonCount || 0,
+    summonId: def.summonId || 'kid',
+    deathExplosion: def.deathExplosion
+      ? { radius: def.deathExplosion.radius, damage: Math.round(def.deathExplosion.damage * atkMult) }
+      : null,
+    healAmount: Math.round((def.healAmount || 0) * hpMult),
+    healTargetCount: def.healTargetCount || 0,
+    size: elite ? Math.round((def.size || 7) * 1.2) : def.size,
+    color: def.color,
+    reward: def.reward,
+    elite,
+    alive: true,
+    x,
+    y,
+    target: null,
+    lastAttackTime: 0,
+    lastSlamTime: 0,
+    lastSummonTime: 0,
+    moving: false,
+    side: 'enemy',
+  };
+};
 
 /**
  * 根据回合配置生成敌人列表
  * @param {Object} roundData - 回合配置 { enemies: [{ id, count }], ... }
- * @param {number} statMult - 属性倍率（无尽模式递增）
+ * @param {number} statMult - 攻击属性倍率（无尽模式递增）
  * @param {{v: number}} [idCounterRef] - 共享实例 id 计数器（与召唤物共用，保证全局唯一）
+ * @param {number} [hpMult] - 血量倍率（无尽模式比攻击更陡；缺省 = statMult 保持旧行为）
  * @returns {Array} 敌人实例数组
  */
-const spawnEnemies = (roundData, statMult = 1, idCounterRef = null) => {
+const spawnEnemies = (roundData, statMult = 1, idCounterRef = null, hpMult = statMult) => {
   if (!roundData) return [];
 
   const enemies = [];
   let idCounter = 0;
   const enemyZoneStart = (GRID_COLS - PLAYER_ZONE_COLS) * CELL_SIZE;
 
-  roundData.enemies.forEach(({ id, count }) => {
+  roundData.enemies.forEach(({ id, count, elite, boss }) => {
     const def = getEnemyDef(id);
+    // Boss 敌人额外血量倍率（乘在 hpMult 之上），让 Boss 战更持久
+    const effectiveHpMult = boss ? hpMult * ENDLESS_BOSS_HP_MULT : hpMult;
     for (let i = 0; i < count; i++) {
       const x = enemyZoneStart + 20 + Math.random() * (CANVAS_WIDTH - enemyZoneStart - 40);
       const y = 20 + Math.random() * (CANVAS_HEIGHT - 40);
-      const enemy = createEnemyInstance(def, idCounterRef ? ++idCounterRef.v : ++idCounter, x, y);
-      if (statMult > 1) {
-        enemy.maxHp = Math.round(enemy.maxHp * statMult);
+      const enemy = createEnemyInstance(def, idCounterRef ? ++idCounterRef.v : ++idCounter, x, y, elite);
+      // 血量倍率独立于攻击
+      if (effectiveHpMult > 1) {
+        enemy.maxHp = Math.round(enemy.maxHp * effectiveHpMult);
         enemy.hp = enemy.maxHp;
+      }
+      if (statMult > 1) {
         enemy.attack = Math.round(enemy.attack * statMult);
       }
+      // 标记 Boss 类型，用于渲染
+      if (boss) enemy.boss = true;
       enemies.push(enemy);
     }
   });
@@ -257,10 +284,11 @@ const createProjectile = (from, to, speed, damage, type, aoeRadius = 0) => {
  * @param {Object} enemyConfig - 敌人配置
  * @param {Array} relics - 遗物列表
  * @param {Array} synergies - 激活羁绊
- * @param {number} statMult - 敌人属性倍率（无尽模式）
+ * @param {number} statMult - 敌人攻击倍率（无尽模式）
+ * @param {number} [hpMult] - 敌人血量倍率（缺省 = statMult）
  * @returns {Object} 战斗控制器
  */
-export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) => {
+export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1, hpMult = statMult) => {
   positionBros(bros);
 
   bros.forEach((b) => {
@@ -280,13 +308,14 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
   let frameCount = 0;
   let lastTime = 0;
   const enemyStatMult = statMult;
+  const enemyHpMult = hpMult;
 
   // 帧率无关的计时器（单位：秒）
   let regTimer = 1;      // 生命之泉回复间隔
   let priestTimer = 0.5; // 牧师复活检测间隔
   // 敌方实例 id 全局计数器（spawn + 召唤共用，避免 Date.now() 撞 id）
   const enemyIdCounterRef = { v: 0 };
-  const enemies = spawnEnemies(enemyConfig, statMult, enemyIdCounterRef);
+  const enemies = spawnEnemies(enemyConfig, statMult, enemyIdCounterRef, hpMult);
 
   const relicEffects = {};
   relics.forEach((r) => {
@@ -294,9 +323,11 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
     if (!def) return;
     const e = def.effect;
     const stacks = r.count;
+    // 升格倍率：全部效果按比例增强（rm=1 时无影响）
+    const rm = getRelicRefineMult(r.refine);
 
     switch (e.type) {
-      // 线性叠加：攻击/生命/移速/范围/固定攻击/回血/穿透/击杀叠层
+      // 线性叠加：攻击/生命/移速/范围/固定攻击/回血/穿透/击杀叠层/攻速
       case 'attackMult':
       case 'maxHpMult':
       case 'moveSpeedMult':
@@ -305,10 +336,11 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
       case 'regen':
       case 'pierce':
       case 'killStack':
+      case 'attackSpeedMult':
         if (!relicEffects[e.type]) {
-          relicEffects[e.type] = { value: e.value * stacks };
+          relicEffects[e.type] = { value: e.value * stacks * rm };
         } else {
-          relicEffects[e.type].value += e.value * stacks;
+          relicEffects[e.type].value += e.value * stacks * rm;
         }
         break;
 
@@ -318,17 +350,17 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
       case 'dodge':
       case 'thorns':
       case 'doubleAttackChance': {
-        const value = diminish(e.value, stacks);
+        const value = diminish(e.value * rm, stacks);
         if (!relicEffects[e.type]) {
           relicEffects[e.type] = { value };
         } else {
-          relicEffects[e.type].value = diminish(e.value, stacks);
+          relicEffects[e.type].value = diminish(e.value * rm, stacks);
         }
         break;
       }
 
       case 'crit': {
-        const chance = diminish(e.chance, stacks);
+        const chance = diminish(e.chance * rm, stacks);
         if (!relicEffects.crit) {
           relicEffects.crit = { chance, multiplier: e.multiplier };
         } else {
@@ -338,7 +370,7 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
       }
 
       case 'splash': {
-        const splashMult = logMult15(stacks);
+        const splashMult = logMult15(stacks) * rm;
         if (!relicEffects.splash) {
           relicEffects.splash = { radius: e.radius * splashMult, ratio: e.ratio * splashMult };
         } else {
@@ -350,31 +382,31 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
 
       case 'burn':
         if (!relicEffects.burn) {
-          relicEffects.burn = { duration: e.duration, ratio: e.ratio * stacks };
+          relicEffects.burn = { duration: e.duration, ratio: e.ratio * stacks * rm };
         } else {
-          relicEffects.burn.ratio += e.ratio * stacks;
+          relicEffects.burn.ratio += e.ratio * stacks * rm;
         }
         break;
 
       case 'executioner':
         if (!relicEffects.executioner) {
-          relicEffects.executioner = { threshold: e.threshold, bonus: e.bonus * stacks };
+          relicEffects.executioner = { threshold: e.threshold, bonus: e.bonus * stacks * rm };
         } else {
-          relicEffects.executioner.bonus += e.bonus * stacks;
+          relicEffects.executioner.bonus += e.bonus * stacks * rm;
         }
         break;
 
       case 'enrage':
         if (!relicEffects.enrage) {
-          relicEffects.enrage = { threshold: e.threshold, multiplier: 1 + (e.multiplier - 1) * stacks };
+          relicEffects.enrage = { threshold: e.threshold, multiplier: 1 + (e.multiplier - 1) * stacks * rm };
         } else {
-          relicEffects.enrage.multiplier += (e.multiplier - 1) * stacks;
+          relicEffects.enrage.multiplier += (e.multiplier - 1) * stacks * rm;
         }
         break;
 
       case 'revive':
         if (!relicEffects.revive) {
-          relicEffects.revive = { value: e.value, count: stacks };
+          relicEffects.revive = { value: e.value * rm, count: stacks };
         } else {
           relicEffects.revive.count += stacks;
         }
@@ -752,9 +784,11 @@ export const useBattle = (bros, enemyConfig, relics, synergies, statMult = 1) =>
         const sx = boss.x + Math.cos(angle) * 50;
         const sy = boss.y + Math.sin(angle) * 50;
         const minion = createEnemyInstance(def, ++enemyIdCounterRef.v, sx, sy);
-        if (enemyStatMult > 1) {
-          minion.maxHp = Math.round(minion.maxHp * enemyStatMult);
+        if (enemyHpMult > 1) {
+          minion.maxHp = Math.round(minion.maxHp * enemyHpMult);
           minion.hp = minion.maxHp;
+        }
+        if (enemyStatMult > 1) {
           minion.attack = Math.round(minion.attack * enemyStatMult);
         }
         enemies.push(minion);

@@ -134,7 +134,52 @@ const drawUnit = (ctx, unit, time) => {
     ctx.setLineDash([]);
   }
 
+  // 精英敌人：脉动金色光环
+  if (side === 'enemy' && unit.elite) {
+    const pulse = 0.55 + 0.3 * Math.sin(time / 200);
+    ctx.strokeStyle = `rgba(251, 191, 36, ${pulse})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = `rgba(253, 224, 71, ${pulse * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 7, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Boss 敌人：红色脉动光环 + 皇冠标识
+  if (side === 'enemy' && unit.boss) {
+    const pulse = 0.5 + 0.3 * Math.sin(time / 150);
+    ctx.strokeStyle = `rgba(239, 68, 68, ${pulse})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = `rgba(220, 38, 38, ${pulse * 0.4})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 10, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
   drawHpBar(ctx, x, y, radius, unit.hp, unit.maxHp, side);
+
+  // Boss 敌人：血条上方皇冠标识
+  if (side === 'enemy' && unit.boss) {
+    ctx.font = 'bold 10px sans-serif';
+    ctx.fillStyle = '#ef4444';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('♛', x, y - radius - 17);
+  } else if (side === 'player' && unit.star > 0) {
+    ctx.font = 'bold 8px sans-serif';
+    ctx.fillStyle = '#fde047';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('★'.repeat(Math.min(unit.star, 5)), x, y - radius - 17);
+  }
 
   if (unit.revived) {
     ctx.font = '10px sans-serif';
