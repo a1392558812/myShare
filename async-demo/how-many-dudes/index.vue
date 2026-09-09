@@ -25,7 +25,7 @@
 import { ref } from 'vue';
 import StartPanel from './components/StartPanel.vue';
 import GameMain from './components/GameMain.vue';
-import CodePanel from './components/CodePanel.vue';
+import CodePanel from '../components/code-panel/index.vue';
 
 const props = defineProps({
   markdownComponent: {
