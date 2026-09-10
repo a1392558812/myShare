@@ -143,7 +143,8 @@ const makeSkillInstance = (def) => ({
   cooldownLeft: 0,
   level: 0,
   unlocked: !!def.unlockedByDefault,
-  key: def.unlockedByDefault ? 'Q' : '',
+  // 起始技能占技能键 1；其余由 assignTechSkill 按解锁顺序分配 2/3/4/5
+  key: def.unlockedByDefault ? '1' : '',
 });
 
 const EMPTY_BLOOD_PACT = { hp: 0, dr: 0, lifesteal: 0, stacks: 0, revives: 0 };
@@ -358,7 +359,7 @@ export const createGame = (canvas, opts = {}) => {
     if (sk && !sk.unlocked) {
       sk.unlocked = true;
       const usedKeys = new Set(state.skills.filter((s) => s.unlocked && s.key).map((s) => s.key));
-      const slot = ['Q', 'W', 'E', 'R', 'T'].find((k) => !usedKeys.has(k));
+      const slot = ['1', '2', '3', '4', '5'].find((k) => !usedKeys.has(k));
       if (slot) sk.key = slot;
       showMessage(`解锁技能：${sk.name} [${slot}]`, '#22c55e', 2000);
     }
@@ -968,7 +969,20 @@ export const createGame = (canvas, opts = {}) => {
         p.x += (dx / d) * p.speed * (dtMs / 1000);
         p.y += (dy / d) * p.speed * (dtMs / 1000);
         if (d < 12) applyProjectileHit(p, target);
+      } else if ((p.kind === 'cannon' || p.kind === 'missile') && p.tx != null) {
+        // 目标丢失：飞向开火时锁定的坐标，到达即爆炸（保留溅射给附近敌人）
+        const dx = p.tx - p.x;
+        const dy = p.ty - p.y;
+        const d = Math.hypot(dx, dy) || 1;
+        p.angle = Math.atan2(dy, dx);
+        p.x += (dx / d) * p.speed * (dtMs / 1000);
+        p.y += (dy / d) * p.speed * (dtMs / 1000);
+        if (d < 14) {
+          explodeAt(p);
+          p.pierce = 0;
+        }
       } else {
+        // arrow / 其他直线型：按原角度继续飞，由 filter 范围兜底删除
         p.x += Math.cos(p.angle) * p.speed * (dtMs / 1000);
         p.y += Math.sin(p.angle) * p.speed * (dtMs / 1000);
       }
@@ -1032,9 +1046,40 @@ export const createGame = (canvas, opts = {}) => {
     }
   };
 
+  // 锁定位置爆炸：目标已消失时使用，沿用炮弹自带的溅射 / 灼烧逻辑
+  const explodeAt = (p) => {
+    const auraDmg = getAura('ultimateBeam');
+    const dmgBoost = auraDmg ? auraDmg.dmgBoost : 1;
+    if (p.splash) {
+      spawnFx({ kind: 'splash', x: p.x, y: p.y, radius: p.splash, life: 350 });
+      for (const e of state.enemies) {
+        if (e.dead) continue;
+        if (dist2(e.x, e.y, p.x, p.y) <= p.splash * p.splash) {
+          const sm = e.armor && !e.armor.broken ? e.armor.mult : 1;
+          const ea = e.dmgTakenAmp || 1;
+          e.hp -= p.dmg * 0.5 * sm * ea * dmgBoost;
+          e.lastHit = state.time;
+          if (e.hp <= 0 && !e.dead) e.dead = true;
+        }
+      }
+    }
+    if (p.fireChance > 0 && Math.random() < p.fireChance) {
+      state.fireZones.push({
+        x: p.x, y: p.y,
+        radius: p.fireRadius || 1.2 * CELL,
+        duration: p.fireDuration || 3500,
+        dps: p.fireDps || 8,
+        slow: p.fireSlow || 0.4,
+        age: 0,
+      });
+      spawnFx({ kind: 'fire', x: p.x, y: p.y, radius: p.fireRadius || 1.2 * CELL, life: 500 });
+    }
+  };
+
   const updateHero = (dtMs) => {
     const h = state.hero;
     let mx = 0, my = 0;
+    // 移动用 WASD / 方向键（恢复 WASD，玩家手不用离开主键盘区）
     if (state.keys.has('w') || state.keys.has('arrowup')) my -= 1;
     if (state.keys.has('s') || state.keys.has('arrowdown')) my += 1;
     if (state.keys.has('a') || state.keys.has('arrowleft')) mx -= 1;
@@ -1549,21 +1594,22 @@ export const createGame = (canvas, opts = {}) => {
 
   const onKey = (e, down) => {
     const k = e.key.toLowerCase();
+    // 屏蔽系统/浏览器快捷键
+    if (down && (k === 'backspace' || k === 'f5')) {
+      try { e.preventDefault(); } catch (_) {}
+    }
     if (down) state.keys.add(k); else state.keys.delete(k);
     if (!down && (k === ' ')) state.paused = !state.paused;
-    if (!down && (k === '`')) state.showDebug = !state.showDebug;
-    if (!down && (k === 'r')) reset();
+    if (!down && (k === '`' || k === '~')) state.showDebug = !state.showDebug;
+    // 重开本局：R 键（无技能占用）
+    if (!down && k === 'r') reset();
     if (down) {
-      const upK = k.toUpperCase();
-      const sk = state.skills.find((s) => s.key === upK && s.unlocked);
+      // 技能键：1/2/3/4/5（数字键不再用于选塔种）
+      const sk = state.skills.find((s) => s.key === k && s.unlocked);
       if (sk) castSkill(sk);
     }
     if (!down) {
-      const idx = ['1', '2', '3', '4', '5'].indexOf(k);
-      if (idx >= 0) {
-        state.selectedBuildKind = ['barracks', 'cannon', 'arrow', 'tech', 'detector'][idx];
-        state.selectedTower = null;
-      }
+      // 移动塔：M 键
       if (k === 'm' && state.selectedTower) {
         if (state.moveCount < state.moveLimit && state.gold >= (state.selectedTower.def.cost * MOVE_COST_RATIO)) {
           state.moveSelected = state.selectedTower;
