@@ -10,7 +10,6 @@
           @click="onSelectBuild(k)">
           <div class="name">{{ towerDefs[k]?.name || k }}</div>
           <div class="cost">💰{{ towerDefs[k]?.cost ?? 0 }}</div>
-          <div class="hot">[{{ i + 1 }}]</div>
         </button>
       </div>
 
@@ -76,6 +75,23 @@
         <button @click="onBack">← 返回 [Esc]</button>
       </div>
 
+      <h3 class="panel-title">药水</h3>
+      <div class="op-row">
+        <button :disabled="!canBuyPotion" @click="onBuyPotion">购买 [B] 💰{{ potionCost }}</button>
+        <button :disabled="state.potions <= 0 || state.hero.hp >= state.hero.maxHp" @click="onUsePotion">
+          使用 [H] 恢复 {{ potionHeal }} HP
+        </button>
+      </div>
+      <div class="hint-inline">持有 <b>{{ state.potions }}</b>/{{ potionMax }} 瓶 · 使用冷却 1.5s</div>
+
+      <h3 v-if="state.relics.length" class="panel-title">遗物（{{ state.relics.length }}）</h3>
+      <div v-if="state.relics.length" class="relic-list">
+        <div v-for="r in state.relics" :key="r.kind" class="relic-chip" :style="{ borderColor: r.color }">
+          <b :style="{ color: r.color }">{{ r.name }}</b>
+          <span>{{ r.desc }}</span>
+        </div>
+      </div>
+
       <h3 class="panel-title">状态</h3>
       <div class="stat-grid">
         <div><span>波次</span><b>{{ state.wave }}/{{ state.maxWave }}{{ state.endless ? ' ∞' : '' }}</b></div>
@@ -107,6 +123,22 @@
         </button>
       </div>
     </aside>
+
+    <!-- 遗物三选一：Boss 击杀后弹出，选择期间游戏暂停 -->
+    <div v-if="state.pendingRelic" class="relic-overlay">
+      <div class="relic-modal">
+        <h2>击败 Boss！选择一件遗物</h2>
+        <p class="relic-sub">遗物永久生效 · 选择期间游戏暂停</p>
+        <div class="relic-cards">
+          <button v-for="r in state.pendingRelic" :key="r.kind"
+            class="relic-card" :style="{ borderColor: r.color }"
+            @click="onPickRelic(r.kind)">
+            <div class="relic-name" :style="{ color: r.color }">{{ r.name }}</div>
+            <div class="relic-desc">{{ r.desc }}</div>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 调试面板：默认关闭，与游玩信息完全隔离 -->
     <aside v-if="state.showDebug" class="debug-panel">
@@ -254,6 +286,13 @@ function snapshot() {
 
 const canBuild = (k) => state.value.gold >= towerDefs.value[k]?.cost;
 const moveCost = (t) => t ? (t.def.cost * 0.3) | 0 : 0;
+
+// 药水常量（与 useGame 的 POTION 保持一致）
+const potionCost = 30;
+const potionHeal = 30;
+const potionMax = 5;
+const canBuyPotion = computed(() =>
+  state.value.potions < potionMax && state.value.gold >= potionCost);
 
 // 调试面板：默认关闭
 const dbg = computed(() => state.value.debug || {});
@@ -428,6 +467,10 @@ const onAssignSkill = (sk) => {
   game.value?.assignTechSkill?.(t.id, sk);
 };
 
+const onBuyPotion = () => game.value?.buyPotion?.();
+const onUsePotion = () => game.value?.usePotion?.();
+const onPickRelic = (kind) => game.value?.pickRelic?.(kind);
+
 const onStartWave = () => game.value?.startNextWave?.();
 const onPauseToggle = () => { const s = game.value?.state; if (s) s.paused = !s.paused; };
 const onReset = () => game.value?.reset?.();
@@ -467,6 +510,10 @@ const syncState = () => {
       })),
       bloodPact: { ...(s.bloodPact || {}) },
       debug: { ...s.debug },
+      // 新增：药水 / 遗物
+      potions: s.potions,
+      relics: s.relics.slice(),
+      pendingRelic: s.pendingRelic,
     };
     towerDefs.value = s.towerDefs;
   }
@@ -722,6 +769,87 @@ onBeforeUnmount(() => {
   font-size: 10px;
   color: #6b8b97;
   align-self: center;
+}
+
+// 遗物列表（左栏）
+.relic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.relic-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 6px;
+  border: 1px solid #2b4a56;
+  border-left-width: 3px;
+  border-radius: 3px;
+  background: #0d1e28;
+
+  b { font-size: 11px; }
+  span { font-size: 10px; color: #7f9aa5; }
+}
+
+// 遗物三选一弹窗
+.relic-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 10, 16, 0.82);
+  z-index: 40;
+}
+
+.relic-modal {
+  padding: 20px 24px;
+  border: 1px solid #2b4a56;
+  border-radius: 8px;
+  background: #0b1a24;
+  text-align: center;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #facc15;
+  }
+
+  .relic-sub {
+    margin: 0 0 14px;
+    font-size: 11px;
+    color: #6b8b97;
+  }
+}
+
+.relic-cards {
+  display: flex;
+  gap: 12px;
+}
+
+.relic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 150px;
+  min-height: 92px;
+  padding: 12px 10px;
+  border: 1px solid #2b4a56;
+  border-radius: 6px;
+  background: #0d1e28;
+  cursor: pointer;
+  transition: transform .12s, background .12s;
+
+  &:hover {
+    transform: translateY(-3px);
+    background: #14303e;
+  }
+
+  .relic-name { font-size: 13px; font-weight: 500; }
+  .relic-desc { font-size: 11px; color: #9fb6c0; line-height: 1.5; }
 }
 
 .skill-picker {

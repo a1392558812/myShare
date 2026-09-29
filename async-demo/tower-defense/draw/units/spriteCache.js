@@ -4,8 +4,17 @@
 import drawSoldier from './drawSoldier.js';
 import drawDragon from './drawDragon.js';
 import drawGhost from './drawGhost.js';
+import extended from './drawExtended.js';
 
-const DRAW = { soldier: drawSoldier, dragon: drawDragon, ghost: drawGhost };
+const DRAW = {
+  soldier: drawSoldier,
+  dragon: drawDragon,
+  ghost: drawGhost,
+  rusher: extended.drawRusher,
+  armored: extended.drawArmored,
+  healer: extended.drawHealer,
+  splitter: extended.drawSplitter,
+};
 
 export const SPRITE_FRAMES = 8;
 const STEP = (Math.PI * 2) / SPRITE_FRAMES;
@@ -15,6 +24,10 @@ export const SPRITE_BOX = {
   soldier: { w: 40, h: 40, ox: 20, oy: 26 },
   dragon: { w: 44, h: 56, ox: 22, oy: 14 },
   ghost: { w: 56, h: 60, ox: 28, oy: 30 },
+  rusher: { w: 48, h: 44, ox: 24, oy: 28 },
+  armored: { w: 48, h: 44, ox: 24, oy: 28 },
+  healer: { w: 44, h: 46, ox: 22, oy: 28 },
+  splitter: { w: 44, h: 46, ox: 22, oy: 26 },
 };
 
 // 相位 → 帧号（0..7）
@@ -43,6 +56,8 @@ const fakeOf = (kind, e, frame) => {
     alpha: 1,
     detected: false,
     walkPhase: 0,
+    // 冲锋兵冲刺态（影响拖尾，必须参与缓存 key）
+    charging: !!e.charging,
   };
   if (kind === 'dragon') return { ...base, time: phase / 0.006 };
   if (kind === 'ghost') return { ...base, time: phase / 0.004 };
@@ -69,7 +84,9 @@ export const getSprite = (kind, frame, facing, variant, dpr = 1, src = {}) => {
   const size = src.size || 12;
   const color = src.def?.color || '';
   const floatY = src.floatY || 0;
-  const key = `${kind}|${size}|${color}|${floatY}|${frame}|${facing}|${variant}|${dpr}`;
+  // 冲锋态参与 key，否则冲刺拖尾会被缓存成「永不显示」
+  const charging = src.charging ? 1 : 0;
+  const key = `${kind}|${size}|${color}|${floatY}|${frame}|${facing}|${variant}|${dpr}|${charging}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
   if (!canCache()) return null;
@@ -82,7 +99,7 @@ export const getSprite = (kind, frame, facing, variant, dpr = 1, src = {}) => {
   cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.translate(box.ox, box.oy);
 
-  const fake = fakeOf(kind, { size, def: src.def || {}, floatY }, frame);
+  const fake = fakeOf(kind, { size, def: src.def || {}, floatY, charging: src.charging }, frame);
   if (kind === 'ghost') fake.detected = variant === 1;
   drawFn(cx, fake, fake.time || 0, facing);
 

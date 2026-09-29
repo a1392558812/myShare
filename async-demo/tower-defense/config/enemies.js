@@ -1,9 +1,15 @@
-// 3 种敌人 + 6 Boss（含终极混合）
+// 7 种敌人（3 基础 + 4 扩展）+ 6 Boss + 精英怪机制
+// 偏挑战基调：扩展敌人各有克制需求，逼玩家搭配塔种与技能路线
 
 export const ENEMY_KIND = {
   NORMAL: 'normal',
   FLYING: 'flying',
   STEALTH: 'stealth',
+  // === 扩展 4 种 ===
+  RUSHER: 'rusher',     // 冲锋兵：高速低血，考验瞬间爆发
+  ARMORED: 'armored',   // 装甲兵：高减伤，考验持续输出
+  HEALER: 'healer',     // 治疗兵：奶周围敌人，必须优先点掉
+  SPLITTER: 'splitter', // 分裂怪：死亡分裂，考验溅射
 };
 
 export const ENEMY_DEFS = {
@@ -45,7 +51,89 @@ export const ENEMY_DEFS = {
     stealth: true,
     alpha: 0.25,
   },
+
+  // === 扩展 4 种 ===
+  [ENEMY_KIND.RUSHER]: {
+    name: '冲锋兵',
+    color: '#fb923c',
+    hp: 22,
+    speed: 125,          // 约步兵 2 倍速
+    reward: 9,
+    bounty: 9,
+    size: 11,
+    icon: 'rusher',
+    flying: false,
+    stealth: false,
+    // 冲锋：周期性提速冲刺，冷却期间恢复常速
+    charge: { period: 3500, dashMs: 1200, speedMult: 1.8 },
+  },
+  [ENEMY_KIND.ARMORED]: {
+    name: '装甲兵',
+    color: '#78716c',
+    hp: 90,
+    speed: 42,           // 慢速
+    reward: 14,
+    bounty: 14,
+    size: 14,
+    icon: 'armored',
+    flying: false,
+    stealth: false,
+    // 常驻减伤（区别于 Boss 的「前 N 秒装甲」）
+    armor: { mult: 0.55 },   // 受到 45% 伤害
+  },
+  [ENEMY_KIND.HEALER]: {
+    name: '巫医',
+    color: '#4ade80',
+    hp: 55,
+    speed: 52,
+    reward: 16,
+    bounty: 16,
+    size: 12,
+    icon: 'healer',
+    flying: false,
+    stealth: false,
+    // 治疗光环：周期性治疗范围内的其他敌人
+    healAura: { interval: 3000, range: 2.2 * 32, amount: 18 },
+  },
+  [ENEMY_KIND.SPLITTER]: {
+    name: '分裂怪',
+    color: '#f472b6',
+    hp: 60,
+    speed: 55,
+    reward: 10,
+    bounty: 10,
+    size: 15,
+    icon: 'splitter',
+    flying: false,
+    stealth: false,
+    // 死亡分裂：分裂出的小怪继承路径进度
+    split: { kind: ENEMY_KIND.NORMAL, count: 2, hpMult: 0.35, speedMult: 1.25, bounty: 2 },
+  },
 };
+
+// 精英怪机制：基础怪的属性缩放
+// 偏挑战：血量 ×3、奖励 ×1.5，体型略大并带金色光环便于识别
+export const ELITE = {
+  hpMult: 3,
+  rewardMult: 1.5,
+  sizeMult: 1.3,
+  speedMult: 1.05,
+  ringColor: '#fbbf24',
+  // 精英额外获得一条命：首次死亡复活一次（半血），逼玩家补刀
+  // 关闭此项可改为纯属性精英
+  secondLife: false,
+};
+
+// 精英怪可应用的种类（Boss 不走精英通道）
+export const ELITABLE_KINDS = [
+  ENEMY_KIND.NORMAL,
+  ENEMY_KIND.FLYING,
+  ENEMY_KIND.STEALTH,
+  ENEMY_KIND.RUSHER,
+  ENEMY_KIND.ARMORED,
+  ENEMY_KIND.HEALER,
+  ENEMY_KIND.SPLITTER,
+];
 
 export const BOSS_DEFS = [
   {

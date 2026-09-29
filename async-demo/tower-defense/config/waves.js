@@ -1,5 +1,6 @@
 // 波次配置：30 波 + Boss + 无尽循环
 // 第 5/10/15/20/25/30... 波为 Boss（无尽模式下继续每 5 波一次）
+// 每 5 波一个「主题」，让波次有辨识度而非同一模板
 
 import { ENEMY_KIND, BOSS_DEFS } from './enemies.js';
 
@@ -14,12 +15,84 @@ const ENDLESS_COUNT_CAP = {
   [ENEMY_KIND.NORMAL]: 60,
   [ENEMY_KIND.FLYING]: 32,
   [ENEMY_KIND.STEALTH]: 28,
+  [ENEMY_KIND.RUSHER]: 30,
+  [ENEMY_KIND.ARMORED]: 24,
+  [ENEMY_KIND.HEALER]: 14,
+  [ENEMY_KIND.SPLITTER]: 20,
 };
 // 超出 30 波后每波的数量增长率（乘在 30 波模板上）
 const ENDLESS_COUNT_K = 0.04;
 
+// ===== 波次主题 =====
+// 每 5 波循环一次，决定该波段的额外构成。
+// 偏挑战：主题波会在常规构成上叠加一种「压力类型」，逼玩家调整防线。
+export const WAVE_THEMES = {
+  RUSH: {
+    key: 'RUSH',
+    name: '冲锋潮',
+    desc: '大量高速冲锋兵突进',
+    // 附加敌人：种类 + 数量系数（按波次缩放）+ 出怪间隔
+    add: [{ kind: ENEMY_KIND.RUSHER, base: 3, perWave: 0.5, interval: 0.5 }],
+  },
+  AIR: {
+    key: 'AIR',
+    name: '空袭波',
+    desc: '飞龙集群来袭，地面塔无效',
+    add: [{ kind: ENEMY_KIND.FLYING, base: 4, perWave: 0.6, interval: 0.7 }],
+  },
+  ARMOR: {
+    key: 'ARMOR',
+    name: '装甲纵队',
+    desc: '高减伤装甲兵压境',
+    add: [{ kind: ENEMY_KIND.ARMORED, base: 3, perWave: 0.45, interval: 1.0 }],
+  },
+  SHADOW: {
+    key: 'SHADOW',
+    name: '影袭波',
+    desc: '隐身单位密集，缺反隐必漏',
+    add: [{ kind: ENEMY_KIND.STEALTH, base: 3, perWave: 0.45, interval: 0.9 }],
+  },
+  SIEGE: {
+    key: 'SIEGE',
+    name: '围城波',
+    desc: '巫医治疗 + 分裂怪消耗',
+    // 巫医数量克制（base 低 + 增长慢），避免整波被奶到打不动
+    add: [
+      { kind: ENEMY_KIND.HEALER, base: 2, perWave: 0.12, interval: 1.4, cap: 5 },
+      { kind: ENEMY_KIND.SPLITTER, base: 2, perWave: 0.35, interval: 1.2 },
+    ],
+  },
+};
+
+// 主题循环顺序（每 5 波推进一个，Boss 波本身不套主题）
+const THEME_ORDER = [
+  WAVE_THEMES.RUSH,
+  WAVE_THEMES.AIR,
+  WAVE_THEMES.ARMOR,
+  WAVE_THEMES.SHADOW,
+  WAVE_THEMES.SIEGE,
+];
+
+// 该波属于哪个主题（Boss 波返回 null）
+export const waveTheme = (waveIdx) => {
+  if (waveIdx % 5 === 0) return null;
+  const seg = Math.floor(waveIdx / 5);       // 0→1-4波, 1→6-9波, 2→11-14波...
+  return THEME_ORDER[seg % THEME_ORDER.length];
+};
+
+// ===== 精英怪比例 =====
+// 偏挑战：21 波起精英潮，26 波起密度提升，无尽模式继续递增
+export const eliteRatio = (waveIdx) => {
+  const w = Math.max(1, waveIdx);
+  if (w < 21) return 0;
+  if (w <= 24) return 0.18;       // 21~24：精英潮
+  if (w <= 29) return 0.32;       // 26~29（25 是 Boss）：密度提升
+  if (w <= 40) return 0.40;       // 无尽前期
+  return Math.min(0.65, 0.40 + (w - 40) * 0.01);  // 无尽后期，上限 65%
+};
+
 // 每波生成配置（敌人种类 + 数量 + 间隔秒）
-// 返回 [{ kind, count, interval }]，waveIdx 可为任意正整数（无尽模式）
+// 返回 [{ kind, count, interval, eliteRatio }]，waveIdx 可为任意正整数（无尽模式）
 export const buildWavePlan = (waveIdx) => {
   if (!Number.isFinite(waveIdx) || waveIdx < 1) return [];
 
@@ -46,6 +119,19 @@ export const buildWavePlan = (waveIdx) => {
     plan.push({ kind: ENEMY_KIND.STEALTH, count: Math.max(1, (w - 9) | 0), interval: 1.2 });
   }
 
+  // 主题附加：让每 5 波有明确辨识度
+  // 同种类已存在时合并进现有条目（避免同波出现两个同种类分组），并支持 cap 截断
+  const theme = waveTheme(waveIdx);
+  if (theme) {
+    for (const a of theme.add) {
+      let n = Math.max(1, Math.round(a.base + (w - 1) * a.perWave));
+      if (a.cap) n = Math.min(n, a.cap);
+      const exist = plan.find((p) => p.kind === a.kind);
+      if (exist) exist.count += n;
+      else plan.push({ kind: a.kind, count: n, interval: a.interval });
+    }
+  }
+
   // 15 波之后混合期
   if (w >= 16) plan[0].count += 3;
   // 21 波之后强化期
@@ -63,6 +149,11 @@ export const buildWavePlan = (waveIdx) => {
       p.count = Math.min(Math.ceil(p.count * k), cap);
     });
   }
+
+  // 精英比例挂到整波（实际精英化在 spawn 时按概率逐只决定）
+  const er = eliteRatio(waveIdx);
+  plan.forEach((p) => { p.eliteRatio = er; });
+  if (er > 0) plan.theme = theme ? theme.key : null;
 
   return plan;
 };
