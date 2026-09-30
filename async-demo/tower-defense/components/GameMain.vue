@@ -269,6 +269,7 @@ function snapshot() {
     selectedBuildKind: null,
     selectedTower: null,
     wave: 0, waveActive: false, waveCountdown: 0, maxWave: 30, endless: false, leak: 0,
+    killed: 0,
     gold: 0, hero: { hp: 100, maxHp: 100 }, moveCount: 0,
     paused: false,
     gameOver: false,
@@ -281,6 +282,10 @@ function snapshot() {
     towers: [],
     bloodPact: { hp: 0, dr: 0, lifesteal: 0, stacks: 0, revives: 0 },
     debug: {},
+    // 首帧渲染发生在 onMounted 之前，字段必须齐全，否则模板读 undefined.length 会抛错
+    potions: 0,
+    relics: [],
+    pendingRelic: null,
   };
 }
 
@@ -497,7 +502,7 @@ const syncState = () => {
       selectedBuildKind: s.selectedBuildKind,
       selectedTower: s.selectedTower,
       wave: s.wave, waveActive: s.waveActive, waveCountdown: s.waveCountdown,
-      maxWave: s.maxWave, endless: s.endless, leak: s.leak,
+      maxWave: s.maxWave, endless: s.endless, leak: s.leak, killed: s.killed,
       gold: s.gold, hero: s.hero, moveCount: s.moveCount,
       paused: s.paused, gameOver: s.gameOver, victory: s.victory,
       enemyRemain: s.enemies.length + (s.spawnQueue ? s.spawnQueue.length : 0),
@@ -520,6 +525,10 @@ const syncState = () => {
   syncRafId = requestAnimationFrame(syncState);
 };
 
+// 具名处理器：removeEventListener 必须传同一个引用才能解绑
+const onKeyDown = (e) => onKey(e, true);
+const onKeyUp = (e) => onKey(e, false);
+
 onMounted(() => {
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -527,15 +536,15 @@ onMounted(() => {
   game.value.resize();
   game.value.start();
   syncState();
-  window.addEventListener('keydown', (e) => onKey(e, true));
-  window.addEventListener('keyup', (e) => onKey(e, false));
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
 });
 
 onBeforeUnmount(() => {
   if (syncRafId) cancelAnimationFrame(syncRafId);
   game.value?.stop?.();
-  window.removeEventListener('keydown', (e) => onKey(e, true));
-  window.removeEventListener('keyup', (e) => onKey(e, false));
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
 });
 </script>
 
