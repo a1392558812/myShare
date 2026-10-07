@@ -7,6 +7,7 @@
         <button v-for="(k, i) in towerKeys" :key="k"
           :class="['build-btn', { active: state.selectedBuildKind === k }]"
           :disabled="!canBuild(k)"
+          :title="towerDefs[k]?.desc || ''"
           @click="onSelectBuild(k)">
           <div class="name">{{ towerDefs[k]?.name || k }}</div>
           <div class="cost">💰{{ towerDefs[k]?.cost ?? 0 }}</div>
@@ -65,12 +66,11 @@
         </div>
       </div>
       <div class="op-row">
-        <button :disabled="state.waveActive" @click="onStartWave">
-          {{ state.waveActive ? `波次进行中（剩 ${state.enemyRemain}）` : '开始下一波 [S]' }}
-        </button>
+        <button :disabled="state.waveQueued" @click="onStartWave">{{ waveBtnLabel }}</button>
         <button @click="onPauseToggle">{{ state.paused ? '继续' : '暂停 [Space]' }}</button>
         <button @click="onReset">重开 [R]</button>
       </div>
+      <div class="hint-inline">提前开波奖励：<b class="gold">💰{{ earlyBonus }}</b>（随波次提升）</div>
       <div class="op-row">
         <button @click="onBack">← 返回 [Esc]</button>
       </div>
@@ -114,6 +114,10 @@
         <p><b>升级/出售</b>：点中已建塔 → 操作面板按升级 / 出售；移动用 M</p>
         <p><b>反隐塔</b>：侦测光环内使隐身显形（其他塔需此才打）</p>
         <p><b>科技前哨站</b>：每造 1 座解锁新技能（最多 4 座）</p>
+        <p><b>冰霜塔</b>：范围内常驻减速 + 冰霜持续伤害，三级起定时冻结一只</p>
+        <p><b>雷霆塔</b>：瞬发链式闪电，在相邻敌人间跳跃（每跳衰减）</p>
+        <p><b>狙击塔</b>：超远程点杀高血量目标，无视护甲，三级起对精英/Boss 加伤</p>
+        <p><b>增幅塔</b>：自身不攻击，给光环内所有建筑叠加伤害与攻速</p>
         <p><b>满级</b>：所有建筑统一 6 级（Lv1 → Lv6）</p>
       </div>
 
@@ -136,6 +140,58 @@
             <div class="relic-name" :style="{ color: r.color }">{{ r.name }}</div>
             <div class="relic-desc">{{ r.desc }}</div>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 出售确认：防止误操作拆除建筑（弹出期间游戏暂停） -->
+    <div v-if="sellConfirm" class="confirm-overlay" @click.self="cancelSell">
+      <div class="confirm-modal">
+        <h2>确认出售？</h2>
+        <div class="confirm-item">
+          <span>建筑</span>
+          <b>{{ sellConfirm.name }} <i>Lv{{ sellConfirm.level }}</i></b>
+        </div>
+        <div class="confirm-item">
+          <span>返还金币</span>
+          <b class="gold">💰{{ sellConfirm.refund }}</b>
+        </div>
+        <p v-if="sellConfirm.summon" class="confirm-warn">
+          该兵营旗下 {{ sellConfirm.summon }} 名小兵将一并消失
+        </p>
+        <p class="confirm-sub">Enter 确认 · Esc / 右键取消</p>
+        <div class="confirm-row">
+          <button class="cf-btn cf-cancel" @click="cancelSell">取消</button>
+          <button class="cf-btn cf-ok" @click="confirmSell">确认出售</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重开确认：防止误触把当前局清掉（弹出期间游戏暂停） -->
+    <div v-if="resetConfirm" class="confirm-overlay" @click.self="cancelReset">
+      <div class="confirm-modal">
+        <h2>确认重开？</h2>
+        <p class="confirm-warn">当前进度将全部清空，无法恢复</p>
+        <div class="confirm-item">
+          <span>当前波次</span>
+          <b>第 {{ resetConfirm.wave }} 波{{ resetConfirm.endless ? '（无尽）' : '' }}</b>
+        </div>
+        <div class="confirm-item">
+          <span>金币 / 击杀</span>
+          <b>💰{{ resetConfirm.gold }} · {{ resetConfirm.killed }}</b>
+        </div>
+        <div class="confirm-item">
+          <span>已建建筑</span>
+          <b>{{ resetConfirm.towers }} 座</b>
+        </div>
+        <div class="confirm-item">
+          <span>已获遗物</span>
+          <b>{{ resetConfirm.relics }} 件</b>
+        </div>
+        <p class="confirm-sub">Enter 确认 · Esc / 右键取消</p>
+        <div class="confirm-row">
+          <button class="cf-btn cf-cancel" @click="cancelReset">继续当前局</button>
+          <button class="cf-btn cf-ok" @click="confirmReset">确认重开</button>
         </div>
       </div>
     </div>
@@ -218,12 +274,15 @@
         </div>
       </div>
     </div>
-    <div v-else-if="state.victory && !state.endless" class="overlay">
+    <!-- 通关后的无尽二选一（若还有遗物未选，先让遗物面板优先） -->
+    <div v-else-if="state.pendingEndless && !state.pendingRelic" class="overlay">
       <div class="panel-end">
         <div class="title-win">通 关！</div>
-        <div class="sub">进入无尽挑战</div>
+        <div class="sub">{{ state.maxWave }} 波全清 · 是否继续无尽挑战？</div>
+        <div class="end-note">无尽模式：敌人属性每波 +4%，精英密度持续上升，失败即结算</div>
         <div class="row">
-          <button class="btn" @click="$emit('restart')">继续</button>
+          <button class="btn" @click="onEnterEndless">进入无尽模式</button>
+          <button class="btn btn-secondary" @click="onBackMenu">返回菜单</button>
         </div>
       </div>
     </div>
@@ -259,6 +318,7 @@ const towerDefs = ref({ ...TOWER_DEFS });
 const towerKeys = [
   TOWER_KIND.BARRACKS, TOWER_KIND.CANNON,
   TOWER_KIND.ARROW, TOWER_KIND.TECH, TOWER_KIND.DETECTOR,
+  TOWER_KIND.FROST, TOWER_KIND.TESLA, TOWER_KIND.SNIPER, TOWER_KIND.AMP,
 ];
 
 const state = ref(snapshot());
@@ -268,7 +328,7 @@ function snapshot() {
   return {
     selectedBuildKind: null,
     selectedTower: null,
-    wave: 0, waveActive: false, waveCountdown: 0, maxWave: 30, endless: false, leak: 0,
+    wave: 0, waveActive: false, waveQueued: false, waveCountdown: 0, maxWave: 30, endless: false, leak: 0,
     killed: 0,
     gold: 0, hero: { hp: 100, maxHp: 100 }, moveCount: 0,
     paused: false,
@@ -282,7 +342,9 @@ function snapshot() {
     towers: [],
     bloodPact: { hp: 0, dr: 0, lifesteal: 0, stacks: 0, revives: 0 },
     debug: {},
-    // 首帧渲染发生在 onMounted 之前，字段必须齐全，否则模板读 undefined.length 会抛错
+    // 提前解锁下一波的金币奖励（每帧刷新，与得的实际金额同源）
+    earlyBonus: 0,
+    pendingEndless: false,
     potions: 0,
     relics: [],
     pendingRelic: null,
@@ -419,6 +481,39 @@ const selStats = computed(() => {
       }
       return base;
     }
+    case TOWER_KIND.FROST:
+      return [
+        { k: '冰霜半径', v: `${(pick(d.range, lv) / CELL).toFixed(1)}格` },
+        { k: '减速', v: `${Math.round(pick(d.slow, lv) * 100)}%` },
+        { k: '冰霜伤害', v: `${pick(d.dps, lv)}/s` },
+        { k: '冻结', v: lv >= 2 ? `每${(pick(d.freezeInterval, lv) / 1000).toFixed(0)}s / 定身${(pick(d.freezeDuration, lv) / 1000).toFixed(1)}s` : 'Lv3 解锁' },
+      ];
+    case TOWER_KIND.TESLA:
+      return [
+        { k: '伤害', v: p(pick(d.dmg, lv)) },
+        { k: '射程', v: `${(pick(d.range, lv) / CELL).toFixed(1)}格` },
+        { k: '冷却', v: `${(pick(d.attackInterval, lv) / 1000).toFixed(2)}s` },
+        { k: '连锁目标', v: `${pick(d.chainCount, lv)} 个` },
+        { k: '跳跃距离', v: `${(pick(d.chainRange, lv) / CELL).toFixed(1)}格` },
+        { k: '每跳衰减', v: `${Math.round((1 - d.chainFalloff) * 100)}%` },
+      ];
+    case TOWER_KIND.SNIPER:
+      return [
+        { k: '伤害', v: p(pick(d.dmg, lv)) },
+        { k: '射程', v: `${(pick(d.range, lv) / CELL).toFixed(1)}格` },
+        { k: '冷却', v: `${(pick(d.attackInterval, lv) / 1000).toFixed(2)}s` },
+        { k: '无视护甲', v: '✓（装甲兵减伤无效）' },
+        { k: '精英/Boss', v: lv >= 2 ? `伤害 ×${pick(d.eliteBonus, lv).toFixed(2)}` : 'Lv3 解锁' },
+        { k: '索敌', v: '优先最高血量' },
+      ];
+    case TOWER_KIND.AMP:
+      return [
+        { k: '光环半径', v: `${(pick(d.auraRange, lv) / CELL).toFixed(1)}格` },
+        { k: '塔伤害加成', v: `+${Math.round(pick(d.dmgBoost, lv) * 100)}%` },
+        { k: '塔攻速加成', v: `+${Math.round(pick(d.speedBoost, lv) * 100)}%` },
+        { k: '作用对象', v: '范围内所有建筑' },
+        { k: '自身攻击', v: '无（纯支援）' },
+      ];
     case TOWER_KIND.DETECTOR:
       return [
         { k: '侦测半径', v: `${(pick(d.range, lv) / CELL).toFixed(1)}格` },
@@ -462,7 +557,69 @@ const onUpgradeTower = () => {
 const onSellTower = () => {
   const s = game.value?.state;
   if (!s?.selectedTower) return;
-  game.value?.sellTower?.(s.selectedTower);
+  openSellConfirm(s.selectedTower);
+};
+
+// ===== 出售确认弹窗 =====
+const sellConfirm = ref(null);
+let sellPrevPaused = false;
+
+const openSellConfirm = (t) => {
+  if (!t) return;
+  const s = game.value?.state;
+  if (!s || s.towers.indexOf(t) < 0) return;
+  sellConfirm.value = {
+    tower: t,
+    name: t.def.name,
+    level: (t.level || 0) + 1,
+    refund: game.value?.getSellRefund?.(t) ?? 0,
+    summon: (s.summons || []).filter((x) => x.towerId === t.id && !x.dead).length,
+  };
+  sellPrevPaused = !!s.paused;
+  s.paused = true;
+};
+
+const cancelSell = () => {
+  sellConfirm.value = null;
+  const s = game.value?.state;
+  if (s) s.paused = sellPrevPaused;
+};
+
+const confirmSell = () => {
+  const t = sellConfirm.value?.tower;
+  cancelSell();
+  const s = game.value?.state;
+  if (t && s && s.towers.indexOf(t) >= 0) game.value?.sellTower?.(t);
+};
+
+// ===== 重开确认弹窗 =====
+const resetConfirm = ref(null);
+let resetPrevPaused = false;
+
+const openResetConfirm = () => {
+  const s = game.value?.state;
+  if (!s) return;
+  // 已在结算 / 通关挂起界面上：没有「当前进度」可言，直接重开不拦
+  if (s.gameOver || s.pendingEndless || s.pendingRelic) { game.value?.reset?.(); return; }
+  resetConfirm.value = {
+    wave: s.wave, endless: !!s.endless, gold: s.gold, killed: s.killed,
+    towers: s.towers.length, relics: (s.relics || []).length,
+  };
+  resetPrevPaused = !!s.paused;
+  s.paused = true;
+};
+
+const cancelReset = () => {
+  resetConfirm.value = null;
+  const s = game.value?.state;
+  if (s) s.paused = resetPrevPaused;
+};
+
+const confirmReset = () => {
+  resetConfirm.value = null;
+  const s = game.value?.state;
+  if (s) s.paused = resetPrevPaused;
+  game.value?.reset?.();
 };
 
 const onSetRally = () => game.value?.setRallyMode?.();
@@ -476,9 +633,19 @@ const onBuyPotion = () => game.value?.buyPotion?.();
 const onUsePotion = () => game.value?.usePotion?.();
 const onPickRelic = (kind) => game.value?.pickRelic?.(kind);
 
+// ===== 下一波按钮：波次进行中可提前排队（上限 1 波） =====
+const waveBtnLabel = computed(() => {
+  const s = state.value;
+  if (s.waveQueued) return `已排队下一波（剩 ${s.enemyRemain}）`;
+  if (s.waveActive) return `提前解锁下一波（剩 ${s.enemyRemain}）`;
+  return '开始下一波';
+});
+
 const onStartWave = () => game.value?.startNextWave?.();
+const onEnterEndless = () => game.value?.chooseEndless?.(true);
+const onBackMenu = () => { game.value?.chooseEndless?.(false); emit('back'); };
 const onPauseToggle = () => { const s = game.value?.state; if (s) s.paused = !s.paused; };
-const onReset = () => game.value?.reset?.();
+const onReset = () => openResetConfirm();
 const onDebugGold = () => game.value?.debugAddGold?.(500);
 const onDebugKill = () => game.value?.debugKillAll?.();
 const onDebugHeal = () => game.value?.debugHeal?.();
@@ -487,9 +654,33 @@ const onBack = () => emit('back');
 
 const onPointerDown = (e) => game.value?.onClick?.(e);
 const onPointerMove = (e) => game.value?.onMouseMove?.(e);
-const onContext = (e) => game.value?.onRightClick?.(e);
+// 右键：优先处理出售确认弹窗，其次取消搬迁，最后才落到出售/取消选择
+const onContext = (e) => {
+  if (resetConfirm.value) { cancelReset(); return; }
+  if (sellConfirm.value) { cancelSell(); return; }
+  const s = game.value?.state;
+  if (!s) return;
+  if (s.moveSelected) { s.moveSelected = null; return; }
+  if (s.selectedTower) { openSellConfirm(s.selectedTower); return; }
+  game.value?.onRightClick?.(e);
+};
 
 const onKey = (e, down) => {
+  // 重开确认期间：Esc 取消，Enter 确认（吞掉所有按键，避免误触继续操作游戏）
+  if (resetConfirm.value) {
+    if (down) return;
+    if (e.key === 'Escape') cancelReset();
+    if (e.key === 'Enter') confirmReset();
+    return;
+  }
+  // 出售确认期间：Esc/右键取消，Enter 确认
+  if (sellConfirm.value) {
+    if (down) return;
+    if (e.key === 'Escape') cancelSell();
+    if (e.key === 'Enter') confirmSell();
+    return;
+  }
+  if (!down && (e.key === 'r' || e.key === 'R')) { openResetConfirm(); return; }
   if (!down && e.key === 'Escape') { emit('back'); return; }
   if (!down && (e.key === '`' || e.key === '~')) { onToggleDebug(); return; }
   game.value?.onKey?.(e, down);
@@ -501,7 +692,7 @@ const syncState = () => {
     state.value = {
       selectedBuildKind: s.selectedBuildKind,
       selectedTower: s.selectedTower,
-      wave: s.wave, waveActive: s.waveActive, waveCountdown: s.waveCountdown,
+      wave: s.wave, waveActive: s.waveActive, waveQueued: !!s.waveQueued, waveCountdown: s.waveCountdown,
       maxWave: s.maxWave, endless: s.endless, leak: s.leak, killed: s.killed,
       gold: s.gold, hero: s.hero, moveCount: s.moveCount,
       paused: s.paused, gameOver: s.gameOver, victory: s.victory,
@@ -519,6 +710,8 @@ const syncState = () => {
       potions: s.potions,
       relics: s.relics.slice(),
       pendingRelic: s.pendingRelic,
+      earlyBonus: game.value?.getEarlyBonus?.() ?? 0,
+      pendingEndless: !!s.pendingEndless,
     };
     towerDefs.value = s.towerDefs;
   }
@@ -861,6 +1054,108 @@ onBeforeUnmount(() => {
   .relic-desc { font-size: 11px; color: #9fb6c0; line-height: 1.5; }
 }
 
+// ===== 出售确认弹窗 =====
+.gold { color: #fbbf24; }
+
+.end-note {
+  margin: -8px 0 16px;
+  font-size: 11px;
+  color: #9fb6c0;
+  line-height: 1.6;
+}
+
+.confirm-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 10, 16, 0.82);
+  z-index: 45;
+}
+
+.confirm-modal {
+  min-width: 280px;
+  padding: 18px 22px 16px;
+  border: 1px solid #2b4a56;
+  border-radius: 8px;
+  background: #0b1a24;
+  text-align: center;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: #fbbf24;
+  }
+}
+
+.confirm-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+  font-size: 12px;
+  color: #9fb6c0;
+
+  b {
+    color: #eaf6ff;
+    font-weight: 500;
+  }
+
+  i {
+    font-style: normal;
+    margin-left: 4px;
+    color: #7df3ff;
+  }
+
+  .gold { color: #fbbf24; }
+}
+
+.confirm-warn {
+  margin: 10px 0 2px;
+  font-size: 11px;
+  color: #f87171;
+}
+
+.confirm-sub {
+  margin: 8px 0 12px;
+  font-size: 10px;
+  color: #6b8b97;
+}
+
+.confirm-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cf-btn {
+  padding: 6px 18px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cf-cancel {
+  background: transparent;
+  color: #3ee6d8;
+  border: 1px solid #3ee6d8;
+
+  &:hover { background: rgba(62, 230, 216, 0.12); }
+}
+
+.cf-ok {
+  background: #ef4444;
+  color: #fff;
+  border: 1px solid #ef4444;
+
+  &:hover { background: #f87171; }
+}
+
 .skill-picker {
   margin: 4px 0;
 
@@ -1006,8 +1301,10 @@ onBeforeUnmount(() => {
 
 .game-canvas {
   display: block;
-  width: min(672px, 84vh);
-  height: min(672px, 84vh);
+  // 画布 = 672×(672+34+60)，上下两条是 HUD 安全区；矮窗口等比缩小，保证底部技能栏完整可见
+  width: min(672px, 70vh, 100%);
+  height: auto;
+  aspect-ratio: 672 / 766;
   cursor: crosshair;
   background: #02060d;
   box-shadow: 0 0 24px rgba(62, 230, 216, 0.12), 0 0 60px rgba(0, 0, 0, 0.6);

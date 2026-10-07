@@ -1,7 +1,7 @@
 // 塔防游戏状态机 / 主循环
 
 import {
-  GRID_SIZE, CELL, CANVAS_SIZE,
+  GRID_SIZE, CELL, CANVAS_SIZE, HUD_TOP, HUD_BOTTOM, CANVAS_W, CANVAS_H,
   PATH_A, PATH_B, PATH_A_POINTS, PATH_B_POINTS,
   getPointAtLength, getDirAtLength,
   isBuildable,
@@ -12,7 +12,8 @@ import {
 } from '../config/towers.js';
 import { ENEMY_DEFS, ENEMY_KIND, BOSS_DEFS, ELITE } from '../config/enemies.js';
 import {
-  buildWavePlan, waveTheme, eliteRatio, WAVE_END_REWARD, BOSS_END_REWARD, LEAK_LIMIT,
+  buildWavePlan, waveTheme, eliteRatio, WAVE_END_REWARD, BOSS_END_REWARD,
+  EARLY_START_BONUS, LEAK_LIMIT,
   ENDLESS_K, ENDLESS_PERIOD, MAX_ALIVE_ENEMIES,
 } from '../config/waves.js';
 import {
@@ -178,11 +179,14 @@ const EMPTY_BLOOD_PACT = { hp: 0, dr: 0, lifesteal: 0, stacks: 0, revives: 0 };
 
 export const createGame = (canvas, opts = {}) => {
   const ctx = canvas.getContext('2d');
-  const W = CANVAS_SIZE;
-  const H = CANVAS_SIZE;
+  // 画布含 HUD 安全区：棋盘只有中间 CANVAS_SIZE×CANVAS_SIZE 一块
+  const W = CANVAS_W;
+  const H = CANVAS_H;
 
   const state = {
     width: W, height: H, dpr: 1,
+    // 棋盘（网格区）尺寸：游戏内坐标、边界裁剪都用这个，不是画布尺寸
+    gridSize: CANVAS_SIZE,
     time: 0, dt: 0,
     gold: opts.startGold ?? 200,
     // 可调配置（调试面板）
@@ -196,6 +200,10 @@ export const createGame = (canvas, opts = {}) => {
     endlessK: 0,
     waveActive: false,
     waveCountdown: 12,
+    // 玩家点了「下一波」但本波还没打完：排队等本波清空后立刻开下一波（同时只能排一波）
+    waveQueued: false,
+    // 通关后等待玩家选择「进无尽 / 返回菜单」，未决时冻结推进
+    pendingEndless: false,
     leak: 0,
     killed: 0,
     gameOver: false,
@@ -265,6 +273,18 @@ export const createGame = (canvas, opts = {}) => {
       spawnFx({ kind: 'execute', x: e.x, y: e.y, life: 300 });
     }
     if (e.hp <= 0 && !e.dead) e.dead = true;
+  };
+
+  // 直伤结算（雷霆塔连锁 / 冰霜塔冰伤等不走弹道的伤害都走这里）
+  const dealDirectDamage = (e, raw, opts = {}) => {
+    if (!e || e.dead || e.escaped) return 0;
+    const mult = !opts.ignoreArmor && e.armor && !e.armor.broken ? e.armor.mult : 1;
+    const amp = e.dmgTakenAmp || 1;
+    const dealt = raw * mult * amp;
+    e.hp -= dealt;
+    e.lastHit = state.time;
+    settleDamage(e);
+    return dealt;
   };
 
   const spawnFx = (fx) => {
@@ -434,12 +454,18 @@ export const createGame = (canvas, opts = {}) => {
     state.summons = state.summons.filter((s) => s.towerId !== towerId);
   };
 
+  // 出售返还额（供 UI 弹窗预览，与 sellTower 共用同一套算法）
+  const getSellRefund = (t) => {
+    if (!t) return 0;
+    const ratio = relicEffects().sellRefundFull ? 1 : t.def.sellRefund;
+    return ((t.def.cost + t.def.upgradeCost.slice(0, t.level).reduce((a, b) => a + b, 0)) * ratio) | 0;
+  };
+
   // 出售塔（含清理旗下小兵）
   const sellTower = (t) => {
     if (!t) return false;
     // 回响契约：出售返还 100%
-    const ratio = relicEffects().sellRefundFull ? 1 : t.def.sellRefund;
-    const refund = ((t.def.cost + t.def.upgradeCost.slice(0, t.level).reduce((a, b) => a + b, 0)) * ratio) | 0;
+    const refund = getSellRefund(t);
     state.gold += refund;
     state.towers = state.towers.filter((tw) => tw !== t);
     removeSummonsOfTower(t.id);
@@ -729,7 +755,67 @@ export const createGame = (canvas, opts = {}) => {
     state.enemies = state.enemies.filter((e) => !e.dead && !e.escaped);
   };
 
+  // 每帧重算：增幅塔 → 范围内建筑 的伤害 / 攻速加成（多座增幅塔线性叠加）
+  let ampBuff = new Map();
+  const refreshAmpBuff = () => {
+    ampBuff = new Map();
+    for (const a of state.towers) {
+      if (a.kind !== TOWER_KIND.AMP) continue;
+      const r = a.def.auraRange[a.level];
+      const ax = a.gx * CELL + CELL / 2;
+      const ay = a.gy * CELL + CELL / 2;
+      for (const t of state.towers) {
+        if (t === a) continue;
+        const tx = t.gx * CELL + CELL / 2;
+        const ty = t.gy * CELL + CELL / 2;
+        if (dist2(tx, ty, ax, ay) > r * r) continue;
+        const cur = ampBuff.get(t.id) || { dmg: 1, speed: 0 };
+        ampBuff.set(t.id, {
+          dmg: cur.dmg + a.def.dmgBoost[a.level],
+          speed: cur.speed + a.def.speedBoost[a.level],
+        });
+      }
+    }
+  };
+  const ampOf = (t) => ampBuff.get(t.id) || null;
+
+  // 冰霜塔：范围内常驻减速 + 冰霜持续伤害 + 三级起定时冻结单体
+  const updateFrost = (dtMs) => {
+    for (const t of state.towers) {
+      if (t.kind !== TOWER_KIND.FROST) continue;
+      const r = t.def.range[t.level];
+      const cx = t.gx * CELL + CELL / 2;
+      const cy = t.gy * CELL + CELL / 2;
+      const slow = t.def.slow[t.level];
+      const dps = t.def.dps[t.level];
+      let anyTarget = false;
+      for (const e of state.enemies) {
+        if (e.dead || e.escaped) continue;
+        if (isStealth(e) && !e.detected) continue;
+        if (dist2(e.x, e.y, cx, cy) > r * r) continue;
+        anyTarget = true;
+        e.slowUntil = Math.max(e.slowUntil || 0, state.time + 250);
+        e.slowAmount = Math.max(e.slowAmount || 0, slow);
+        if (dps > 0) dealDirectDamage(e, dps * (dtMs / 1000));
+      }
+      if (t.level >= 2) {
+        t.freezeTimer = Math.max(0, (t.freezeTimer || 0) - dtMs);
+        if (t.freezeTimer <= 0 && anyTarget) {
+          const victim = pickTarget(t);
+          if (victim) {
+            t.freezeTimer = t.def.freezeInterval[t.level];
+            victim.slowUntil = Math.max(victim.slowUntil || 0, state.time + t.def.freezeDuration[t.level]);
+            victim.slowAmount = 1;
+            spawnFx({ kind: 'frost', x: victim.x, y: victim.y, radius: 14, life: 450 });
+          }
+        }
+      }
+    }
+  };
+
   const updateTowers = (dtMs) => {
+    refreshAmpBuff();
+    updateFrost(dtMs);
     state.enemies.forEach((e) => { if (!isStealth(e)) return; e.detected = false; });
 
     // 反隐塔：侦测 + 毒雾（三级解锁）
@@ -765,9 +851,15 @@ export const createGame = (canvas, opts = {}) => {
     const hero = state.hero;
     const auraAtk = getAura('arrowRain');
 
+    // 不参与普攻的塔：兵营（小兵）/ 前哨站（专属）/ 冰霜塔（领域）/ 增幅塔（纯光环）
+    const NO_AUTO_ATTACK = new Set([
+      TOWER_KIND.BARRACKS, TOWER_KIND.TECH, TOWER_KIND.FROST, TOWER_KIND.AMP,
+    ]);
     for (const t of state.towers) {
-      // 疾风齿轮：全塔攻速加成（冷却递减更快）
-      t.cd = Math.max(0, t.cd - dtMs * relicEffects().towerSpeedMult);
+      // 疾风齿轮：全塔攻速加成（冷却递减更快）；增幅塔再叠一层
+      const amp = ampOf(t);
+      const spdBoost = relicEffects().towerSpeedMult * (1 + (amp ? amp.speed : 0));
+      t.cd = Math.max(0, t.cd - dtMs * spdBoost);
       t.auraTick = (t.auraTick || 0) + dtMs;
 
       // 科技前哨站：三级起攻击 + 减速
@@ -793,8 +885,8 @@ export const createGame = (canvas, opts = {}) => {
         }
       }
 
-      // 普通攻击（兵营 / 科技前哨站各自有专属逻辑）
-      if (t.kind !== TOWER_KIND.BARRACKS && t.kind !== TOWER_KIND.TECH) {
+      // 普通攻击（兵营 / 科技前哨站各自有专属逻辑；冰霜塔 / 增幅塔不攻击）
+      if (!NO_AUTO_ATTACK.has(t.kind)) {
         const target = pickTarget(t);
         if (target) {
           const dx = target.x - (t.gx * CELL + CELL / 2);
@@ -815,23 +907,29 @@ export const createGame = (canvas, opts = {}) => {
     }
   };
 
+  // 塔的射程（取字段差异：兵营=集结距离、前哨站=三级攻击距离、其余=range[level]）
+  const towerRange = (t) => {
+    if (t.kind === TOWER_KIND.BARRACKS) return t.def.summonRange;
+    if (t.kind === TOWER_KIND.TECH) return t.def.techAttackRange[t.level] || 0;
+    return t.def.range ? t.def.range[t.level] : 0;
+  };
+
   const pickTarget = (t) => {
     const cx = t.gx * CELL + CELL / 2;
     const cy = t.gy * CELL + CELL / 2;
-    let range = 0;
-    if (t.kind === TOWER_KIND.BARRACKS) range = t.def.summonRange;
-    else if (t.kind === TOWER_KIND.CANNON || t.kind === TOWER_KIND.ARROW) range = t.def.range[t.level];
-    else if (t.kind === TOWER_KIND.TECH) range = t.def.techAttackRange[t.level] || 0;
     // 远视棱镜：全塔射程加成
-    range *= relicEffects().towerRangeMult;
+    const range = towerRange(t) * relicEffects().towerRangeMult;
     if (range <= 0) return null;
+    const strongest = t.def.targetMode === 'strongest';
     let best = null;
     let bestT = -1;
     for (const e of state.enemies) {
       if (e.dead || e.escaped) continue;
       if (isStealth(e) && !e.detected && (t.kind !== TOWER_KIND.BARRACKS)) continue;
       if (dist2(e.x, e.y, cx, cy) > range * range) continue;
-      if (e.t > bestT) { bestT = e.t; best = e; }
+      // 狙击塔：优先血最多的目标（精英 / Boss）；其余塔按推进进度取最前
+      const key = strongest ? e.maxHp : e.t;
+      if (key > bestT) { bestT = key; best = e; }
     }
     return best;
   };
@@ -858,7 +956,7 @@ export const createGame = (canvas, opts = {}) => {
       targetId: target.id,
       tx: target.x, ty: target.y,
       speed: 300,
-      dmg: t.def.missileDmg[t.level],
+      dmg: t.def.missileDmg[t.level] * ampDmgMult(t),
       splash: t.def.missileSplash[t.level],
       angle: Math.atan2(target.y - cy, target.x - cx),
       pierce: 1,
@@ -873,10 +971,65 @@ export const createGame = (canvas, opts = {}) => {
     showMessage('洲际导弹发射！', '#f87171', 1000);
   };
 
+  // 增幅塔加成后的伤害倍率
+  const ampDmgMult = (t) => {
+    const amp = ampOf(t);
+    return amp ? amp.dmg : 1;
+  };
+
+  // 雷霆塔：瞬发连锁闪电，在相邻敌人之间跳跃（每跳伤害衰减）
+  const fireChain = (t, target) => {
+    const cx = t.gx * CELL + CELL / 2;
+    const cy = t.gy * CELL + CELL / 2;
+    const pts = [{ x: cx, y: cy }];
+    const seen = new Set();
+    let dmg = t.def.dmg[t.level] * relicEffects().towerDmgMult * ampDmgMult(t);
+    let cur = target;
+    for (let i = 0; i < t.def.chainCount[t.level] && cur; i++) {
+      seen.add(cur.id);
+      pts.push({ x: cur.x, y: cur.y });
+      dealDirectDamage(cur, rollDamage(dmg));
+      dmg *= t.def.chainFalloff;
+      let next = null;
+      let bestD = Infinity;
+      const jr2 = t.def.chainRange[t.level] ** 2;
+      for (const e of state.enemies) {
+        if (e.dead || e.escaped || seen.has(e.id)) continue;
+        if (isStealth(e) && !e.detected) continue;
+        const d2 = dist2(e.x, e.y, cur.x, cur.y);
+        if (d2 <= jr2 && d2 < bestD) { bestD = d2; next = e; }
+      }
+      cur = next;
+    }
+    spawnFx({ kind: 'chain', pts, life: 320 });
+    t.cd = t.def.attackInterval[t.level];
+  };
+
   const fireTower = (t, target) => {
     const cx = t.gx * CELL + CELL / 2;
     const cy = t.gy * CELL + CELL / 2;
-    if (t.kind === TOWER_KIND.CANNON || t.kind === TOWER_KIND.ARROW) {
+    if (t.kind === TOWER_KIND.TESLA) {
+      fireChain(t, target);
+    } else if (t.kind === TOWER_KIND.SNIPER) {
+      const rf = relicEffects();
+      const bonus = (target.elite || target.kind === 'boss') ? t.def.eliteBonus[t.level] : 1;
+      state.projectiles.push({
+        id: genId(),
+        kind: 'sniper',
+        x: cx, y: cy,
+        targetId: target.id,
+        tx: target.x, ty: target.y,
+        speed: t.def.projectileSpeed,
+        dmg: rollDamage(t.def.dmg[t.level] * bonus * rf.towerDmgMult * ampDmgMult(t)),
+        ignoreArmor: true,
+        angle: Math.atan2(target.y - cy, target.x - cx),
+        pierce: 1,
+        hit: new Set(),
+        fromTower: t.id,
+        towerKind: t.kind,
+      });
+      t.cd = t.def.attackInterval[t.level];
+    } else if (t.kind === TOWER_KIND.CANNON || t.kind === TOWER_KIND.ARROW) {
       const rf = relicEffects();
       const proj = {
         id: genId(),
@@ -885,8 +1038,8 @@ export const createGame = (canvas, opts = {}) => {
         targetId: target.id,
         tx: target.x, ty: target.y,
         speed: t.def.projectileSpeed,
-        // 锋锐符文（伤害加成）+ 幸运骰（暴击）
-        dmg: rollDamage(t.def.dmg[t.level] * rf.towerDmgMult),
+        // 锋锐符文（伤害加成）+ 幸运骰（暴击）+ 增幅塔光环
+        dmg: rollDamage(t.def.dmg[t.level] * rf.towerDmgMult * ampDmgMult(t)),
         // 爆裂核心：溅射范围加成
         splash: t.def.splash ? t.def.splash[t.level] * rf.splashMult : 0,
         angle: Math.atan2(target.y - cy, target.x - cx),
@@ -912,7 +1065,7 @@ export const createGame = (canvas, opts = {}) => {
         // 锁定开火时的坐标，目标丢失后飞向该点而不是飞出图
         tx: target.x, ty: target.y,
         speed: 480,
-        dmg: t.def.techAttackDmg[t.level],
+        dmg: t.def.techAttackDmg[t.level] * ampDmgMult(t),
         slow: t.def.techSlow[t.level],
         slowDur: t.def.techSlowDuration,
         angle: Math.atan2(target.y - cy, target.x - cx),
@@ -1040,8 +1193,11 @@ export const createGame = (canvas, opts = {}) => {
           s.walkPhase += v * 0.16;
         }
         if (s.attackCd <= 0 && d <= s.attackRange + 14) {
-          const amp = target.dmgTakenAmp || 1;
-          const dealt = s.dmg * dmgMult * amp;
+          // 增幅塔同样会提升兵营小兵的伤害（作用对象是该兵营这座建筑）
+          const boost = ampOf({ id: s.towerId });
+          const boostMult = boost ? boost.dmg : 1;
+          const amp2 = target.dmgTakenAmp || 1;
+          const dealt = s.dmg * dmgMult * amp2 * boostMult;
           target.hp -= dealt;
           target.lastHit = state.time;
           s.attackCd = 600;
@@ -1140,7 +1296,7 @@ export const createGame = (canvas, opts = {}) => {
         if (p.traveled >= p.range) return false;
         return true;
       }
-      if (p.x < -50 || p.x > state.width + 50 || p.y < -50 || p.y > state.height + 50) return false;
+      if (p.x < -50 || p.x > state.gridSize + 50 || p.y < -50 || p.y > state.gridSize + 50) return false;
       return p.pierce > 0;
     });
   };
@@ -1148,7 +1304,8 @@ export const createGame = (canvas, opts = {}) => {
   const applyProjectileHit = (p, target) => {
     if (p.hit.has(target.id)) return;
     p.hit.add(target.id);
-    const mult = target.armor && !target.armor.broken ? target.armor.mult : 1;
+    // 狙击塔无视护甲（mult = 1）
+    const mult = !p.ignoreArmor && target.armor && !target.armor.broken ? target.armor.mult : 1;
     const amp = target.dmgTakenAmp || 1;
     const auraDmg = getAura('ultimateBeam');
     const dmgBoost = auraDmg ? auraDmg.dmgBoost : 1;
@@ -1247,8 +1404,8 @@ export const createGame = (canvas, opts = {}) => {
     } else {
       h.vx = 0; h.vy = 0;
     }
-    h.x = clamp(h.x + h.vx * (dtMs / 1000), 14, state.width - 14);
-    h.y = clamp(h.y + h.vy * (dtMs / 1000), 14, state.height - 14);
+    h.x = clamp(h.x + h.vx * (dtMs / 1000), 14, state.gridSize - 14);
+    h.y = clamp(h.y + h.vy * (dtMs / 1000), 14, state.gridSize - 14);
 
     const speedNow = Math.hypot(h.vx, h.vy);
     if (speedNow > 1) h.walkPhase += (speedNow / HERO_SPEED) * (dtMs / 1000) * 9;
@@ -1456,7 +1613,25 @@ export const createGame = (canvas, opts = {}) => {
     state.spawnQueue = remain;
   };
 
-  const startWave = (n) => {
+  // 下一波的波号（无尽持续 +1，正式关卡卡在 maxWave）
+  const peekNextWave = () => (state.endless ? state.wave + 1 : Math.min(state.maxWave, state.wave + 1));
+
+  // 提前解锁下一波的奖励金额（随关卡提升，受「商队契约」等波次奖励加成影响）
+  const getEarlyBonus = () =>
+    Math.round(EARLY_START_BONUS(state.wave) * relicEffects().waveRewardMult);
+
+  // 立即开启下一波：统一入口，保证「提前解锁」只可能领先一波
+  // bonus > 0 时把奖励信息并进开波提示（避免被后一条消息覆盖）
+  const jumpToNextWave = (bonus = 0) => {
+    if (state.waveActive) return false;
+    state.waveQueued = false;
+    const n = peekNextWave();
+    if (state.endless && n % ENDLESS_PERIOD === 0) state.endlessK += ENDLESS_K;
+    startWave(n, bonus);
+    return true;
+  };
+
+  const startWave = (n, bonus = 0) => {
     if (state.waveActive) return;
     state.wave = n;
     state.waveActive = true;
@@ -1496,7 +1671,8 @@ export const createGame = (canvas, opts = {}) => {
     const theme = waveTheme(n);
     const themeTag = theme ? ` · ${theme.name}` : '';
     const eliteTag = eliteCount ? ` · 精英 ${eliteCount}` : '';
-    showMessage(`第 ${n} 波${themeTag} 开始！共 ${totalCount} 敌${eliteTag}`, '#22c55e', 1800);
+    const bonusTag = bonus ? ` · 提前解锁 +💰${bonus}` : '';
+    showMessage(`第 ${n} 波${themeTag} 开始！共 ${totalCount} 敌${eliteTag}${bonusTag}`, bonus ? '#fbbf24' : '#22c55e', 1800);
   };
 
   const checkWaveComplete = () => {
@@ -1510,13 +1686,18 @@ export const createGame = (canvas, opts = {}) => {
       state.waveActive = false;
       // Boss 波结算 → 挂起遗物三选一（选择期间游戏暂停）
       if (isBossWave) offerRelicChoices();
-      // 首次达到最大波次 → 通关并进入无尽（无尽后不再重复提示）
+      // 首次达到最大波次 → 通关，停下来由玩家选择「进无尽 / 返回菜单」
       if (state.wave >= state.maxWave && !state.endless) {
         state.victory = true;
-        state.endless = true;
         state.endlessK = 0;
         state.waveCountdown = 12;
-        showMessage('通关！进入无尽模式', '#22c55e', 3000);
+        state.pendingEndless = true;
+        showMessage('通关！选择是否进入无尽模式', '#22c55e', 3000);
+        return;
+      }
+      if (state.waveQueued && !state.pendingRelic) {
+        // 玩家提前点了下一波 → 跳过波间倒计时直接开打（Boss 波要先选完遗物）
+        jumpToNextWave();
         return;
       }
       state.waveCountdown = Math.max(5, 12 - Math.floor(state.wave / 5));
@@ -1526,18 +1707,12 @@ export const createGame = (canvas, opts = {}) => {
   const tickWaveCountdown = (dtMs) => {
     if (state.waveActive) return;
     state.waveCountdown = Math.max(0, state.waveCountdown - dtMs / 1000);
-    if (state.waveCountdown <= 0) {
-      const nextWave = state.endless ? state.wave + 1 : Math.min(state.maxWave, state.wave + 1);
-      if (state.endless && nextWave % ENDLESS_PERIOD === 0) {
-        state.endlessK += ENDLESS_K;
-      }
-      startWave(nextWave);
-    }
+    if (state.waveCountdown <= 0) jumpToNextWave();
   };
 
   const update = (dtMs) => {
-    // 遗物三选一未决时冻结推进（选择面板由 UI 层渲染）
-    if (state.paused || state.gameOver || state.pendingRelic) return;
+    // 遗物三选一未决 / 通关后未选择是否进无尽 → 冻结推进（选择面板由 UI 层渲染）
+    if (state.paused || state.gameOver || state.pendingRelic || state.pendingEndless) return;
     state.time += dtMs;
     // 生命之泉：英雄持续回血
     const regen = relicEffects().heroRegen;
@@ -1575,6 +1750,9 @@ export const createGame = (canvas, opts = {}) => {
   const draw = () => {
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, state.width, state.height);
+    // 棋盘层整体下移 HUD_TOP，让顶栏 / 底部技能栏独占上下安全区，不遮挡地图
+    ctx.save();
+    ctx.translate(0, HUD_TOP);
     drawMap(ctx, state);
     drawEnemies(ctx, state);
     drawTowers(ctx, state);
@@ -1582,8 +1760,9 @@ export const createGame = (canvas, opts = {}) => {
     drawHero(ctx, state);
     drawProjectiles(ctx, state);
     drawEffects(ctx, state);
+    if (state.showDebug) drawDebugOverlay(ctx, state, state.gridSize, state.gridSize);
+    ctx.restore();
     drawHud(ctx, state, state.width, state.height);
-    if (state.showDebug) drawDebugOverlay(ctx, state, state.width, state.height);
     if (state.paused) {
       ctx.fillStyle = 'rgba(15, 23, 42, 0.5)';
       ctx.fillRect(0, 0, state.width, state.height);
@@ -1604,7 +1783,7 @@ export const createGame = (canvas, opts = {}) => {
       ctx.fillText(`漏怪 ${state.leak} / 击杀 ${state.killed}`, state.width / 2, state.height / 2 + 20);
       ctx.fillText('按 R 重开', state.width / 2, state.height / 2 + 50);
     }
-    if (state.victory && !state.endless) {
+    if (state.victory && !state.endless && !state.pendingEndless) {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, 0, state.width, state.height);
       ctx.fillStyle = '#22c55e';
@@ -1654,7 +1833,8 @@ export const createGame = (canvas, opts = {}) => {
     state.mouseScreen.x = e.clientX - rect.left;
     state.mouseScreen.y = e.clientY - rect.top;
     const sx = (e.clientX - rect.left) * (state.width / rect.width);
-    const sy = (e.clientY - rect.top) * (state.height / rect.height);
+    // 画布顶部有 HUD_TOP 安全区，棋盘坐标要减掉这段偏移
+    const sy = (e.clientY - rect.top) * (state.height / rect.height) - HUD_TOP;
     state.mouseWorld.x = sx;
     state.mouseWorld.y = sy;
     const gx = Math.floor(sx / CELL);
@@ -1680,7 +1860,7 @@ export const createGame = (canvas, opts = {}) => {
     }
     const rect = canvas.getBoundingClientRect();
     const sx = (e.clientX - rect.left) * (state.width / rect.width);
-    const sy = (e.clientY - rect.top) * (state.height / rect.height);
+    const sy = (e.clientY - rect.top) * (state.height / rect.height) - HUD_TOP;
     const gx = Math.floor(sx / CELL);
     const gy = Math.floor(sy / CELL);
     if (state.moveSelected) {
@@ -1774,8 +1954,7 @@ export const createGame = (canvas, opts = {}) => {
     if (down) state.keys.add(k); else state.keys.delete(k);
     if (!down && (k === ' ')) state.paused = !state.paused;
     if (!down && (k === '`' || k === '~')) state.showDebug = !state.showDebug;
-    // 重开本局：R 键（无技能占用）
-    if (!down && k === 'r') reset();
+    // 重开本局：R 键由 UI 层拦截并弹确认框（防误触），此处不再直接 reset
     if (down) {
       // 技能键：1/2/3/4/5（数字键不再用于选塔种）
       const sk = state.skills.find((s) => s.key === k && s.unlocked);
@@ -1840,6 +2019,8 @@ export const createGame = (canvas, opts = {}) => {
     if (!def) return false;
     state.relics.push(def);
     state.pendingRelic = null;
+    // 遗物选完立即兑现排队的下一波（Boss 波期间无法提前开波）
+    if (state.waveQueued && !state.waveActive) jumpToNextWave();
     // 立即生效的持续性属性
     // 注：英雄最大生命由 recomputeHeroStats 统一计算，此处直接改会被每帧覆盖
     if (def.kind === RELIC_KIND.LEAK_FORGIVE) {
@@ -1849,6 +2030,20 @@ export const createGame = (canvas, opts = {}) => {
       state.moveLimit += RELIC_VALUES.moveCountBonus;
     }
     showMessage(`获得遗物：${def.name}`, def.color, 2200);
+    return true;
+  };
+
+  // 通关后的二选一：进无尽（继续玩） / 返回菜单（由 UI 层路由）
+  const chooseEndless = (yes) => {
+    if (!state.pendingEndless) return false;
+    state.pendingEndless = false;
+    if (!yes) return true;
+    state.endless = true;
+    state.endlessK = 0;
+    state.victory = true;
+    showMessage('进入无尽模式：难度随波次持续放大', '#fbbf24', 2600);
+    // 通关前已排队下一波 → 进入无尽后立刻兑现
+    if (state.waveQueued && !state.waveActive) jumpToNextWave();
     return true;
   };
 
@@ -1909,18 +2104,25 @@ export const createGame = (canvas, opts = {}) => {
   const setDebug = (v) => { state.showDebug = !!v; };
   const toggleDebug = () => { state.showDebug = !state.showDebug; return state.showDebug; };
 
-  // 「下一波」：只跳过波间倒计时；当前波次未结束时不生效
+  // 「下一波」：波间直接开打；波次进行中则排队，等本波清空后立刻开下一波
+  // 排队上限恒为 1：排队期间重复点击无效，避免连点连开多波
   const startNextWave = () => {
     if (state.gameOver) return false;
     if (state.waveActive) {
+      if (state.waveQueued) {
+        showMessage('已排在下一波，无法再往前解锁', '#94a3b8', 1300);
+        return false;
+      }
+      state.waveQueued = true;
       const left = state.enemies.length + (state.spawnQueue ? state.spawnQueue.length : 0);
-      showMessage(`本波尚未结束（剩 ${left} 敌）`, '#ef4444', 1300);
+      const bonus = getEarlyBonus();
+      state.gold += bonus;
+      showMessage(`第 ${peekNextWave()} 波已排队：本波剩 ${left} 敌清空后立刻开始 · 提前解锁 +💰${bonus}`, '#38bdf8', 1800);
       return false;
     }
-    const nextWave = state.endless ? state.wave + 1 : Math.min(state.maxWave, state.wave + 1);
-    if (state.endless && nextWave % ENDLESS_PERIOD === 0) state.endlessK += ENDLESS_K;
-    startWave(nextWave);
-    return true;
+    const bonus = getEarlyBonus();
+    state.gold += bonus;
+    return jumpToNextWave(bonus);
   };
   // 兼容旧命名
   const debugSkipWave = startNextWave;
@@ -1947,11 +2149,13 @@ export const createGame = (canvas, opts = {}) => {
     state.gold = state.startGold;
     state.wave = 0;
     state.waveActive = false;
+    state.waveQueued = false;
     state.waveCountdown = 8;
     state.leak = 0;
     state.killed = 0;
     state.gameOver = false;
     state.victory = false;
+    state.pendingEndless = false;
     state.endless = false;
     state.endlessK = 0;
     state.moveCount = 0;
@@ -1978,8 +2182,9 @@ export const createGame = (canvas, opts = {}) => {
   };
   const resize = () => {
     const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
-    canvas.style.width = `${state.width}px`;
-    canvas.style.height = `${state.height}px`;
+    // 显示尺寸交给 CSS（等比缩放，窗口矮也不会把底部 HUD 挤出可视区）
+    canvas.style.width = '';
+    canvas.style.height = '';
     canvas.width = state.width * dpr;
     canvas.height = state.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2002,7 +2207,9 @@ export const createGame = (canvas, opts = {}) => {
     castSkill,
     buyPotion, usePotion, canBuyPotion, POTION,
     pickRelic, relicEffects, hasRelic,
-    upgradeTower, sellTower, removeSummonsOfTower,
+    getEarlyBonus, chooseEndless,
+    upgradeTower, sellTower, getSellRefund, removeSummonsOfTower,
+    peekNextWave,
     setRallyMode: () => {
       const t = state.selectedTower;
       if (t && t.kind === TOWER_KIND.BARRACKS) {

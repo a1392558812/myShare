@@ -9,6 +9,7 @@ import {
   PUFFER_SPRITE,
   FISH_SPRITE,
   BARNACLE_SPRITE,
+  DECOY_SPRITE,
 } from '../constants.js';
 
 /** 点阵 sprite（居中，像素大小 px），可选 angle 绕中心旋转 */
@@ -117,6 +118,54 @@ const drawPulses = (ctx, state) => {
     ctx.beginPath();
     ctx.arc(p.ox, p.oy, p.r - 6, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+};
+
+/** 回声诱饵：虚线假脉冲 + 空心像素，一眼区别于真实声呐 */
+const drawDecoys = (ctx, state) => {
+  const { decoys, time } = state;
+  for (const c of decoys) {
+    for (const p of c.pulses) {
+      if (p.dead) continue;
+      const a = 1 - p.r / CONFIG.decoy.pulseRadius;
+      ctx.strokeStyle = COLORS.decoy;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 6]);
+      ctx.globalAlpha = a * 0.45;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, p.r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    if (!c.landed) {
+      ctx.fillStyle = COLORS.decoy;
+      for (let i = 1; i <= 3; i++) {
+        ctx.globalAlpha = 0.3 * (1 - i / 4);
+        ctx.fillRect(Math.round(c.x - c.dirX * i * 7) - 2, Math.round(c.y - c.dirY * i * 7) - 2, 4, 4);
+      }
+    }
+
+    const remain = c.landed ? Math.max(0, (c.lifeUntil - time) / CONFIG.decoy.lifeMs) : 1;
+    ctx.fillStyle = COLORS.decoy;
+    ctx.globalAlpha = 0.14 + 0.16 * remain;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    const blink = 0.6 + 0.4 * Math.sin(time / 110);
+    drawSprite(ctx, DECOY_SPRITE, c.x, c.y, 3, COLORS.decoy, blink);
+
+    // 剩余寿命星环：倒计时收缩
+    if (c.landed) {
+      ctx.strokeStyle = COLORS.decoy;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, CONFIG.decoy.radius + 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * remain);
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
   }
 };
@@ -425,7 +474,31 @@ const drawHud = (ctx, state, viewW) => {
     ctx.globalAlpha = 1;
   }
 
-  const hy = ey + segH + 12;
+  // 回声诱饵：就绪 / 冷却 / 能量不足 三态
+  const dyY = ey + segH + 8;
+  const dyBarW = 96;
+  const dyCd = state.decoyCdRatio || 0;
+  const dyReady = state.decoyReady;
+  ctx.fillStyle = '#0d2433';
+  ctx.fillRect(pad + 14, dyY, dyBarW, 10);
+  ctx.fillStyle = dyReady ? COLORS.decoy : COLORS.sonarDim;
+  ctx.globalAlpha = dyReady ? 1 : 0.5;
+  ctx.fillRect(pad + 14, dyY, dyBarW * (dyCd > 0 ? 1 - dyCd : 1), 10);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = dyReady ? COLORS.decoy : '#2a3a4a';
+  ctx.fillRect(pad, dyY, 10, 10);
+  ctx.fillStyle = COLORS.white;
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const dyLabel = dyReady
+    ? '诱饵 就绪 空格'
+    : state.decoyNoEnergy
+      ? '诱饵 能量不足'
+      : `诱饵 ${((dyCd * CONFIG.decoy.cooldown) / 1000).toFixed(1)}s`;
+  ctx.fillText(dyLabel, pad + dyBarW + 20, dyY + 5);
+
+  const hy = dyY + 22;
   const showHearts = Math.min(player.hp, CONFIG.maxHp);
   for (let i = 0; i < CONFIG.maxHp; i++) {
     ctx.fillStyle = i < showHearts ? COLORS.danger : '#0d2433';
@@ -486,6 +559,7 @@ export const render = (ctx, state, viewW, viewH, dpr) => {
   drawWalls(ctx, state);
   drawBarnacles(ctx, state);
   drawPulses(ctx, state);
+  drawDecoys(ctx, state);
   drawKrill(ctx, state);
   drawPickups(ctx, state);
   drawFish(ctx, state);

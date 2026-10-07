@@ -87,6 +87,18 @@ export const drawProjectiles = (ctx, state) => {
       ctx.beginPath();
       ctx.arc(-2, 0, 1.5, 0, Math.PI * 2);
       ctx.fill();
+    } else if (p.kind === 'sniper') {
+      // 狙击弹：亮青色细长曳光弹（速度极快，视觉偏拉长）
+      ctx.fillStyle = '#67e8f9';
+      ctx.fillRect(-7, -1.2, 14, 2.4);
+      ctx.fillStyle = '#0891b2';
+      ctx.fillRect(-9, -2, 3, 4);
+      ctx.strokeStyle = 'rgba(236, 254, 255, 0.9)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(-7, 0);
+      ctx.lineTo(7, 0);
+      ctx.stroke();
     } else if (p.kind === 'arrowRain') {
       ctx.fillStyle = '#a855f7';
       ctx.fillRect(-3, -1, 6, 2);
@@ -195,6 +207,24 @@ export const drawEffects = (ctx, state) => {
       ctx.beginPath();
       ctx.arc(fx.x, fx.y, fx.radius * (0.4 + t * 0.6), 0, Math.PI * 2);
       ctx.stroke();
+    } else if (fx.kind === 'frost') {
+      // 冻结：六角霜环 + 扩散冰晶
+      ctx.strokeStyle = 'rgba(125, 211, 252, 0.95)';
+      ctx.lineWidth = 2 * (1 - t * 0.5);
+      ctx.beginPath();
+      ctx.arc(fx.x, fx.y, fx.radius * (0.4 + t * 0.7), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(224, 242, 254, 0.9)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + t * 1.2;
+        const r0 = fx.radius * 0.25;
+        const r1 = fx.radius * (0.6 + t * 0.3);
+        ctx.beginPath();
+        ctx.moveTo(fx.x + Math.cos(a) * r0, fx.y + Math.sin(a) * r0);
+        ctx.lineTo(fx.x + Math.cos(a) * r1, fx.y + Math.sin(a) * r1);
+        ctx.stroke();
+      }
     }
     ctx.restore();
   }

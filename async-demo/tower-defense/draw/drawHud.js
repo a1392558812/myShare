@@ -72,9 +72,15 @@ export const drawHud = (ctx, state, w, h) => {
     ctx.textAlign = 'right';
     ctx.fillText(`下一波 ${state.waveCountdown.toFixed(1)}s`, w - 12, 17);
   } else if (state.waveActive) {
-    ctx.fillStyle = '#22c55e';
-    ctx.textAlign = 'right';
-    ctx.fillText(`▶ 波次进行中`, w - 12, 17);
+    if (state.waveQueued) {
+      ctx.fillStyle = '#7df3ff';
+      ctx.textAlign = 'right';
+      ctx.fillText(`⏭ 下一波已排队`, w - 12, 17);
+    } else {
+      ctx.fillStyle = '#22c55e';
+      ctx.textAlign = 'right';
+      ctx.fillText(`▶ 波次进行中`, w - 12, 17);
+    }
   }
   ctx.restore();
 
@@ -147,6 +153,7 @@ export const drawDebugOverlay = (ctx, state, w, h) => {
     const cy = t.gy * CELL + CELL / 2;
     let r = 0;
     if (t.def.range) r = t.def.range[t.level] || 0;
+    else if (t.def.auraRange) r = t.def.auraRange[t.level] || 0;
     else if (t.kind === 'tech') r = t.def.techAttackRange[t.level] || 0;
     else if (t.kind === 'barracks') r = t.def.rallyRange[t.level] || t.def.rallyRange[0];
     if (!r) continue;

@@ -144,6 +144,7 @@ export const useGame = () => {
   const mouse = { x: SPAWN.x, y: SPAWN.y };
   const camera = { x: SPAWN.x, y: SPAWN.y };
   const pulses = [];
+  const decoys = [];
 
   const krill = KRILL.map((k) => ({
     ...k,
@@ -165,6 +166,8 @@ export const useGame = () => {
     targetY: m.y,
     wanderX: m.x,
     wanderY: m.y,
+    decoyId: 0, // 当前被哪枚诱饵钓住（0 = 无）
+    brokeFrom: 0, // 被真声呐点醒后摆脱的那枚诱饵 id：不再上它的当
     despawnAt: Infinity, // 非无尽模式不会自然刷没
   }));
 
@@ -254,6 +257,8 @@ export const useGame = () => {
   let nextKrillSpawnAt = 0;
   let nextPickupSpawnAt = 0;
   let nextMonsterSpawnAt = 0;
+  let decoyCdUntil = 0;
+  let nextDecoyId = 1;
 
   // 恐惧值倒计时状态
   let fearStage = 0; // 0,1,2... 阶段越高，倒计时越短
@@ -318,6 +323,8 @@ export const useGame = () => {
     camera.x = SPAWN.x;
     camera.y = SPAWN.y;
     pulses.length = 0;
+    decoys.length = 0;
+    decoyCdUntil = 0;
     fearStage = 0;
     fearNextAt = 0;
     krill.forEach((k) => {
@@ -357,6 +364,8 @@ export const useGame = () => {
         targetY: m.y,
         wanderX: m.x,
         wanderY: m.y,
+        decoyId: 0,
+        brokeFrom: 0,
         despawnAt: Infinity,
       });
     });
@@ -406,6 +415,53 @@ export const useGame = () => {
     player.dashDirY = dy / d;
     player.dashUntil = time + effDashDur() * 1000;
     player.dashCdUntil = time + effDashCd();
+  };
+
+  /** 诱饵发声：只把倒计时推后，不降恐惧阶段（只有主声呐能彻底清阶段） */
+  const refreshFear = (time) => {
+    if (fearNextAt === 0) return;
+    fearNextAt = time + getFearInterval(fearStage);
+  };
+
+  /**
+   * 抛出回声诱饵：朝鼠标方向飞行，落地后持续发假脉冲，把范围内海怪钓向落点
+   * @returns {boolean} 是否成功投出
+   */
+  const throwDecoy = () => {
+    const time = currentTime;
+    if (status.value !== 'playing' && status.value !== 'endless') return false;
+    if (time < decoyCdUntil) return false;
+    if (CONFIG.decoy.oneAtATime && decoys.length) return false;
+    if (player.energy < CONFIG.decoy.cost) return false;
+
+    let dx = mouse.x - player.x;
+    let dy = mouse.y - player.y;
+    let d = Math.hypot(dx, dy);
+    if (d < 0.0001) {
+      dx = player.faceX;
+      dy = player.faceY;
+      d = Math.hypot(dx, dy);
+    }
+    if (d < 0.0001) return false;
+    dx /= d;
+    dy /= d;
+
+    player.energy = Math.max(0, player.energy - CONFIG.decoy.cost);
+    decoyCdUntil = time + CONFIG.decoy.cooldown;
+    decoys.push({
+      id: nextDecoyId++,
+      x: player.x,
+      y: player.y,
+      dirX: dx,
+      dirY: dy,
+      travelled: 0,
+      landed: false,
+      lifeUntil: Infinity, // 落地时才开始计时
+      nextPulseAt: 0,
+      pulses: [],
+    });
+    refreshFear(time);
+    return true;
   };
 
   /** 获取当前恐惧阶段对应的倒计时间隔（ms）——胆量提升基础时长 */
@@ -502,16 +558,118 @@ export const useGame = () => {
       }
       // 碰海怪惊动
       for (const m of monsters) {
-        if (dist(p.ox, p.oy, m.x, m.y) <= p.r) {
-          m.state = 'chase';
-          m.chaseUntil = time + CONFIG.monsterChaseMs;
-          m.targetX = player.x;
-          m.targetY = player.y;
-        }
+        if (dist(p.ox, p.oy, m.x, m.y) <= p.r) alertToPlayer(m, time);
       }
     }
     for (let i = pulses.length - 1; i >= 0; i--) {
       if (pulses[i].dead) pulses.splice(i, 1);
+    }
+  };
+
+  /** 圆形区域显形（诱饵的假脉冲照明）：只有环前沿扫过才点亮 */
+  const revealAround = (ox, oy, r, prevR, time) => {
+    for (const s of innerSegs) {
+      const d = distToSegment(ox, oy, s.x1, s.y1, s.x2, s.y2);
+      if (d <= r && d > prevR) {
+        s.revealed = true;
+        s.revealTime = time;
+        s.strength = 1;
+      }
+    }
+    for (const k of krill) {
+      if (!k.eaten && dist(ox, oy, k.x, k.y) <= r) {
+        k.revealed = true;
+        k.revealUntil = time + CONFIG.krillRevealMs;
+      }
+    }
+    for (const pk of pickups) {
+      if (!pk.taken && dist(ox, oy, pk.x, pk.y) <= r) {
+        pk.revealed = true;
+        pk.revealUntil = time + CONFIG.krillRevealMs;
+      }
+    }
+    for (const b of barnacles) {
+      if (dist(ox, oy, b.x, b.y) <= r) {
+        b.revealed = true;
+        b.revealUntil = time + CONFIG.krillRevealMs;
+      }
+    }
+    for (const f of fish) {
+      if (dist(ox, oy, f.x, f.y) <= r) {
+        f.revealed = true;
+        f.revealUntil = time + CONFIG.krillRevealMs;
+      }
+    }
+  };
+
+  /** 诱饵失效：被它钓住的海怪立刻恢复漫游 */
+  const releaseLured = (decoyId) => {
+    for (const m of monsters) {
+      if (m.decoyId === decoyId) {
+        m.decoyId = 0;
+        m.state = 'patrol';
+        pickWanderTarget(m);
+      }
+    }
+  };
+
+  /** 诱饵：飞行 → 落地 → 持续发假脉冲把海怪钓向落点 → 到期失效 */
+  const updateDecoys = (dt, time) => {
+    for (let i = decoys.length - 1; i >= 0; i--) {
+      const c = decoys[i];
+
+      if (!c.landed) {
+        const remainRange = CONFIG.decoy.range - c.travelled;
+        const step = Math.min(CONFIG.decoy.speed * dt, remainRange);
+        const nx = c.x + c.dirX * step;
+        const ny = c.y + c.dirY * step;
+        // 撞墙或到射程即落地，落点保证不在墙里
+        if (remainRange <= 0.5 || collideWall(nx, ny, CONFIG.decoy.radius)) {
+          c.landed = true;
+          c.lifeUntil = time + CONFIG.decoy.lifeMs;
+          c.nextPulseAt = time;
+        } else {
+          c.x = nx;
+          c.y = ny;
+          c.travelled += step;
+        }
+        continue;
+      }
+
+      if (time >= c.lifeUntil) {
+        releaseLured(c.id);
+        decoys.splice(i, 1);
+        continue;
+      }
+
+      if (time >= c.nextPulseAt) {
+        c.pulses.push({ r: CONFIG.decoy.radius + 2, dead: false });
+        c.nextPulseAt = time + CONFIG.decoy.pulseMs;
+      }
+
+      for (const p of c.pulses) {
+        if (p.dead) continue;
+        const prevR = p.r;
+        p.r += CONFIG.sonarSpeed * dt;
+        if (p.r > CONFIG.decoy.pulseRadius) {
+          p.dead = true;
+          continue;
+        }
+        revealAround(c.x, c.y, p.r, prevR, time);
+        for (const m of monsters) {
+          // 环扫到即上钩；已上钩的不再看距离，诱饵活着就一直被钓着
+          if (m.brokeFrom === c.id) continue; // 已被真声呐点醒过，不再上当
+          if (dist(c.x, c.y, m.x, m.y) > p.r && m.decoyId !== c.id) continue;
+          m.state = 'chase';
+          m.decoyId = c.id;
+          m.chaseUntil = time + CONFIG.monsterChaseMs;
+          m.targetX = c.x;
+          m.targetY = c.y;
+        }
+      }
+      for (let j = c.pulses.length - 1; j >= 0; j--) {
+        if (c.pulses[j].dead) c.pulses.splice(j, 1);
+      }
     }
   };
 
@@ -662,6 +820,8 @@ export const useGame = () => {
         const toTarget = dist(m.x, m.y, m.targetX, m.targetY);
         if (time > m.chaseUntil || toTarget < CONFIG.monsterRadius + 6) {
           // 追到声波位置（或超时）：转漫游，选新目标点自然游开
+          if (m.decoyId) m.brokeFrom = m.decoyId; // 冲到假声源＝当场识破，同一枚诱饵只能骗它一次
+          m.decoyId = 0;
           m.state = 'patrol';
           pickWanderTarget(m);
         } else {
@@ -740,12 +900,19 @@ export const useGame = () => {
     }
     for (const m of monsters) {
       if (dist(player.x, player.y, m.x, m.y) <= r) {
-        m.state = 'chase';
-        m.chaseUntil = time + CONFIG.monsterChaseMs;
-        m.targetX = player.x;
-        m.targetY = player.y;
+        alertToPlayer(m, time); // 玩家自身光晕＝小声呐，同样会把仇恨抢回自己
       }
     }
+  };
+
+  /** 真实声呐 / 自身光晕让海怪发现玩家：正被诱饵钓着的会当场识破，且不再上同一枚的当 */
+  const alertToPlayer = (m, time) => {
+    if (m.decoyId) m.brokeFrom = m.decoyId;
+    m.decoyId = 0;
+    m.state = 'chase';
+    m.chaseUntil = time + CONFIG.monsterChaseMs;
+    m.targetX = player.x;
+    m.targetY = player.y;
   };
 
   /** 小鱼刷新 + 漫无目的游动 + 回收 */
@@ -950,6 +1117,8 @@ export const useGame = () => {
           targetY: y,
           wanderX: x,
           wanderY: y,
+          decoyId: 0,
+          brokeFrom: 0,
           despawnAt: time + CONFIG.endless.monsterLifeMinMs + Math.random() * (CONFIG.endless.monsterLifeMaxMs - CONFIG.endless.monsterLifeMinMs),
         });
         nextMonsterSpawnAt = time + CONFIG.endless.monsterSpawnMinMs + Math.random() * (CONFIG.endless.monsterSpawnMaxMs - CONFIG.endless.monsterSpawnMinMs);
@@ -1067,6 +1236,7 @@ export const useGame = () => {
     updateEnergy(dt, time);
     updateFear(time);
     updatePulses(dt, time);
+    updateDecoys(dt, time);
     updatePassiveSonar(time);
     updatePlayer(dt, time);
     updateMonsters(dt, time);
@@ -1088,6 +1258,7 @@ export const useGame = () => {
       mouse,
       camera,
       pulses,
+      decoys,
       krill,
       monsters,
       exit,
@@ -1123,6 +1294,12 @@ export const useGame = () => {
       dashCdRatio: player.dashCdUntil <= currentTime
         ? 0
         : Math.max(0, Math.min(1, (player.dashCdUntil - currentTime) / effDashCd())),
+      decoyCost: CONFIG.decoy.cost,
+      decoyReady: decoyCdUntil <= currentTime && player.energy >= CONFIG.decoy.cost && !decoys.length,
+      decoyNoEnergy: player.energy < CONFIG.decoy.cost,
+      decoyCdRatio: decoyCdUntil <= currentTime
+        ? 0
+        : Math.max(0, Math.min(1, (decoyCdUntil - currentTime) / CONFIG.decoy.cooldown)),
     };
   };
 
@@ -1143,6 +1320,7 @@ export const useGame = () => {
     setMouse,
     setFiring,
     setDash,
+    throwDecoy,
     update,
     getState,
   };

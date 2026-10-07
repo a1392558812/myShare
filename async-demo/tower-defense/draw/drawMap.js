@@ -103,7 +103,8 @@ const drawTowerRange = (ctx, towers, hoveredTower, selected) => {
 };
 
 export const drawMap = (ctx, state) => {
-  drawGrid(ctx, state.width, state.height);
+  // 棋盘层已被 translate 到 HUD 安全区下方，这里只画网格区本身
+  drawGrid(ctx, state.gridSize || GRID_SIZE * CELL, state.gridSize || GRID_SIZE * CELL);
   drawPathBand(ctx, PATH_A_POINTS, PATH_COLOR.A);
   drawPathBand(ctx, PATH_B_POINTS, PATH_COLOR.B);
   drawEndpoints(ctx, PATH_A_POINTS, PATH_COLOR.A, 'A 入');

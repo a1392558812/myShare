@@ -324,6 +324,212 @@ const drawDetector = (ctx, t) => {
   drawLevelBadge(ctx, x, y, lv + 1);
 };
 
+// 冰霜塔：水晶柱 + 旋转冰棱环（等级越高冰棱越多）
+const drawFrost = (ctx, t) => {
+  const x = t.gx * CELL + CELL / 2;
+  const y = t.gy * CELL + CELL / 2;
+  const lv = t.level || 0;
+  drawBase(ctx, x, y, t.def.ringColor, lv);
+  ctx.save();
+  ctx.translate(x, y);
+  const spin = (t.auraTick || 0) * 0.03;
+  const shards = 3 + Math.min(lv, 5);
+  ctx.strokeStyle = t.def.iconColor;
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i < shards; i++) {
+    const a = spin + i * (Math.PI * 2 / shards);
+    const r0 = 6;
+    const r1 = 10 + (lv >= 3 ? 2.5 : 0);
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
+    ctx.lineTo(Math.cos(a) * r1, Math.sin(a) * r1);
+    ctx.stroke();
+    if (lv >= 2) {
+      line(ctx, Math.cos(a) * r1, Math.sin(a) * r1,
+        Math.cos(a + 0.25) * (r1 - 2), Math.sin(a + 0.25) * (r1 - 2), 1, t.def.ringColor);
+    }
+  }
+  const coreR = 4 + lv * 0.5;
+  circle(ctx, 0, 0, coreR, lv >= 5 ? '#f0f9ff' : t.def.color, t.def.ringColor, 1.5);
+  if (lv >= 1) triangle(ctx, -3, -coreR - 1, 3, -coreR - 1, 0, -coreR - 6, t.def.iconColor, t.def.ringColor, 1);
+  if (lv >= 3) {
+    ctx.setLineDash([2, 3]);
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.8)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, 13.5, -spin, -spin + Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  if (lv >= 4) circle(ctx, Math.cos(spin * 2) * 12, Math.sin(spin * 2) * 12, 1.8, '#e0f2fe');
+  if (lv >= 5) {
+    const g = ctx.createRadialGradient(0, 0, 1, 0, 0, 16);
+    g.addColorStop(0, 'rgba(125, 211, 252, 0.45)');
+    g.addColorStop(1, 'rgba(125, 211, 252, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 16, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  drawLevelBadge(ctx, x, y, lv + 1);
+};
+
+// 雷霆塔：特斯拉线圈，顶端随 fra 闪烁电弧
+const drawTesla = (ctx, t) => {
+  const x = t.gx * CELL + CELL / 2;
+  const y = t.gy * CELL + CELL / 2;
+  const lv = t.level || 0;
+  drawBase(ctx, x, y, t.def.ringColor, lv);
+  ctx.save();
+  ctx.translate(x, y);
+  const coilTop = -8 - Math.min(lv, 5) * 1.4;
+  rect(ctx, -3, coilTop, 6, 14 + Math.min(lv, 5) * 1.4, '#3730a3', t.def.ringColor, 1);
+  for (let i = 0; i < 3; i++) {
+    rect(ctx, -5, coilTop + 3 + i * 3.5, 10, 2, t.def.iconColor, t.def.ringColor, 0.8);
+  }
+  const bulb = lv >= 5 ? '#fef08a' : t.def.iconColor;
+  circle(ctx, 0, coilTop - 1, 3.5 + lv * 0.3, bulb, t.def.ringColor, 1.2);
+  // 电弧：随机折线，随时间抖动
+  const seed = Math.sin((t.auraTick || 0) * 0.02);
+  for (let i = 0; i < 2 + Math.min(lv, 3); i++) {
+    const a = (i / (2 + Math.min(lv, 3))) * Math.PI * 2 + seed * 0.6;
+    ctx.strokeStyle = i % 2 ? '#c7d2fe' : '#a78bfa';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, coilTop - 2);
+    const midR = 5 + lv * 0.8 + (i % 2 ? 2 : 0);
+    ctx.lineTo(Math.cos(a) * midR, coilTop - 2 + Math.sin(a) * midR * 0.6);
+    ctx.lineTo(Math.cos(a + seed * 0.4) * (midR + 4), coilTop - 2 + Math.sin(a + seed * 0.4) * (midR + 4) * 0.6);
+    ctx.stroke();
+  }
+  if (lv >= 2) {
+    rect(ctx, -11, 2, 4, 8, '#4338ca', t.def.ringColor, 1);
+    rect(ctx, 7, 2, 4, 8, '#4338ca', t.def.ringColor, 1);
+  }
+  if (lv >= 3) circle(ctx, -9, 1, 1.8, '#c7d2fe');
+  if (lv >= 4) circle(ctx, 9, 1, 1.8, '#c7d2fe');
+  if (lv >= 5) {
+    const g = ctx.createRadialGradient(0, coilTop, 1, 0, coilTop, 15);
+    g.addColorStop(0, 'rgba(199, 210, 254, 0.5)');
+    g.addColorStop(1, 'rgba(199, 210, 254, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, coilTop, 15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  drawLevelBadge(ctx, x, y, lv + 1);
+};
+
+// 狙击塔：长炮管 + 瞄准镜，朝目标转向
+const drawSniper = (ctx, t) => {
+  const x = t.gx * CELL + CELL / 2;
+  const y = t.gy * CELL + CELL / 2;
+  const lv = t.level || 0;
+  drawBase(ctx, x, y, t.def.ringColor, lv);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(t.turretAngle || 0);
+  const bLen = 19 + Math.min(lv, 5) * 1.2;
+  rect(ctx, -4, -2.5, bLen, 5, lv >= 5 ? '#06b6d4' : t.def.color, t.def.ringColor, 1.2);
+  rect(ctx, bLen - 7, -4, 6, 8, '#164e63', t.def.ringColor, 1);
+  rect(ctx, 4, -6, 8, 3, '#164e63', t.def.ringColor, 1);
+  circle(ctx, 10, -4.5, lv >= 3 ? 2.2 : 1.6, lv >= 3 ? '#f43f5e' : t.def.iconColor, '#083344', 0.8);
+  circle(ctx, 1, 0, 4, t.def.iconColor, t.def.ringColor, 1);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (lv >= 1) rect(ctx, -13, 3, 5, 8, '#0e7490', t.def.ringColor, 1);
+  if (lv >= 2) {
+    line(ctx, -13, 2, -13, -9, 1.2, '#e0f2fe');
+    circle(ctx, -13, -9, 1.6, '#67e8f9');
+  }
+  if (lv >= 3) {
+    // 测距刻度：三道横杠
+    ctx.strokeStyle = 'rgba(103, 232, 249, 0.8)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3; i++) {
+      line(ctx, 8 + i * 3, -12 + i * 2, 11 + i * 3, -12 + i * 2, 1, 'rgba(103, 232, 249, 0.8)');
+    }
+  }
+  if (lv >= 4) {
+    ctx.setLineDash([2, 2]);
+    ctx.strokeStyle = 'rgba(207, 250, 254, 0.7)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  if (lv >= 5) {
+    const g = ctx.createRadialGradient(0, 0, 1, 0, 0, 17);
+    g.addColorStop(0, 'rgba(103, 232, 249, 0.45)');
+    g.addColorStop(1, 'rgba(103, 232, 249, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 17, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  drawLevelBadge(ctx, x, y, lv + 1);
+};
+
+// 增幅塔：战鼓 + 脉冲光环（不转向，纯支援外观）
+const drawAmp = (ctx, t) => {
+  const x = t.gx * CELL + CELL / 2;
+  const y = t.gy * CELL + CELL / 2;
+  const lv = t.level || 0;
+  drawBase(ctx, x, y, t.def.ringColor, lv);
+  ctx.save();
+  ctx.translate(x, y);
+  const pulse = 0.5 + 0.5 * Math.sin((t.auraTick || 0) * 0.005);
+  const pulseR = 9 + lv * 0.9 + pulse * 3;
+  ctx.strokeStyle = `rgba(249, 168, 212, ${0.35 + pulse * 0.35})`;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
+  ctx.stroke();
+  // 鼓身
+  rect(ctx, -7, -4, 14, 9, lv >= 5 ? '#fb7185' : t.def.color, t.def.ringColor, 1.2);
+  circle(ctx, 0, 0.5, 6.5, t.def.iconColor, t.def.ringColor, 1);
+  ctx.fillStyle = lv >= 5 ? '#831843' : '#9d174d';
+  ctx.beginPath();
+  ctx.arc(0, 0.5, 3.2, 0, Math.PI * 2);
+  ctx.fill();
+  // 交叉双槌
+  line(ctx, -9, -9, 9, 1, 1.6, '#fbcfe8');
+  line(ctx, 9, -9, -9, 1, 1.6, '#fbcfe8');
+  if (lv >= 1) circle(ctx, -9, -9, 1.6, '#fbcfe8');
+  if (lv >= 2) circle(ctx, 9, -9, 1.6, '#fbcfe8');
+  if (lv >= 3) {
+    for (let i = 0; i < 3; i++) {
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / 3);
+      circle(ctx, Math.cos(a) * 12, Math.sin(a) * 6 + 0.5, 1.6, '#f9a8d4');
+    }
+  }
+  if (lv >= 4) {
+    ctx.strokeStyle = 'rgba(251, 207, 232, 0.8)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + pulse * 0.5;
+      line(ctx, Math.cos(a) * 12, Math.sin(a) * 12, Math.cos(a) * 15.5, Math.sin(a) * 15.5, 1, 'rgba(251, 207, 232, 0.8)');
+    }
+  }
+  if (lv >= 5) {
+    const g = ctx.createRadialGradient(0, 0, 1, 0, 0, 17);
+    g.addColorStop(0, 'rgba(249, 168, 212, 0.45)');
+    g.addColorStop(1, 'rgba(249, 168, 212, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 17, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  drawLevelBadge(ctx, x, y, lv + 1);
+};
+
 const drawRallyFlag = (ctx, t, time) => {
   if (!t.rally) return;
   const x = t.rally.gx * CELL + CELL / 2;
@@ -343,7 +549,36 @@ const drawRallyFlag = (ctx, t, time) => {
   ctx.restore();
 };
 
+// 领域型建筑（冰霜 / 增幅）的作用范围：常驻淡 Flux 圈，方便玩家摆放时判断覆盖
+const drawFieldCircle = (ctx, t, r, color, fill) => {
+  if (!r) return;
+  const x = t.gx * CELL + CELL / 2;
+  const y = t.gy * CELL + CELL / 2;
+  ctx.save();
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+};
+
 export const drawTowers = (ctx, state) => {
+  for (const t of state.towers) {
+    switch (t.kind) {
+      case TOWER_KIND.FROST:
+        drawFieldCircle(ctx, t, t.def.range[t.level], 'rgba(125, 211, 252, 0.5)', 'rgba(14, 165, 233, 0.07)');
+        break;
+      case TOWER_KIND.AMP:
+        drawFieldCircle(ctx, t, t.def.auraRange[t.level], 'rgba(249, 168, 212, 0.5)', 'rgba(236, 72, 153, 0.06)');
+        break;
+      default: break;
+    }
+  }
   for (const t of state.towers) {
     switch (t.kind) {
       case TOWER_KIND.BARRACKS: drawBarracks(ctx, t, state.time); break;
@@ -351,6 +586,10 @@ export const drawTowers = (ctx, state) => {
       case TOWER_KIND.ARROW: drawArrow(ctx, t); break;
       case TOWER_KIND.TECH: drawTech(ctx, t); break;
       case TOWER_KIND.DETECTOR: drawDetector(ctx, t); break;
+      case TOWER_KIND.FROST: drawFrost(ctx, t); break;
+      case TOWER_KIND.TESLA: drawTesla(ctx, t); break;
+      case TOWER_KIND.SNIPER: drawSniper(ctx, t); break;
+      case TOWER_KIND.AMP: drawAmp(ctx, t); break;
     }
   }
   for (const t of state.towers) {

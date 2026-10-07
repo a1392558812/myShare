@@ -108,7 +108,10 @@ const handleMouseMove = (e) => {
 
 const handleMouseDown = (e) => {
   if (e.button === 0) game.setFiring(true);
-  else if (e.button === 2) game.setDash();
+  else if (e.button === 1) {
+    e.preventDefault();
+    game.throwDecoy();
+  } else if (e.button === 2) game.setDash();
 };
 
 const handleMouseUp = (e) => {
@@ -116,6 +119,13 @@ const handleMouseUp = (e) => {
 };
 
 const handleContextMenu = (e) => e.preventDefault();
+
+const handleKeyDown = (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    game.throwDecoy();
+  }
+};
 
 onMounted(() => {
   nextTick(() => {
@@ -129,6 +139,7 @@ onMounted(() => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('contextmenu', handleContextMenu);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('keydown', handleKeyDown);
 
     const loop = (timestamp) => {
       if (!lastTs) lastTs = timestamp;
@@ -152,6 +163,7 @@ onUnmounted(() => {
     canvas.removeEventListener('contextmenu', handleContextMenu);
   }
   window.removeEventListener('mouseup', handleMouseUp);
+  window.removeEventListener('keydown', handleKeyDown);
 });
 </script>
 

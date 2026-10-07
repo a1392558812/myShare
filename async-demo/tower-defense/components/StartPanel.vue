@@ -5,7 +5,7 @@
 
     <div class="rules">
       <p>两条 S 形路径上不断涌来步兵、飞龙、幽影，每 5 波一只 Boss。</p>
-      <p>建造 5 种塔守卫路径、用 WASD 移动英雄、英雄站上路径 <b>可阻挡敌人</b>。</p>
+      <p>建造 9 种塔守卫路径、用 WASD 移动英雄、英雄站上路径 <b>可阻挡敌人</b>。</p>
       <div class="key-line">
         <span class="key">A / S / D / W</span><span>移动</span>
         <span class="key">点击</span><span>建造 / 选塔</span>

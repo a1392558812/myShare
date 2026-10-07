@@ -202,6 +202,9 @@ export const bossSpawnPath = (waveIdx) => {
 export const WAVE_END_REWARD = (wave) => 10 + wave * 5;
 export const BOSS_END_REWARD = (wave) => 100 + wave * 20;
 
+// 提前解锁下一波奖励：随当前关卡线性提升（压缩节奏的收益）
+export const EARLY_START_BONUS = (wave) => 10 + Math.max(0, wave) * 4;
+
 // 失败条件
 export const LEAK_LIMIT = 20;
 

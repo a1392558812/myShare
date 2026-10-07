@@ -18,6 +18,7 @@ export const COLORS = {
   fish: '#8be8ff', // 小鱼 淡蓝
   barnacle: '#b06cff', // 毒液藤壶 紫
   fear: '#ff2a6d', // 恐惧倒计时 洋红
+  decoy: '#eaf6ff', // 回声诱饵 假声源白（虚描边，区别于真实声呐青）
 };
 
 export const WORLD = {
@@ -77,6 +78,19 @@ export const CONFIG = {
 
   // 毒液藤壶
   barnacleRadius: 10, // 藤壶碰撞半径
+
+  // 回声诱饵：假声源，把海怪钓向落点（声呐双刃剑反过来用）
+  decoy: {
+    cost: 25, // 单次固定能量消耗
+    cooldown: 4500, // 冷却 ms
+    speed: 620, // 飞行速度 px/s
+    range: 520, // 最大飞行距离 px
+    lifeMs: 3000, // 落地后存活时长 ms
+    pulseMs: 420, // 落地后发假脉冲的间隔 ms
+    pulseRadius: 300, // 假脉冲最大半径（明显小于真声呐 sonarMaxRadius）
+    radius: 7, // 诱饵自身半径
+    oneAtATime: true, // 场上同时只允许存在一枚
+  },
 
   // 无尽模式
   endless: {
@@ -196,6 +210,15 @@ export const BARNACLES = (() => {
   }
   return pts;
 })();
+
+// 回声诱饵点阵（空心菱形：假的、空的，与所有实心实体区分）
+export const DECOY_SPRITE = [
+  '..X..',
+  '.X.X.',
+  'X...X',
+  '.X.X.',
+  '..X..',
+];
 
 // 鲸鱼像素点阵
 export const WHALE_BODY = [

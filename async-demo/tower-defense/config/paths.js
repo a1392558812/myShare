@@ -1,5 +1,5 @@
 // 路径坐标
-// 网格 21×21，每格 32px，画布 672×672
+// 网格 21×21，每格 32px，棋盘 672×672；画布另加 HUD 安全区 → 672×766
 // 两条单调下降 S 形路径，零格子重叠、无回头折返
 //   A：上半区 (0,1) → (20,10)，4 段横向逐行下移
 //   B：下半区 (20,11) → (0,19)，4 段横向逐行下移（镜像）
@@ -7,7 +7,16 @@
 
 export const GRID_SIZE = 21;
 export const CELL = 32;
+// 网格区（棋盘）尺寸：所有游戏坐标都在这个正方形内
 export const CANVAS_SIZE = GRID_SIZE * CELL;
+
+// HUD 安全区：顶栏 34px + 底部技能栏 60px 独占画布上下两条带，
+// 不再压在棋盘上方，否则最上/最下一行路径与建筑会被遮住。
+export const HUD_TOP = 34;
+export const HUD_BOTTOM = 60;
+// 画布总高 = 安全区 + 网格区（棋盘绘制时整体下移 HUD_TOP）
+export const CANVAS_W = CANVAS_SIZE;
+export const CANVAS_H = CANVAS_SIZE + HUD_TOP + HUD_BOTTOM;
 
 export const PATH_COLOR = {
   A: { fill: 'rgba(96, 165, 250, 0.22)', stroke: '#60a5fa', edge: '#3b82f6' },

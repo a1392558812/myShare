@@ -14,6 +14,9 @@
         <span class="key">右键</span><span>冲刺躲避</span>
         <span class="key">主动声呐</span><span>重置恐惧倒计时</span>
       </div>
+      <div class="key-line">
+        <span class="key">空格</span><span>抛出回声诱饵，把海怪钓开</span>
+      </div>
       <p class="warn">长时间不主动发声，恐惧会吞没你的生命。</p>
       <p>收集全部磷虾，游进最深处的出口漩涡。</p>
     </div>
