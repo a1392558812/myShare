@@ -67,6 +67,7 @@ const filterFilePath = [
   path.join(basePath, "pwa-192x192.png"),
   path.join(basePath, "pwa-512x512.png"),
   path.join(basePath, "README.md"),
+  path.join(basePath, "AGENTS.md"),
   path.join(basePath, "sw.js"),
   path.join(basePath, "sw.js.gz"),
   path.join(basePath, "vercel.json"),
