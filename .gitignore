@@ -1,16 +1,30 @@
 node_modules
-/node_modules
-/node_modules/*
+node_modules/*
+
 .workbuddy
 .workbuddy/*
+
 .codebuddy
 .codebuddy/*
 
+.tmp
+.tmp/*
+
+.trae
+.trae/*
+
+
+*/node_modules
+*/node_modules/*
+
 */.workbuddy
 */.workbuddy/*
+
 */.codebuddy
 */.codebuddy/*
 
-*/node_modules
 */.trae
 */.trae/*
+
+*/.tmp
+*/.tmp/*
