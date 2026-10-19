@@ -102,6 +102,12 @@ const edgeAssist = (g, e) => {
 
 const FORM_SIZE = { small: { w: PLAYER.smallW, h: PLAYER.smallH }, big: { w: PLAYER.bigW, h: PLAYER.bigH }, fire: { w: PLAYER.bigW, h: PLAYER.bigH } }
 
+/** 形态强弱序：奖励房里吃到蘑菇/火花变强后，出来不能被进房前的快照回滚 */
+const FORM_RANK = { small: 0, big: 1, fire: 2 }
+
+/** 取两个形态里更强的那个（未定义的按最弱处理） */
+const strongerForm = (formA, formB) => ((FORM_RANK[formA] || 0) >= (FORM_RANK[formB] || 0) ? formA : formB)
+
 const setForm = (g, form) => {
   const p = g.player
   const oldH = p.h
@@ -695,7 +701,11 @@ const enterBonusRoom = (g, roomIndex) => {
 const leaveBonusRoom = (g) => {
   const back = g.stack.pop()
   if (!back) return
+  // 房里吃到的蘑菇 / 火花要带出去：快照是进房前拍的，直接整体覆盖会把它变弱
+  const grownForm = strongerForm(g.player.form, back.player.form)
+  const grownStar = Math.max(g.player.star || 0, back.player.star || 0)
   restoreScene(g, back)
+  setForm(g, grownForm)
   g.room = null
   const p = g.player
   p.x = back.returnTx * TILE + (TILE - p.w) / 2
@@ -704,7 +714,7 @@ const leaveBonusRoom = (g) => {
   p.vy = 0
   p.onGround = true
   p.invuln = Math.max(p.invuln, 60)
-  p.star = Math.max(p.star, 0)
+  p.star = Math.max(p.star, grownStar)
   fitCam(g)
   g.status = 'play'
   g.statusT = 0
@@ -1127,7 +1137,9 @@ export const restartLevel = (g) => {
   // 在奖励房里重来：先退回主关卡，避免把奖励房当成新关卡重解析
   const back = g.stack.pop()
   if (back) {
+    const grownForm = strongerForm(g.player.form, back.player.form)
     restoreScene(g, back)
+    setForm(g, grownForm)
     g.stack.length = 0
     g.room = null
   }

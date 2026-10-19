@@ -167,9 +167,26 @@ export const drawTile = (ctx, kind, x, y, w, h, opts = {}) => {
   ctx.drawImage(img, x, y, w, h)
 }
 
+/**
+ * 牌河槽位尺寸：固定 8 列，行数随张数增加；
+ * 超过 6 行（48 张）时整片等比缩小，保证总高度恒定 —— 牌河永远碰不到手牌区。
+ * @param {number} count 牌河张数（多算一格，给正在飞行的那张留位）
+ */
+export const riverMetrics = (count) => {
+  const rows = Math.max(1, Math.ceil(count / RIVER.cols))
+  const scale = rows > RIVER.rows ? RIVER.rows / rows : 1
+  return {
+    rows,
+    scale,
+    cellW: TILE.river.w * scale,
+    cellH: TILE.river.h * scale,
+    gapW: TILE.gap * scale,
+    gapH: TILE.gap * scale,
+  }
+}
+
 /** 牌桌各区域矩形（命中测试与绘制共用） */
 export const layoutOf = (state) => {
-  const L = { riverW: RIVER.cols * (TILE.river.w + TILE.gap), riverH: RIVER.rows * (TILE.river.h + TILE.gap) }
   const cx = CENTER.x
   const my = state.players[0]
   const op = state.players[1]
@@ -181,12 +198,13 @@ export const layoutOf = (state) => {
     oppBack.push({ x: cx - obTotal / 2 + i * obw, y: ROW.oppBack, w: TILE.back.w, h: TILE.back.h })
   }
 
-  const riverRect = (top) => ({
-    x: cx - L.riverW / 2,
-    y: top,
-    w: L.riverW,
-    h: L.riverH,
-  })
+  // 牌河高度恒定为 6 行满高（副露的 y 依赖它，不能随张数跳动）；张数超容量时缩小的是牌张
+  const riverRect = (top, count) => {
+    const m = riverMetrics(count + 1)
+    const w = RIVER.cols * (m.cellW + m.gapW) - m.gapW
+    const h = RIVER.rows * (TILE.river.h + TILE.gap) - TILE.gap
+    return { x: cx - w / 2, y: top, w, h, m }
+  }
 
   const myHand = []
   const hw = TILE.hand.w + TILE.gap
@@ -199,23 +217,29 @@ export const layoutOf = (state) => {
     myHand.push({ x: x0 + i * hw + (isDrawn ? gapExtra : 0), y: ROW.myHand, w: TILE.hand.w, h: TILE.hand.h, index: i })
   }
 
+  const riverW = RIVER.cols * (TILE.river.w + TILE.gap) - TILE.gap
+  const riverH = RIVER.rows * (TILE.river.h + TILE.gap) - TILE.gap
   return {
-    ...L,
+    riverW,
+    riverH,
     oppBack,
-    oppRiver: riverRect(ROW.oppRiver),
-    myRiver: riverRect(ROW.myRiver),
+    oppRiver: riverRect(ROW.oppRiver, op.river.length),
+    myRiver: riverRect(ROW.myRiver, my.river.length),
     myHand,
-    oppMeld: { x: cx + L.riverW / 2 + 40, y: ROW.oppRiver + 4 },
-    myMeld: { x: cx + L.riverW / 2 + 40, y: ROW.myRiver + L.riverH - TILE.meld.h - 4 },
+    oppMeld: { x: cx + riverW / 2 + 40, y: ROW.oppRiver + 4 },
+    myMeld: { x: cx + riverW / 2 + 40, y: ROW.myRiver + riverH - TILE.meld.h - 4 },
   }
 }
 
-export const riverSlot = (rect, i) => ({
-  x: rect.x + (i % RIVER.cols) * (TILE.river.w + TILE.gap),
-  y: rect.y + Math.floor(i / RIVER.cols) * (TILE.river.h + TILE.gap),
-  w: TILE.river.w,
-  h: TILE.river.h,
-})
+export const riverSlot = (rect, i) => {
+  const m = rect.m
+  return {
+    x: rect.x + (i % RIVER.cols) * (m.cellW + m.gapW),
+    y: rect.y + Math.floor(i / RIVER.cols) * (m.cellH + m.gapH),
+    w: m.cellW,
+    h: m.cellH,
+  }
+}
 
 /** 点击命中：返回 { kind:'hand', index } 或 null */
 export const hitTest = (state, layout, px, py) => {
