@@ -24,16 +24,23 @@
     </div>
 
     <div class="button-row">
-      <button class="ghost-btn" @click="$emit('start')">踏入江湖</button>
+      <button class="ghost-btn" @click="$emit('start', 'normal')">踏入江湖</button>
+      <button class="ghost-btn ghost-btn--nightmare" @click="$emit('start', 'nightmare')">噩梦模式</button>
+      <button class="ghost-btn" @click="$emit('keybinds')">键位设置</button>
       <button class="ghost-btn" @click="$emit('gallery')">角色图鉴</button>
+      <button class="ghost-btn" @click="$emit('adventure')">查看奇遇</button>
       <button class="ghost-btn" @click="$emit('docs')">需求文档</button>
       <button class="ghost-btn" @click="$emit('code')">查看源码</button>
+    </div>
+
+    <div class="mode-note">
+      噩梦模式：一击秒杀刷新出来的敌人，地图就会把敌人等级整体上调 —— 越碾压，江湖越硬。
     </div>
   </div>
 </template>
 
 <script setup>
-defineEmits(['start', 'docs', 'code', 'gallery']);
+defineEmits(['start', 'docs', 'code', 'gallery', 'keybinds']);
 </script>
 
 <style scoped lang="scss">
@@ -142,5 +149,25 @@ defineEmits(['start', 'docs', 'code', 'gallery']);
     color: #ffe9b8;
     border-color: rgba(198, 168, 108, 0.7);
   }
+}
+
+.ghost-btn--nightmare {
+  color: rgba(255, 138, 122, 0.9);
+  border-color: rgba(224, 85, 69, 0.55);
+  background: rgba(224, 85, 69, 0.08);
+
+  &:hover {
+    color: #ffd0c6;
+    border-color: #e05545;
+    background: rgba(224, 85, 69, 0.18);
+  }
+}
+
+.mode-note {
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(244, 236, 216, 0.3);
+  z-index: 1;
 }
 </style>

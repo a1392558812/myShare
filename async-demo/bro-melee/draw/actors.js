@@ -189,16 +189,17 @@ const FIGURE_LIBRARY = {
     form: 'humanoid',
     build: { shoulder: 0.94, waist: 0.62, hip: 0.8, head: 0.4, headY: -0.84 },
     colors: {
-      main: '#b98b3e',
+      main: '#b45a2e',
       skin: '#e6c9a0',
       hair: '#c9a86a',
-      trim: '#ffe3a3',
-      metal: '#d8c9a8',
+      trim: '#ffd9b0',
+      metal: '#e8b25c',
       handle: '#6b4a24',
     },
     headgear: 'bald',
     weapon: 'cudgel',
     cloak: 0.5,
+    beads: true,
   },
   archer: {
     form: 'humanoid',
@@ -331,11 +332,11 @@ const FIGURE_LIBRARY = {
     form: 'humanoid',
     build: { shoulder: 0.98, waist: 0.64, hip: 0.82, head: 0.41, headY: -0.83 },
     colors: {
-      main: '#7a4b2a',
+      main: '#4a2c1e',
       skin: '#e0b98e',
       hair: '#241609',
-      trim: '#ffb27a',
-      metal: '#e0d2b4',
+      trim: '#ff8a66',
+      metal: '#d9dee6',
       handle: '#3d2412',
     },
     headgear: 'topknot',
@@ -345,33 +346,36 @@ const FIGURE_LIBRARY = {
   },
   beggarElder: {
     form: 'humanoid',
-    build: { shoulder: 0.84, waist: 0.5, hip: 0.66, head: 0.4, headY: -0.84 },
+    build: { shoulder: 0.74, waist: 0.5, hip: 0.6, head: 0.38, headY: -0.86 },
     colors: {
-      main: '#6b6a4a',
+      main: '#55483a',
       skin: '#dcbe93',
       hair: '#3a3020',
-      trim: '#e0d8a8',
-      metal: '#d6cbaa',
+      trim: '#c9b98a',
+      metal: '#b8a878',
       handle: '#4a3a20',
     },
     headgear: 'strawhat',
     weapon: 'cudgel',
     cloak: 0.45,
+    patched: true,
   },
   hongqigong: {
     form: 'humanoid',
-    build: { shoulder: 0.94, waist: 0.66, hip: 0.78, head: 0.42, headY: -0.83 },
+    build: { shoulder: 1.02, waist: 0.86, hip: 0.96, head: 0.42, headY: -0.83 },
     colors: {
-      main: '#9a7b4a',
+      main: '#5f7f9a',
       skin: '#e6c49a',
-      hair: '#cfbfa0',
-      trim: '#ffe0a8',
-      metal: '#e8d6b0',
-      handle: '#4a3418',
+      hair: '#f0ead8',
+      trim: '#bfe0ff',
+      metal: '#cfd8e2',
+      handle: '#6a8f6a',
     },
-    headgear: 'bald',
+    headgear: 'topknot',
     weapon: 'cudgel',
     cloak: 0.7,
+    belly: true,
+    gourd: true,
   },
   boss: {
     form: 'humanoid',
@@ -522,6 +526,62 @@ const drawTorso = (context, r, figure, anim, colors) => {
   context.moveTo(0, topY + r * 0.06);
   context.lineTo(sway * 0.5, waistY - r * 0.02);
   context.stroke();
+
+  // 洪七公：肚腩从腰带上方鼓出来
+  if (figure.belly) {
+    context.beginPath();
+    context.ellipse(0, waistY + r * 0.1, waist * 0.78, waist * 0.52, 0, 0, TAU);
+    context.fillStyle = colors.light;
+    context.fill();
+    context.strokeStyle = colors.deep;
+    context.lineWidth = r * 0.05;
+    context.stroke();
+  }
+
+  // 和尚：胸前一圈念珠
+  if (figure.beads) {
+    const beadY = topY + r * 0.22;
+    context.strokeStyle = colors.metal;
+    context.lineWidth = r * 0.045;
+    context.beginPath();
+    context.ellipse(0, beadY, shoulder * 0.52, r * 0.2, 0, 0.2, Math.PI - 0.2);
+    context.stroke();
+    for (let beadIndex = 0; beadIndex < 5; beadIndex += 1) {
+      const angle = 0.35 + (beadIndex / 4) * (Math.PI - 0.7);
+      context.beginPath();
+      context.arc(Math.cos(angle) * shoulder * 0.52, beadY + Math.sin(angle) * r * 0.2, r * 0.05, 0, TAU);
+      context.fillStyle = colors.metal;
+      context.fill();
+    }
+  }
+
+  // 丐帮长老：袍面上的方形补丁
+  if (figure.patched) {
+    context.fillStyle = colors.deep;
+    context.fillRect(-shoulder * 0.52, waistY - r * 0.04, shoulder * 0.34, r * 0.2);
+    context.fillRect(shoulder * 0.16, waistY + r * 0.16, shoulder * 0.28, r * 0.16);
+    context.strokeStyle = colors.trim;
+    context.lineWidth = r * 0.025;
+    context.strokeRect(-shoulder * 0.52, waistY - r * 0.04, shoulder * 0.34, r * 0.2);
+    context.strokeRect(shoulder * 0.16, waistY + r * 0.16, shoulder * 0.28, r * 0.16);
+  }
+
+  // 洪七公：腰间挂一只酒葫芦
+  if (figure.gourd) {
+    const gourdX = -hip * 0.6;
+    const gourdY = waistY + r * 0.18;
+    context.beginPath();
+    context.ellipse(gourdX, gourdY, r * 0.13, r * 0.19, 0.3, 0, TAU);
+    context.fillStyle = '#a06a2c';
+    context.fill();
+    context.strokeStyle = '#6b4318';
+    context.lineWidth = r * 0.04;
+    context.stroke();
+    context.beginPath();
+    context.ellipse(gourdX + r * 0.05, gourdY - r * 0.2, r * 0.05, r * 0.07, 0.3, 0, TAU);
+    context.fillStyle = '#6b4318';
+    context.fill();
+  }
 };
 
 /** 头部：后脑 + 面部 + 眼睛 */

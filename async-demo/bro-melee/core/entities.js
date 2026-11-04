@@ -150,6 +150,7 @@ export const createEnemy = (typeId, level, x, y, options = {}) => {
     faction: `enemy-${id}`,
     typeId: type.id,
     typeName: type.name,
+    showName: Boolean(type.showName),
     color: type.color,
     accent: type.accent,
     x,

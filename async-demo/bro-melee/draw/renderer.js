@@ -3,9 +3,9 @@
  * 只读取世界数据，不修改任何状态
  */
 
-import { AI_CONFIG, PALETTE, WORLD_CONFIG } from '../constants.js';
+import { AI_CONFIG, PALETTE, TEAMWORK_CONFIG, WORLD_CONFIG } from '../constants.js';
 import { RELICS } from '../config/relics.js';
-import { clamp, hashUnit } from '../core/utils.js';
+import { clamp, distanceBetween, hashUnit } from '../core/utils.js';
 import { drawActor, drawMinionAura } from './actors.js';
 
 const FONT_FAMILY = "'Microsoft YaHei', 'PingFang SC', sans-serif";
@@ -161,9 +161,11 @@ export const render = (context, world, viewWidth, viewHeight, pixelRatio, pointe
   drawZones(context, world);
   drawItems(context, world);
   drawEncounterTokens(context, world);
+  drawFallenMarkers(context, world);
   drawProjectiles(context, world);
   drawEnemies(context, world);
   drawTauntBubbles(context, world);
+  drawTransferBeam(context, world);
   drawPlayer(context, world);
   drawEffects(context, world);
   context.restore();
@@ -222,6 +224,22 @@ export const drawLevelLabel = (context, entity) => {
   context.fillText(`Lv.${entity.level}`, entity.x + 0.6, entity.y - entity.radius - 22.4);
   context.fillStyle = 'rgba(244, 236, 216, 0.86)';
   context.fillText(`Lv.${entity.level}`, entity.x, entity.y - entity.radius - 23);
+};
+
+/** 强力角色名牌：等级标签上方再亮一次角色名（立绘相似时靠名字认人） */
+export const drawNameLabel = (context, entity) => {
+  if (!entity.showName || !entity.alive) {
+    return;
+  }
+  const label = entity.typeName;
+  const labelY = entity.y - entity.radius - 36;
+  context.font = `bold 11px ${FONT_FAMILY}`;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillStyle = 'rgba(0, 0, 0, 0.66)';
+  context.fillText(label, entity.x + 0.7, labelY + 0.7);
+  context.fillStyle = entity.accent || '#f4ecd8';
+  context.fillText(label, entity.x, labelY);
 };
 
 /** 脚下的椭圆光环（等级 / 狂暴 / 血量都改用地面环，避免套在立绘身上；图鉴复用） */
@@ -360,6 +378,7 @@ const drawEnemies = (context, world) => {
 
     drawHealthBar(context, enemy, Math.max(28, radius * 2.2));
     drawLevelLabel(context, enemy);
+    drawNameLabel(context, enemy);
     drawRelicMark(context, world, enemy);
 
     if (enemy.aiState === 'retreat' || enemy.aiState === 'flee') {
@@ -371,8 +390,53 @@ const drawEnemies = (context, world) => {
   });
 };
 
-/** 圆角矩形路径（自己描，避开 roundRect 的浏览器差异） */
-const roundRectPath = (context, x, y, width, height, radius) => {
+/** 倒地随从标记：红橙脉冲环 + 名字，走近时提示 V 施救 */
+const drawFallenMarkers = (context, world) => {
+  const player = world.player;
+  (world.fallenCompanions || []).forEach((marker) => {
+    const pulse = 0.42 + Math.sin(world.time * 5 + marker.phase) * 0.22;
+    drawFootRing(context, marker.x, marker.y + 6, 26, `rgba(255, 138, 102, ${pulse})`, 3);
+    drawFootRing(context, marker.x, marker.y + 6, 34, `rgba(255, 138, 102, ${pulse * 0.5})`, 1.6);
+    context.font = `bold 12px ${FONT_FAMILY}`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    context.fillText(marker.name, marker.x + 0.7, marker.y - 30.7);
+    context.fillStyle = '#ff8a66';
+    context.fillText(marker.name, marker.x, marker.y - 31);
+    if (player.alive && distanceBetween(player.x, player.y, marker.x, marker.y) < 150) {
+      context.font = `bold 11px ${FONT_FAMILY}`;
+      context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      context.fillText('V 施救', marker.x + 0.6, marker.y - 45.6);
+      context.fillStyle = '#ffe0a8';
+      context.fillText('V 施救', marker.x, marker.y - 46);
+    }
+  });
+};
+
+/** 传功连线：玩家与回血目标之间的淡蓝光束 */
+const drawTransferBeam = (context, world) => {
+  if (!world.transfer) {
+    return;
+  }
+  const target = world.findActor(world.transfer.targetId);
+  const player = world.player;
+  if (!target || !target.alive) {
+    return;
+  }
+  const flicker = 0.4 + Math.sin(world.time * 14) * 0.18;
+  context.save();
+  context.strokeStyle = `rgba(123, 227, 255, ${flicker})`;
+  context.lineWidth = 2.4;
+  context.setLineDash([6, 5]);
+  context.beginPath();
+  context.moveTo(player.x, player.y - player.radius * 0.4);
+  context.lineTo(target.x, target.y - target.radius * 0.4);
+  context.stroke();
+  context.restore();
+};
+
+/** 圆角矩形路径（自己描，避开 roundRect 的浏览器差异） */const roundRectPath = (context, x, y, width, height, radius) => {
   const r = Math.min(radius, width / 2, height / 2);
   context.beginPath();
   context.moveTo(x + r, y);
@@ -535,6 +599,22 @@ const drawPlayer = (context, world) => {
     context.textBaseline = 'middle';
     context.fillStyle = world.channel.color;
     context.fillText(world.channel.name, player.x, barY - 10);
+  }
+
+  // 施救读条（V 键救援倒地同伴）
+  if (world.reviving) {
+    const ratio = clamp(world.reviving.timer / world.reviving.duration, 0, 1);
+    const width = 74;
+    const barY = player.y - radius - 44;
+    context.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    context.fillRect(player.x - width / 2 - 1, barY - 1, width + 2, 6);
+    context.fillStyle = '#8ef0d5';
+    context.fillRect(player.x - width / 2, barY, width * ratio, 4);
+    context.font = `bold 11px ${FONT_FAMILY}`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = '#8ef0d5';
+    context.fillText('施救中…', player.x, barY - 10);
   }
 };
 

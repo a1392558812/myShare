@@ -322,6 +322,34 @@ const castFrostNeedles = (world, player, skill, stack) => {
   return true;
 };
 
+/** 葵花宝典·绣针千幻：内外双修的主动针法（被动增益在 stats.js 保留） */
+const castSunflowerNeedles = (world, player, skill, stack) => {
+  const count = 5 + 2 * stack;
+  const spread = Math.PI * 0.36;
+  const multiplier = multiplierOf(skill, stack);
+  for (let index = 0; index < count; index++) {
+    const ratio = count === 1 ? 0.5 : index / (count - 1);
+    const angle = player.aimAngle - spread / 2 + spread * ratio;
+    world.spawnProjectile({
+      owner: player,
+      x: player.x + Math.cos(angle) * (player.radius + 8),
+      y: player.y + Math.sin(angle) * (player.radius + 8),
+      angle,
+      speed: 720,
+      radius: 7,
+      life: 0.6,
+      pierce: 1,
+      multiplier,
+      style: 'needle',
+      color: skill.color,
+      slowAmount: 0.3,
+      slowDuration: 1.2,
+    });
+  }
+  world.effects.addSwing(player.x, player.y, player.aimAngle, spread, player.radius + 24, skill.color);
+  return true;
+};
+
 /** 天女散花：环身一圈飞镖 */
 const castBladeStorm = (world, player, skill, stack) => {
   const count = 12;
@@ -680,6 +708,7 @@ const PLAYER_CAST_HANDLERS = {
   'blood-blade': castBloodBlade,
   'dugu-nine-swords': castDuguNineSwords,
   'toad-skill': castToadSkill,
+  'sunflower-manual': castSunflowerNeedles,
   'dragon-subdue': castDragonSubdue,
   'dog-beating': castDogBeating,
   'taixuan-wave': castTaixuanWave,

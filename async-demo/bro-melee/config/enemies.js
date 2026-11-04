@@ -129,7 +129,7 @@ export const ENEMY_TYPES = [
     id: 'monk',
     name: '和尚',
     color: '#b98b3e',
-    accent: '#ffe3a3',
+    accent: '#ffd9b0',
     minLevel: 7,
     weight: 2.2,
     hpMultiplier: 1.35,
@@ -167,6 +167,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'wulinMaster',
+    showName: true,
     name: '武林高手',
     color: '#3f6f8f',
     accent: '#bfe6ff',
@@ -188,6 +189,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'imperialGuard',
+    showName: true,
     name: '大内高手',
     color: '#394a6e',
     accent: '#ffd166',
@@ -209,6 +211,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'xiexun',
+    showName: true,
     name: '谢逊',
     color: '#d9b26a',
     accent: '#fff2c0',
@@ -230,6 +233,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'zhangcuishan',
+    showName: true,
     name: '张翠山',
     color: '#5f9ea0',
     accent: '#d6f5ff',
@@ -250,6 +254,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'juniorSister',
+    showName: true,
     name: '小师妹',
     color: '#e79ac0',
     accent: '#ffd3ea',
@@ -271,6 +276,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'woundedAlly',
+    showName: true,
     name: '受伤的敌人',
     color: '#8a8f7a',
     accent: '#d8e0c0',
@@ -291,6 +297,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'brat',
+    showName: true,
     name: '熊孩子',
     color: '#c98a5a',
     accent: '#ffd8a8',
@@ -310,9 +317,10 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'bratDad',
+    showName: true,
     name: '熊孩子他爹',
     color: '#7a4b2a',
-    accent: '#ffb27a',
+    accent: '#ff8a66',
     minLevel: 1,
     weight: 0,
     hpMultiplier: 2.7,
@@ -330,9 +338,10 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'beggarElder',
+    showName: true,
     name: '丐帮长老',
     color: '#6b6a4a',
-    accent: '#e0d8a8',
+    accent: '#c9b98a',
     minLevel: 1,
     weight: 0,
     hpMultiplier: 1.7,
@@ -349,9 +358,10 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'hongqigong',
+    showName: true,
     name: '洪七公',
     color: '#9a7b4a',
-    accent: '#ffe0a8',
+    accent: '#bfe0ff',
     minLevel: 1,
     weight: 0,
     hpMultiplier: 3.1,
@@ -369,6 +379,7 @@ export const ENEMY_TYPES = [
   },
   {
     id: 'boss',
+    showName: true,
     name: '枭雄',
     color: '#c0392b',
     accent: '#ffb199',

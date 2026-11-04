@@ -18,6 +18,7 @@ export const ENCOUNTERS = [
   /* ---------------- 一、绝世神功 ---------------- */
   {
     id: 'whiteApe',
+    once: true,
     category: 'ultimate',
     name: '白猿腹内《九阳神功》',
     icon: '猿',
@@ -29,6 +30,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'sweepingMonk',
+    once: true,
     category: 'ultimate',
     name: '藏经阁 · 扫地僧',
     icon: '僧',
@@ -40,6 +42,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'swordTomb',
+    once: true,
     category: 'ultimate',
     name: '剑冢拔剑',
     icon: '冢',
@@ -51,6 +54,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'taixuanCave',
+    once: true,
     category: 'ultimate',
     name: '太玄经洞',
     icon: '玄',
@@ -62,6 +66,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'lightPeak',
+    once: true,
     category: 'ultimate',
     name: '光明顶密道',
     icon: '乾',
@@ -75,6 +80,7 @@ export const ENCOUNTERS = [
   /* ---------------- 二、武功秘籍 ---------------- */
   {
     id: 'cassock',
+    once: true,
     category: 'manual',
     name: '神秘袈裟',
     icon: '裟',
@@ -86,6 +92,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'cliffSword',
+    once: true,
     category: 'manual',
     name: '思过崖剑谱',
     icon: '独',
@@ -97,6 +104,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'starHermit',
+    once: true,
     category: 'manual',
     name: '星宿老怪遗物',
     icon: '鼎',
@@ -132,6 +140,7 @@ export const ENCOUNTERS = [
   /* ---------------- 三、队友与人物 ---------------- */
   {
     id: 'juniorSister',
+    once: true,
     category: 'companion',
     name: '小师妹',
     icon: '妹',
@@ -143,6 +152,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'deafMaster',
+    once: true,
     category: 'companion',
     name: '聋哑先生',
     icon: '哑',
@@ -154,6 +164,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'huangRong',
+    once: true,
     category: 'companion',
     name: '黄蓉的烧鸡',
     icon: '鸡',
@@ -166,6 +177,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'woundedFoe',
+    once: true,
     category: 'companion',
     name: '受伤的敌人',
     icon: '伤',
@@ -177,6 +189,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'beggarPurse',
+    once: true,
     category: 'companion',
     name: '丐帮弟子求助',
     icon: '丐',
@@ -223,6 +236,7 @@ export const ENCOUNTERS = [
   },
   {
     id: 'brat',
+    once: true,
     category: 'troll',
     name: '熊孩子',
     icon: '娃',

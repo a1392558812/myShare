@@ -5,6 +5,7 @@
 import { BALANCE } from '../constants.js';
 import { getItemType, pickItemType } from '../config/items.js';
 import { createItem } from './entities.js';
+import { recordCompanionFallen } from './companions.js';
 import { healEntity } from './combat.js';
 import { grantRelic, spawnRelicItem } from './relics.js';
 import { grantExp } from './stats.js';
@@ -102,9 +103,9 @@ export const applyItemEffect = (world, entity, item) => {
  * @param {Object} victim 死亡实体
  */
 export const dropLoot = (world, victim) => {
-  // 随从倒下只留一句话，不掉战利品
+  // 随从倒下：拍快照留倒地标记等玩家救援，不掉战利品
   if (victim.isCompanion) {
-    world.notify(`${victim.typeName} 倒下了`, '#c9a6ff');
+    recordCompanionFallen(world, victim);
     return;
   }
   const dropBonus = victim.dropBonus || 0;

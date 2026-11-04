@@ -5,7 +5,7 @@
  */
 
 import { AI_CONFIG, ENCOUNTER_CONFIG, RELIC_CONFIG } from '../constants.js';
-import { tryCastCompanionManual } from './companions.js';
+import { livingCompanions, tryCastCompanionManual } from './companions.js';
 import { evaluateRelicPickup, findRelicPrey, decideSnipe } from './relics.js';
 import { canBeat, isStrongThreat, threatScore } from './stats.js';
 import { angleOfVector, distanceBetween, randomRange } from './utils.js';
@@ -243,13 +243,16 @@ const decideBehavior = (world, enemy) => {
   if (player.alive) {
     const playerDistance = distanceBetween(enemy.x, enemy.y, player.x, player.y);
     const huntRadius = enemy.isBoss ? 1500 : 800;
+    // 谢逊带兵登场时不循味追玩家：他和普通敌人一样在场上大乱斗，神兵争夺自会找上门
+    // 只有复仇形态（双兵尽失）才会专程索敌——循味逻辑照常生效
+    const guardsRelics = Boolean(enemy.relics && enemy.relics.length > 0);
     // 破绽例外：玩家打坐 / 眩晕时没有还手能力，不问战力，先扑上去
-    if (playerHelpless && playerDistance < huntRadius) {
+    if (playerHelpless && !guardsRelics && playerDistance < huntRadius) {
       enemy.aiState = 'chase';
       enemy.targetId = player.id;
       return;
     }
-    if (playerDistance < huntRadius && threatScore(enemy) > threatScore(player) * 1.3) {
+    if (!guardsRelics && playerDistance < huntRadius && threatScore(enemy) > threatScore(player) * 1.3) {
       enemy.aiState = 'chase';
       enemy.targetId = player.id;
       return;
@@ -480,6 +483,16 @@ const pickCompanionTarget = (world, enemy, player) => {
  * @param {Object} enemy 随从
  * @param {Number} deltaTime 帧间隔
  */
+/** 随从各自的跟班点位：按在队序号绕玩家一圈散开，避免叠在人身上互相遮挡 */
+const companionSlotPoint = (world, enemy, player) => {
+  const companions = livingCompanions(world);
+  const index = Math.max(0, companions.findIndex((item) => item.id === enemy.id));
+  const count = Math.max(1, companions.length);
+  const angle = (Math.PI * 2 * index) / count - Math.PI / 2;
+  const gap = ENCOUNTER_CONFIG.COMPANION_FOLLOW * 0.72;
+  return { x: player.x + Math.cos(angle) * gap, y: player.y + Math.sin(angle) * gap };
+};
+
 const updateCompanionAI = (world, enemy, deltaTime) => {
   const player = world.player;
   enemy.wantsAttack = false;
@@ -509,11 +522,13 @@ const updateCompanionAI = (world, enemy, deltaTime) => {
     ? ENCOUNTER_CONFIG.COMPANION_LEASH + ENCOUNTER_CONFIG.COMPANION_FOCUS_BONUS
     : ENCOUNTER_CONFIG.COMPANION_LEASH;
 
-  // 跟人优先：目标没了、或者已经被甩太远，先回到玩家身边
+  // 跟人优先：目标没了、或者已经被甩太远，先回到自己的跟班点位
   if (!target || !target.alive || gapToPlayer > leash) {
+    const slot = companionSlotPoint(world, enemy, player);
+    const gapToSlot = distanceBetween(enemy.x, enemy.y, slot.x, slot.y);
     enemy.aiState = 'escort';
-    if (gapToPlayer > ENCOUNTER_CONFIG.COMPANION_FOLLOW) {
-      moveToward(enemy, player.x, player.y, enemy.speed * 1.1);
+    if (gapToSlot > 28) {
+      moveToward(enemy, slot.x, slot.y, enemy.speed * 1.1);
     } else {
       enemy.vx = 0;
       enemy.vy = 0;

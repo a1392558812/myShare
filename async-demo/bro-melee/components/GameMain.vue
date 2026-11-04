@@ -4,8 +4,12 @@
 
     <HudPanel
       :hud="hud"
+      :keybinds="game.keybinds.value"
+      :keybind-label-of="game.keybindLabelOf"
       @use-skill="onUseSkill"
       @toggle-auto="onToggleAuto"
+      @cycle-attack="onCycleAttack"
+      @open-keybinds="openKeybindPanel"
       @use-relic="onUseRelic"
       @drop-relic="onDropRelic"
       @discard-treasure="onDiscardTreasure"
@@ -34,6 +38,7 @@
 
     <div v-if="status === 'dead'" class="overlay">
       <div class="result">
+        <div v-if="nightmare" class="result-mode">噩梦模式</div>
         <div class="result-title">力竭而亡</div>
         <div class="result-sub">被 {{ gameOver.deathCause }} 击败</div>
         <div class="result-grid">
@@ -71,7 +76,8 @@
       <span>WASD / 方向键 移动</span>
       <span>鼠标瞄准 · 左键或 J 普攻</span>
       <span>空格 / 右键 闪避</span>
-      <span>1-9 释放武功 · F 自动战斗（技能 + 普攻）</span>
+      <span>1-9 释放武功 · F 自动战斗（技能 + 普攻） · G 切换普攻（近战/远程/自动）</span>
+      <span>按住 J 普攻 · 空格冲刺 · V 施救倒地同伴 · 按住 T 传功回血</span>
       <span>Q 屠龙刀 · E 倚天剑 · R 弃神兵</span>
       <span>走近奇遇光环 · 1 / 2 / 3 抉择</span>
       <span>` 打开调试台（秘籍 / 状态 / 敌人 / 神兵 / 奇遇）</span>
@@ -84,14 +90,27 @@
       @close="debugVisible = false"
       @toggle-auto="onToggleAuto"
     />
+
+    <KeybindPanel
+      v-if="keybindPanelVisible"
+      :skills="hud.activeSkills"
+      :keybinds="game.keybinds.value"
+      :awaiting="awaitingKeybind"
+      :display-of="game.keybindLabelOf"
+      @close="keybindPanelVisible = false; awaitingKeybind = ''"
+      @await="onAwaitKeybind"
+      @clear="game.clearKeybind"
+      @reset="game.resetKeybinds"
+    />
   </div>
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import DebugPanel from './DebugPanel.vue';
 import EncounterPanel from './EncounterPanel.vue';
 import HudPanel from './HudPanel.vue';
+import KeybindPanel from './KeybindPanel.vue';
 import SkillSelectPanel from './SkillSelectPanel.vue';
 import { useBroMelee } from '../composables/useBroMelee.js';
 import { render } from '../draw/renderer.js';
@@ -99,13 +118,33 @@ import { formatTime } from '../core/utils.js';
 
 defineEmits(['restart']);
 
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'normal',
+  },
+});
+
 const game = useBroMelee();
+game.setMode(props.mode);
+const nightmare = computed(() => props.mode === 'nightmare');
 const { hud, skillChoices, notices, gameOver, status, encounter, encounterResult } = game;
 const worldRef = game.world;
 
 const containerRef = ref(null);
 const canvasRef = ref(null);
 const debugVisible = ref(false);
+const keybindPanelVisible = ref(false);
+const awaitingKeybind = ref('');
+
+const openKeybindPanel = () => {
+  awaitingKeybind.value = '';
+  keybindPanelVisible.value = true;
+};
+
+const onAwaitKeybind = (skillId) => {
+  awaitingKeybind.value = skillId;
+};
 
 const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'];
 const pressedKeys = new Set();
@@ -187,6 +226,10 @@ const onToggleAuto = () => {
   game.toggleAutoCast();
 };
 
+const onCycleAttack = () => {
+  game.cycleAttackMode();
+};
+
 const onUseRelic = (relicId) => {
   game.useRelic(relicId);
 };
@@ -224,6 +267,21 @@ const handleKeyDown = (event) => {
   if (event.code === 'Backquote') {
     event.preventDefault();
     debugVisible.value = !debugVisible.value;
+    return;
+  }
+  // 正在改键：下一个按键直接成为该秘籍的新键位
+  if (awaitingKeybind.value) {
+    event.preventDefault();
+    if (event.code !== 'Escape') {
+      game.setKeybind(awaitingKeybind.value, event.code);
+    }
+    awaitingKeybind.value = '';
+    return;
+  }
+  if (keybindPanelVisible.value) {
+    if (event.code === 'Escape') {
+      keybindPanelVisible.value = false;
+    }
     return;
   }
   if (debugVisible.value && event.target && event.target.tagName === 'BUTTON') {
@@ -304,6 +362,37 @@ const handleKeyDown = (event) => {
     }
     return;
   }
+  if (event.code === 'KeyG') {
+    event.preventDefault();
+    if (!event.repeat) {
+      game.cycleAttackMode();
+    }
+    return;
+  }
+  if (event.code === 'KeyV') {
+    event.preventDefault();
+    if (!event.repeat) {
+      game.startRevive();
+    }
+    return;
+  }
+  if (event.code === 'KeyT') {
+    event.preventDefault();
+    if (!event.repeat) {
+      game.startTransfer();
+    }
+    return;
+  }
+  // 自定义键位优先：绑过的秘籍直接放
+  const boundSkillId = game.keybindByCode.value[event.code];
+  if (boundSkillId) {
+    const boundSkill = hud.value.activeSkills.find((skill) => skill.id === boundSkillId);
+    if (boundSkill) {
+      event.preventDefault();
+      game.useSkill(boundSkillId);
+      return;
+    }
+  }
   const digitMatch = /^(?:Digit|Numpad)([1-9])$/.exec(event.code);
   if (digitMatch) {
     const slotIndex = Number(digitMatch[1]) - 1;
@@ -320,6 +409,10 @@ const handleKeyUp = (event) => {
   if (event.code === 'KeyJ') {
     attackKeyHeld = false;
     game.setAttackHeld(false);
+  }
+  // 传功是按住持续的过程：松开 T 即收功
+  if (event.code === 'KeyT' && game.world.value.transfer) {
+    game.world.value.startTransfer();
   }
 };
 
@@ -481,6 +574,13 @@ canvas {
   text-align: center;
   background: linear-gradient(160deg, rgba(24, 26, 19, 0.96), rgba(12, 14, 10, 0.98));
   border: 1px solid rgba(198, 168, 108, 0.42);
+}
+
+.result-mode {
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: rgba(255, 138, 122, 0.85);
+  margin-bottom: 6px;
 }
 
 .result-title {

@@ -32,6 +32,11 @@ export class SpawnSystem {
     this.lastLowHpEventAt = -999;
     this.pendingExtraUp = 0;
     this.bossCount = 0;
+    // 噩梦模式：一击秒杀的动态施压（overkillBonus 会同时抬高区间两端）
+    this.overkillBonus = 0;
+    this.overkillLowKills = 0;
+    this.overkillHighKills = 0;
+    this.lastOverkillAt = -999;
     this.xiexunTimer = RELIC_CONFIG.XIEXUN_FIRST_DELAY;
     this.huntTimer = RELIC_CONFIG.HUNT_FIRST_DELAY;
     this.huntActive = false;
@@ -74,6 +79,82 @@ export class SpawnSystem {
   }
 
   /**
+   * 噩梦模式：一击打掉目标 2/3 以上气血时，按「被秒的是区间哪一端」抬高刷新等级
+   * - 最低级敌人被秒：地图整体偏低 → 小幅上调
+   * - 最高级敌人被秒：整张地图都太软 → 大幅上调
+   * 两种都不提示玩家，只有调试台能看到区间变化
+   * @param {Object} world 世界实例
+   * @param {Object} victim 被击杀的敌人
+   * @param {Number} hitDamage 致死一击的实际伤害
+   */
+  registerOverkill(world, victim, hitDamage) {
+    if (!world.nightmare || !victim || victim.isCompanion || victim.isMinion) {
+      return;
+    }
+    if (!(hitDamage > 0) || victim.maxHp <= 0) {
+      return;
+    }
+    if (hitDamage / victim.maxHp < SPAWN_CONFIG.OVERKILL_HIT_RATIO) {
+      return;
+    }
+    const range = this.calcSpawnRange(world);
+    const atLow = victim.level <= range.minLevel + 0.5;
+    const atHigh = victim.level >= range.maxLevel - 0.5;
+    if (!atLow && !atHigh) {
+      return;
+    }
+    const step = atHigh ? SPAWN_CONFIG.OVERKILL_STEP_HIGH : SPAWN_CONFIG.OVERKILL_STEP_LOW;
+    this.overkillBonus = Math.min(SPAWN_CONFIG.OVERKILL_CAP, this.overkillBonus + step);
+    if (atHigh) {
+      this.overkillHighKills += 1;
+    } else {
+      this.overkillLowKills += 1;
+    }
+    this.lastOverkillAt = world.time;
+  }
+
+  /** 长时间没有再秒人，压力缓慢回落，避免一直卡在封顶难度 */
+  decayOverkill(world, deltaTime) {
+    if (this.overkillBonus <= 0) {
+      return;
+    }
+    if (world.time - this.lastOverkillAt < SPAWN_CONFIG.OVERKILL_IDLE_BEFORE_DECAY) {
+      return;
+    }
+    this.overkillBonus = Math.max(0, this.overkillBonus - SPAWN_CONFIG.OVERKILL_DECAY_PER_SECOND * deltaTime);
+  }
+
+  /**
+   * 调试台用：默认区间（只含时间漂移）与当前实际区间、以及各自的调整量
+   * @param {Object} world 世界实例
+   * @returns {Object} 区间描述
+   */
+  describeRange(world) {
+    const level = world.player.level;
+    const drift = Math.min(SPAWN_CONFIG.DRIFT_CAP, Math.floor(world.time / SPAWN_CONFIG.DRIFT_STEP_SECONDS));
+    const baseMin = Math.max(1, level + SPAWN_CONFIG.BASE_MIN_OFFSET - drift);
+    const baseMax = level + SPAWN_CONFIG.BASE_MAX_OFFSET + drift;
+    const range = this.calcSpawnRange(world);
+    return {
+      nightmare: Boolean(world.nightmare),
+      level,
+      drift,
+      baseMin,
+      baseMax,
+      min: Math.round(range.minLevel),
+      max: Math.round(range.maxLevel),
+      minDelta: Math.round(range.minLevel) - baseMin,
+      maxDelta: Math.round(range.maxLevel) - baseMax,
+      overkillBonus: Math.round(this.overkillBonus * 10) / 10,
+      overkillLowKills: this.overkillLowKills,
+      overkillHighKills: this.overkillHighKills,
+      killPressure: this.pressureUp,
+      dangerPressure: this.pressureDown,
+      averagePressure: this.pendingExtraUp,
+    };
+  }
+
+  /**
    * 计算当前刷新等级区间（含时间漂移与压力调节）
    * @param {Object} world 世界实例
    * @returns {{ minLevel: Number, maxLevel: Number }} 等级区间
@@ -81,8 +162,10 @@ export class SpawnSystem {
   calcSpawnRange(world) {
     const level = world.player.level;
     const drift = Math.min(SPAWN_CONFIG.DRIFT_CAP, Math.floor(world.time / SPAWN_CONFIG.DRIFT_STEP_SECONDS));
-    let minLevel = level + SPAWN_CONFIG.BASE_MIN_OFFSET - drift + this.pressureDown;
-    let maxLevel = level + SPAWN_CONFIG.BASE_MAX_OFFSET + drift + this.pressureUp + this.pendingExtraUp;
+    // 噩梦模式的「一击秒杀」压力：同时抬高两端，弱敌不再无限刷
+    const overkill = world.nightmare ? this.overkillBonus : 0;
+    let minLevel = level + SPAWN_CONFIG.BASE_MIN_OFFSET - drift + this.pressureDown + overkill;
+    let maxLevel = level + SPAWN_CONFIG.BASE_MAX_OFFSET + drift + this.pressureUp + this.pendingExtraUp + overkill;
     minLevel = Math.max(1, minLevel);
     if (maxLevel - minLevel < SPAWN_CONFIG.MIN_SPREAD) {
       maxLevel = minLevel + SPAWN_CONFIG.MIN_SPREAD;
@@ -339,6 +422,7 @@ export class SpawnSystem {
     const killsInWindow = this.killTimes.length;
     this.pressureUp = killsInWindow > SPAWN_CONFIG.PRESSURE_KILL_COUNT ? 1 : 0;
     this.pressureDown = this.dangerEvents.length >= SPAWN_CONFIG.PRESSURE_DANGER_EVENTS ? -1 : 0;
+    this.decayOverkill(world, deltaTime);
 
     if (this.batchTimer <= 0) {
       this.batchTimer = randomRange(SPAWN_CONFIG.BATCH_INTERVAL_MIN, SPAWN_CONFIG.BATCH_INTERVAL_MAX);

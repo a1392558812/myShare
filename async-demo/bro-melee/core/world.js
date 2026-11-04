@@ -3,7 +3,7 @@
  * 引擎内部状态全部是普通对象，只有 HUD 快照经事件节流后进 Vue
  */
 
-import { BALANCE, SPAWN_CONFIG, WORLD_CONFIG } from '../constants.js';
+import { BALANCE, SPAWN_CONFIG, TEAMWORK_CONFIG, WORLD_CONFIG } from '../constants.js';
 import { RELIC_IDS, RELICS } from '../config/relics.js';
 import { TREASURES } from '../config/treasures.js';
 import { getSkillById } from '../config/skills.js';
@@ -21,7 +21,7 @@ import { createDebugApi } from './debug.js';
 import { EffectLayer } from './effects.js';
 import { createPlayer, createProjectile, resetEntityIds, resetProjectile } from './entities.js';
 import { dropLoot, spawnItem, updateItems } from './items.js';
-import { removeTreasure, resolveEncounter, updateEncounters } from './encounters.js';
+import { removeTreasure, resolveEncounter, reviveCompanionFrom, updateEncounters } from './encounters.js';
 import { dropRelic, ensureRelicsExist, findContestedHolder, updateRelicCooldowns, updateRelicPossession } from './relics.js';
 import { updateBonds } from './bonds.js';
 import {
@@ -38,6 +38,7 @@ import {
 import { SpawnSystem } from './spawning.js';
 import { SpatialHash } from './spatial-hash.js';
 import { expToNext, recalculatePlayerStats } from './stats.js';
+import { livingCompanions } from './companions.js';
 import { clamp, distanceBetween, angleOfVector, normalizeAngle, smoothingFactor } from './utils.js';
 import { ZoneLayer } from './zones.js';
 
@@ -61,6 +62,9 @@ export class BroMeleeWorld {
     };
     this.viewWidth = 1280;
     this.viewHeight = 720;
+    // 模式：normal 沿用原有压力曲线；nightmare 额外开启动态压力（一击秒杀抬高级区间）
+    this.mode = 'normal';
+    this.nightmare = false;
     this.hash = new SpatialHash(128);
     this.map = new ChunkMap();
     this.spawner = new SpawnSystem();
@@ -73,6 +77,8 @@ export class BroMeleeWorld {
   /** 开一局新的（回到 1 级、清空战场） */
   reset() {
     resetEntityIds();
+    this.mode = this.mode === 'nightmare' ? 'nightmare' : 'normal';
+    this.nightmare = this.mode === 'nightmare';
     this.time = 0;
     this.player = createPlayer(1);
     recalculatePlayerStats(this.player);
@@ -84,6 +90,12 @@ export class BroMeleeWorld {
     this.autoCast = Boolean(this.autoCast);
     this.autoCastTimer = 0;
     this.autoCastHasSkill = false;
+    // 普攻模式：melee 近战 / ranged 远程 / auto 按距离自动抉择
+    this.attackMode = this.attackMode || 'auto';
+    // 倒地随从快照与施救 / 传功通道
+    this.fallenCompanions = this.fallenCompanions || [];
+    this.reviving = null;
+    this.transfer = null;
     this.camera = { x: this.player.x, y: this.player.y };
     this.hash.clear();
     this.spawner.reset();
@@ -118,6 +130,7 @@ export class BroMeleeWorld {
     this.relicsUnlocked = false;
     this.bondTimer = 0;
     this.encounterTokens = [];
+    this.resolvedEncounterIds = new Set();
     this.encounterTimer = 0;
     this.pendingEncounter = null;
     this.pendingEncounterResult = null;
@@ -148,6 +161,15 @@ export class BroMeleeWorld {
   setViewSize(width, height) {
     this.viewWidth = Math.max(320, width);
     this.viewHeight = Math.max(240, height);
+  }
+
+  /**
+   * 切换模式（开局前调用；reset 会保留当前模式）
+   * @param {String} mode 'normal' | 'nightmare'
+   */
+  setMode(mode) {
+    this.mode = mode === 'nightmare' ? 'nightmare' : 'normal';
+    this.nightmare = this.mode === 'nightmare';
   }
 
   /** 当前存活角色（玩家 + 敌人） */
@@ -288,6 +310,10 @@ export class BroMeleeWorld {
    */
   castSkill(skillId) {
     if (this.paused || this.status !== 'playing') {
+      return false;
+    }
+    // 施救 / 传功时凝神运气，腾不出手放秘籍
+    if (this.reviving || this.transfer) {
       return false;
     }
     return castPlayerSkill(this, skillId);
@@ -470,7 +496,7 @@ export class BroMeleeWorld {
   }
 
   /** 死亡回调：玩家结束本局，敌人掉落道具 */
-  handleVictimDeath(victim, killer) {
+  handleVictimDeath(victim, killer, info = null) {
     if (victim.isPlayer) {
       this.status = 'dead';
       this.stats.playTime = this.time;
@@ -482,6 +508,7 @@ export class BroMeleeWorld {
         bossKills: this.stats.bossKills,
         deathCause: this.deathCause,
         learnedSkills: this.stats.learnedSkills,
+        nightmare: this.nightmare,
       });
       return;
     }
@@ -492,6 +519,10 @@ export class BroMeleeWorld {
     if (killer && killer.isPlayer) {
       this.stats.kills += 1;
       this.spawner.registerKill(this.time);
+      // 噩梦模式：一击秒杀 → 动态抬高刷新等级（info.hitDamage 只由 applyDamage 的致死一击传入）
+      if (this.nightmare && info && info.hitDamage > 0) {
+        this.spawner.registerOverkill(this, victim, info.hitDamage);
+      }
     }
     dropLoot(this, victim);
   }
@@ -621,7 +652,7 @@ export class BroMeleeWorld {
         this.effects.addTrail(player.x, player.y, player.radius * 0.9, '#8ef0d5');
       }
     }
-    this.pendingPlayerAttack = this.input.attackHeld && player.attackCooldown <= 0 && player.dashTimer <= 0;
+    this.pendingPlayerAttack = this.input.attackHeld && player.attackCooldown <= 0 && player.dashTimer <= 0 && !this.reviving && !this.transfer;
   }
 
   /** 敌人 AI 与计时器 */
@@ -704,6 +735,12 @@ export class BroMeleeWorld {
       for (let second = first + 1; second < actors.length; second++) {
         const actorB = actors[second];
         if (!actorB.alive) {
+          continue;
+        }
+        // 队友之间（玩家 ↔ 随从、随从 ↔ 随从）不互相排挤：站位交给 AI 的散开点位
+        const friendlyA = actorA.isPlayer || actorA.isCompanion;
+        const friendlyB = actorB.isPlayer || actorB.isCompanion;
+        if (friendlyA && friendlyB) {
           continue;
         }
         const deltaX = actorB.x - actorA.x;
@@ -808,37 +845,48 @@ export class BroMeleeWorld {
   }
 
   /**
-   * 自动普攻：技能都在冷却时补空档
+   * 自动普攻：技能都在冷却时补空档（按普攻模式出近战或远程）
    * 玩家自己按着攻击键、冲刺、眩晕、普攻还没转好都不插手
-   * @returns {Boolean} 是否挥出了一刀
+   * @returns {Boolean} 是否出了一次手
    */
   tryAutoMelee() {
     const player = this.player;
-    if (this.input.attackHeld || player.attackCooldown > 0 || player.dashTimer > 0 || player.stunTimer > 0) {
+    if (this.input.attackHeld || player.attackCooldown > 0 || player.dashTimer > 0 || player.stunTimer > 0 || this.reviving || this.transfer) {
       return false;
     }
-    const reach = player.attackRange + player.radius;
-    const candidates = this.hash.query(player.x, player.y, reach + 80);
-    let best = null;
-    let bestDistance = Infinity;
+    const candidates = this.hash.query(player.x, player.y, BALANCE.RANGED_ATTACK.RANGE);
+    let meleeTarget = null;
+    let meleeDistance = Infinity;
+    let rangedTarget = null;
+    let rangedDistance = Infinity;
     for (let index = 0; index < candidates.length; index++) {
       const target = candidates[index];
       if (target.kind === 'item' || !target.alive || target.id === player.id || target.isCompanion) {
         continue;
       }
       const distance = distanceBetween(player.x, player.y, target.x, target.y);
-      if (distance > reach + target.radius) {
-        continue;
+      const meleeReach = player.attackRange + player.radius + target.radius;
+      if (distance <= meleeReach && distance < meleeDistance) {
+        meleeDistance = distance;
+        meleeTarget = target;
       }
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        best = target;
+      if (distance <= BALANCE.RANGED_ATTACK.RANGE + target.radius && distance < rangedDistance) {
+        rangedDistance = distance;
+        rangedTarget = target;
       }
     }
-    if (!best) {
+    // 近战优先：贴脸不浪费远程；够不着才弹指飞掷
+    if (this.attackMode === 'ranged' || (!meleeTarget && this.attackMode === 'auto')) {
+      if (!rangedTarget) {
+        return false;
+      }
+      const angle = angleOfVector(rangedTarget.x - player.x, rangedTarget.y - player.y);
+      return this.performRangedAttack(angle);
+    }
+    if (!meleeTarget) {
       return false;
     }
-    const angle = angleOfVector(best.x - player.x, best.y - player.y);
+    const angle = angleOfVector(meleeTarget.x - player.x, meleeTarget.y - player.y);
     player.aimAngle = angle;
     player.attackCooldown = player.attackInterval;
     meleeSwing(this, player, angle, {
@@ -847,6 +895,209 @@ export class BroMeleeWorld {
       color: '#8ef0d5',
     });
     return true;
+  }
+
+  /** 弹指飞掷：低伤害远程普攻（发一枚绣花针） */
+  performRangedAttack(angle) {
+    const player = this.player;
+    player.attackCooldown = player.attackInterval;
+    this.spawnProjectile({
+      owner: player,
+      x: player.x + Math.cos(angle) * (player.radius + 8),
+      y: player.y + Math.sin(angle) * (player.radius + 8),
+      angle,
+      speed: BALANCE.RANGED_ATTACK.SPEED,
+      radius: BALANCE.RANGED_ATTACK.RADIUS,
+      life: BALANCE.RANGED_ATTACK.LIFE,
+      pierce: 1,
+      multiplier: BALANCE.RANGED_ATTACK.MULTIPLIER,
+      style: 'needle',
+      color: '#8ef0d5',
+    });
+    this.effects.addSwing(player.x, player.y, angle, 0.5, player.radius + 16, '#8ef0d5');
+    return true;
+  }
+
+  /** 按当前模式执行一次玩家普攻（近战 / 远程 / 自动按距离抉择） */
+  performPlayerAttack(angle) {
+    const player = this.player;
+    if (this.attackMode === 'ranged') {
+      return this.performRangedAttack(angle);
+    }
+    if (this.attackMode === 'melee') {
+      player.attackCooldown = player.attackInterval;
+      meleeSwing(this, player, angle, {
+        multiplier: player.meleeMultiplier,
+        knockback: 140,
+        color: '#8ef0d5',
+      });
+      return true;
+    }
+    // auto：近战扇形内有目标就贴脸砍，够不着才远程
+    const reach = player.attackRange + player.radius;
+    const candidates = this.hash.query(player.x, player.y, reach + 40);
+    let inMelee = false;
+    for (let index = 0; index < candidates.length; index++) {
+      const target = candidates[index];
+      if (target.kind === 'item' || !target.alive || target.id === player.id || target.isCompanion) {
+        continue;
+      }
+      if (distanceBetween(player.x, player.y, target.x, target.y) <= reach + target.radius) {
+        inMelee = true;
+        break;
+      }
+    }
+    if (inMelee) {
+      player.attackCooldown = player.attackInterval;
+      meleeSwing(this, player, angle, {
+        multiplier: player.meleeMultiplier,
+        knockback: 140,
+        color: '#8ef0d5',
+      });
+      return true;
+    }
+    return this.performRangedAttack(angle);
+  }
+
+  /** 循环切换普攻模式：自动 → 近战 → 远程 */
+  cycleAttackMode() {
+    const order = ['auto', 'melee', 'ranged'];
+    const nextIndex = (order.indexOf(this.attackMode) + 1) % order.length;
+    this.attackMode = order[nextIndex];
+    const labels = { auto: '自动（贴脸近战 · 远了飞掷）', melee: '近战', ranged: '远程弹指' };
+    this.notify(`普攻模式：${labels[this.attackMode]}`, '#8ef0d5');
+    this.pushHud(true);
+    return this.attackMode;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* 施救倒地随从（V 键：可移动、受击不打断、禁普攻禁技能）              */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * 开始 / 中止施救：走近倒地标记后按 V 启动，3 秒后同伴半血归队
+   * @returns {Boolean} 是否处于施救状态
+   */
+  startRevive() {
+    if (this.reviving) {
+      this.reviving = null;
+      this.notify('施救中止', '#c6a86c');
+      return false;
+    }
+    if (this.transfer) {
+      this.notify('正在传功，腾不出手施救', '#c6a86c');
+      return false;
+    }
+    const player = this.player;
+    if (!player.alive || !this.fallenCompanions.length) {
+      this.notify('附近没有倒下的同伴', '#c6a86c');
+      return false;
+    }
+    const marker = this.fallenCompanions.find((item) => {
+      return distanceBetween(player.x, player.y, item.x, item.y) < TEAMWORK_CONFIG.REVIVE_START_RADIUS;
+    });
+    if (!marker) {
+      this.notify('要走到同伴倒下的地方才能施救', '#c6a86c');
+      return false;
+    }
+    this.reviving = { typeId: marker.typeId, timer: 0, duration: TEAMWORK_CONFIG.REVIVE_DURATION };
+    this.notify(`正在施救 ${marker.name}…（可以走动，别离开太远）`, '#8ef0d5');
+    return true;
+  }
+
+  /** 施救逐帧推进：超距中止，读条完成半血复活 */
+  updateRevive(deltaTime) {
+    if (!this.reviving) {
+      return;
+    }
+    const player = this.player;
+    if (!player.alive) {
+      this.reviving = null;
+      return;
+    }
+    const marker = this.fallenCompanions.find((item) => item.typeId === this.reviving.typeId);
+    if (!marker) {
+      this.reviving = null;
+      return;
+    }
+    if (distanceBetween(player.x, player.y, marker.x, marker.y) > TEAMWORK_CONFIG.REVIVE_KEEP_RADIUS) {
+      this.reviving = null;
+      this.notify('离得太远，施救中止', '#ff8a66');
+      return;
+    }
+    this.reviving.timer += deltaTime;
+    if (this.reviving.timer >= this.reviving.duration) {
+      reviveCompanionFrom(this, marker);
+      this.fallenCompanions = this.fallenCompanions.filter((item) => item !== marker);
+      this.reviving = null;
+      this.pushHud(true);
+    }
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* 传功（按住 T：可移动、受击打断、随传随回血）                        */
+  /* ---------------------------------------------------------------- */
+
+  /**
+   * 开 / 关传功：对 170 码内血量未满的同伴持续回血
+   * @returns {Boolean} 是否进入传功状态
+   */
+  startTransfer() {
+    if (this.transfer) {
+      this.transfer = null;
+      this.notify('收功', '#c6a86c');
+      return false;
+    }
+    if (this.reviving) {
+      this.notify('正在施救，腾不出手传功', '#c6a86c');
+      return false;
+    }
+    const player = this.player;
+    if (!player.alive) {
+      return false;
+    }
+    const companion = livingCompanions(this).find((enemy) => {
+      return enemy.hp < enemy.maxHp && distanceBetween(player.x, player.y, enemy.x, enemy.y) < TEAMWORK_CONFIG.TRANSFER_RADIUS;
+    });
+    if (!companion) {
+      this.notify('附近没有受伤的同伴可传功', '#c6a86c');
+      return false;
+    }
+    this.transfer = { targetId: companion.id };
+    this.notify(`正为 ${companion.typeName} 传功…（随传随回血，受击会打断）`, '#c9e8ff');
+    return true;
+  }
+
+  /** 传功逐帧推进：每秒回 8% 目标上限、耗玩家 2% 当前血，受击 / 超距 / 松键结束 */
+  updateTransfer(deltaTime) {
+    if (!this.transfer) {
+      return;
+    }
+    const player = this.player;
+    const target = this.findActor(this.transfer.targetId);
+    if (!player.alive || player.hitFlash > 0 || !target || !target.alive || !target.isCompanion) {
+      if (this.transfer) {
+        this.notify(player.hitFlash > 0 ? '受击，传功被打断' : '传功结束', '#c6a86c');
+      }
+      this.transfer = null;
+      return;
+    }
+    if (distanceBetween(player.x, player.y, target.x, target.y) > TEAMWORK_CONFIG.TRANSFER_BREAK_RADIUS) {
+      this.transfer = null;
+      this.notify('离同伴太远，传功中断', '#ff8a66');
+      return;
+    }
+    if (target.hp >= target.maxHp) {
+      this.transfer = null;
+      this.notify(`${target.typeName} 气血已满`, '#8ef0d5');
+      return;
+    }
+    target.hp = Math.min(target.maxHp, target.hp + target.maxHp * TEAMWORK_CONFIG.TRANSFER_HEAL_RATIO * deltaTime);
+    player.hp = Math.max(1, player.hp - player.hp * TEAMWORK_CONFIG.TRANSFER_COST_RATIO * deltaTime);
+    // 传功连线微粒
+    if (Math.random() < deltaTime * 24) {
+      this.effects.addTrail(player.x, player.y, 3, '#7be3ff');
+    }
   }
 
   /**
@@ -866,12 +1117,7 @@ export class BroMeleeWorld {
   /** 结算玩家与敌人的攻击意图（此时哈希已是本帧位置） */  resolveAttacks() {
     const player = this.player;
     if (this.pendingPlayerAttack && player.alive && player.attackCooldown <= 0) {
-      player.attackCooldown = player.attackInterval;
-      meleeSwing(this, player, player.aimAngle, {
-        multiplier: player.meleeMultiplier,
-        knockback: 140,
-        color: '#8ef0d5',
-      });
+      this.performPlayerAttack(player.aimAngle);
     }
     this.pendingPlayerAttack = false;
 
@@ -1060,6 +1306,8 @@ export class BroMeleeWorld {
     updateItems(this, deltaTime);
     updateEncounters(this, deltaTime);
     updateCompanionManuals(this, deltaTime);
+    this.updateRevive(deltaTime);
+    this.updateTransfer(deltaTime);
     updateBonds(this, deltaTime);
     updateRelicPossession(this, deltaTime);
     ensureRelicsExist(this, deltaTime);
@@ -1120,7 +1368,10 @@ export class BroMeleeWorld {
       kills: this.stats.kills,
       time: this.time,
       enemyCount: this.enemies.filter((enemy) => enemy.alive && !enemy.isCompanion).length,
+      // 调试台专用：默认刷新等级区间 / 当前实际区间 / 各自被调了多少
+      spawn: this.spawner.describeRange(this),
       autoCast: Boolean(this.autoCast),
+      attackMode: this.attackMode,
       activeSkills: player.activeSkillIds.map((skillId, index) => {
         const skill = getSkillById(skillId);
         const cooldownLeft = player.skillCooldowns[skillId] || 0;
@@ -1135,6 +1386,7 @@ export class BroMeleeWorld {
           cooldownLeft,
           ready: cooldownLeft <= 0,
           ratio: cooldownLeft <= 0 ? 0 : cooldownLeft / skill.cooldown,
+          detail: skill.detail ? skill.detail(player.skillStacks[skillId] || 1) : '',
         };
       }),
       passives: Object.keys(player.skillStacks)
@@ -1224,6 +1476,16 @@ export class BroMeleeWorld {
             ratio: clamp(this.channel.timer / this.channel.duration, 0, 1),
           }
         : null,
+      reviving: this.reviving
+        ? { ratio: clamp(this.reviving.timer / this.reviving.duration, 0, 1) }
+        : null,
+      transfer: this.transfer
+        ? {
+            targetId: this.transfer.targetId,
+            targetName: this.findActor(this.transfer.targetId)?.typeName || '同伴',
+          }
+        : null,
+      fallenCount: this.fallenCompanions.length,
       boss: boss
         ? {
             name: boss.typeName,

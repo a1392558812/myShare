@@ -185,7 +185,7 @@ export const applyDamage = (world, attacker, target, options = {}) => {
   }
 
   if (target.hp <= 0) {
-    killEntity(world, target, attacker);
+    killEntity(world, target, attacker, { hitDamage: damage });
   }
   return damage;
 };
@@ -307,8 +307,9 @@ export const areaDamage = (world, attacker, centerX, centerY, radius, options = 
  * @param {Object} world 世界实例
  * @param {Object} victim 死亡实体
  * @param {Object} killer 击杀者
+ * @param {Object} info 附加信息 { hitDamage }：致死一击的实际伤害（噩梦模式判定一击秒杀用）
  */
-export const killEntity = (world, victim, killer) => {
+export const killEntity = (world, victim, killer, info = null) => {
   if (!victim.alive) {
     return;
   }
@@ -346,5 +347,5 @@ export const killEntity = (world, victim, killer) => {
     }
   }
 
-  world.handleVictimDeath(victim, isValidKiller ? killer : null);
+  world.handleVictimDeath(victim, isValidKiller ? killer : null, info);
 };

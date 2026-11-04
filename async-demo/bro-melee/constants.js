@@ -32,6 +32,15 @@ export const BALANCE = {
   CRIT_DAMAGE_MULTIPLIER: 1.5,
   MIN_DAMAGE: 1,
 
+  // 弹指飞掷：低伤害远程普攻（伤害 = 攻击 × MULTIPLIER）
+  RANGED_ATTACK: {
+    RANGE: 460,
+    MULTIPLIER: 0.45,
+    SPEED: 780,
+    RADIUS: 6,
+    LIFE: 0.62,
+  },
+
   PLAYER: {
     maxHp: 150,
     attack: 22,
@@ -234,6 +243,16 @@ export const SPAWN_CONFIG = {
   LOW_HP_RATIO: 0.35,
   LOW_HP_EVENT_COOLDOWN: 4,
   MINION_CAP: 4,
+  /* 噩梦模式的动态压力：一击打掉目标 2/3 以上气血 = 地图太软，抬高刷新等级 */
+  OVERKILL_HIT_RATIO: 2 / 3,
+  /** 秒掉区间最低级的敌人：只说明整体略微偏低，小幅上调 */
+  OVERKILL_STEP_LOW: 0.6,
+  /** 连区间最高级也能秒：整张地图都太软，大幅上调 */
+  OVERKILL_STEP_HIGH: 1.5,
+  OVERKILL_CAP: 10,
+  /** 多久没有「一击秒杀」就开始回落（秒） */
+  OVERKILL_IDLE_BEFORE_DECAY: 25,
+  OVERKILL_DECAY_PER_SECOND: 0.06,
 };
 
 /** 判定「明显打得过」的战力倍率：越小越好战（各类型性格不同） */
@@ -272,4 +291,16 @@ export const PALETTE = {
   relic: '#ffd166',
   relicSaber: '#ff9b5a',
   relicSword: '#8fd0ff',
+};
+
+/** 队伍协作：复活倒地随从 / 传功回血（v1.10） */
+export const TEAMWORK_CONFIG = {
+  REVIVE_START_RADIUS: 150,
+  REVIVE_KEEP_RADIUS: 190,
+  REVIVE_DURATION: 3,
+
+  TRANSFER_RADIUS: 170,
+  TRANSFER_BREAK_RADIUS: 215,
+  TRANSFER_HEAL_RATIO: 0.08,
+  TRANSFER_COST_RATIO: 0.02,
 };

@@ -1,9 +1,12 @@
 <template>
   <div class="hud">
     <div class="hud-corner hud-corner--left">
-      <div class="level-badge">
-        <span class="level-label">境界</span>
-        <span class="level-value">{{ hud.level }}</span>
+      <div class="level-row">
+        <div class="level-badge">
+          <span class="level-label">境界</span>
+          <span class="level-value">{{ hud.level }}</span>
+        </div>
+        <span v-if="hud.spawn && hud.spawn.nightmare" class="mode-badge">噩梦</span>
       </div>
       <div class="bar-group">
         <div class="bar bar--hp">
@@ -131,9 +134,9 @@
     </div>
 
     <div class="skill-dock">
-      <div class="skill-bar">
+      <div class="skill-bar" :class="{ 'skill-bar--expanded': skillsExpanded }">
         <div
-          v-for="skill in hud.activeSkills"
+          v-for="skill in visibleSkills"
           :key="skill.id"
           class="skill-slot"
           :class="{ 'skill-slot--cooling': !skill.ready, 'skill-slot--auto': hud.autoCast && skill.ready }"
@@ -143,14 +146,31 @@
           <div class="skill-mask" :style="{ height: `${skill.ratio * 100}%` }"></div>
           <span class="skill-icon">{{ skill.icon }}</span>
           <span class="skill-name">{{ skill.name }}</span>
-          <span class="skill-key">{{ skill.slot }}</span>
+          <span class="skill-key">{{ keyLabel(skill) }}</span>
           <span v-if="skill.stack > 1" class="skill-stack">×{{ skill.stack }}</span>
           <span v-if="!skill.ready" class="skill-cooldown">{{ skill.cooldownLeft.toFixed(1) }}</span>
+          <span v-if="skill.detail" class="skill-tooltip">{{ skill.name }} · {{ skill.detail }}</span>
         </div>
+        <button v-if="hud.activeSkills.length > COLLAPSED_COUNT" class="skill-more" type="button" @mousedown.stop.prevent="skillsExpanded = !skillsExpanded">
+          {{ skillsExpanded ? '收起 ˄' : `展开 ${hud.activeSkills.length - COLLAPSED_COUNT} ˅` }}
+        </button>
         <div v-if="!hud.activeSkills.length" class="skill-empty">
           每 5 级可三选一秘籍，外功会出现在这里
         </div>
       </div>
+      <button class="bind-entry" type="button" title="键位设置（也可在开局前的主界面配置）" @mousedown.stop.prevent="$emit('open-keybinds')">
+        <span class="bind-entry-label">改键</span>
+      </button>
+      <button
+        class="attack-mode"
+        type="button"
+        title="普攻模式：自动（贴脸近战，远了飞掷）/ 近战 / 远程（G 切换）"
+        @mousedown.stop.prevent="$emit('cycle-attack')"
+      >
+        <span class="mode-label">普攻</span>
+        <span class="mode-state">{{ attackModeLabel }}</span>
+        <span class="mode-key">G</span>
+      </button>
       <button
         class="auto-toggle"
         :class="{ 'auto-toggle--on': hud.autoCast }"
@@ -167,17 +187,50 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { formatTime } from '../core/utils.js';
+
+const COLLAPSED_COUNT = 8;
 
 const props = defineProps({
   hud: {
     type: Object,
     required: true,
   },
+  keybinds: {
+    type: Object,
+    default: () => ({}),
+  },
+  keybindLabelOf: {
+    type: Function,
+    required: true,
+  },
 });
 
-const emit = defineEmits(['use-skill', 'toggle-auto', 'use-relic', 'drop-relic', 'discard-treasure']);
+const emit = defineEmits(['use-skill', 'toggle-auto', 'use-relic', 'drop-relic', 'discard-treasure', 'cycle-attack', 'open-keybinds']);
+
+/** 技能多于一行时折叠，点「展开」看全部 */
+const skillsExpanded = ref(false);
+
+const visibleSkills = computed(() => {
+  const skills = props.hud.activeSkills || [];
+  return skillsExpanded.value ? skills : skills.slice(0, COLLAPSED_COUNT);
+});
+
+/** 槽位显示：优先自定义键，其次默认 1-9 */
+const keyLabel = (skill) => {
+  return props.keybindLabelOf(skill.id, skill.slot);
+};
+
+const ATTACK_MODE_LABELS = {
+  auto: '自动',
+  melee: '近战',
+  ranged: '远程',
+};
+
+const attackModeLabel = computed(() => {
+  return ATTACK_MODE_LABELS[props.hud.attackMode] || '自动';
+});
 
 const timeText = computed(() => {
   return formatTime(props.hud.time);
@@ -224,6 +277,13 @@ const onDiscardTreasure = (treasure) => {
   min-width: 132px;
 }
 
+.level-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+}
+
 .level-badge {
   display: flex;
   align-items: baseline;
@@ -233,6 +293,16 @@ const onDiscardTreasure = (treasure) => {
   background: linear-gradient(120deg, rgba(198, 168, 108, 0.28), rgba(12, 14, 10, 0.4));
   border: 1px solid rgba(198, 168, 108, 0.5);
   border-radius: 3px;
+}
+
+.mode-badge {
+  padding: 2px 8px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #ff9b8a;
+  border: 1px solid rgba(224, 85, 69, 0.55);
+  border-radius: 2px;
+  background: rgba(224, 85, 69, 0.12);
 }
 
 .level-label {
@@ -531,6 +601,81 @@ const onDiscardTreasure = (treasure) => {
   justify-content: center;
   gap: 8px;
   max-width: 552px;
+
+  &--expanded {
+    max-width: 760px;
+  }
+}
+
+/* 展开按钮：占据槽位大小的右下角小方块 */
+.skill-more {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  background: rgba(10, 12, 9, 0.78);
+  border: 1px dashed rgba(198, 168, 108, 0.55);
+  border-radius: 3px;
+  color: rgba(244, 236, 216, 0.7);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+
+  &:hover {
+    color: #ffd166;
+    border-color: #ffd166;
+  }
+}
+
+/* 悬停秘籍详情：槽位上方浮层 */
+.skill-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: 210px;
+  padding: 7px 9px;
+  background: rgba(8, 10, 8, 0.96);
+  border: 1px solid var(--skill-color);
+  border-radius: 4px;
+  color: rgba(244, 236, 216, 0.92);
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 20;
+}
+
+.skill-slot:hover .skill-tooltip {
+  opacity: 1;
+}
+
+/* 改键入口：技能坞左下小按钮 */
+.bind-entry {
+  width: 40px;
+  height: 64px;
+  padding: 0;
+  background: rgba(10, 12, 9, 0.78);
+  border: 1px solid rgba(198, 168, 108, 0.42);
+  border-radius: 3px;
+  color: rgba(244, 236, 216, 0.62);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.16s ease;
+
+  &:hover {
+    color: #ffd166;
+    border-color: rgba(198, 168, 108, 0.8);
+    transform: translateY(-3px);
+  }
+}
+
+.bind-entry-label {
+  writing-mode: vertical-lr;
+  letter-spacing: 3px;
+  font-size: 11px;
 }
 
 .auto-toggle {
@@ -579,6 +724,45 @@ const onDiscardTreasure = (treasure) => {
   opacity: 0.45;
 }
 
+.attack-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 54px;
+  height: 64px;
+  padding: 0;
+  background: rgba(10, 12, 9, 0.78);
+  border: 1px solid rgba(142, 240, 213, 0.36);
+  border-radius: 3px;
+  color: rgba(142, 240, 213, 0.85);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.16s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.mode-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: 0.75;
+}
+
+.mode-state {
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.mode-key {
+  font-size: 9px;
+  opacity: 0.45;
+}
+
 .skill-slot--auto {
   box-shadow: 0 0 10px rgba(255, 209, 102, 0.22);
 }
@@ -587,7 +771,6 @@ const onDiscardTreasure = (treasure) => {
   position: relative;
   width: 64px;
   height: 64px;
-  overflow: hidden;
   background: rgba(10, 12, 9, 0.78);
   border: 1px solid var(--skill-color);
   border-radius: 3px;

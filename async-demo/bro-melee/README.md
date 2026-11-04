@@ -4,7 +4,7 @@
 
 ### 1.1 简介
 
-在一张**无限大**的 Canvas 地图上，玩家与散落各处的、**各种等级**的敌人互相混战——所有人互为敌人。**每击败一个敌人，就能吞噬他的等级**；**每升 5 级，可以在多本武功秘籍中三选一学习或修炼**；地图上散落经验书等道具；敌人 AI 会残血逃跑、追击自己能打得过的目标、甚至捡经验书升级；敌人刷新带**浮动范围**，动态避免"玩家无敌无聊"或"玩家升不动被围猎"两种极端。
+在一张无限大的 Canvas地图上，玩家与散落各处的、各种等级的敌人互相混战，所有人互为敌人。每击败一个敌人，就能吞噬他的等级，\*每升 5 级，可以在多本武功秘籍中三选一学习或修炼；地图上散落经验书等道具；敌人AI 会残血逃跑、追击自己能打得过的目标、甚至捡经验书升级；敌人刷新带浮动范围，动态避免"玩家无敌无聊"或"玩家升不动被围猎"两种极端。
 
 ### 1.2 核心玩法循环
 
@@ -127,14 +127,14 @@ bro-melee/
 │   ├── skills.js                # 秘籍三选一、主动武功释放、敌人技能、自动施法选技、奇遇直授
 │   ├── ai.js                    # 敌人状态机（Wander/Chase/Attack/Retreat/Pickup/Follow/Escort）
 │   ├── items.js                 # 道具掉落/刷新/拾取（含神兵拾取门槛与丢弃免疫）
-│   ├── relics.js                # 神兵系统：持有/掉落/AI 评估/猎杀（v1.6）
-│   ├── bonds.js                 # 谢逊/张翠山羁绊（v1.7）
-│   ├── encounters.js            # 奇遇系统：标记浮出/触发/27 条结算/限时 buff/打坐/随从/追杀（v1.8）
+│   ├── relics.js                # 神兵系统：持有/掉落/AI 评估/猎杀
+│   ├── bonds.js                 # 谢逊/张翠山羁绊
+│   ├── encounters.js            # 奇遇系统：标记浮出/触发/27 条结算/限时 buff/打坐/随从/追杀
 │   ├── spawning.js              # 浮动刷新 + 压力调节 + 首领 + 谢逊 + 猎杀队 + 奇遇额外敌人
-│   ├── companions.js            # 随从自修武功：抉择/离队誓约/属性折算（v1.9）
+│   ├── companions.js            # 随从自修武功：抉择/离队誓约/属性折算
 │   └── world.js                 # 主循环（固定步长）+ 输入 + HUD 事件
 ├── draw/
-│   ├── actors.js                # 角色立绘：程序化骨架 + 行走/挥击/施法动画（v1.2）
+│   ├── actors.js                # 角色立绘：程序化骨架 + 行走/挥击/施法动画
 │   └── renderer.js              # Canvas 渲染（背景缓存/实体/特效/奇遇光环/小地图）
 ├── composables/
 │   └── useBroMelee.js           # Vue 桥接：HUD 节流同步、输入、开局重开
@@ -142,7 +142,7 @@ bro-melee/
     ├── StartPanel.vue           # 开始界面
     ├── CharacterGallery.vue     # 角色图鉴（首页入口，立绘预览 + 属性/武功档案）
     ├── GameMain.vue             # Canvas 宿主 + 输入 + 结算 + 奇遇面板挂载
-    ├── EncounterPanel.vue       # 奇遇抉择弹窗 + 结果页（1/2/3 快捷键，v1.8）
+    ├── EncounterPanel.vue       # 奇遇抉择弹窗 + 结果页（1/2/3 快捷键）
     ├── DebugPanel.vue           # 调试台（秘籍 / 状态 / 敌人 / 神兵 / 奇遇 五标签）
     ├── HudPanel.vue             # 血条/修为/属性/技能栏/首领血条/buff/宝物/随从
     └── SkillSelectPanel.vue     # 秘籍三选一弹窗（1/2/3 快捷键）
@@ -343,7 +343,7 @@ const isHostile = (a, b) => {
 // 敌人之间也互相敌对 → 每个人都是自己的 faction
 ```
 
-敌人与敌人之间也会互打，让地图形成"生态混战"。
+敌人与敌人之间也会互打，超级大乱斗，
 
 ### 4.4 对象池（高频实体复用）
 
@@ -370,7 +370,7 @@ class ObjectPool {
 
 ### 5.1 吞噬规则（R3）
 
-- 敌人死亡时，击杀者（玩家或敌人）**吞噬其等级**。
+- 敌人死亡时，击杀者（玩家或敌人）吞噬其等级
 - 吞噬转化为经验值：`expGain = enemy.level * EXP_PER_LEVEL_BASE`，敌人等级越高，收益越高 → 鼓励挑战高等级。
 
 ```js
@@ -490,8 +490,8 @@ const weightOf = (player, s) => {
 
 ### 6.5 学习与修炼
 
-- 首次选择 → **学习**：注册技能/被动。
-- 再次选择同一秘籍 → **修炼**：`stack + 1`，效果按 `stack` 倍率强化，直至 `maxStack` 满级。
+- 首次选择 → 学习：注册技能/被动。
+- 再次选择同一秘籍 → 修炼：`stack + 1`，效果按 `stack` 倍率强化，直至 `maxStack` 满级。
 
 ### 6.6 UI 交互（SkillSelectPanel.vue）
 
@@ -606,7 +606,7 @@ const canBeat = (me, target) => {
 | Pickup  | 视野内有经验书/血瓶且附近无强敌      | 优先拾取（低等级敌人借此升级 R9）   |
 | Flee    | 视野内有 `threatScore > me*2` 的强敌 | 远离强敌，避免送命                  |
 
-**破绽例外（v1.9.3）**：玩家打坐 / 眩晕（`stunTimer > 0.3s`）时被全地图视为「无还手能力」——跳过 `canBeat` 与威胁评估直接围攻（详见 §25）。
+**破绽例外**：玩家打坐 / 眩晕（`stunTimer > 0.3s`）时被全地图视为「无还手能力」——跳过 `canBeat` 与威胁评估直接围攻（详见 §25）。
 
 ### 8.4 决策节流与邻居查询
 
@@ -720,7 +720,7 @@ function calcSpawnRange(player, worldTime) {
 
 ### 10.3 动态压力调节
 
-- 记录玩家**近期击杀率**与**近期死亡/低血事件**：
+- 记录玩家近期击杀率与近期死亡/低血事件：
   - 击杀率高 → `maxOffset +1`（给更强敌人，防无敌）。
   - 频繁低血/死亡 → `baseMinOffset -1`（给更多低等级，防围猎）。
 
@@ -946,7 +946,7 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
 
 ---
 
-## 18. 附录：关键数值表（v1 基线，可调）
+## 18. 附录：关键数值表
 
 | 参数               | 值                     | 说明                      |
 | ------------------ | ---------------------- | ------------------------- |
@@ -963,63 +963,14 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
 
 ---
 
-## 19. 后续可扩展方向
-
-- 多人联网（WebSocket + 状态同步，AI 生态变真人生态）
-- 更多秘籍流派 / 秘籍合成
-- 地图事件（毒圈、精英营地、Boss 巢穴）
-- 局外成长（解锁秘籍库、天赋树）
-
----
-
-## 20. 落地记录（v1.1 实测）
-
-### 20.1 操作
-
-| 输入          | 行为                                                   |
-| ------------- | ------------------------------------------------------ |
-| WASD / 方向键 | 移动                                                   |
-| 鼠标          | 瞄准（准星虚线 + 圆环）                                |
-| 左键 / J      | 普攻（扇形挥击，可长按连击）                           |
-| 空格 / 右键   | 闪避冲刺（短无敌帧）                                   |
-| 1-5           | 释放已学外功（技能栏同步冷却）                         |
-| Q / E         | 屠龙一斩 / 倚天寒光（需持有对应神兵）                   |
-| R             | 丢下神兵（3 秒内自己捡不回来）                         |
-| ` （反引号）  | 调试台：秘籍层数增删改 / buff 与冷却 / 属性 / 刷敌调级 |
-
-### 20.2 与设计稿的差异（实现期决策）
-
-| 项         | 设计稿       | 落地                                               | 原因                              |
-| ---------- | ------------ | -------------------------------------------------- | --------------------------------- |
-| 玩家血量   | 100 起步     | 150 起步                                           | 所有人互为敌人，开场压力实测过大  |
-| 受击无敌帧 | 无           | 玩家受击后 0.18s 无敌                              | 防止被围殴瞬间蒸发，保留围攻压力  |
-| 刷新上限   | 12+2×等级    | 12+1.4×等级，封顶 48                               | 同屏实体与帧率权衡                |
-| 敌人性格   | 统一 1.25 倍 | 按类型 1.08~1.6（AGGRO_RATIO）                     | 野狼好战、术士怂，生态更多样      |
-| 强敌行为   | 只在视野内   | 比玩家强 ×1.3 的敌人 800 码内循味猎杀（首领 1500） | 防「无敌无聊」，保证压力源源不断  |
-| 敌人游荡   | 纯随机       | 离玩家 >700 码时向战场靠拢                         | 防地图被拉空、 encounter 密度过低 |
-
-### 20.3 Node 探针实测（无渲染，180s / 240s × 多次）
-
-- 主动型机器人（追着最近敌人砍）：180s 存活率 3/3，等级 19~23，击杀 67~80，敌人互杀 14~29，90s 首领准时刷新，5/10/15/20 级均弹出秘籍三选一。
-- 被动型机器人（站着不动）：约 30s 被循味而来的强敌击杀 —— 「站着不动会被打」成立。
-- AI 状态机六状态（含 retreat/pickup/flee）均被观测到，R6/R7/R9 达标。
-- 峰值：敌人 ≤19、特效 ≤88、投射物 ≤2；无 NaN、无越界；敌人上限从未突破。
-- 无头浏览器冒烟：0 控制台错误，Canvas 正常出帧，秘籍面板 → 选卡 → 技能栏点亮全链路通过。
-
-### 20.4 已知边界
-
-- 投射物按施法者属性快照结算，施法者中途死亡不影响弹道伤害（吸星大法吸血不生效，属预期）。
-- 召唤物不参与刷新计数上限的强制回收，但受 `MINION_CAP = 4` 限制。
-- 无敌调试模式下玩家不会死亡，仅用于测试面板链路。
-
-### 20.5 v1.5 角色图鉴
+## 19. 角色图鉴
 
 - 首页「角色图鉴」按钮 → `components/CharacterGallery.vue`（index.vue 加 gallery 分支），13 个角色（玩家 + 12 类敌人）。
 - 渲染零新代码：复用 `draw/actors.js drawActor` + renderer.js 导出的 `drawShadow / drawFootRing / drawHealthBar / drawLevelLabel`；展示朝向固定头朝上（facing = −π/2）。
 - 实体由 `createPlayer / createEnemy` 真实工厂创建（属性即真实数值）；敌人按「模拟等级」滑块（1-40）实时重摇武功；出手/施法时长公式与 core 一致。
 - 血条/等级文字用屏幕像素尺度重画（proxy 半径 = radius×scale×2.1），避免立绘放大后文字巨大。
 
-### 20.6 v1.6 神兵系统：屠龙刀 + 倚天剑
+## 20. 神兵系统：屠龙刀 + 倚天剑
 
 **配置与常量**
 
@@ -1028,11 +979,11 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
 
 **新敌人**（`config/enemies.js`，weight 0 不进随机刷新池）
 
-| 敌人 | 定位 | 生成方式 |
-| --- | --- | --- |
-| 谢逊 | 金毛狮王 boss，hp×5.6，五门武功，双兵之主 | 105s 定时登场；重刷时若神兵已有主/在地上则空手登场（防双份神兵） |
-| 武林高手 | 神兵猎手，近战 + 冲锋，循杀气直扑持宝者 | 持宝者出现后按 HUNT 节奏刷 |
-| 大内高手 | 神兵猎手，铁布衫 + 引雷 + 冷箭，偏爱远程偷袭 | 同上 |
+| 敌人     | 定位                                         | 生成方式                                                         |
+| -------- | -------------------------------------------- | ---------------------------------------------------------------- |
+| 谢逊     | 金毛狮王 boss，hp×5.6，五门武功，双兵之主    | 105s 定时登场；重刷时若神兵已有主/在地上则空手登场（防双份神兵） |
+| 武林高手 | 神兵猎手，近战 + 冲锋，循杀气直扑持宝者      | 持宝者出现后按 HUNT 节奏刷                                       |
+| 大内高手 | 神兵猎手，铁布衫 + 引雷 + 冷箭，偏爱远程偷袭 | 同上                                                             |
 
 **核心流转**（`core/relics.js`）
 
@@ -1048,148 +999,114 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
 - Q/E 释放绝学：屠龙一斩（250 码扇形 240% + 击退）、倚天寒光（158 码环形 190% + 减速 2.4s）；R 丢下最后拿到的神兵；HUD 底部双槽（冷却遮罩 + 右键丢弃），持宝时右上角红色「神兵在手 · 高手正在追杀」。
 - 双兵合璧额外 +25% 攻势 / +10% 暴击 / −8% 受伤，通知横幅提示。
 
-**实测**
+## 21. 复仇谢逊 + 张翠山羁绊
 
-- Node 探针（无敌 bot，620s）：谢逊 105s 登场 → 193s 被杀 → 双兵落地 → 玩家拾取 → 猎杀队 hunters 1→6；弃刀后屠龙刀留在地上，Lv20 巨汉抢走、Lv2 野狼全部绕开；谢逊 260s 空手再现（神兵唯一生效）。
-- 无头冒烟：开局 HUD 两个空槽；塞双兵后攻 22→44 / 血上限 150→280 / 暴击 38% / 闪避 CD ×0.7；猎杀队刷出且大内高手进入 snipe 状态；两门绝学释放成功（CD 5.2 / 4.8）；弃刀后屠龙刀槽变「未持有」、地上出现掉落物；图鉴 13 角色齐全，谢逊页展示双兵卡片与加成词条；0 控制台错误。
-
-### 20.7 v1.7 复仇谢逊 + 张翠山羁绊
-
-**背景**：神兵唯一性生效后，「谢逊重刷时双兵已落他人之手」会空手登场 —— 原实现只是个无收益的送人头 boss。v1.7 把空手返场升级为「复仇者讨还」的完整剧情形态。
+**背景**：神兵唯一性生效后，「谢逊重刷时双兵已落他人之手」会空手登场,返场升级为复仇者讨还
 
 **登场规则**（core/spawning.js spawnXieXun）
 
-- 重刷时按「神兵唯一」过滤：双兵都被人持着/散在地上 → 谢逊空手现世，进入**复仇形态**（`revenge=true`，typeName 变「谢逊·复仇」，登场环与通知文案变红）；只带回一把则正常携兵登场、无张翠山。
+- 重刷时按「神兵唯一」过滤：双兵都被人持着/散在地上 → 谢逊空手现世，进入复仇形态（`revenge=true`，typeName 变「谢逊·复仇」，登场环与通知文案变红）；只带回一把则正常携兵登场、无张翠山。
 - 复仇属性走 `RELIC_CONFIG.REVENGE`，**整档替换神兵加成而不是叠加**（讨回刀后仍按复仇算）：攻 ×2.15、血 ×1.5、防 +18、速 ×1.08、近战 +0.55、减伤 0.26 —— 稳定压过「双兵在手」档（实测同等级 攻 120/血 918/减伤 0.26 vs 101/742/0.14）。
-- 复仇形态**无视战力评估直扑持兵者**（`findRelicPrey` 半径放大到 XIEXUN_HUNT_RADIUS 2600，把曾经的死常量用了起来），玩家持兵时 100% 锁定玩家（探针实测）。
+- 复仇形态**无视战力评估直扑持兵者**（`findRelicPrey` 半径放大到 XIEXUN_HUNT_RADIUS 2600）
 - 同时召唤**张翠山**随行（Lv = 谢逊 −3），`core/bonds.js` 建立双向羁绊。
-- 复仇谢逊伏诛必掉大还丹 + 护体符（补偿空手 boss 的收益缺口）。
+- 复仇谢逊伏诛必掉大还丹 + 护体符，补偿空手 boss 的收益缺口。
 
 **羁绊系统**（core/bonds.js）
 
-- `linkBond(leader, escort)`：互写 `bondId/bondRole`，登场即吃满加成；`updateBonds` 每 0.5s 检查双方存活，**状态变化才重算属性**（保持血量百分比）。
+- `linkBond(leader, escort)`：互写 `bondId/bondRole`，登场即吃满加成；`updateBonds` 每 0.5s 检查双方存活，状态变化才重算属性（保持血量百分比）。
 - 加成数值：张翠山存活 → 谢逊 +20% 攻 / +8% 速；谢逊存活 → 张翠山 +25% 攻 / +12% 速 / +12% 减伤。任一方倒下，另一方 `bondBuff=null` 并掉档（探针实测 谢逊 120→110、张翠山 44→35）。
 - 加成并入 `applyRelicStats`（读 `bondBuff`），与神兵/复仇同一乘区，天然幂等。
 
 **张翠山 AI**（core/ai.js）
 
 - 目标候选先剔除羁绊同伴（两人互不攻击）；`applyDamage` 里再加一层「羁绊豁免」—— 横扫、投射物、持续伤害区对同伴一律免伤（探针曾实测谢逊 sweep 误杀张翠山后修复）。
-- 行为优先级：离谢逊 >720 码 → `follow` 状态跑回去（新状态，只贴身不出手）；否则**集火谢逊当前目标**（目标同步率 94~99%）。
+- 行为优先级：离谢逊 >720 码 → `follow` 状态跑回去（新状态，只贴身不出手）；否则集火谢逊当前目标
 - 张翠山带 `bondId` 不参与距离清理；weight 0 不进随机刷新池；图鉴第 13 位「谢逊随从」。
 
 **渲染**：两人之间暗金虚线（`drawBonds`，一方倒下变灰）；谢逊脚下双层红色复仇光环。
 
 **调试**：神兵页新增「刷复仇谢逊 + 张翠山」—— 把双兵统统塞给玩家再刷谢逊，稳定复现复仇形态。
 
-**实测**
-
-- Node 探针：复仇 vs 持兵数值对比 ✓；羁绊互指与 buff ✓；张翠山与谢逊同目标 94~99%、0 帧攻击谢逊 ✓；拉远 1513 码 → follow 181 帧跑回 145 码 ✓；任一方倒下另一方掉档 ✓；讨回神兵不叠加 ✓；320s 稳定局无报错、260s 复仇组自然出现 ✓。
-- 无头冒烟：HUD 首领条显示「谢逊·复仇 · Lv.10」；暗金羁绊虚线与红色复仇光环清晰可见（.tmp/shots/bond-5-follow.png）；图鉴 14 角色齐全、张翠山页立绘/属性/描述正常；0 控制台错误。
-
 ---
 
-## 21. 奇遇系统（v1.8，add.md 27 条全量落地）
+## 22. 奇遇系统
 
 地图上随机浮出「奇遇」光环，走近自动触发：世界暂停弹出抉择面板，结算后给结果页，空格/回车继续上路。
 
-### 21.1 触发与节奏
+### 22.1 触发与节奏
 
 - `constants.js ENCOUNTER_CONFIG`：首遇 20s、之后 28~44s 一次、场上上限 2、半径 320~600 浮出、标记寿命 210s（快过期闪红）、触发判定 = 玩家半径 + 标记半径 + 10。
 - `core/encounters.js`：`spawnEncounterToken`（可指定奇遇 id）→ `openEncounter`（`world.paused = true` + `onEncounter` 回调）→ `resolveEncounterChoice` → `pendingEncounterResult` 结果页 → `dismissEncounterResult` 恢复（若秘籍三选一还挂着则保持暂停）。
 - 渲染：地面椭圆光环 + 渐变光柱 + 悬浮签（分类色描边、`measureText` 定宽），小地图加菱形标记。
 
-### 21.2 27 条奇遇（config/encounters.js 纯数据表 + RESOLVERS 结算表）
+### 22.2 27 条奇遇（config/encounters.js 纯数据表 + RESOLVERS 结算表）
 
 五类：绝世神功 / 武功秘籍 / 队友与人物 / 坑爹与幽默 / 机缘与福利。实现要点：
 
-| 机制 | 落点 |
-| --- | --- |
-| 白猿 50% 暴毙 / 藏经阁 50% 扣血 | `killPlayer` / `hurtPlayer`（奇遇代价不吃无敌与减伤，直接扣血） |
-| 剑冢断臂 −15% 攻 + 二十九剑破绽 | 宝物 `brokenArm` + 秘籍 `twenty-nine-swords`（`vulnerableMark` 写入，`vulnerableCrit` 计入暴击率） |
-| 太玄经洞打坐 10s | `startChannel`：`updatePlayerIntent` 早退钉死移动与出招；`hitFlash > 0` 且开功 0.15s 后 → 散功扣 30%（避免与 combat 循环依赖） |
-| 聋哑先生 30s × 3 次传功 | `player.masterPlan` 定时开 channel，打断只顺延 12s |
-| 神木鼎攻击中毒 | `applyDamage` 读 `hasTreasure('shenmuDing')` 写 `poisonTimer`，`updatePoison` 每 0.6s 跳伤 |
-| 乾坤大挪移反弹 30% | `applyDamage` 末段按 `passive.reflect` 弹回（反射致死走 `killEntity`） |
-| 随从替死 | `applyDamage` 致死判定前找 320 码内 `guardFatal` 随从：伤害 ×0.08、随从阵亡 |
-| 小师妹 / 知恩图报的敌人 | `spawnCompanion`（`isCompanion`：不掉战利品、不占刷怪上限、不参与距离清理、与玩家互相免伤、青绿脚环 + 小地图青绿点） |
-| 洪七公追杀 60s | `spawnNearby` + `forcedHuntTimer/leavesAfterHunt`（AI 优先级最高，到期骂骂咧咧退场） |
-| 丐帮长老进刷新池 | `world.extraEnemyTypes`，`spawnBatch` 每批 28% 概率混入 |
-| 盟主令牌升级变慢 | 宝物 `expMultiplier: 0.7`，`grantExp` 统一乘 |
-| 假秘籍自晕撕书 | `castFakeDragon` 30% 自晕 2s + 撕书；`castPlayerSkill` 末尾守卫「书已撕不写冷却」，防幽灵 CD |
-| 葵花袈裟彩蛋 | `updateTaunt` 每 9s 让 420 码内敌人飘一句「呸，练那玩意儿的」 |
+| 机制                            | 落点                                                                                                                                                                   |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 白猿 50% 暴毙 / 藏经阁 50% 扣血 | `killPlayer` / `hurtPlayer`（奇遇代价不吃无敌与减伤，直接扣血）                                                                                                        |
+| 剑冢断臂 −15% 攻 + 二十九剑破绽 | 宝物 `brokenArm` + 秘籍 `twenty-nine-swords`（`vulnerableMark` 写入，`vulnerableCrit` 计入暴击率）                                                                     |
+| 太玄经洞打坐 10s                | `startChannel({ interruptible: false })`：`updatePlayerIntent` 早退钉死移动与出招；挨打不散功、伤害照算（`updateChannel` 只在 `interruptible` 时读 `hitFlash` 判散功） |
+| 聋哑先生 30s × 3 次传功         | `player.masterPlan` 定时开 channel，打断只顺延 12s                                                                                                                     |
+| 神木鼎攻击中毒                  | `applyDamage` 读 `hasTreasure('shenmuDing')` 写 `poisonTimer`，`updatePoison` 每 0.6s 跳伤                                                                             |
+| 乾坤大挪移反弹 30%              | `applyDamage` 末段按 `passive.reflect` 弹回（反射致死走 `killEntity`）                                                                                                 |
+| 随从替死                        | `applyDamage` 致死判定前找 320 码内 `guardFatal` 随从：伤害 ×0.08、随从阵亡                                                                                            |
+| 小师妹 / 知恩图报的敌人         | `spawnCompanion`（`isCompanion`：不掉战利品、不占刷怪上限、不参与距离清理、与玩家互相免伤、青绿脚环 + 小地图青绿点）                                                   |
+| 洪七公追杀 60s                  | `spawnNearby` + `forcedHuntTimer/leavesAfterHunt`（AI 优先级最高，到期骂骂咧咧退场）                                                                                   |
+| 丐帮长老进刷新池                | `world.extraEnemyTypes`，`spawnBatch` 每批 28% 概率混入                                                                                                                |
+| 盟主令牌升级变慢                | 宝物 `expMultiplier: 0.7`，`grantExp` 统一乘                                                                                                                           |
+| 假秘籍自晕撕书                  | `castFakeDragon` 30% 自晕 2s + 撕书；`castPlayerSkill` 末尾守卫「书已撕不写冷却」，防幽灵 CD                                                                           |
+| 葵花袈裟彩蛋                    | `updateTaunt` 每 9s 让 420 码内敌人飘一句「呸，练那玩意儿的」                                                                                                          |
 
 - 新增 14 本 `encounterOnly` 秘籍（不进三选一池，`rollSkillChoices` 过滤，图鉴单独「奇遇绝学」分组）：九阳神功 / 易筋经 / 二十九剑 / 独孤九剑 / 左右互搏 / 蛤蟆功 / 降龙十八掌 / 打狗棒法 / 天山折梅手 / 葵花宝典 / 太玄真气 / 笑傲江湖曲 / 假·降龙十八掌。
 - 新增 6 位奇遇角色（`config/enemies.js` weight 0，`pickEnemyType` 再挡一层 `isCompanion`；`draw/actors.js` 六套新立绘）：小师妹、受伤的敌人、熊孩子、熊孩子他爹、丐帮长老、洪七公。
 - 宝物（`config/treasures.js`，永久）：神木鼎 / 盟主令牌（可丢弃，HUD 宝物栏右键销毁）/ 乾坤大挪移 / 太玄真意 / 断臂 / 葵花袈裟。数值经 `stats.js applyModifierList` 并入被动乘区，幂等；`hpMultiplier` 下限 0.4、`cooldownMultiplier` 下限 0.3。
 - HUD 新增状态栏：buff chip（倒计时）/ 宝物 chip（可丢弃的右键销毁）/ 随从 chip（血条 + 护主标）；打坐时玩家头顶画进度条。
 
-### 21.3 调试台「奇遇」标签
+### 22.3 调试台「奇遇」标签
 
-`core/debug.js` 新增：`spawnEncounter`（浮在脚边）/ `forceEncounter`（立即弹面板）/ `resolveEncounterNow`（不弹面板直接结算）/ `grantTreasure` / `dropTreasure` / `grantBuff` / `spawnCompanion` / `startTestChannel` / `clearEncounters`，另有当前 buff/宝物/随从/打坐状态摘要。
-
-### 21.4 实测
-
-- Node 探针（.tmp/bmenc_probe.mjs，8 连跑全绿）：27 条 × 55 个选项全部可结算且结果字段完整；打坐钉移动 + 10s 完成拿太玄真意 + 受击散功扣血；守护随从替死（玩家剩 60 血）；乾坤反弹命中攻击者；神木鼎命中中毒 + 0.6s 跳伤；洪七公 60s 追杀后退场；丐帮长老混入刷新（清场保批次后稳定出现）；聋哑先生 95s 内传功 ≥1 次；320s 随机抉择长局状态自洽（无 NaN、宝物无重复、hp ≤ maxHp）；假秘籍撕书后无幽灵冷却；三选一池 2400 张抽样 0 泄漏。
-- 无头冒烟（.tmp/bmsmoke-enc.mjs，0 控制台错误）：`forceEncounter` 弹面板（暂停 ✓、分类/标题/选项文案 ✓）→ 按 1 结算出结果页 → 空格关闭恢复；Esc 直接「转身离开」；面板打开时数字键不误触秘籍（冷却快照不变）；HUD buff/宝物/随从三组 chip 正常、敌人数排除随从（8/10）；右键销毁盟主令牌后攻击回落；打坐进度 1.5s ≈ 0.15；走近光环自动触发（pending + 暂停）；直接结算「补刀」正常给经验。
-
+`core/debug.js`：`spawnEncounter` / `forceEncounter` / `resolveEncounterNow` / `grantTreasure` / `dropTreasure` / `grantBuff` / `spawnCompanion` / `startTestChannel` / `clearEncounters`，另有当前 buff/宝物/随从/打坐状态摘要。
 
 ---
 
-## 22. 随从自修武功（v1.9，小师妹）
+## 23. 随从自修武功
 
-小师妹入队后不再是「只会砍人的肉盾」：她跟着你一起攒秘籍，但**学什么由她自己决定**。
+小师妹入队，她跟着你一起攒秘籍，但学什么由她自己决定。
 
-### 22.1 规则
+### 23.1 规则
 
-| 规则 | 实现 |
-| --- | --- |
-| 同频抉择 | 玩家每多一次秘籍三选一机会（每 5 级一次），她当场自行领悟一本（`core/world.js` 升级钩子 → `grantCompanionManuals`） |
-| 完全自主 | 加权随机：没学过的优先、同本每多一层权重递减、奇遇绝学 ×0.35 降权、主动招式上限 3 本后大幅降权、超出她等级的 `unlockLevel` 不进池 |
-| 六成火候 | `recalculateCompanionStats`：秘籍数值按 `COMPANION_MANUAL_CONFIG.SCALE = 0.62` 折算（攻/血/防/移速/暴击），吸血/减伤/反弹等战斗字段另乘 0.62、减伤封顶 0.4 |
-| 会放招 | `tryCastCompanionManual`（ai.js 随从攻击分支）：够得着且在冷却时甩主动招式，共用玩家的 `PLAYER_CAST_HANDLERS`，冷却记在 `enemy.manualCooldowns` |
+| 规则           | 实现                                                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 同频抉择       | 玩家每多一次秘籍三选一机会（每 5 级一次），她当场自行领悟一本（`core/world.js` 升级钩子 → `grantCompanionManuals`）                                                             |
+| 完全自主       | 加权随机：没学过的优先、同本每多一层权重递减、奇遇绝学 ×0.35 降权、主动招式上限 3 本后大幅降权、超出她等级的 `unlockLevel` 不进池                                               |
+| 六成火候       | `recalculateCompanionStats`：秘籍数值按 `COMPANION_MANUAL_CONFIG.SCALE = 0.62` 折算（攻/血/防/移速/暴击），吸血/减伤/反弹等战斗字段另乘 0.62、减伤封顶 0.4                      |
+| 会放招         | `tryCastCompanionManual`（ai.js 随从攻击分支）：够得着且在冷却时甩主动招式，共用玩家的 `PLAYER_CAST_HANDLERS`，冷却记在 `enemy.manualCooldowns`                                 |
 | 绝不碰葵花宝典 | `config/skills.js` 葵花宝典标 `shunnedBy: ['juniorSister']`：抉择池过滤；玩家练了 → `enforceCompanionOath` 当场离队；练了再遇奇遇 → `spawnCompanion` 拒绝入队（结果页写明缘由） |
-| 触发面全覆盖 | 奇遇学秘籍（`world.learnSkill`）、调试台单本设置（`setSkillStack`）、一键满级（`maxAllSkills`）都会跑誓约检查 |
-| 离队不掉东西 | `dismissCompanion`：`alive = false`，不掉战利品、不算击杀、飘字「《葵花宝典》？恶心。」 |
-
-### 22.2 实现要点
-
-- 新文件 `core/companions.js`（抉择池 / 誓约 / 属性折算 / 施法 / 离队 / 图鉴摘要）。
-- `stats.js` 把玩家秘籍加成的 switch 抽成 `createEmptyPassive` + `applyManualPassive` 公共函数，随从复用。
-- `entities.js createEnemy` 对 `learnsManuals` 类型初始化 `manuals / manualCooldowns / manualEarned` 与空 passive。
-- HUD 随从 chip 改纵向三行：名字+等级 / 血条 / 「自修 N 本：…」（省略号，防溢出）；调试台「奇遇」标签新增 `grantCompanionManual`、`learnSkill('sunflower-manual')`（测离队）与随从秘籍清单；图鉴小师妹页新增「自修秘籍池」38 本分组 + 「入队忌讳」行。
-- **坑：假秘籍撕书原来写死 `player.skillStacks`**，随从施放《假·降龙十八掌》时 `Object.keys(undefined)` 直接炸（探针 12 连跑抓到 1 次）。修法：`castEntitySkill` 把 `stackMap` 传进 handler，`castFakeDragon` 按 `entity.isPlayer` 分流——玩家走原路，随从删自己的 manuals + 置 `statsDirty`，由 `updateCompanionManuals` 下一帧 `recalculateCompanionStats`（避免 skills.js ↔ companions.js 循环依赖）；撕书后无幽灵冷却。
-
-### 22.3 实测
-
-- Node 探针（.tmp/bmcomp_probe.mjs，10 连跑全绿）：入队自修 3 本（同频发放）/ 随玩家涨级 / 六成火候进属性 / 抉择池抽样 120 本 0 本葵花宝典 / 层数不超 maxStack / 练葵花后拒绝入队 + 结果页说明 / 入队后练葵花当场离队 / 调试台 setSkillStack 与 maxAllSkills 同样触发离队 / 会释放自修主动招式 / 撕假书不崩、无幽灵冷却 / 150 秒长局（带 5 次升级）状态自洽无 NaN。
-- 无头冒烟（.tmp/bmsmoke-companion.mjs，0 控制台错误）：真实页面刷小师妹 → 连升 18 级 → HUD chip 显示「自修 N 本」且完整不溢出；练葵花后离队 + 提示；已练葵花时奇遇她拒绝入队；图鉴小师妹页副标题/分组/档案齐全。
-- 回归：奇遇探针、满级回归、旧冒烟全部通过。
+| 触发面全覆盖   | 奇遇学秘籍（`world.learnSkill`）、调试台单本设置（`setSkillStack`）、一键满级（`maxAllSkills`）都会跑誓约检查                                                                   |
+| 离队不掉东西   | `dismissCompanion`：`alive = false`，不掉战利品、不算击杀                                                                                                                       |
 
 ---
 
-## 23. 随从跟随与集火（v1.9.1）
+## 24. 随从跟随与集火
 
-小师妹的 AI 重写为「跟人优先，打谁听你的」：
-
-| 行为 | 规则 |
-| --- | --- |
-| 优先跟随 | 空闲时贴回玩家身边（目标 96 码）；离玩家超过 `COMPANION_LEASH`（200）就先归队，绝不自己跑图——玩家 700 码外的敌人她看都不看 |
-| 集火 | 玩家最近一次打中的敌人（`applyDamage` 里记 `focusTargetId/focusTargetTime`，4 秒记忆）优先作为她的目标，即使另一只更近 |
-| 跟随 > 集火 | 玩家在跑动时（速度 > 30）取消集火宽限，她立刻放弃目标转身跟随——不为了一刀落在 500 码外 |
-| 追不上就归队 | 目标没了/死了、或她被甩出 leash，立刻 escort |
-| 集火会过期 | 记忆窗口（4s）过后回到「玩家身边最近的敌人」，且只打 `COMPANION_ENGAGE`（380）半径内的 |
+| 行为         | 规则                                                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 优先跟随     | 空闲时贴回玩家身边（目标 96 码）；离玩家超过 `COMPANION_LEASH`（200）就先归队，绝不自己跑图——玩家 700 码外的敌人她看都不看 |
+| 集火         | 玩家最近一次打中的敌人（`applyDamage` 里记 `focusTargetId/focusTargetTime`，4 秒记忆）优先作为她的目标，即使另一只更近     |
+| 跟随 > 集火  | 玩家在跑动时（速度 > 30）取消集火宽限，她立刻放弃目标转身跟随——不为了一刀落在 500 码外                                     |
+| 追不上就归队 | 目标没了/死了、或她被甩出 leash，立刻 escort                                                                               |
+| 集火会过期   | 记忆窗口（4s）过后回到「玩家身边最近的敌人」，且只打 `COMPANION_ENGAGE`（380）半径内的                                     |
 
 参数（constants.js `ENCOUNTER_CONFIG`）：`FOLLOW 96 / LEASH 200 / ENGAGE 380 / FOCUS_MEMORY 4s / FOCUS_BONUS 150`。实测：玩家持续跑动她峰值落后 222 码、停下 2 秒内贴回 96 码；静止集火最远只跟到 350 码（之前 500+）。
 
-实测（Node 探针 12 连跑 + 真实页面冒烟）：空闲贴身 / 不追视野外敌人 / 100% 锁定集火目标（另一只更近）/ 玩家换目标即换 / 记忆过期回就近 / 玩家瞬移立刻归队 / 90 秒长局最远 446 码、收尾 95 码、集火率 97% / 页面跑动跟随 0 控制台错误。
-
 ---
 
-## 24. 自动战斗（v1.9.2：技能 + 普攻穿插）
+## 25. 自动战斗
 
-`F` 键开关（HUD 右下按钮 / 调试台勾选）升级为「自动战斗」：不只是自动放武功，技能转冷却时还会**穿插普攻**，不会站着干瞪眼。
+`F` 键开关（HUD 右下按钮 / 调试台勾选）升级为「自动战斗」：不只是自动放武功，技能转冷却时还会穿插普攻，不会站着干瞪眼
 
-### 24.1 决策节奏（core/world.js updateAutoCast / tryAutoMelee）
+### 25.1 决策节奏（core/world.js updateAutoCast / tryAutoMelee）
 
 - 技能评估每 0.14s 一次（沿用 `pickAutoCastSkill`：射程内最近敌人 → 就绪 → autoRange / autoMinTargets / autoPriority）。
 - **普攻每帧尝试**，不受 0.14s 节流拖累——但用上一次评估的结论做闸门（`autoCastHasSkill`）：有招可放时普攻让位，没招可放时普攻立刻补上，节奏精确贴 `attackInterval`（实测 2 秒 6 刀 = 0.34s/刀）。
@@ -1197,40 +1114,30 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
 - 目标选择：普攻扇形射程内（`attackRange + radius`）最近敌人，方向自动转向目标；够不着就绝不挥空刀；`isCompanion` 永远不进候选。
 - 联动：普攻命中同样会写 `focusTargetId`，小师妹照常集火她打中的目标。
 
-### 24.2 实测
+## 26. 破绽感知
 
-- Node 探针（.tmp/bmauto_probe.mjs，10 场景全绿）：关闭时贴脸一刀不出 / 无技能 2 秒自动 6 刀（贴攻速上限）/ 技能就绪先放招不抢刀 / 技能锁死 30s 后 2 秒仍 6 刀 / 打坐期间停手 / 手动按住时自动不插手（总刀数不超上限）/ 150 码外不挥空刀（120 次判定全放弃）/ 身边只有随从不挥刀 / 普攻命中喂随从集火 / 60 秒实战杀 5-10 个、状态自洽。
-- 页面冒烟（.tmp/bmsmoke-auto.mjs，0 控制台错误）：按 F 开启 + HUD 高亮 + 提示文案 / 关着贴脸不掉血 / 空技能自动普攻扣血 / 学《剑气斩》后先放招进冷却 / 锁死技能后普攻继续 / 再按 F 彻底停手；截图确认弧光、伤害数字、按钮高亮。
+玩家打坐传功或被眩晕时毫无还手能力，敌人不再按 `canBeat` 算"我"打不打得过，而是直接扑上来,不然就会出现`我站着挨打的窗口，满地图敌人却围着我转圈然后走开`的诡异场面。
 
-## 25. 破绽感知（v1.9.3：打坐 / 眩晕时敌人围攻）
-
-玩家打坐传功或被眩晕时毫无还手能力，敌人不再按 `canBeat` 算「我打不打得过」，而是直接扑上来——不然就会出现「我站着挨打的窗口，满地图敌人却围着我转圈算账然后走开」的诡异场面。
-
-### 25.1 判定与改动点
+### 26.1 判定
 
 - `core/ai.js isHelpless(world, actor)`：`actor.stunTimer > AI_CONFIG.EXPOSE_STUN`（0.3s，普通受击硬直 0.12s 不算）或玩家正在 `world.channel`（打坐/传功）。
 - **选目标免检**（`findBestTarget`）：破绽目标跳过 `canBeat`，评分加 `EXPOSE_TARGET_BONUS = 60`（压过距离与残血权重）。
 - **威胁重估**（`findStrongThreat`）：破绽目标构不成威胁，敌人不会因为它而 flee/retreat。
 - **循味半径**（`decideBehavior`）：玩家破绽时，视野外 800/1500 码（普通/Boss）内的敌人一律 chase，不做战力门槛；视野内走免检通道。
-- **记仇 4 秒**（`AI_CONFIG.ENGAGE_MEMORY`）：只有玩家**在破绽中挨的打**才写 `attacker.engageUntil`（combat.applyDamage）；破绽刚结束的 4 秒内敌人咬住不放（跳过 strongThreat 判定、玩家跑出视野也继续追），到期后照常恢复战力评估——避免「散功瞬间全场敌人一哄而散」的割裂感。
+- **记仇 4 秒**（`AI_CONFIG.ENGAGE_MEMORY`）：只有玩家**在破绽中挨的打**才写 `attacker.engageUntil`（combat.applyDamage）；破绽刚结束的 4 秒内敌人咬住不放（跳过 strongThreat 判定、玩家跑出视野也继续追），到期后照常恢复战力评估——避免“散功瞬间全场敌人一哄而散”的割裂感。
 - 神兵争夺同样吃 `isHelpless`：持兵者眩晕时人人敢抢。
 - **例外**：残血敌人（`hp/maxHp < 0.3`）仍会撤退，不因破绽送死。
 
-### 25.2 视觉与参数
+### 26.2 视觉与参数
 
 - `draw/renderer.js drawPlayer`：破绽时玩家脚下画两层红色脉冲警示环（`rgba(255, 78, 60)`，半径 2.2/2.5 倍角色半径，与血环拉开距离）。
 - `AI_CONFIG` 新增：`EXPOSE_STUN: 0.3` / `EXPOSE_TARGET_BONUS: 60` / `ENGAGE_MEMORY: 4`。
 
-### 25.3 实测
+## 27. 嘲讽气泡
 
-- Node 探针（.tmp/bmexpose_probe.mjs，9 场景 × 5 连跑全绿）：正常状态弱敌 flee 不送死 / 眩晕 0.3~0.5s 内锁定玩家 / 打坐立刻锁定 / 视野外 600 码循味赶来（600 → 74 码）/ 破绽消失恢复 flee / 残血仍知道怕 / 破绽中挨打后记仇咬住 2.4s / 记仇到期恢复判断 / 打坐 1.4s 内 4 只全部逼近。
-- 页面冒烟（.tmp/bmsmoke-expose.mjs，0 控制台错误）：正常 flee / 眩晕 chase / 打坐 chase / 破绽红环像素采样 + 截图目检 / 解除后恢复 flee。
+玩家修习《葵花宝典》或《蛤蟆功》后，路过的敌人会偶尔冒出气泡说话框，说一句风凉话或干脆甩一个鄙视 emoji，你练什么，江湖都看在眼里。
 
-## 26. 嘲讽气泡（v1.9.4：练了旁门功法被路人嘲笑）
-
-玩家修习《葵花宝典》或《蛤蟆功》后，路过的敌人会偶尔冒出气泡说话框，说一句风凉话或干脆甩一个鄙视 emoji——你练什么，江湖都看在眼里。
-
-### 26.1 规则（core/taunts.js + config/taunts.js）
+### 27.1 规则（core/taunts.js + config/taunts.js）
 
 - **触发条件**：`player.skillStacks` 里有 `sunflower-manual` / `toad-skill`（或身上带着葵花袈裟 `mockCassock`，原彩蛋台词并入本系统）。
 - **节奏**：每 9~13 秒（`TAUNT_INTERVAL` + `TAUNT_JITTER`）挑一个敌人开口，只有玩家 **420 码内**「路过」的敌人才说（`TAUNT_RADIUS`）。
@@ -1242,15 +1149,57 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
   - 葵花袈裟（紫 `#c9a6ff`）：「呸，练那玩意儿的」「阿弥陀佛，罪过罪过」… 表情 🙏😂🙄🤣
 - 气泡停留 **2.8 秒**，出现 0.18s 弹出淡入、结束前 0.3s 淡出，带轻微上浮；不影响敌人 AI。
 
-### 26.2 绘制（draw/renderer.js drawTauntBubbles）
+### 27.2 绘制（draw/renderer.js drawTauntBubbles）
 
 - 数据挂在 `enemy.bubble = { text, emoji, tone, duration, timer }`，core 每帧倒计时到 0 清空；renderer 只读。
 - 圆角气泡 + 指向敌人的小尖角 + 底色 `rgba(16,14,12,0.9)`、描边用池的 tone 色；圆角路径自写 `roundRectPath`（不依赖浏览器 roundRect）。
 - emoji 用 `'Segoe UI Emoji'` 字体串渲染；绘制层级在敌人之上、玩家之下。
 - **内容必须按框中线垂直居中**：框体占局部坐标 `[-height, 0]`，文字/表情画在 `top + height / 2`（曾画在 0 → 内容全掉到框底外）；emoji 的 middle 基线视觉偏下，额外上抬 0.5px；纯表情框 27px 高防上下顶满，台词框 22px。
 
-### 26.3 调试与实测
+## 28 随从阵亡 / 复活 / 传功（§1/8/9/12）
 
-- 调试台「奇遇」标签新增：让路人说一句（`debugApi.tauntNow`）/ 学《葵花宝典》/ 学《蛤蟆功》。
-- Node 探针（.tmp/bmtaunt_probe.mjs，9 场景全绿）：白身 16s 沉默 / 两池台词口径不串味 / 700 码外不掺和 / 随从不嘲笑师父 / 气泡 2.82s 准时消失 / 袈裟彩蛋保留 / 双修两种口径随机 / 60 次抽样台词 32 / 纯表情 28。
-- 页面冒烟（.tmp/bmsmoke-taunt.mjs，0 控制台错误）：白身沉默 / 学功法 9~13s 内自动冒泡 / 气泡按时收走 / 调试台手动触发；截图目检气泡与 emoji 渲染清晰、不压血条等级。
+- **阵亡**：`recordCompanionFallen` 拍快照（等级+自修秘籍）进 `world.fallenCompanions`，原地留倒地标记（红橙脉冲环+名牌），同类型本局不再刷新（`canCompanionJoin` 黑名单，复活路径绕过）。
+- **施救（V 键）**：走近 150 码按 V 启动，读条 3 秒（可移动、**受击不打断**、禁普攻禁技能、离开 190 码中止），完成半血归队、秘籍原样保留。
+- **传功（按住 T）**：对 170 码内受伤同伴持续回血 8%/s，玩家耗 2%/s 当前血；可移动、受击打断、松键收功、满血自停、离 215 码中断；与施救互斥；禁普攻禁技能。
+- 渲染：倒地标记 / 施救读条（复用打坐进度条）/ 传功虚线光束。`reviveCompanionFrom` 放在 encounters.js（避免 companions ↔ encounters 循环依赖）。
+
+## 29 技能槽折叠与键位自定义（§7）
+
+- 超过 8 格折叠，右下「展开 N ˅」按钮；悬停槽位浮出秘籍详情 tooltip（`hud.activeSkills` 新增 `detail` 字段）。
+- **键位自定义**：`core/keybinds.js` 纯 localStorage CRUD（`bro-melee-keybinds`），冲突自动让位；`components/KeybindPanel.vue` 点击按键框→按任意键完成绑定；局内（技能坞「改键」按钮）与**开局前主界面「键位设置」**共用一套，键位跨局保留；keydown 反查表 O(1) 命中，默认 1-9 仍可用。
+
+---
+
+## 30 噩梦模式与动态压力
+
+普通模式完全沿用 §10.3 的压力曲线；噩梦模式额外开启**动态压力**——你把这张地图砍得越烂，江湖就变得越硬。
+
+### 30.1 模式入口
+
+| 端                          | 改动                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `components/StartPanel.vue` | 按钮行新增红色「噩梦模式」（`$emit('start', 'nightmare')`），按钮行下方一行说明文案             |
+| `index.vue`                 | `gameMode` ref，`onStart(mode)` 存模式后随 `:mode` 传给 `GameMain`（每局 key 重挂载）           |
+| `components/GameMain.vue`   | `props.mode` → `game.setMode(mode)`（在 `game.start()` 前）；结算页噩梦时显示「噩梦模式」小标签 |
+| `components/HudPanel.vue`   | 境界徽章旁显示红色「噩梦」角标（读 `hud.spawn.nightmare`）                                      |
+| `core/world.js`             | `mode` / `nightmare` 字段 + `setMode()`；`reset()` 保留当前模式（「再来一局」不掉模式）         |
+
+### 30.2 动态压力（core/spawning.js）
+
+判定：玩家**致死一击**打掉目标 ≥ `OVERKILL_HIT_RATIO`（2/3）最大气血时记一次「一击秒杀」，再按被秒者在当前刷新区间的位置分档：
+
+| 被秒的是                                        | 含义           | 调整                       |
+| ----------------------------------------------- | -------------- | -------------------------- |
+| 区间**最低级**敌人（`level <= minLevel + 0.5`） | 地图整体有点低 | `OVERKILL_STEP_LOW = 0.6`  |
+| 区间**最高级**敌人（`level >= maxLevel - 0.5`） | 整张地图都太软 | `OVERKILL_STEP_HIGH = 1.5` |
+| 中段敌人 / 没秒掉 / 毒与调试等无致死一击的击杀  | ——             | 不调整                     |
+
+- 累计量 `overkillBonus` 同时加到 `calcSpawnRange` 的**两端**（弱敌不再无限刷），封顶 `OVERKILL_CAP = 10` 级，仍受 `MAX_SPREAD` 约束。
+- 回落：超过 `OVERKILL_IDLE_BEFORE_DECAY = 25s` 没有再秒人，按 `OVERKILL_DECAY_PER_SECOND = 0.06`/s 缓慢回落，避免永久钉在封顶。
+- 全程**不提示玩家**；召唤物（`isMinion`）与随从不参与判定。
+
+### 30.3 数据链路与调试台
+
+- 致死一击伤害经 `applyDamage → killEntity(world, victim, killer, { hitDamage }) → handleVictimDeath(victim, killer, info)` 传入 `spawner.registerOverkill`；`killEntity` 调用点（毒杀、调试清场等）不传即不计压。
+- `buildHudSnapshot` 新增 `spawn` 段（`spawner.describeRange`）：模式、默认区间（只含时间漂移）、当前实际区间、两端调整量,击秒杀累计与低端/高端次数、击杀压力 / 濒死 / 均级补偿 / 时间漂移。
+- 调试台「敌人」标签新增「刷新等级区间」面板（含「清零动态压力」按钮，`debugApi.resetSpawnPressure`）；

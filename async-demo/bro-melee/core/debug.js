@@ -15,6 +15,8 @@ import {
   enforceCompanionOath,
   grantCompanionManuals,
   learningCompanions,
+  livingCompanions,
+  recordCompanionFallen,
 } from './companions.js';
 import {
   addBuff as addBuffTo,
@@ -336,6 +338,17 @@ export const adjustEnemyLevels = (world, delta) => {
   world.pushHud(true);
 };
 
+/** 刷新压力清零：把噩梦模式累计的等级上调打回 0（便于观察机制） */
+export const resetSpawnPressure = (world) => {
+  const spawner = world.spawner;
+  spawner.overkillBonus = 0;
+  spawner.overkillLowKills = 0;
+  spawner.overkillHighKills = 0;
+  spawner.lastOverkillAt = -999;
+  world.notify('动态压力已清零', '#8fd0ff');
+  world.pushHud(true);
+};
+
 /** 刷一只首领 */
 export const spawnBoss = (world) => {
   world.spawner.spawnBoss(world);
@@ -572,6 +585,7 @@ export const createDebugApi = (world) => {
     spawnEnemies: (options) => spawnEnemies(world, options),
     clearEnemies: (grantExp) => clearEnemies(world, grantExp),
     adjustEnemyLevels: (delta) => adjustEnemyLevels(world, delta),
+    resetSpawnPressure: () => resetSpawnPressure(world),
     spawnBoss: () => spawnBoss(world),
     grantRelic: (relicId) => grantRelic(world, relicId),
     dropRelic: (relicId) => dropRelic(world, relicId),
@@ -593,5 +607,24 @@ export const createDebugApi = (world) => {
     grantCompanionManual: (times) => grantCompanionManualNow(world, times),
     companionInfo: () => companionInfo(world),
     tauntNow: () => triggerTaunt(world),
+    fallCompanion: () => {
+      const companion = livingCompanions(world)[0];
+      if (!companion) {
+        world.notify('场上没有随从', '#c6a86c');
+        return null;
+      }
+      killEntity(world, companion, null);
+      return companion.typeId;
+    },
+    reviveNow: () => {
+      const snapshot = (world.fallenCompanions || [])[0];
+      if (!snapshot) {
+        world.notify('没有倒下的同伴', '#c6a86c');
+        return null;
+      }
+      const companion = reviveCompanionFrom(world, snapshot);
+      world.fallenCompanions = world.fallenCompanions.filter((item) => item !== snapshot);
+      return companion ? companion.typeId : null;
+    },
   };
 };

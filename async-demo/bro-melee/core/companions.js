@@ -24,8 +24,12 @@ export const shunnedManualsOf = (player, typeId) => {
     .filter((skill) => skill && skill.shunnedBy && skill.shunnedBy.includes(typeId));
 };
 
-/** 这个随从现在还愿意入队吗（玩家没练它忌讳的秘籍才行） */
-export const canCompanionJoin = (world, typeId) => {
+/** 这个随从现在还愿意入队吗（玩家没练它忌讳的秘籍、且不是已倒下等救援的） */
+export const canCompanionJoin = (world, typeId, options = {}) => {
+  // 已倒下的随从本局不再刷新新的一份，只能由玩家去原地施救
+  if (!options.revive && world.fallenCompanions && world.fallenCompanions.some((item) => item.typeId === typeId)) {
+    return false;
+  }
   return shunnedManualsOf(world.player, typeId).length === 0;
 };
 
@@ -278,4 +282,33 @@ export const companionLearningText = (typeId) => {
   const shunned = shunnedManualNames(typeId);
   const base = '入队后会自己挑秘籍练，每当你多一次抉择机会，她也自行领悟一本（火候只有六成）。';
   return shunned.length ? `${base}但绝不碰《${shunned.join('》《')}》——你若练了，她当场下山。` : base;
+};
+
+/* ------------------------------------------------------------------ */
+/* 阵亡与救援（v1.10）                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 随从倒下：拍一份快照留在原地当「倒地标记」，本局不再刷新的一份，等玩家来救
+ * @param {Object} world 世界实例
+ * @param {Object} victim 阵亡的随从实体
+ */
+export const recordCompanionFallen = (world, victim) => {
+  if (!world.fallenCompanions) {
+    world.fallenCompanions = [];
+  }
+  // 同一类型只留最新一份（理论上也不会有第二份）
+  world.fallenCompanions = world.fallenCompanions.filter((item) => item.typeId !== victim.typeId);
+  world.fallenCompanions.push({
+    typeId: victim.typeId,
+    name: victim.typeName,
+    level: victim.level,
+    manuals: { ...(victim.manuals || {}) },
+    x: victim.x,
+    y: victim.y,
+    phase: Math.random() * Math.PI * 2,
+  });
+  world.effects.addRing(victim.x, victim.y, victim.radius * 3.2, '#ff8a66', { life: 0.9, lineWidth: 3 });
+  world.effects.addText(victim.x, victim.y - victim.radius - 40, '倒下了…', { color: '#ff8a66', size: 13 });
+  world.notify(`${victim.typeName} 倒下了 —— 走近后按 V 施救`, '#ff8a66');
 };

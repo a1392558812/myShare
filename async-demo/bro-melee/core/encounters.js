@@ -10,7 +10,7 @@ import { getEnemyType } from '../config/enemies.js';
 import { PLAYER_SKILLS, getSkillById } from '../config/skills.js';
 import { getTreasure } from '../config/treasures.js';
 import { applyDamage, killEntity } from './combat.js';
-import { canCompanionJoin, livingCompanions, shunnedManualNames } from './companions.js';
+import { canCompanionJoin, livingCompanions, recalculateCompanionStats, shunnedManualNames } from './companions.js';
 import { createEnemy } from './entities.js';
 import { spawnItem } from './items.js';
 import { grantExp, recalculatePlayerStats } from './stats.js';
@@ -31,8 +31,17 @@ let tokenSequence = 0;
  * @returns {Object} 标记
  */
 export const spawnEncounterToken = (world, encounterId = null, options = {}) => {
-  const config = encounterId ? getEncounter(encounterId) : pickRandom(ENCOUNTERS);
+  const config = encounterId
+    ? getEncounter(encounterId)
+    : pickRandom(ENCOUNTERS.filter((item) => {
+      // once 奇遇做过抉择后本局不再浮出
+      return !item.once || !world.resolvedEncounterIds.has(item.id);
+    }));
   if (!config) {
+    return null;
+  }
+  // 指定 id 的 once 奇遇已完成时也不再生成（复刻随机分支的规则）
+  if (config.once && world.resolvedEncounterIds.has(config.id)) {
     return null;
   }
   const radiusMin = options.radiusMin === undefined ? ENCOUNTER_CONFIG.RADIUS_MIN : options.radiusMin;
@@ -194,9 +203,11 @@ const spawnNearby = (world, typeId, level, options = {}) => {
 /** 刷一个随从 */
 export const spawnCompanion = (world, typeId, level, options = {}) => {
   // 玩家练了它忌讳的秘籍（小师妹 vs 葵花宝典），这次就不来了
-  if (!canCompanionJoin(world, typeId)) {
-    const shunned = shunnedManualNames(typeId);
-    world.notify(`${getEnemyType(typeId).name} 不肯入队：她不齿《${shunned[0] || '那门功夫'}》`, '#ff6bd6');
+  if (!canCompanionJoin(world, typeId, options)) {
+    if (!options.silent) {
+      const shunned = shunnedManualNames(typeId);
+      world.notify(`${getEnemyType(typeId).name} 不肯入队：她不齿《${shunned[0] || '那门功夫'}》`, '#ff6bd6');
+    }
     return null;
   }
   const angle = Math.random() * Math.PI * 2;
@@ -215,6 +226,28 @@ export const spawnCompanion = (world, typeId, level, options = {}) => {
   world.addEnemy(companion);
   world.effects.addRing(companion.x, companion.y, companion.radius * 3, '#8ef0d5', { life: 0.6, lineWidth: 3 });
   world.effects.addParticles(companion.x, companion.y, { count: 14, color: '#8ef0d5', speed: 160, size: 2.6, life: 0.5 });
+  return companion;
+};
+
+/**
+ * 从倒地快照复活随从（半血归队，自修的秘籍原样保留）
+ * @param {Object} world 世界实例
+ * @param {Object} snapshot recordCompanionFallen 存的快照
+ * @returns {Object|null} 复活后的随从
+ */
+export const reviveCompanionFrom = (world, snapshot) => {
+  const companion = spawnCompanion(world, snapshot.typeId, snapshot.level, { revive: true, silent: true });
+  if (!companion) {
+    return null;
+  }
+  Object.assign(companion.manuals, snapshot.manuals || {});
+  recalculateCompanionStats(companion);
+  companion.hp = Math.max(1, Math.round(companion.maxHp * 0.5));
+  world.effects.addRing(companion.x, companion.y, companion.radius * 4, '#8ef0d5', { life: 0.7, lineWidth: 3 });
+  world.effects.addText(companion.x, companion.y - companion.radius - 34, `${companion.typeName}：「还能再战！」`, {
+    color: '#8ef0d5',
+    size: 14,
+  });
   return companion;
 };
 
@@ -307,19 +340,25 @@ export const updateBuffs = (world, deltaTime) => {
 /**
  * 开始一段不能移动的打坐
  * @param {Object} world 世界实例
- * @param {Object} options { id, name, duration, color, onComplete, onInterrupt }
+ * @param {Object} options { id, name, duration, color, interruptible, onComplete, onInterrupt }
+ *   interruptible=false 时挨打不散功（伤害照算），用于「硬撑」类参悟
  */
 export const startChannel = (world, options) => {
+  const interruptible = options.interruptible !== false;
   world.channel = {
     id: options.id,
     name: options.name,
     color: options.color || '#8fd0ff',
     duration: options.duration,
     timer: 0,
+    interruptible,
     onComplete: options.onComplete,
     onInterrupt: options.onInterrupt,
   };
-  world.notify(`开始${options.name} · 期间无法移动，受击即散功`, options.color || '#8fd0ff');
+  world.notify(
+    `开始${options.name} · 期间无法移动，${interruptible ? '受击即散功' : '挨打不散功但照常受伤'}`,
+    options.color || '#8fd0ff'
+  );
   world.pushHud(true);
 };
 
@@ -352,7 +391,8 @@ const updateChannel = (world, deltaTime) => {
     return;
   }
   // 开功 0.15s 后仍带着受击闪烁，说明这一炷香被打断了（hitFlash 由受击写入，避免与 combat 循环依赖）
-  if (channel.timer > 0.15 && world.player.hitFlash > 0) {
+  // interruptible=false 的打坐硬撑到底：伤害照算，进度不停
+  if (channel.interruptible && channel.timer > 0.15 && world.player.hitFlash > 0) {
     interruptChannel(world, '受击');
     return;
   }
@@ -396,17 +436,15 @@ const RESOLVERS = {
       name: '参悟蝌蚪文',
       duration: ENCOUNTER_CONFIG.TAIXUAN_CHANNEL,
       color: '#7be3ff',
+      // 硬撑式参悟：敌人可以随便砍，掉血但不散功（10s 完全不受伤太苛刻）
+      interruptible: false,
       onComplete: (innerWorld) => {
         addTreasure(innerWorld, 'taixuanEssence');
         innerWorld.learnSkill('taixuan-wave');
         innerWorld.notify('参悟成功 · 全属性 +10%，悟出「太玄真气」', '#7be3ff');
       },
-      onInterrupt: (innerWorld) => {
-        hurtPlayer(innerWorld, 0.3);
-        innerWorld.notify('走火 · 石壁机关打伤了你', '#ff6b6b');
-      },
     });
-    return result('原地打坐', ['你盘膝坐下，闭目参详石壁上的蝌蚪文。', '十秒内不可移动，受击即散功。'], '#7be3ff');
+    return result('原地打坐', ['你盘膝坐下，闭目参详石壁上的蝌蚪文。', '十秒内不可移动、不可出招；挨打不会散功，但伤害照算。'], '#7be3ff');
   },
   'lightPeak:take': (world) => {
     if (Math.random() < 0.3) {
@@ -679,12 +717,21 @@ export const resolveEncounter = (world, encounterId, choiceId) => {
   const config = getEncounter(encounterId);
   const resolver = RESOLVERS[`${encounterId}:${choiceId}`];
   if (resolver) {
+    markEncounterResolved(world, config);
     return resolver(world);
   }
   if (config && choiceId === 'leave') {
+    markEncounterResolved(world, config);
     return result('转身离开', [`你没有理会「${config.name}」。`, '江湖事多，走为上策。'], '#c6a86c');
   }
   return result('无事发生', ['你犹豫了片刻，机会已经过去了。'], '#c6a86c');
+};
+
+/** once 奇遇：做出过抉择（含离开）后记入本局已完成名单 */
+const markEncounterResolved = (world, config) => {
+  if (config && config.once && world.resolvedEncounterIds) {
+    world.resolvedEncounterIds.add(config.id);
+  }
 };
 
 /* ------------------------------------------------------------------ */
@@ -821,6 +868,7 @@ export const updateEncounters = (world, deltaTime) => {
 /** 清空奇遇状态（调试 / 新开一局） */
 export const resetEncounterState = (world) => {
   world.encounterTokens = [];
+  world.resolvedEncounterIds = new Set();
   world.encounterTimer = 0;
   world.pendingEncounter = null;
   world.pendingEncounterResult = null;

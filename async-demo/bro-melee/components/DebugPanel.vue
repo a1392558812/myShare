@@ -163,6 +163,33 @@
           <div class="field-note">敌人等级越高，携带的武功越多（1 + 等级/5，上限 4 门）</div>
         </div>
 
+        <div v-if="hud.spawn" class="debug-section">
+          <div class="section-title">刷新等级区间（{{ hud.spawn.nightmare ? '噩梦 · 动态压力' : '普通模式' }}）</div>
+          <div class="stat-line">
+            <span class="stat-name">默认区间</span>
+            <span class="stat-value">Lv.{{ hud.spawn.baseMin }} ~ {{ hud.spawn.baseMax }}</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-name">当前区间</span>
+            <span class="stat-value">Lv.{{ hud.spawn.min }} ~ {{ hud.spawn.max }}</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-name">区间调整</span>
+            <span class="stat-value">{{ signed(hud.spawn.minDelta) }} / {{ signed(hud.spawn.maxDelta) }} 级</span>
+          </div>
+          <div class="field-note">
+            一击秒杀 {{ signed(hud.spawn.overkillBonus, 1) }} 级（低端 {{ hud.spawn.overkillLowKills }} 次 · 高端
+            {{ hud.spawn.overkillHighKills }} 次）
+          </div>
+          <div class="field-note">
+            击杀压力 {{ signed(hud.spawn.killPressure) }} · 濒死 {{ signed(hud.spawn.dangerPressure) }} · 均级补偿
+            {{ signed(hud.spawn.averagePressure) }} · 时间漂移 {{ signed(hud.spawn.drift) }}
+          </div>
+          <div class="debug-actions">
+            <button class="debug-btn" @click="run('resetSpawnPressure')">清零动态压力</button>
+          </div>
+        </div>
+
         <div class="debug-section">
           <div class="section-title">场上 {{ hud.enemyCount }} 只</div>
           <div class="debug-actions">
@@ -446,6 +473,13 @@ const cdText = (skillId) => {
 };
 
 const seconds = (value) => `${Math.max(0, value || 0).toFixed(1)}s`;
+
+/** 带符号的调整量：+1 / -1 / 0 */
+const signed = (value, digits = 0) => {
+  const number = Number(value) || 0;
+  const fixed = number.toFixed(digits);
+  return number > 0 ? `+${fixed}` : fixed;
+};
 
 const buffText = (timer, multiplier) => {
   if (!timer || timer <= 0) {
@@ -779,7 +813,8 @@ syncInputs();
 }
 
 .stat-name {
-  width: 30px;
+  flex-shrink: 0;
+  min-width: 30px;
   color: rgba(244, 236, 216, 0.52);
 }
 
