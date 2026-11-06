@@ -164,7 +164,7 @@
         </div>
 
         <div v-if="hud.spawn" class="debug-section">
-          <div class="section-title">刷新等级区间（{{ hud.spawn.nightmare ? '噩梦 · 动态压力' : '普通模式' }}）</div>
+          <div class="section-title">刷新等级区间（{{ hud.spawn.nightmare ? '噩梦 ' + hud.spawn.nightmareLevel + ' · 动态压力' : '普通模式' }}）</div>
           <div class="stat-line">
             <span class="stat-name">默认区间</span>
             <span class="stat-value">Lv.{{ hud.spawn.baseMin }} ~ {{ hud.spawn.baseMax }}</span>
@@ -180,6 +180,10 @@
           <div class="field-note">
             一击秒杀 {{ signed(hud.spawn.overkillBonus, 1) }} 级（低端 {{ hud.spawn.overkillLowKills }} 次 · 高端
             {{ hud.spawn.overkillHighKills }} 次）
+          </div>
+          <div class="field-note">
+            噩梦难度 {{ hud.spawn.nightmareLevel }}：每次一击秒杀，低端抬 {{ signed(hud.spawn.overkillStepLow, 1) }} 级、高端抬
+            {{ signed(hud.spawn.overkillStepHigh, 1) }} 级（封顶 {{ signed(hud.spawn.overkillCap, 1) }} 级）
           </div>
           <div class="field-note">
             击杀压力 {{ signed(hud.spawn.killPressure) }} · 濒死 {{ signed(hud.spawn.dangerPressure) }} · 均级补偿

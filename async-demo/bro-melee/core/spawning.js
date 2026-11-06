@@ -103,8 +103,11 @@ export class SpawnSystem {
     if (!atLow && !atHigh) {
       return;
     }
-    const step = atHigh ? SPAWN_CONFIG.OVERKILL_STEP_HIGH : SPAWN_CONFIG.OVERKILL_STEP_LOW;
-    this.overkillBonus = Math.min(SPAWN_CONFIG.OVERKILL_CAP, this.overkillBonus + step);
+    // 噩梦 N：每一次一击秒杀抬升 N 倍的动态压力（step 与封顶均 ×N），噩梦 1 = 原行为
+    const level = world.nightmareLevel || 1;
+    const step = (atHigh ? SPAWN_CONFIG.OVERKILL_STEP_HIGH : SPAWN_CONFIG.OVERKILL_STEP_LOW) * level;
+    const cap = SPAWN_CONFIG.OVERKILL_CAP * level;
+    this.overkillBonus = Math.min(cap, this.overkillBonus + step);
     if (atHigh) {
       this.overkillHighKills += 1;
     } else {
@@ -135,8 +138,10 @@ export class SpawnSystem {
     const baseMin = Math.max(1, level + SPAWN_CONFIG.BASE_MIN_OFFSET - drift);
     const baseMax = level + SPAWN_CONFIG.BASE_MAX_OFFSET + drift;
     const range = this.calcSpawnRange(world);
+    const nightmareScale = world.nightmareLevel || 1;
     return {
       nightmare: Boolean(world.nightmare),
+      nightmareLevel: world.nightmareLevel || 0,
       level,
       drift,
       baseMin,
@@ -148,6 +153,10 @@ export class SpawnSystem {
       overkillBonus: Math.round(this.overkillBonus * 10) / 10,
       overkillLowKills: this.overkillLowKills,
       overkillHighKills: this.overkillHighKills,
+      // 当前噩梦难度下，单次一击秒杀的抬升量与封顶（调试台展示用）
+      overkillStepLow: Math.round(SPAWN_CONFIG.OVERKILL_STEP_LOW * nightmareScale * 10) / 10,
+      overkillStepHigh: Math.round(SPAWN_CONFIG.OVERKILL_STEP_HIGH * nightmareScale * 10) / 10,
+      overkillCap: Math.round(SPAWN_CONFIG.OVERKILL_CAP * nightmareScale * 10) / 10,
       killPressure: this.pressureUp,
       dangerPressure: this.pressureDown,
       averagePressure: this.pendingExtraUp,

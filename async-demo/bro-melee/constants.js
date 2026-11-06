@@ -253,6 +253,8 @@ export const SPAWN_CONFIG = {
   /** 多久没有「一击秒杀」就开始回落（秒） */
   OVERKILL_IDLE_BEFORE_DECAY: 25,
   OVERKILL_DECAY_PER_SECOND: 0.06,
+  /** 噩梦难度可选上限：噩梦 N 时动态压力按 N 倍抬升（step 与封顶均 ×N） */
+  NIGHTMARE_MAX_LEVEL: 30,
 };
 
 /** 判定「明显打得过」的战力倍率：越小越好战（各类型性格不同） */

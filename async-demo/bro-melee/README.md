@@ -1178,28 +1178,29 @@ Vue 桥接（`composables/useBroMelee.js`）：引擎状态全部留在普通对
 
 | 端                          | 改动                                                                                            |
 | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `components/StartPanel.vue` | 按钮行新增红色「噩梦模式」（`$emit('start', 'nightmare')`），按钮行下方一行说明文案             |
-| `index.vue`                 | `gameMode` ref，`onStart(mode)` 存模式后随 `:mode` 传给 `GameMain`（每局 key 重挂载）           |
-| `components/GameMain.vue`   | `props.mode` → `game.setMode(mode)`（在 `game.start()` 前）；结算页噩梦时显示「噩梦模式」小标签 |
-| `components/HudPanel.vue`   | 境界徽章旁显示红色「噩梦」角标（读 `hud.spawn.nightmare`）                                      |
-| `core/world.js`             | `mode` / `nightmare` 字段 + `setMode()`；`reset()` 保留当前模式（「再来一局」不掉模式）         |
+| `components/StartPanel.vue` | 噩梦难度选择器：1~30 步进器（`$emit('start', 'nightmare', level)`），下方一行说明「难度越高抬升越多」 |
+| `index.vue`                 | `gameMode` + `gameNightmareLevel` ref，`onStart(mode, level)` 后随 `:mode` / `:nightmare-level` 传给 `GameMain` |
+| `components/GameMain.vue`   | `props.mode` + `props.nightmareLevel` → `game.setMode(mode, level)`（在 `game.start()` 前）；结算页噩梦时显示「噩梦模式 · 难度 N」 |
+| `components/HudPanel.vue`   | 境界徽章旁显示红色「噩梦 N」角标（读 `hud.spawn.nightmareLevel`）                                |
+| `core/world.js`             | `mode` / `nightmare` / `nightmareLevel` 字段 + `setMode(mode, level)`；`reset()` 保留当前难度（「再来一局」不掉档） |
 
 ### 30.2 动态压力（core/spawning.js）
 
 判定：玩家**致死一击**打掉目标 ≥ `OVERKILL_HIT_RATIO`（2/3）最大气血时记一次「一击秒杀」，再按被秒者在当前刷新区间的位置分档：
 
-| 被秒的是                                        | 含义           | 调整                       |
-| ----------------------------------------------- | -------------- | -------------------------- |
-| 区间**最低级**敌人（`level <= minLevel + 0.5`） | 地图整体有点低 | `OVERKILL_STEP_LOW = 0.6`  |
-| 区间**最高级**敌人（`level >= maxLevel - 0.5`） | 整张地图都太软 | `OVERKILL_STEP_HIGH = 1.5` |
-| 中段敌人 / 没秒掉 / 毒与调试等无致死一击的击杀  | ——             | 不调整                     |
+| 被秒的是                                        | 含义           | 调整（噩梦 N 时 ×N）            |
+| ----------------------------------------------- | -------------- | ------------------------------- |
+| 区间**最低级**敌人（`level <= minLevel + 0.5`） | 地图整体有点低 | `OVERKILL_STEP_LOW = 0.6`      |
+| 区间**最高级**敌人（`level >= maxLevel - 0.5`） | 整张地图都太软 | `OVERKILL_STEP_HIGH = 1.5`     |
+| 中段敌人 / 没秒掉 / 毒与调试等无致死一击的击杀  | ——             | 不调整                          |
 
-- 累计量 `overkillBonus` 同时加到 `calcSpawnRange` 的**两端**（弱敌不再无限刷），封顶 `OVERKILL_CAP = 10` 级，仍受 `MAX_SPREAD` 约束。
+- **难度缩放**：实际抬升 = 基础值 × 噩梦难度 N，封顶 = `OVERKILL_CAP`(10) × N（`NIGHTMARE_MAX_LEVEL = 30`）。噩梦 1 即原值（低端 +0.6 / 高端 +1.5 / 封顶 10），噩梦 30 即低端 +18 / 高端 +45 / 封顶 300——每次加一层噩梦，动态难度就多浮一层。
+- 累计量 `overkillBonus` 同时加到 `calcSpawnRange` 的**两端**（弱敌不再无限刷），封顶为 `OVERKILL_CAP × N`，仍受 `MAX_SPREAD` 约束。
 - 回落：超过 `OVERKILL_IDLE_BEFORE_DECAY = 25s` 没有再秒人，按 `OVERKILL_DECAY_PER_SECOND = 0.06`/s 缓慢回落，避免永久钉在封顶。
 - 全程**不提示玩家**；召唤物（`isMinion`）与随从不参与判定。
 
 ### 30.3 数据链路与调试台
 
 - 致死一击伤害经 `applyDamage → killEntity(world, victim, killer, { hitDamage }) → handleVictimDeath(victim, killer, info)` 传入 `spawner.registerOverkill`；`killEntity` 调用点（毒杀、调试清场等）不传即不计压。
-- `buildHudSnapshot` 新增 `spawn` 段（`spawner.describeRange`）：模式、默认区间（只含时间漂移）、当前实际区间、两端调整量,击秒杀累计与低端/高端次数、击杀压力 / 濒死 / 均级补偿 / 时间漂移。
-- 调试台「敌人」标签新增「刷新等级区间」面板（含「清零动态压力」按钮，`debugApi.resetSpawnPressure`）；
+- `buildHudSnapshot` 的 `spawn` 段（`spawner.describeRange`）新增：`nightmareLevel`、当前难度下每次一击秒杀的抬升量 `overkillStepLow` / `overkillStepHigh` 与封顶 `overkillCap`（调试台展示用），其余同前。
+- 调试台「敌人」标签「刷新等级区间」面板标题显示「噩梦 N · 动态压力」，并多一行说明本难度下每次一击秒杀的抬升量与封顶；含「清零动态压力」按钮（`debugApi.resetSpawnPressure`）；

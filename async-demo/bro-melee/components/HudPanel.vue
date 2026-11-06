@@ -6,7 +6,7 @@
           <span class="level-label">境界</span>
           <span class="level-value">{{ hud.level }}</span>
         </div>
-        <span v-if="hud.spawn && hud.spawn.nightmare" class="mode-badge">噩梦</span>
+        <span v-if="hud.spawn && hud.spawn.nightmare" class="mode-badge">噩梦 {{ hud.spawn.nightmareLevel }}</span>
       </div>
       <div class="bar-group">
         <div class="bar bar--hp">

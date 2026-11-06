@@ -38,7 +38,7 @@
 
     <div v-if="status === 'dead'" class="overlay">
       <div class="result">
-        <div v-if="nightmare" class="result-mode">噩梦模式</div>
+        <div v-if="nightmare" class="result-mode">噩梦模式 · 难度 {{ nightmareLevel }}</div>
         <div class="result-title">力竭而亡</div>
         <div class="result-sub">被 {{ gameOver.deathCause }} 击败</div>
         <div class="result-grid">
@@ -123,10 +123,14 @@ const props = defineProps({
     type: String,
     default: 'normal',
   },
+  nightmareLevel: {
+    type: Number,
+    default: 1,
+  },
 });
 
 const game = useBroMelee();
-game.setMode(props.mode);
+game.setMode(props.mode, props.nightmareLevel);
 const nightmare = computed(() => props.mode === 'nightmare');
 const { hud, skillChoices, notices, gameOver, status, encounter, encounterResult } = game;
 const worldRef = game.world;

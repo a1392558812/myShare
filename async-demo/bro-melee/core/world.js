@@ -63,8 +63,10 @@ export class BroMeleeWorld {
     this.viewWidth = 1280;
     this.viewHeight = 720;
     // 模式：normal 沿用原有压力曲线；nightmare 额外开启动态压力（一击秒杀抬高级区间）
+    // nightmareLevel：1~NIGHTMARE_MAX_LEVEL，动态压力抬升幅度按该值缩放；普通模式为 0
     this.mode = 'normal';
     this.nightmare = false;
+    this.nightmareLevel = 0;
     this.hash = new SpatialHash(128);
     this.map = new ChunkMap();
     this.spawner = new SpawnSystem();
@@ -79,6 +81,8 @@ export class BroMeleeWorld {
     resetEntityIds();
     this.mode = this.mode === 'nightmare' ? 'nightmare' : 'normal';
     this.nightmare = this.mode === 'nightmare';
+    // 保留当前噩梦难度（「再来一局」不掉档）；普通模式归零
+    this.nightmareLevel = this.nightmare ? Math.max(1, this.nightmareLevel || 1) : 0;
     this.time = 0;
     this.player = createPlayer(1);
     recalculatePlayerStats(this.player);
@@ -166,10 +170,14 @@ export class BroMeleeWorld {
   /**
    * 切换模式（开局前调用；reset 会保留当前模式）
    * @param {String} mode 'normal' | 'nightmare'
+   * @param {Number} level 噩梦难度 1~NIGHTMARE_MAX_LEVEL（仅 nightmare 生效，普通模式忽略）
    */
-  setMode(mode) {
+  setMode(mode, level = 1) {
     this.mode = mode === 'nightmare' ? 'nightmare' : 'normal';
     this.nightmare = this.mode === 'nightmare';
+    this.nightmareLevel = this.nightmare
+      ? Math.min(SPAWN_CONFIG.NIGHTMARE_MAX_LEVEL, Math.max(1, Math.floor(level || 1)))
+      : 0;
   }
 
   /** 当前存活角色（玩家 + 敌人） */

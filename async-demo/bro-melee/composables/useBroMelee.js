@@ -115,9 +115,9 @@ export const useBroMelee = () => {
     world.value.setViewSize(width, height);
   };
 
-  /** 开局前选模式：normal / nightmare（噩梦开启动态压力） */
-  const setMode = (mode) => {
-    world.value.setMode(mode);
+  /** 开局前选模式：normal / nightmare（噩梦开启动态压力，可选难度 1~NIGHTMARE_MAX_LEVEL） */
+  const setMode = (mode, level = 1) => {
+    world.value.setMode(mode, level);
   };
 
   const update = (deltaTime) => {

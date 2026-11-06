@@ -3,7 +3,7 @@
     <StartPanel v-if="panel === 'start'" @start="onStart" @docs="onDocs('./async-demo/bro-melee/README.md')"
       @code="onCode" @gallery="onGallery" @adventure="onDocs('./async-demo/bro-melee/add.md')"
       @keybinds="panel = 'keybinds'" />
-    <GameMain v-else-if="panel === 'game'" :key="gameKey" :mode="gameMode" @restart="onBack" />
+    <GameMain v-else-if="panel === 'game'" :key="gameKey" :mode="gameMode" :nightmare-level="gameNightmareLevel" @restart="onBack" />
     <div v-else-if="panel === 'keybinds'" class="keybind-host">
       <KeybindPanel :skills="preGameSkills" :keybinds="preKeybinds" :awaiting="awaitingKeybind"
         :display-of="displayOfPre" @close="panel = 'start'" @await="awaitingKeybind = $event"
@@ -51,10 +51,22 @@ const markdownFn = props.markdownComponent();
 const panel = ref('start');
 const gameKey = ref(0);
 const gameMode = ref('normal');
+const gameNightmareLevel = ref(1);
 const docsText = ref('');
 
-const onStart = (mode) => {
+/** 开局：普通模式直接进；噩梦模式带上选中的难度（1~30） */
+const onStart = (mode, level) => {
   gameMode.value = mode === 'nightmare' ? 'nightmare' : 'normal';
+  if (gameMode.value === 'nightmare') {
+    let value = Math.floor(Number(level) || 1);
+    if (value < 1) {
+      value = 1;
+    }
+    if (value > 30) {
+      value = 30;
+    }
+    gameNightmareLevel.value = value;
+  }
   gameKey.value += 1;
   panel.value = 'game';
   docsText.value = '';

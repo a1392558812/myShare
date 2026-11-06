@@ -168,10 +168,10 @@ export const render = (context, world, viewWidth, viewHeight, pixelRatio, pointe
   drawTransferBeam(context, world);
   drawPlayer(context, world);
   drawEffects(context, world);
+  drawAim(context, world, pointer);
   context.restore();
 
   drawBossPointer(context, world, viewWidth, viewHeight);
-  drawAim(context, world, pointer);
   drawVignette(context, viewWidth, viewHeight);
   drawMinimap(context, world, viewWidth, viewHeight);
 };

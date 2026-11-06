@@ -25,7 +25,6 @@
 
     <div class="button-row">
       <button class="ghost-btn" @click="$emit('start', 'normal')">踏入江湖</button>
-      <button class="ghost-btn ghost-btn--nightmare" @click="$emit('start', 'nightmare')">噩梦模式</button>
       <button class="ghost-btn" @click="$emit('keybinds')">键位设置</button>
       <button class="ghost-btn" @click="$emit('gallery')">角色图鉴</button>
       <button class="ghost-btn" @click="$emit('adventure')">查看奇遇</button>
@@ -33,14 +32,63 @@
       <button class="ghost-btn" @click="$emit('code')">查看源码</button>
     </div>
 
+    <div class="nightmare-config">
+      <span class="config-label">噩梦难度</span>
+      <div class="stepper">
+        <button class="step-btn" type="button" @click="adjustNightmareLevel(-1)">−</button>
+        <input
+          class="level-input"
+          type="number"
+          min="1"
+          max="30"
+          v-model.number="nightmareLevel"
+          @input="clampNightmareLevel"
+        />
+        <button class="step-btn" type="button" @click="adjustNightmareLevel(1)">＋</button>
+      </div>
+      <button class="ghost-btn ghost-btn--nightmare" type="button" @click="enterNightmare">
+        进入噩梦 {{ nightmareLevel }}
+      </button>
+    </div>
+
     <div class="mode-note">
-      噩梦模式：一击秒杀刷新出来的敌人，地图就会把敌人等级整体上调 —— 越碾压，江湖越硬。
+      噩梦难度 1~30 可选：难度越高，一击秒杀抬升的敌人等级越多（噩梦 N 每次抬升 N 倍动态压力，封顶 N×10 级）。普通模式不触发动态压力。
     </div>
   </div>
 </template>
 
 <script setup>
-defineEmits(['start', 'docs', 'code', 'gallery', 'keybinds']);
+import { ref } from 'vue';
+
+const emit = defineEmits(['start', 'docs', 'code', 'gallery', 'keybinds']);
+
+const NIGHTMARE_MIN = 1;
+const NIGHTMARE_MAX = 30;
+const nightmareLevel = ref(1);
+
+/** 把输入夹到 [1, 30] 闭区间并取整 */
+const clampNightmareLevel = () => {
+  let value = Math.floor(Number(nightmareLevel.value));
+  if (!Number.isFinite(value) || value < NIGHTMARE_MIN) {
+    value = NIGHTMARE_MIN;
+  }
+  if (value > NIGHTMARE_MAX) {
+    value = NIGHTMARE_MAX;
+  }
+  nightmareLevel.value = value;
+};
+
+/** 点 −/＋ 按钮时步进并夹紧 */
+const adjustNightmareLevel = (delta) => {
+  clampNightmareLevel();
+  nightmareLevel.value = Math.min(NIGHTMARE_MAX, Math.max(NIGHTMARE_MIN, nightmareLevel.value + delta));
+};
+
+/** 进入噩梦：把选中的难度一并传给父级 */
+const enterNightmare = () => {
+  clampNightmareLevel();
+  emit('start', 'nightmare', nightmareLevel.value);
+};
 </script>
 
 <style scoped lang="scss">
@@ -160,6 +208,66 @@ defineEmits(['start', 'docs', 'code', 'gallery', 'keybinds']);
     color: #ffd0c6;
     border-color: #e05545;
     background: rgba(224, 85, 69, 0.18);
+  }
+}
+
+.nightmare-config {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  z-index: 1;
+}
+
+.config-label {
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: rgba(255, 138, 122, 0.85);
+}
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(224, 85, 69, 0.4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.step-btn {
+  width: 28px;
+  font-size: 14px;
+  color: #ffd0c6;
+  background: rgba(224, 85, 69, 0.1);
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(224, 85, 69, 0.28);
+  }
+}
+
+.level-input {
+  width: 46px;
+  padding: 4px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #ffe9b8;
+  background: rgba(10, 12, 9, 0.6);
+  border: none;
+  border-left: 1px solid rgba(224, 85, 69, 0.4);
+  border-right: 1px solid rgba(224, 85, 69, 0.4);
+  /* 去掉数字输入框默认的上下箭头，保持风格统一 */
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    outline: none;
+    background: rgba(224, 85, 69, 0.12);
   }
 }
 
