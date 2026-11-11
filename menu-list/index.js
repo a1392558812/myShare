@@ -73,6 +73,7 @@ const filterFilePath = [
   path.join(basePath, "vercel.json"),
   path.join(basePath, "workbox-*.js"),
   path.join(basePath, "workbox-*.js.gz"),
+  path.join(basePath, "run-server.js"),
 ];
 
 // filterFilePath 展开后的最终版本：含通配符的会被替换成 glob 命中的真实路径列表
