@@ -34,16 +34,24 @@ const opts = {
 const argv = process.argv.slice(2);
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
-  if (a === "-p" || a === "--port") opts.port = Number(argv[++i]) || 8080;
-  else if (a === "-r" || a === "--root") opts.root = argv[++i];
-  else if (a === "--no-open") opts.open = false;
-  else if (a === "--no-spa") opts.spa = false;
-  else if (a === "-q" || a === "--quiet") opts.quiet = true;
-  else if (a === "-h" || a === "--help") {
+  if (a === "-p" || a === "--port") {
+    opts.port = Number(argv[++i]) || 5501;
+  } else if (a === "-r" || a === "--root") {
+    opts.root = argv[++i];
+  } else if (a === "--no-open") {
+    opts.open = false;
+  } else if (a === "--no-spa") {
+    opts.spa = false;
+  } else if (a === "-q" || a === "--quiet") {
+    opts.quiet = true;
+  } else if (a === "-h" || a === "--help") {
     console.log(HELP);
     process.exit(0);
-  } else if (!a.startsWith("-")) opts.root = a;
-  else console.warn("未知参数:", a);
+  } else if (!a.startsWith("-")) {
+    opts.root = a;
+  } else {
+    console.warn("未知参数:", a);
+  }
 }
 
 const ROOT = path.resolve(opts.root);
