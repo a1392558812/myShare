@@ -40,15 +40,20 @@
 - [禁止] 同轮内重复读未改动的同一文件。
 - [必须] 改动后只重跑受影响的那个探针，不重跑无关探针。
 
-## 游戏 demo / vue3-sfc-loader 宿主约束（游戏 demo 适用）
-> 防止「Node 探针全绿但宿主运行时 undefined」。
+## 游戏 demo / vue3-sfc-loader 宿主约束
+> 防「Node 探针全绿但宿主运行时 undefined」。本章分两级：宿主兼容铁律对所有经 sfc-loader 加载的 demo 生效；范本约定仅对主动采用对应架构的 demo 生效。
+
+### 宿主兼容铁律（所有游戏 demo 适用）
+> 与 demo 是否分层、是否写文档无关，只要经 vue3-sfc-loader 加载就必须遵守。
 - [禁止] 间接导出 `export { X } from './y.js'` 或 `export * from`；需转引时在逻辑层显式 import 再 export。
-- [必须] `config/*` 只放纯数据，不放逻辑、不做 re-export；视图层 `*.vue` 不直接 import `config/` 数据表，模板不写 `TABLE[key]`，统一由 `core/*-view.js` 加工成纯值。
 - [禁止] 加载模块用 CJS / `require`、top-level await、动态 `import()`、构建期宏/replace（宿主无 Vite transform）。
 - [必须] `<script setup>` 保持宿主可解析：避免实验性语法、需编译期处理的自定义指令/宏；单文件组件尽量自包含，便于探针抽 `<script setup>` 配 `vue-mock` 跑。
+
+### 范本 demo 约定（优先以 bro-melee / turn-based-rematch 等为范本，采用 core/+draw/+config/ 分层）
+> 仅当 demo 主动采用以下架构时才生效；未分层、不写文档的简单 demo（如仅单文件组件的 demo）不受以下条款约束。
+- [必须] `config/*` 只放纯数据，不放逻辑、不做 re-export；视图层 `*.vue` 不直接 import `config/` 数据表，模板不写 `TABLE[key]`，统一由 `core/*-view.js` 加工成纯值。
 - [禁止] `core/` 层 import vue / stage / draw / DOM。
-- [禁止] 表现层新增事件类型（既有 23 种事件不变，新行为走 TURN_END 等载荷）。
-- [必须] 数值只信 README 第 12 章；平衡只改 `constants.js` / `config/*`，改完同步文档。
+- [必须] 平衡数值集中放在 `constants.js` / `config/*`，禁止在 core / draw / stage 散落魔法数字。
 
 ## 测试 / 探针产物归置（游戏 demo 适用）
 > 所有临时 / 测试产物统一归置到 `.tmp` 目录，由 `.gitignore` 的 `.tmp` 模式（无斜杠前缀，匹配任意深度）统一忽略，避免散落仓库根。
@@ -61,6 +66,6 @@
 - [ ] TODO 逐项完成并更新状态。
 - [ ] 未用 CSS 媒体查询；预览地址符合规则；未自启服务器、未装框架包。
 - [ ] 无单字符/缩写变量与类名；无单行函数；公共 API 含 JSDoc。
-- [ ] 无间接导出；config 仅数据；core 不依赖 vue/DOM。
+- [ ] 宿主兼容铁律达标：无间接导出、无 CJS / 动态 `import()` / 构建期宏、`<script setup>` 宿主可解析；范本 demo 另查：config 仅数据、core 不依赖 vue/DOM、数值集中 `constants.js`/`config/*` 无散落魔法数字。
 - [ ] 测试 / 探针产物归置正确：demo 探针在 `<demo>/.tmp/`、浏览器缓存在根 `.tmp/`、仓库根无散落临时文件。
 - [ ] 本期未滥用全量探针；改动只重跑受影响探针。
