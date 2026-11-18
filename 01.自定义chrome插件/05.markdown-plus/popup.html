@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Plus</title>
+  </head>
+  <body>
+    <main class="popup">
+      <header class="popup__header">
+        <span class="popup__mark">M</span>
+        <div class="popup__title">
+          <strong>Markdown Plus</strong>
+          <span id="version">v1.0.0</span>
+        </div>
+      </header>
+
+      <button id="open-viewer" class="popup__action" type="button">
+        打开 Markdown 预览页
+      </button>
+
+      <ul class="popup__tips">
+        <li>预览页支持从系统拖入 <code>.md</code> 文件</li>
+        <li>可编辑并保存回原文件，或另存为副本</li>
+      </ul>
+    </main>
+    <script type="module" src="/src/popup/main.ts"></script>
+  </body>
+</html>

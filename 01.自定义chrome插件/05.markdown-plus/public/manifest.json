@@ -1,0 +1,85 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Plus",
+  "version": "1.0.0",
+  "description": "在 Chrome 中拖入 .md 文件即可预览、编辑，并保存或导出。",
+  "offline_enabled": true,
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Markdown Plus",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*.md",
+        "*://*/*.md?*",
+        "*://*/*.markdown",
+        "*://*/*.markdown?*",
+        "*://*/*.mdown",
+        "*://*/*.mdown?*",
+        "*://*/*.mkd",
+        "*://*/*.mkd?*",
+        "*://*/*.mdx",
+        "*://*/*.mdx?*",
+        "*://*/*.txt",
+        "*://*/*.txt?*",
+        "file://*/*.md",
+        "file://*/*.md?*",
+        "file://*/*.markdown",
+        "file://*/*.markdown?*",
+        "file://*/*.mdown",
+        "file://*/*.mdown?*",
+        "file://*/*.mkd",
+        "file://*/*.mkd?*",
+        "file://*/*.mdx",
+        "file://*/*.mdx?*",
+        "file://*/*.txt",
+        "file://*/*.txt?*",
+        "*://*/*.MD",
+        "*://*/*.MD?*",
+        "*://*/*.MARKDOWN",
+        "*://*/*.MARKDOWN?*",
+        "*://*/*.MDOWN",
+        "*://*/*.MDOWN?*",
+        "*://*/*.MKD",
+        "*://*/*.MKD?*",
+        "*://*/*.MDX",
+        "*://*/*.MDX?*",
+        "*://*/*.TXT",
+        "*://*/*.TXT?*",
+        "file://*/*.MD",
+        "file://*/*.MD?*",
+        "file://*/*.MARKDOWN",
+        "file://*/*.MARKDOWN?*",
+        "file://*/*.MDOWN",
+        "file://*/*.MDOWN?*",
+        "file://*/*.MKD",
+        "file://*/*.MKD?*",
+        "file://*/*.MDX",
+        "file://*/*.MDX?*",
+        "file://*/*.TXT",
+        "file://*/*.TXT?*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}
