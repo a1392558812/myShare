@@ -20,6 +20,7 @@ const filterDirName = [
   ".trae",
   ".git",
   ".tmp",
+  "dist",
 ];
 
 /**

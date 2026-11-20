@@ -58,9 +58,9 @@
 - [禁止] `core/` 层 import Vue、舞台层（stage）、`draw/` 或浏览器 DOM API。
 - [必须] 平衡数值集中放在 `constants.js` / `config/*`；禁止在 `core/`、`draw/`、舞台层散落魔法数字。
  
-## 测试 / 探针产物归置（游戏 demo 适用）
+## 测试 / 探针产物归置
 > 所有临时 / 测试产物统一归置到 `.tmp` 目录，由 `.gitignore` 中不带斜杠的 `.tmp` 模式（匹配任意深度）统一忽略，避免散落到仓库其他位置。
-- [必须] 游戏 demo 的探针 / 测试脚本放入 `<demo 根目录>/.tmp/`（例如 `async-demo/turn-based-rematch/.tmp/`），按用途平铺拆文件，不套子目录。
+- [必须] demo 的探针 / 测试脚本放入 `<demo 根目录>/.tmp/`（例如 `async-demo/turn-based-rematch/.tmp/`），按用途平铺拆文件，不套子目录。
 - [必须] 工具 / 浏览器运行时缓存（如无头测试生成的 user-data profile，命名形如 `.tmp-edge-xxxx`）放入仓库根 `.tmp/`，即各机器本地仓库根下的 `.tmp/` 目录。该目录已 gitignore、各机器本地生成；路径保持相对仓库根、跨机器一致，勿写死绝对路径。
 - [必须] 需要在记忆中回溯时，只记录相对仓库根的路径（如 `.tmp/.tmp-edge-profile*`），勿写死某台机器的绝对路径。
 - [禁止] 在仓库根 `.tmp/` 之外的位置散落 `.tmp-edge-xxxx`、`.tmp-*` 等临时文件。
