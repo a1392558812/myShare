@@ -6,9 +6,6 @@
         callback: () => openDialog({ overlayStyle: { zIndex: 1000 } }),
       },
     ]">
-      <control-item label="是否跳过node_modules/.git等目录" inputType="checkbox" :modelValue="skipHeavyDirectories"
-        @update:modelValue="value => skipHeavyDirectories = value" />
-
       <control-item label="操作">
         <div style="display: flex; align-items: center; gap: 6px;">
           <custom-btn-com :disabled="isBusy" @click="pickFolder">
@@ -23,18 +20,46 @@
         </div>
       </control-item>
 
+      <control-item label="启用跳过规则" inputType="checkbox" :modelValue="skipHeavyDirectories"
+        @update:modelValue="value => skipHeavyDirectories = value" />
+
+      <div style="position: relative;">
+        <control-item label="跳过规则">
+          <div class="rule-list">
+            <div v-for="rule in skipRules" :key="rule.name" class="rule-list-item">
+              <div style="display: flex; align-items: center; gap: 2px;">
+                <inputCom :disabled="!skipHeavyDirectories" type="checkbox" v-model="rule.matchAnyLevel" />
+                <div>：是否匹配任意层级，当前为{{ rule.matchAnyLevel ? '任意层级' : '仅顶层' }}</div>
+              </div>
+              <div style="word-break: break-all;">文件夹名：{{ rule.name }}</div>
+              <button v-if="skipHeavyDirectories" :disabled="!skipHeavyDirectories" class="rule-list-item-btn"
+                @click="removeRule(rule.name)">x</button>
+            </div>
+            <div v-if="skipRules.length === 0" class="rule-empty">暂无规则，将包含所有目录</div>
+          </div>
+        </control-item>
+
+        <control-item label="添加规则">
+          <inputBtn :disabled="!skipHeavyDirectories" :modelValue="ruleDraftName" type="text" btn-text="+"
+            placeholder="输入文件夹或路径" @update:modelValue="handleAddRule" />
+          <div>支持 dist/test 路径写法</div>
+        </control-item>
+
+        <div v-if="!skipHeavyDirectories"
+          style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-color: rgba(255,255,255,0.4);">
+        </div>
+      </div>
+
       <control-item label="使用说明">
         <div>
           <p style="font-size: 12px;" v-for="value in [
             { label: '', value: '把文件夹从资源管理器直接拖进来即可扫描' },
             { label: '', value: '超过 50000 个条目时目录树会被截断' },
-            { label: '', value: '生成的目录树可直接编辑，# 注释请手动添加' },
-            { label: 'statusText: ', value: statusText || '等待拖入文件夹' },
-            { label: 'statsText: ', value: statsText || '--' },
-            { label: 'noticeText: ', value: noticeText || '--' },
-            { label: 'noticeWarning: ', value: noticeWarning },
-            { label: 'isDropActive: ', value: isDropActive },
-            { label: 'lineCountText: ', value: lineCountText || '--' },
+            { label: '状态: ', value: statusText || '等待拖入文件夹' },
+            { label: '统计: ', value: statsText || '--' },
+            { label: '提示: ', value: noticeText || '--' },
+            { label: '是否拖拽进来力: ', value: isDropActive },
+            { label: '行数: ', value: lineCountText || '--' },
           ]">{{ value.label }}{{ value.value }}</p>
         </div>
       </control-item>
@@ -52,10 +77,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 import { toastFun } from '../components/toast/index.js'
+import InputBtn from "../components/input-btn/index.vue";
 import {
   useCopyCode,
+  inputCom,
   controlItem,
   customBtnCom,
   layoutCom,
@@ -73,8 +100,10 @@ const MAX_ENTRIES = 50000;
 const YIELD_INTERVAL = 200;
 const PROGRESS_INTERVAL = 80;
 const ROOT_DEPTH = 1;
-const SKIP_DIRECTORY_NAMES = new Set(["node_modules", ".git", ".svn", ".hg"]);
-const SKIPPED_DIRECTORY_NAMES = [...SKIP_DIRECTORY_NAMES];
+const DEFAULT_SKIP_RULES = [
+  { name: "node_modules", pathSegments: ["node_modules"], matchAnyLevel: true },
+  { name: ".git", pathSegments: [".git"], matchAnyLevel: true },
+];
 
 const CONNECTOR_BRANCH = "├── ";
 const CONNECTOR_LAST = "└── ";
@@ -149,6 +178,32 @@ const renderTreeText = (treeRoots) => {
 };
 
 /**
+ * 在目录路径段中查找命中的跳过规则，规则为路径模式（如 dist/test）。
+ * matchAnyLevel 为 true 时模式可作为连续子路径出现在任意层级；否则模式必须从第一层开始前缀命中。
+ * @param {string[]} directorySegments 相对所选文件夹根的目录段（不含根目录名与文件名）
+ * @param {{name: string, pathSegments: string[], matchAnyLevel: boolean}[]} skipRules 跳过规则列表
+ * @returns {{rule: {name: string, pathSegments: string[], matchAnyLevel: boolean}, matchedSegmentIndex: number}|null}
+ *   命中规则与模式末段所在下标，未命中返回 null
+ */
+const findSkipRule = (directorySegments, skipRules) => {
+  for (const rule of skipRules) {
+    const patternLength = rule.pathSegments.length;
+    const maxStartIndex = rule.matchAnyLevel
+      ? directorySegments.length - patternLength
+      : 0;
+    for (let startIndex = 0; startIndex <= maxStartIndex; startIndex += 1) {
+      const isPatternMatch = rule.pathSegments.every((segment, position) => {
+        return directorySegments[startIndex + position] === segment;
+      });
+      if (isPatternMatch) {
+        return { rule, matchedSegmentIndex: startIndex + patternLength - 1 };
+      }
+    }
+  }
+  return null;
+};
+
+/**
  * 分批读取目录句柄下的全部条目，readEntries 每次只返回一部分，需循环调用直到返回空数组。
  * @param {FileSystemDirectoryReader} directoryReader 目录读取器
  * @returns {Promise<Array<FileSystemEntry>>} 全部子条目
@@ -197,7 +252,7 @@ const yieldToMainThread = () => {
   });
 };
 
-const scanEntry = (entry, context, depth) => {
+const scanEntry = (entry, context, depth, trailSegments) => {
   if (hasReachedLimit(context)) {
     context.stats.truncated = true;
     return Promise.resolve(null);
@@ -210,7 +265,10 @@ const scanEntry = (entry, context, depth) => {
   if (!entry.isDirectory) {
     return Promise.resolve(null);
   }
-  if (context.skipHeavyDirectories && SKIP_DIRECTORY_NAMES.has(entry.name)) {
+  const skipMatch = context.skipHeavyDirectories
+    ? findSkipRule([...trailSegments, entry.name], context.skipRules)
+    : null;
+  if (skipMatch) {
     context.stats.skippedDirectories += 1;
     notifyProgress(context, `${entry.name}/（已跳过）`);
     return Promise.resolve(null);
@@ -219,7 +277,9 @@ const scanEntry = (entry, context, depth) => {
   notifyProgress(context, `${entry.name}/`);
   return readAllEntries(entry.createReader())
     .then((childEntries) => {
-      return scanEntriesSequentially(childEntries, context, depth + 1);
+      // 候选路径相对所选文件夹根：根目录自身不进入子级路径段，与 fileList 模式的 directorySegments 口径一致
+      const childTrailSegments = depth === ROOT_DEPTH ? [] : [...trailSegments, entry.name];
+      return scanEntriesSequentially(childEntries, context, depth + 1, childTrailSegments);
     })
     .then((childNodes) => {
       return { name: entry.name, kind: "directory", children: childNodes };
@@ -229,7 +289,7 @@ const scanEntry = (entry, context, depth) => {
     });
 };
 
-const scanEntriesSequentially = (entryList, context, depth) => {
+const scanEntriesSequentially = (entryList, context, depth, trailSegments) => {
   const nodes = [];
   const scanAtIndex = (index) => {
     if (index >= entryList.length || context.stats.truncated) {
@@ -239,7 +299,7 @@ const scanEntriesSequentially = (entryList, context, depth) => {
     const pendingYield = isYieldPoint ? yieldToMainThread() : Promise.resolve();
     return pendingYield
       .then(() => {
-        return scanEntry(entryList[index], context, depth);
+        return scanEntry(entryList[index], context, depth, trailSegments);
       })
       .then((node) => {
         if (node) {
@@ -266,8 +326,8 @@ const createEmptyStats = () => {
 /**
  * 递归扫描拖入的 FileSystemEntry 列表，读取真实子目录层级。
  * @param {Array<FileSystemEntry>} entryList 顶层条目（来自 DataTransferItem.webkitGetAsEntry）
- * @param {{skipHeavyDirectories?: boolean, maxEntries?: number, onProgress?: Function}} [options]
- *   skipHeavyDirectories 默认 true；onProgress 接收扫描统计与当前路径
+ * @param {{skipHeavyDirectories?: boolean, maxEntries?: number, skipRules?: Array<{name: string, pathSegments: string[], matchAnyLevel: boolean}>, onProgress?: Function}} [options]
+ *   skipHeavyDirectories 默认 true；skipRules 为跳过规则快照；onProgress 接收扫描统计与当前路径
  * @returns {Promise<{roots: Array, stats: {files: number, directories: number, skippedDirectories: number, truncated: boolean}}>}
  */
 const scanEntries = (entryList, options = {}) => {
@@ -276,11 +336,12 @@ const scanEntries = (entryList, options = {}) => {
     maxEntries: Number.isFinite(options.maxEntries)
       ? Math.max(1, Math.floor(options.maxEntries))
       : MAX_ENTRIES,
+    skipRules: Array.isArray(options.skipRules) ? options.skipRules : [],
     onProgress: typeof options.onProgress === "function" ? options.onProgress : null,
     stats: createEmptyStats(),
   };
   const topLevelEntries = Array.isArray(entryList) ? entryList : [];
-  return scanEntriesSequentially(topLevelEntries, context, ROOT_DEPTH).then(
+  return scanEntriesSequentially(topLevelEntries, context, ROOT_DEPTH, []).then(
     (rootNodes) => {
       return {
         roots: sortTreeNodes(rootNodes),
@@ -310,11 +371,12 @@ const ensureDirectoryNode = (rootNode, pathSegments, stats) => {
  * 兜底入口：根据 <input webkitdirectory> 选择的文件列表构建目录树。
  * 仅依赖 webkitRelativePath，不读取子目录句柄。
  * @param {FileList|File[]} fileList 选择的文件列表
- * @param {{skipHeavyDirectories?: boolean, maxEntries?: number}} [options] 与 scanEntries 同名选项
+ * @param {{skipHeavyDirectories?: boolean, maxEntries?: number, skipRules?: Array<{name: string, pathSegments: string[], matchAnyLevel: boolean}>}} [options] 与 scanEntries 同名选项
  * @returns {{roots: Array, stats: {files: number, directories: number, skippedDirectories: number, truncated: boolean}}}
  */
 const buildTreeFromFileList = (fileList, options = {}) => {
   const skipHeavyDirectories = options.skipHeavyDirectories !== false;
+  const skipRules = Array.isArray(options.skipRules) ? options.skipRules : [];
   const maxEntries = Number.isFinite(options.maxEntries)
     ? Math.max(1, Math.floor(options.maxEntries))
     : MAX_ENTRIES;
@@ -333,12 +395,10 @@ const buildTreeFromFileList = (fileList, options = {}) => {
     const directorySegments = segments.slice(1, -1);
     const fileName = segments[segments.length - 1];
     if (skipHeavyDirectories) {
-      const skippedSegment = directorySegments.find((segment) => {
-        return SKIP_DIRECTORY_NAMES.has(segment);
-      });
-      if (skippedSegment) {
+      const skipMatch = findSkipRule(directorySegments, skipRules);
+      if (skipMatch) {
         const skippedPath = `${rootName}/${directorySegments
-          .slice(0, directorySegments.indexOf(skippedSegment) + 1)
+          .slice(0, skipMatch.matchedSegmentIndex + 1)
           .join("/")}`;
         if (!skippedDirectoryPaths.has(skippedPath)) {
           skippedDirectoryPaths.add(skippedPath);
@@ -370,11 +430,12 @@ const buildTreeFromFileList = (fileList, options = {}) => {
 
 // ===== 页面状态 =====
 const skipHeavyDirectories = ref(true);
+const skipRules = ref(DEFAULT_SKIP_RULES.map((rule) => ({ ...rule })));
+const ruleDraftName = ref("");
 const treeText = ref("");
 const statusText = ref("");
 const statsText = ref("");
 const noticeText = ref("");
-const noticeWarning = ref(true);
 const isBusy = ref(false);
 const isDropActive = ref(false);
 const lastSource = ref(null);
@@ -410,6 +471,7 @@ const runScan = (source, version) => {
   if (source.type === "entries") {
     return scanEntries(source.entries, {
       skipHeavyDirectories: skipHeavyDirectories.value,
+      skipRules: skipRules.value,
       maxEntries: MAX_ENTRIES,
       onProgress: (progress) => {
         if (version === scanVersion) {
@@ -421,6 +483,7 @@ const runScan = (source, version) => {
   return Promise.resolve(
     buildTreeFromFileList(source.files, {
       skipHeavyDirectories: skipHeavyDirectories.value,
+      skipRules: skipRules.value,
       maxEntries: MAX_ENTRIES,
     })
   );
@@ -432,8 +495,11 @@ const buildNoticeMessages = (stats) => {
     messages.push(`已达到 ${MAX_ENTRIES} 个条目上限，目录树已截断。`);
   }
   if (stats.skippedDirectories > 0) {
+    const ruleNames = skipRules.value.map((rule) => {
+      return rule.name;
+    });
     messages.push(
-      `已跳过 ${stats.skippedDirectories} 个依赖/版本库目录（${SKIPPED_DIRECTORY_NAMES.join("、")}），取消勾选开关后可重新扫描。`
+      `已按规则跳过 ${stats.skippedDirectories} 个目录（${ruleNames.join("、")}），调整规则或取消勾选后可重新扫描。`
     );
   }
   return messages;
@@ -455,7 +521,6 @@ const finishScan = (scanResult) => {
       ? ` · 跳过 ${scanResult.stats.skippedDirectories} 个目录`
       : "";
   statsText.value = `${scanResult.stats.files} 个文件 · ${scanResult.stats.directories} 个目录${skippedText}`;
-  noticeWarning.value = true;
   noticeText.value = buildNoticeMessages(scanResult.stats).join(" ");
   lastProgressTime = 0;
   isBusy.value = false;
@@ -483,7 +548,6 @@ const beginScan = (source) => {
       isBusy.value = false;
       statusText.value = "读取失败";
       statsText.value = "";
-      noticeWarning.value = false;
       noticeText.value = `无法读取文件夹：${scanError && scanError.message ? scanError.message : String(scanError)
         }`;
     });
@@ -549,7 +613,6 @@ const handleDrop = (event) => {
     beginScan(lastSource.value);
     return;
   }
-  noticeWarning.value = false;
   noticeText.value = "没有识别到文件夹，请从文件资源管理器直接拖入文件夹。";
 };
 
@@ -603,6 +666,53 @@ const handleFolderPicked = (event) => {
   beginScan(lastSource.value);
 };
 
+/**
+ * 添加一条跳过规则，输入支持路径写法（dist/test，兼容反斜杠），空值忽略、重复拦截；添加后清空草稿输入框。
+ * @param {string} committedName 输入框提交的文件夹或路径文本
+ * @returns {void}
+ */
+const handleAddRule = (committedName) => {
+  const patternSegments = String(committedName || "")
+    .replace(/\\/g, "/")
+    .split("/")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  if (patternSegments.length === 0) {
+    return;
+  }
+  const ruleName = patternSegments.join("/");
+  const hasDuplicate = skipRules.value.some((rule) => {
+    return rule.name === ruleName;
+  });
+  if (hasDuplicate) {
+    toastFun.open({
+      message: "该文件夹已在跳过规则中",
+      contentStyle: toastContentStyle,
+    });
+    return;
+  }
+  skipRules.value = [
+    ...skipRules.value,
+    { name: ruleName, pathSegments: patternSegments, matchAnyLevel: true },
+  ];
+  // input-btn 内部输入框不会自动清空，先写入提交值，再于下一拍改回空串，借 modelValue 变化驱动其内部 watch 清空输入框
+  ruleDraftName.value = ruleName;
+  nextTick(() => {
+    ruleDraftName.value = "";
+  });
+};
+
+/**
+ * 删除一条跳过规则。
+ * @param {string} ruleName 待删除的文件夹名
+ * @returns {void}
+ */
+const removeRule = (ruleName) => {
+  skipRules.value = skipRules.value.filter((rule) => {
+    return rule.name !== ruleName;
+  });
+};
+
 const handleDocumentDragOver = (event) => {
   event.preventDefault();
 };
@@ -620,6 +730,17 @@ watch(skipHeavyDirectories, () => {
   beginScan(lastSource.value);
 });
 
+watch(
+  skipRules,
+  () => {
+    if (!lastSource.value || isBusy.value) {
+      return;
+    }
+    beginScan(lastSource.value);
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   document.addEventListener("dragover", handleDocumentDragOver);
   document.addEventListener("drop", handleDocumentDrop);
@@ -632,6 +753,38 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .rule-list-item {
+    border: 1px solid #000;
+    padding: 4px;
+    position: relative;
+
+    .rule-list-item-btn {
+      padding: 0;
+      margin: 0;
+      width: 1em;
+      height: 1em;
+      font-size: 12px;
+      color: red;
+      cursor: pointer;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      right: 0;
+      transform: translate(50%, -50%);
+      border-radius: 50%;
+      border: 1px solid #000;
+    }
+  }
+}
+
+
 .tree-textarea {
   width: auto;
   flex: 1;

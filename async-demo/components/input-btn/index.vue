@@ -5,22 +5,25 @@
         <div class="input-color-hex-content">
           <div :style="{ width: '100%', height: '100%', backgroundColor: inputValue }" :class="inputValueClass"></div>
         </div>
-        <input :type="type" v-model="colorValue" :style="[{ opacity: 0 }, inputStyle]" class="input-color-hex"
-          :class="inputClass" @input="onColorInput">
+        <input :disabled="disabled" :type="type" v-model="colorValue" :style="[{ opacity: 0 }, inputStyle]"
+          class="input-color-hex" :class="inputClass" @input="onColorInput">
       </div>
-      <input type="number" :min="0" :max="1" :step="0.01" v-model.number="colorAlpha" :style="[inputAlphaStyle]"
-        class="input-color-alpha" :class="inputAlphaClass" @input="onAlphaInput">
+      <input :disabled="disabled" type="number" :min="0" :max="1" :step="0.01" v-model.number="colorAlpha"
+        :style="[inputAlphaStyle]" class="input-color-alpha" :class="inputAlphaClass" @input="onAlphaInput">
     </div>
 
-    <button :style="btnStyle" @click="handleBtnClick" class="btn-item" :class="btnClass">{{ btnText }}</button>
+    <button :disabled="disabled" :style="btnStyle" @click="handleBtnClick" class="btn-item" :class="btnClass">{{ btnText
+    }}</button>
   </div>
 
   <div v-else class="input-btn-wrap">
-    <input :min="min" :max="max" :step="step" :type="type" :accept="accept" v-model="inputValue" :style="inputStyle"
-      class="input-item" :class="inputClass" @input="onInput" :title="inputValue" :placeholder="placeholder">
+    <input :disabled="disabled" :min="min" :max="max" :step="step" :type="type" :accept="accept" v-model="inputValue"
+      :style="inputStyle" class="input-item" :class="inputClass" @input="onInput" :title="inputValue"
+      :placeholder="placeholder">
     <div v-if="['range'].includes(type)" :style="inputValueStyle" class="input-value" :class="inputValueClass">{{
       inputValue }}</div>
-    <button :style="btnStyle" @click="handleBtnClick" class="btn-item" :class="btnClass">{{ btnText }}</button>
+    <button :disabled="disabled" :style="btnStyle" @click="handleBtnClick" class="btn-item" :class="btnClass">{{ btnText
+    }}</button>
   </div>
 </template>
 <script setup>
@@ -28,6 +31,10 @@ import { ref, watch } from 'vue'
 const emit = defineEmits(['update:modelValue'])
 
 const props = defineProps({
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
   modelValue: {
     type: [String, Number, Boolean],
     default: '',
