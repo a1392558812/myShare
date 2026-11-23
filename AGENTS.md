@@ -23,7 +23,6 @@
  
 ## 运行与预览（关键）
 > 本仓库由宿主 **vue3-sfc-loader 在线解析 SFC 语法**，无 dev server，无构建步骤。Vue 由宿主在运行时注入，不写入 package.json。禁止通过安装框架依赖来启动 dev server。
-- [禁止] 运行启动或构建服务器的命令（如 vite、`npm run dev`、启动 http-server 等）。预览依赖已运行的静态服务，无需 AI 自行启动。
 - [禁止] 安装 vue / vite / @vue/* 等框架依赖（`npm install` / `pnpm add` / `yarn add`）；装包会破坏 sfc-loader 加载链路，且徒增体积。
 - [必须] 预览地址为 `http://127.0.0.1:5501/#/demo/` 加文件相对仓库路径去掉 `async-demo/` 前缀后的部分（例：`async-demo/bro-melee/index.vue` → `http://127.0.0.1:5501/#/demo/bro-melee`）。
 - [必须] 预览无法打开时，可在仓库根目录尝试运行 `node ./run-server`（这是启动服务的唯一例外）；若仍未启动成功，停止当前任务并告知用户，不得改为安装依赖或使用 vite 自救。
