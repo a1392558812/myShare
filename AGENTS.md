@@ -51,7 +51,7 @@
 - [禁止] 使用 CJS `require`、顶层 await、动态 `import()`、编译期宏或编译期替换（宿主无 Vite transform）。
 - [必须] `<script setup>` 保持宿主可解析：避免实验性语法，以及依赖编译期处理的重导出或宏；单文件组件尽量自包含，便于探针抽取 `<script setup>` 配合 `vue-mock` 运行。
  
-### 范本 demo 约定（优先以 bro-melee / turn-based-rematch 等为范本，采用 `core/`、`draw/`、`config/` 分层）
+### 范本 demo 约定（优先以 bro-melee / how-many-dudes / roguelike 等为范本，采用 `core/`、`draw/`、`config/` 分层）
 > 仅当 demo 主动采用上述分层架构时生效；未分层、不写文档的简单 demo（如仅含单个 SFC 的 demo）不受以下条款约束。
 - [必须] `config/*` 只放纯数据，不放逻辑、不做 re-export；视图层 `*.vue` 不直接 import `config/` 数据表，也不在模板中索引数据表（如 `SKILL_TABLE[key]`），统一由 `core/*-view.js` 转换为原始值或只读快照。
 - [禁止] `core/` 层 import Vue、舞台层（stage）、`draw/` 或浏览器 DOM API。
@@ -59,7 +59,7 @@
  
 ## 测试 / 探针产物归置
 > 所有临时 / 测试产物统一归置到 `.tmp` 目录，由 `.gitignore` 中不带斜杠的 `.tmp` 模式（匹配任意深度）统一忽略，避免散落到仓库其他位置。
-- [必须] demo 的探针 / 测试脚本放入 `<demo 根目录>/.tmp/`（例如 `async-demo/turn-based-rematch/.tmp/`），按用途平铺拆文件，不套子目录。
+- [必须] demo 的探针 / 测试脚本放入 `<demo 根目录>/.tmp/`（例如 `async-demo/bro-melee/.tmp/`），按用途平铺拆文件，不套子目录。
 - [必须] 工具 / 浏览器运行时缓存（如无头测试生成的 user-data profile，命名形如 `.tmp-edge-xxxx`）放入仓库根 `.tmp/`，即各机器本地仓库根下的 `.tmp/` 目录。该目录已 gitignore、各机器本地生成；路径保持相对仓库根、跨机器一致，勿写死绝对路径。
 - [必须] 需要在记忆中回溯时，只记录相对仓库根的路径（如 `.tmp/.tmp-edge-profile*`），勿写死某台机器的绝对路径。
 - [禁止] 在仓库根 `.tmp/` 之外的位置散落 `.tmp-edge-xxxx`、`.tmp-*` 等临时文件。
